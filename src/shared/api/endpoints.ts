@@ -1,70 +1,66 @@
 /**
  * API Endpoints Configuration
- * Centralized endpoint definitions for the .NET backend
+ * Centralized endpoint definitions for the DevManager .NET Backend
+ * Basado en: API_GUIDE.md
  */
 
 export const API_ENDPOINTS = {
-    // Authentication
-    AUTH: {
-        LOGIN: '/auth/login',
-        REGISTER: '/auth/register',
-        LOGOUT: '/auth/logout',
-        REFRESH: '/auth/refresh',
-        ME: '/auth/me',
-    },
+  // Authentication
+  AUTH: {
+    LOGIN: "/auth/login",
+    REGISTER_ORGANIZATION: "/auth/register-organization",
+  },
 
-    // Users
-    USERS: {
-        BASE: '/users',
-        BY_ID: (id: string) => `/users/${id}`,
-        ROLES: (id: string) => `/users/${id}/roles`,
-    },
+  // Users
+  USERS: {
+    BASE: "/users",
+    BY_ID: (id: string) => `/users/${id}`,
+  },
 
-    // Organizations
-    ORGANIZATIONS: {
-        BASE: '/organizations',
-        BY_ID: (id: string) => `/organizations/${id}`,
-        MEMBERS: (id: string) => `/organizations/${id}/members`,
-    },
+  // Profile (Current User)
+  PROFILE: {
+    ME: "/profile/me",
+  },
 
-    // Projects
-    PROJECTS: {
-        BASE: '/projects',
-        BY_ID: (id: string) => `/projects/${id}`,
-        TEAM: (id: string) => `/projects/${id}/team`,
-        STATUS: (id: string) => `/projects/${id}/status`,
-    },
+  // Skills (Catalog)
+  SKILLS: {
+    BASE: "/skills",
+  },
 
-    // Agents (AI Agents management)
-    AGENTS: {
-        BASE: '/agents',
-        BY_ID: (id: string) => `/agents/${id}`,
-        EXECUTE: (id: string) => `/agents/${id}/execute`,
-        LOGS: (id: string) => `/agents/${id}/logs`,
-        METRICS: (id: string) => `/agents/${id}/metrics`,
-    },
+  // Employee Skills
+  EMPLOYEE_SKILLS: {
+    BY_EMPLOYEE: (id: string) => `/employees/${id}/skills`,
+    UPSERT: "/employees/skills",
+    VALIDATE: (id: string) => `/employees/skills/${id}/validate`,
+  },
 
-    // Reports
-    REPORTS: {
-        DASHBOARD: '/reports/dashboard',
-        UTILIZATION: '/reports/utilization',
-        SKILLS: '/reports/skills',
-        EXPORT: '/reports/export',
-    },
+  // Projects
+  PROJECTS: {
+    BASE: "/projects",
+    BY_ID: (id: string) => `/projects/${id}`,
+    REQUIREMENTS: (id: string) => `/projects/${id}/reqs`,
+    APPLICATIONS: (id: string) => `/projects/${id}/applications`,
+    APPLY: (id: string) => `/projects/${id}/apply`,
+  },
 
-    // Roles & Permissions
-    ROLES: {
-        BASE: '/roles',
-        BY_ID: (id: string) => `/roles/${id}`,
-        PERMISSIONS: (id: string) => `/roles/${id}/permissions`,
-    },
+  // Applications (Postulaciones)
+  APPLICATIONS: {
+    REVIEW: (id: string) => `/applications/${id}/review`,
+  },
 
-    // AI Copilot
-    COPILOT: {
-        CHAT: '/copilot/chat',
-        ANALYZE: '/copilot/analyze',
-        SUGGEST: '/copilot/suggest',
-    },
+  // Assignments
+  ASSIGNMENTS: {
+    BASE: "/assignments",
+  },
+
+  // Agent IA
+  AGENT: {
+    QUERY: "/agent/query",
+    VALIDATE_SKILL: "/agent/validate-skill",
+    MATCH_CANDIDATES: "/agent/match-candidates",
+    APPROVE: (actionId: string) => `/agent/approve/${actionId}`,
+    REJECT: (actionId: string) => `/agent/reject/${actionId}`,
+  },
 } as const;
 
 export type ApiEndpoints = typeof API_ENDPOINTS;

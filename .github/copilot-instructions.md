@@ -1,93 +1,182 @@
 # DevManager Frontend - AI Coding Instructions
 
 ## Project Overview
-DevManager is a talent management platform for tracking projects, resource allocation, and hiring needs. Built with React 19, TypeScript, Vite, and uses HashRouter for client-side routing with Gemini AI integration.
+DevManager es una plataforma de gestión de talento para proyectos, asignación de recursos y agentes IA. Construido con **React 19 + TypeScript + Vite** usando arquitectura **Feature-Sliced Design (FSD)**.
 
-## Architecture & File Structure
+## Arquitectura Feature-Sliced Design
 
-**Core routing:** [App.tsx](../App.tsx) defines routes using HashRouter with nested layout structure
-- Public routes: `/` (Login), `/register`
-- Protected routes: wrapped in `<Layout>` component with sidebar + header
-- All screens in [screens/](../screens/) follow similar component patterns
+El proyecto sigue la estructura FSD en `src/`. Ver [ARCHITECTURE.md](../ARCHITECTURE.md) para documentación completa.
 
-**Layout pattern:** [components/Layout.tsx](../components/Layout.tsx) provides persistent shell
-- Sidebar (left), header bar (top), main content area uses `<Outlet />`
-- Header includes breadcrumbs and notifications
-- Main content area has `overflow-y-auto` for scrolling
-
-**Type definitions:** [types.ts](../types.ts) contains all shared interfaces
-- `User`, `Project`, `Opportunity`, `ChatMessage` - reference these for data structures
-
-## Styling System
-
-**No CSS framework** - uses inline Tailwind classes directly in JSX (no `tailwind.config.js`)
-- Dark mode: `dark:` prefix variants everywhere (e.g., `dark:bg-[#16222b]`)
-- Primary color brand: `bg-primary`, `text-primary`, `hover:bg-primary-dark`
-- Background colors: `bg-white dark:bg-[#16222b]` (cards), `dark:bg-[#111b22]` (sidebar/inputs)
-- Border colors: `border-slate-200 dark:border-[#233948]`
-- Text colors: `text-slate-900 dark:text-white` (primary), `text-slate-500 dark:text-text-secondary`
-
-**Component styling patterns:**
-- Cards: `rounded-2xl p-6 bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948]`
-- Buttons: `rounded-xl px-6 py-2.5 bg-primary text-white hover:bg-primary-dark shadow-lg`
-- Inputs: `rounded-xl border dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] h-12 px-4 focus:ring-2 focus:ring-primary`
-- Status badges: Conditional styling based on state (see [Dashboard.tsx](../screens/Dashboard.tsx#L113-L116))
-
-## Development Workflow
-
-**Run dev server:**
-```bash
-npm run dev  # Starts Vite on port 3000
+```
+src/
+├── app/           # Router, layouts, providers globales
+├── features/      # Módulos de dominio autocontenidos (auth, dashboard, agents, etc.)
+├── widgets/       # Componentes complejos reutilizables (Sidebar, Header)
+└── shared/        # UI atómicos, hooks, api, context, utils, types
 ```
 
-**Environment setup:**
-- Create `.env.local` with `GEMINI_API_KEY=your_key`
-- Vite config ([vite.config.ts](../vite.config.ts)) exposes as `process.env.API_KEY` and `process.env.GEMINI_API_KEY`
+**Regla de dependencias:** `shared` → `widgets` → `features` → `app` (nunca al revés)
 
-**Build & preview:**
-```bash
-npm run build   # Production build
-npm run preview # Preview production build
+## Imports y Aliases
+
+Usa alias configurados en [vite.config.ts](../vite.config.ts):
+```tsx
+import { Button, Card, Badge } from '@shared/ui';
+import { useModal, useForm } from '@shared/hooks';
+import { ROUTES, PROJECT_STATUS } from '@shared/config/constants';
+import { apiClient, API_ENDPOINTS } from '@shared/api';
 ```
 
-## AI Integration (Gemini)
+## Componentes UI Reutilizables
 
-**Service location:** [services/geminiService.ts](../services/geminiService.ts)
-- Uses `@google/genai` package
-- Model: `gemini-3-flash-preview`
-- System instruction defines "DevManager Copilot" context with dashboard metrics
-- API key loaded from environment, gracefully degrades if missing
+Usa siempre componentes de [src/shared/ui/](../src/shared/ui/) en lugar de estilos inline:
+```tsx
+// ✅ Correcto
+<Button variant="primary" icon={Plus}>Crear</Button>
+<Card hoverable padding="md"><Badge variant="success" dot>Active</Badge></Card>
 
-**Integration pattern:** Import `sendCopilotMessage(message, context?)` for AI features
+// ❌ Evitar - No crear estilos de botón/card manualmente
+<button className="bg-primary rounded-xl...">Crear</button>
+```
 
-## Key Conventions
+**Componentes disponibles:** `Button`, `Card`, `Badge`, `Avatar`, `Input`, `Modal`, `ProgressBar`, `StatCard`
 
-1. **Navigation:** Always use `useNavigate()` hook from `react-router-dom`, never `<a>` tags
-2. **Icons:** Lucide React library - import specific icons (e.g., `import { Plus, Users } from 'lucide-react'`)
-3. **Component patterns:** All screens are functional components with typed props (`const ScreenName: React.FC = () => {}`)
-4. **State management:** Currently using local component state (no global store)
-5. **Data:** Mock data arrays in components - no backend API calls yet (see [Dashboard.tsx](../screens/Dashboard.tsx#L10-L15))
+## Sistema de Estilos
 
-## Screen-Specific Patterns
+**Tailwind con dark mode obligatorio** - siempre incluye variantes `dark:`:
+- Fondos: `bg-white dark:bg-[#16222b]` (cards), `dark:bg-[#111b22]` (inputs/sidebar)
+- Bordes: `border-slate-200 dark:border-[#233948]`
+- Texto: `text-slate-900 dark:text-white` (primario), `text-slate-500 dark:text-slate-400` (secundario)
 
-**Dashboard cards:** ([Dashboard.tsx](../screens/Dashboard.tsx))
-- Stat cards use icon in colored background circles
-- Project cards have gradient avatar circles with initials
-- Hover states with shadow transitions and arrow indicators
+## Rutas y Navegación
 
-**Forms:** ([CreateProject.tsx](../screens/CreateProject.tsx))
-- Grid layouts: `grid grid-cols-1 md:grid-cols-2 gap-8`
-- Section headers with icons and border-bottom
-- Cancel/Save button pairs in header
+**HashRouter** - URLs usan formato `#/path`. Usa constantes de [constants.ts](../src/shared/config/constants.ts):
+```tsx
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@shared/config/constants';
 
-**Tables:** ([Users.tsx](../screens/Users.tsx))
-- Sticky headers with `bg-slate-50 dark:bg-[#111b22]`
-- Row hover states: `hover:bg-slate-50 dark:hover:bg-[#233948]/50`
+const navigate = useNavigate();
+navigate(ROUTES.DASHBOARD);  // ✅ Usar constantes
+navigate('/dashboard');      // ❌ Evitar strings hardcodeados
+```
 
-## Important Notes
+## Estado y Contextos
 
-- HashRouter used (not BrowserRouter) - URLs have `#/path` format
-- No authentication implemented yet - routes are "protected" structurally but not functionally
-- No global state management - each screen manages own state
-- Responsive: Mobile-first with `md:` and `lg:` breakpoints
-- Icons use `size={20}` or `size={24}` consistently
+Usa contextos de [src/shared/context/](../src/shared/context/):
+```tsx
+import { useAuth, useNotification } from '@shared/context';
+
+const { user, login, logout } = useAuth();
+const { showNotification } = useNotification();
+```
+
+## API Client (Backend .NET)
+
+**Base URL:** `https://devmanagerapi.runasp.net/api` | **Guía completa:** [API_GUIDE.md](../API_GUIDE.md)
+
+### Servicios por Dominio
+
+```tsx
+import { 
+    authService, 
+    usersService, 
+    projectsService, 
+    skillsService, 
+    profileService,
+    applicationsService,
+    assignmentsService,
+    agentService 
+} from '@shared/api';
+```
+
+### Ejemplos de Uso
+
+```tsx
+// ============ AUTH ============
+await authService.login({ email, password });
+await authService.registerOrganization({ organizationName, adminEmail, adminPassword, adminFullName });
+authService.logout();
+
+// ============ USERS ============
+const { data: users } = await usersService.getAll();
+await usersService.create({ email, password, fullName, roleId });
+await usersService.update(id, { fullName, isActive });
+
+// ============ PROFILE ============
+const { data: profile } = await profileService.getMyProfile();
+await profileService.updateMyProfile({ bio, yearsExperience, linkedinUrl });
+
+// ============ SKILLS ============
+const { data: skills } = await skillsService.getAll();
+await skillsService.upsertEmployeeSkill({ skillId, level: 4, evidenceUrl });
+await skillsService.validateSkill(skillId, { newLevel: 4 });
+
+// ============ PROJECTS ============
+const { data: projects } = await projectsService.getAll(ProjectStatus.Active);
+await projectsService.create({ name, description, complexity: ProjectComplexity.Medium });
+await projectsService.addRequirement(projectId, { skillId, requiredLevel: 4, isMandatory: true });
+await projectsService.apply(projectId, { message: 'Me interesa participar...' });
+
+// ============ APPLICATIONS ============
+await applicationsService.review(applicationId, { status: ApplicationStatus.Approved, reviewNotes });
+
+// ============ ASSIGNMENTS ============
+await assignmentsService.create({ projectId, userId, role: 'Backend Developer', hoursPerWeek: 40 });
+
+// ============ AGENT IA ============
+const { data: answer } = await agentService.query({ query: '¿Cuántos devs con Java 4+?' });
+const { data: candidates } = await agentService.matchCandidates({ projectId, minScore: 70 });
+await agentService.approveAction(actionId);
+```
+
+### Respuesta Estándar del API
+
+```tsx
+interface ApiResponse<T> {
+    success: boolean;
+    message: string | null;
+    data: T;
+    timestamp: string;
+}
+```
+
+### Enums Importantes
+
+```tsx
+// Estados de Proyecto: 0=Draft, 1=Active, 2=OnHold, 3=Completed, 4=Cancelled
+// Complejidad: 0=Low, 1=Medium, 2=High
+// Estado Postulación: 0=Pending, 1=Approved, 2=Rejected
+// Tipo Skill: 0=Global, 1=Organizational
+// Nivel Skill: 1=Básico, 2=Intermedio, 3=Competente, 4=Avanzado, 5=Experto
+```
+
+Los tipos del API están en [src/shared/api/types.ts](../src/shared/api/types.ts).
+
+## Crear Nueva Feature
+
+1. Crear carpeta en `src/features/{nombre}/`
+2. Añadir `pages/`, `components/` según necesidad
+3. Exportar en `src/features/{nombre}/index.ts`
+4. Re-exportar en `src/features/index.ts`
+5. Añadir ruta en [Router.tsx](../src/app/Router.tsx) usando `ROUTES` constante
+
+## Comandos de Desarrollo
+
+```bash
+npm run dev      # Servidor en puerto 3000
+npm run build    # Build producción
+npm run preview  # Preview del build
+```
+
+**Variables de entorno** en `.env.local`:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_GEMINI_API_KEY=tu_api_key
+```
+
+## Convenciones Clave
+
+- **Iconos:** Lucide React con `size={20}` o `size={24}` - `import { Plus, Users } from 'lucide-react'`
+- **Componentes:** Funcionales tipados `const MyComponent: React.FC = () => {}`
+- **Tipos:** Definir en `src/shared/types/index.ts`, usar tipos existentes como `Agent`, `Project`, `Organization`
+- **Hooks personalizados:** En `src/shared/hooks/` - `useModal`, `useForm`, `useLoading`, `useTheme`

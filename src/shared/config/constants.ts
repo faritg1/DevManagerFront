@@ -95,6 +95,8 @@ export const STORAGE_KEYS = {
     LANGUAGE: 'language',
 } as const;
 
-export type ProjectStatus = typeof PROJECT_STATUS[keyof typeof PROJECT_STATUS];
-export type AgentStatus = typeof AGENT_STATUS[keyof typeof AGENT_STATUS];
+/** @deprecated Use ProjectStatus enum from @shared/api/types instead */
+export type ProjectStatusLabel = typeof PROJECT_STATUS[keyof typeof PROJECT_STATUS];
+/** @deprecated Use AgentStatus from @shared/types instead */
+export type AgentStatusLabel = typeof AGENT_STATUS[keyof typeof AGENT_STATUS];
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];

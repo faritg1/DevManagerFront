@@ -3,9 +3,9 @@
  * Centralized types for the entire application
  */
 
-// Re-export types from context
-export type { User, AuthState } from './context/AuthContext';
-export type { Notification, NotificationType } from './context/NotificationContext';
+// Re-export types from context (using relative paths from types folder)
+export type { User, AuthState } from '../context/AuthContext';
+export type { Notification, NotificationType, ShowNotificationInput } from '../context/NotificationContext';
 
 // Base entity interface
 export interface BaseEntity {
@@ -14,12 +14,12 @@ export interface BaseEntity {
     updatedAt?: string;
 }
 
-// Project types
+// Project types (Frontend display - different from API ProjectStatus enum)
 export interface Project extends BaseEntity {
     name: string;
     description?: string;
     client: string;
-    status: ProjectStatus;
+    status: FrontendProjectStatus;
     progress: number;
     initials: string;
     color: string;
@@ -29,7 +29,8 @@ export interface Project extends BaseEntity {
     organizationId?: string;
 }
 
-export type ProjectStatus = 'New' | 'In Progress' | 'Blocked' | 'Completed' | 'On Hold';
+/** Frontend display status (different from API ProjectStatus enum) */
+export type FrontendProjectStatus = 'New' | 'In Progress' | 'Blocked' | 'Completed' | 'On Hold';
 
 // Organization types
 export interface Organization extends BaseEntity {

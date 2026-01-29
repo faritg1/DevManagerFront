@@ -58,7 +58,15 @@ export const Sidebar: React.FC = () => {
     const location = useLocation();
     const { user, logout } = useAuth();
 
-    const isActive = (path: string) => location.pathname === path;
+    // Función que verifica si una ruta está activa (incluyendo rutas hijas)
+    const isActive = (path: string) => {
+        // Caso especial: Dashboard solo match exacto
+        if (path === ROUTES.DASHBOARD) {
+            return location.pathname === path;
+        }
+        // Para otras rutas, verificar si la ruta actual comienza con el path
+        return location.pathname === path || location.pathname.startsWith(path + '/');
+    };
 
     return (
         <aside className="w-64 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0">

@@ -10,6 +10,8 @@ import {
     RegisterPage, 
     DashboardPage, 
     CreateProjectPage,
+    ProjectsPage,
+    ProjectDetailPage,
     OrganizationsPage,
     UsersPage,
     AgentsPage,
@@ -41,9 +43,9 @@ export const AppRouter: React.FC = () => {
                             <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
                             
                             {/* Projects */}
-                            <Route path={ROUTES.PROJECTS} element={<PlaceholderPage title="Proyectos" />} />
+                            <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
                             <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
-                            <Route path="/projects/:id" element={<PlaceholderPage title="Detalle de Proyecto" />} />
+                            <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
                             
                             {/* Reports */}
                             <Route path={ROUTES.REPORTS} element={<PlaceholderPage title="Reportes IA" />} />

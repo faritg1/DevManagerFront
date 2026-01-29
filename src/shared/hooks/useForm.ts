@@ -13,6 +13,8 @@ interface UseFormReturn<T extends FormValues> {
     handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     handleBlur: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     setValue: (name: keyof T, value: any) => void;
+    setValues: (newValues: Partial<T>) => void;
+    resetToValues: (newValues: T) => void;
     setError: (name: keyof T, error: string) => void;
     reset: () => void;
     validate: () => boolean;
@@ -59,6 +61,17 @@ export const useForm = <T extends FormValues>(
         setIsDirty(true);
     }, []);
 
+    const setValuesPartial = useCallback((newValues: Partial<T>) => {
+        setValues(prev => ({ ...prev, ...newValues }));
+    }, []);
+
+    const resetToValues = useCallback((newValues: T) => {
+        setValues(newValues);
+        setErrors({});
+        setTouched({});
+        setIsDirty(false);
+    }, []);
+
     const setError = useCallback((name: keyof T, error: string) => {
         setErrors(prev => ({ ...prev, [name]: error }));
     }, []);
@@ -99,6 +112,8 @@ export const useForm = <T extends FormValues>(
         handleChange,
         handleBlur,
         setValue,
+        setValues: setValuesPartial,
+        resetToValues,
         setError,
         reset,
         validate,

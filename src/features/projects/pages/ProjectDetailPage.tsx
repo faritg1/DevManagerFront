@@ -280,7 +280,7 @@ export const ProjectDetailPage: React.FC = () => {
                                 <Button 
                                     variant="outline" 
                                     icon={Edit}
-                                    onClick={() => showNotification({ type: 'info', message: 'Edición próximamente' })}
+                                    onClick={() => navigate(`/projects/${id}/edit`)}
                                 >
                                     Editar
                                 </Button>

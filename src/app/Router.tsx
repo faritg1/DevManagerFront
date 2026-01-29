@@ -12,6 +12,7 @@ import {
     CreateProjectPage,
     ProjectsPage,
     ProjectDetailPage,
+    EditProjectPage,
     OrganizationsPage,
     UsersPage,
     AgentsPage,
@@ -45,6 +46,7 @@ export const AppRouter: React.FC = () => {
                             {/* Projects */}
                             <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
                             <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
+                            <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
                             <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
                             
                             {/* Reports */}

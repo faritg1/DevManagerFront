@@ -31,10 +31,18 @@ const getRouteName = (path: string): string => {
     }
     
     // Manejar rutas con parámetros dinámicos (e.g., /projects/:id)
-    if (path.startsWith('/projects/') && path !== '/projects') {
+    if (path.startsWith('/projects/')) {
+        // /projects/:id/edit
+        if (path.endsWith('/edit')) {
+            return 'Editar';
+        }
+        // /projects/:id
         return 'Detalle';
     }
-    if (path.startsWith('/agents/') && path !== '/agents') {
+    if (path.startsWith('/agents/')) {
+        if (path.endsWith('/edit')) {
+            return 'Editar';
+        }
         return 'Detalle';
     }
     

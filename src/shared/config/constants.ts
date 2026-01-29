@@ -15,6 +15,7 @@ export const ROUTES = {
     PROJECTS: '/projects',
     PROJECT_DETAIL: '/projects/:id',
     CREATE_PROJECT: '/create-project',
+    EDIT_PROJECT: '/projects/:id/edit',
     
     // Marketplace
     MARKETPLACE: '/marketplace',

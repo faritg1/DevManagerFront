@@ -190,6 +190,20 @@ export interface CreateProjectRequest {
   budgetEstimate?: number | null;
 }
 
+/**
+ * Partial update - Solo se actualizan los campos enviados
+ * Los campos omitidos mantienen su valor actual
+ */
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string | null;
+  status?: ProjectStatus;
+  startDate?: string | null;
+  endDate?: string | null;
+  complexity?: ProjectComplexity;
+  budgetEstimate?: number | null;
+}
+
 // ============ PROJECT REQUIREMENTS ============
 export interface SkillRequirementResponse {
   id: string;

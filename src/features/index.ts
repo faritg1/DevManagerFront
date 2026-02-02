@@ -5,3 +5,4 @@ export { CreateProjectPage, ProjectsPage, ProjectDetailPage, EditProjectPage } f
 export { OrganizationsPage } from './organizations';
 export { UsersPage } from './users';
 export { AgentsPage } from './agents';
+export { ProfilePage } from './profile';

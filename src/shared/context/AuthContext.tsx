@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { apiClient, API_ENDPOINTS } from '../api';
+import { authService } from '../api';
+import { STORAGE_KEYS } from '../config/constants';
 
 // Types
 export interface User {
@@ -9,6 +10,7 @@ export interface User {
     avatar?: string;
     role: string;
     organizationId?: string;
+    organizationName?: string;
 }
 
 export interface AuthState {
@@ -43,10 +45,6 @@ const initialState: AuthState = {
 // Context
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Storage keys
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'auth_user';
-
 // Provider
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, setState] = useState<AuthState>(initialState);
@@ -54,13 +52,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Initialize auth state from storage
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem(TOKEN_KEY);
-            const storedUser = localStorage.getItem(USER_KEY);
+            const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+            const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
 
             if (token && storedUser) {
                 try {
-                    // Optionally verify token with backend
-                    // const { data } = await apiClient.get<User>(API_ENDPOINTS.AUTH.ME);
                     const user = JSON.parse(storedUser);
                     setState({
                         user,
@@ -70,8 +66,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     });
                 } catch {
                     // Token invalid, clear storage
-                    localStorage.removeItem(TOKEN_KEY);
-                    localStorage.removeItem(USER_KEY);
+                    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+                    localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
                     setState({ ...initialState, isLoading: false });
                 }
             } else {
@@ -86,28 +82,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setState(prev => ({ ...prev, isLoading: true }));
 
         try {
-            // TODO: Uncomment when backend is ready
-            // const { data } = await apiClient.post<{ user: User; token: string }>(
-            //     API_ENDPOINTS.AUTH.LOGIN,
-            //     { email, password }
-            // );
+            const response = await authService.login({ email, password });
 
-            // Mock login for now
-            const mockUser: User = {
-                id: '1',
-                name: 'Sofia Martinez',
+            if (!response.success || !response.data) {
+                throw new Error(response.message || 'Error al iniciar sesión');
+            }
+
+            const { token, userId, fullName, role, organizationId, organizationName } = response.data;
+
+            const user: User = {
+                id: userId,
+                name: fullName,
                 email: email,
-                role: 'Admin',
-                avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+                role: role,
+                organizationId: organizationId,
+                organizationName: organizationName,
             };
-            const mockToken = 'mock-jwt-token';
-
-            localStorage.setItem(TOKEN_KEY, mockToken);
-            localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
 
             setState({
-                user: mockUser,
-                token: mockToken,
+                user,
+                token,
                 isAuthenticated: true,
                 isLoading: false,
             });
@@ -121,27 +115,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setState(prev => ({ ...prev, isLoading: true }));
 
         try {
-            // TODO: Uncomment when backend is ready
-            // const { data: response } = await apiClient.post<{ user: User; token: string }>(
-            //     API_ENDPOINTS.AUTH.REGISTER,
-            //     data
-            // );
+            const response = await authService.registerOrganization({
+                organizationName: data.organizationName || 'Mi Organización',
+                adminEmail: data.email,
+                adminPassword: data.password,
+                adminFullName: data.name,
+            });
 
-            // Mock registration
-            const mockUser: User = {
-                id: '1',
+            if (!response.success || !response.data) {
+                throw new Error(response.message || 'Error al registrar organización');
+            }
+
+            const { token, adminUserId, adminEmail, organizationId, organizationName } = response.data;
+
+            const user: User = {
+                id: adminUserId,
                 name: data.name,
-                email: data.email,
+                email: adminEmail,
                 role: 'Admin',
+                organizationId: organizationId,
+                organizationName: organizationName,
             };
-            const mockToken = 'mock-jwt-token';
-
-            localStorage.setItem(TOKEN_KEY, mockToken);
-            localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
 
             setState({
-                user: mockUser,
-                token: mockToken,
+                user,
+                token,
                 isAuthenticated: true,
                 isLoading: false,
             });
@@ -152,8 +150,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, []);
 
     const logout = useCallback(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        authService.logout();
         setState({ ...initialState, isLoading: false });
     }, []);
 
@@ -162,7 +159,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (!prev.user) return prev;
             
             const updatedUser = { ...prev.user, ...updates };
-            localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+            localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
             
             return { ...prev, user: updatedUser };
         });

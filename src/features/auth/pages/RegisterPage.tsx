@@ -34,6 +34,11 @@ export const RegisterPage: React.FC = () => {
             return;
         }
 
+        if (formData.password.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres');
+            return;
+        }
+
         try {
             await register({
                 name: formData.name,
@@ -42,8 +47,9 @@ export const RegisterPage: React.FC = () => {
                 organizationName: formData.organizationName,
             });
             navigate(ROUTES.DASHBOARD);
-        } catch (err) {
-            setError('Error al crear la cuenta. Intenta de nuevo.');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Error al crear la cuenta. Intenta de nuevo.';
+            setError(message);
         }
     };
 

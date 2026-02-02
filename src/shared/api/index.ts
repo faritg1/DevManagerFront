@@ -4,16 +4,13 @@
  * Basado en: API_GUIDE.md
  */
 
-// Core
-export {
-  apiClient,
-  type ApiResponse,
-  type ApiError,
-  type ApiConfig,
-} from "./client";
+// Core client
+export { apiClient, type ApiConfig, type ApiError } from "./client";
+
+// Endpoints
 export { API_ENDPOINTS, type ApiEndpoints } from "./endpoints";
 
-// Types
+// Types (use types from types.ts as the canonical source)
 export * from "./types";
 
 // Services

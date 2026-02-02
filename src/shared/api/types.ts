@@ -190,6 +190,20 @@ export interface CreateProjectRequest {
   budgetEstimate?: number | null;
 }
 
+/**
+ * Partial update - Solo se actualizan los campos enviados
+ * Los campos omitidos mantienen su valor actual
+ */
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string | null;
+  status?: ProjectStatus;
+  startDate?: string | null;
+  endDate?: string | null;
+  complexity?: ProjectComplexity;
+  budgetEstimate?: number | null;
+}
+
 // ============ PROJECT REQUIREMENTS ============
 export interface SkillRequirementResponse {
   id: string;
@@ -255,11 +269,16 @@ export interface AgentQueryRequest {
 }
 
 export interface AgentQueryResponse {
-  answer: string;
-  reasoning: string;
-  requiresApproval: boolean;
+  response: string;           // Backend retorna 'response' (JSON string)
+  reasoningSteps: string;     // Backend retorna 'reasoningSteps'
+  toolsExecuted: Array<{
+    toolName: string;
+    input: string;
+    output: string;
+    success: boolean;
+  }>;
+  requiresHumanApproval: boolean; // Backend retorna 'requiresHumanApproval'
   actionId: string | null;
-  confidence: number;
 }
 
 export interface ValidateSkillAIRequest {

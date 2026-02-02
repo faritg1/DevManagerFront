@@ -9,6 +9,7 @@ import { API_ENDPOINTS } from "../endpoints";
 import type {
   ProjectResponse,
   CreateProjectRequest,
+  UpdateProjectRequest,
   SkillRequirementResponse,
   AddSkillRequirementRequest,
   ApplicationResponse,
@@ -51,6 +52,29 @@ export const projectsService = {
    */
   async create(data: CreateProjectRequest): Promise<ApiResponse<string>> {
     return apiClient.post<string>(API_ENDPOINTS.PROJECTS.BASE, data);
+  },
+
+  /**
+   * Actualiza un proyecto existente (partial update)
+   * PUT /api/projects/{id}
+   * Requiere rol Manager o Admin
+   *
+   * Solo se actualizan los campos enviados
+   */
+  async update(
+    id: string,
+    data: UpdateProjectRequest,
+  ): Promise<ApiResponse<void>> {
+    return apiClient.put<void>(API_ENDPOINTS.PROJECTS.BY_ID(id), data);
+  },
+
+  /**
+   * Elimina un proyecto (soft delete)
+   * DELETE /api/projects/{id}
+   * Requiere rol Manager o Admin
+   */
+  async delete(id: string): Promise<ApiResponse<void>> {
+    return apiClient.delete<void>(API_ENDPOINTS.PROJECTS.BY_ID(id));
   },
 
   // ============ REQUISITOS DE SKILLS ============

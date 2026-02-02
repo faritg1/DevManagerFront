@@ -308,8 +308,13 @@ class ApiClient {
   }
 }
 
-// Singleton instance
+// Singleton instance para endpoints /api
 export const apiClient = new ApiClient();
+
+// Cliente separado para Agent (sin /api prefix)
+export const agentClient = new ApiClient({
+  baseUrl: import.meta.env.VITE_AGENT_URL || "https://devmanagerapi.runasp.net",
+});
 
 // Agregar interceptor de logging en desarrollo
 if (import.meta.env.MODE === "development") {
@@ -320,6 +325,16 @@ if (import.meta.env.MODE === "development") {
 
   apiClient.addErrorInterceptor((error) => {
     console.error("[API Error]", error);
+    return error;
+  });
+
+  agentClient.addRequestInterceptor((config) => {
+    console.log("[Agent Request]", config);
+    return config;
+  });
+
+  agentClient.addErrorInterceptor((error) => {
+    console.error("[Agent Error]", error);
     return error;
   });
 }

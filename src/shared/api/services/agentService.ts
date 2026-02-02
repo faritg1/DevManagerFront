@@ -2,9 +2,12 @@
  * Agent IA Service
  * Maneja endpoints de inteligencia artificial usando Google Gemini
  * Basado en: API_GUIDE.md
+ * 
+ * IMPORTANTE: Usa agentClient (sin /api prefix) porque el backend
+ * tiene los endpoints del agente en https://devmanagerapi.runasp.net/Agent/*
  */
 
-import { apiClient } from "../client";
+import { agentClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
   AgentQueryRequest,
@@ -36,7 +39,7 @@ export const agentService = {
   async query(
     data: AgentQueryRequest,
   ): Promise<ApiResponse<AgentQueryResponse>> {
-    return apiClient.post<AgentQueryResponse>(API_ENDPOINTS.AGENT.QUERY, data);
+    return agentClient.post<AgentQueryResponse>(API_ENDPOINTS.AGENT.QUERY, data);
   },
 
   /**
@@ -51,7 +54,7 @@ export const agentService = {
   async validateSkill(
     data: ValidateSkillAIRequest,
   ): Promise<ApiResponse<ValidateSkillAIResponse>> {
-    return apiClient.post<ValidateSkillAIResponse>(
+    return agentClient.post<ValidateSkillAIResponse>(
       API_ENDPOINTS.AGENT.VALIDATE_SKILL,
       data,
     );
@@ -74,7 +77,7 @@ export const agentService = {
   async matchCandidates(
     data: MatchCandidatesRequest,
   ): Promise<ApiResponse<MatchCandidatesResponse>> {
-    return apiClient.post<MatchCandidatesResponse>(
+    return agentClient.post<MatchCandidatesResponse>(
       API_ENDPOINTS.AGENT.MATCH_CANDIDATES,
       data,
     );
@@ -82,21 +85,21 @@ export const agentService = {
 
   /**
    * Aprueba una acción del agente (flujo HITL - Human In The Loop)
-   * POST /agent/approve/{actionId}
+   * POST /Agent/approve/{actionId}
    */
   async approveAction(actionId: string): Promise<ApiResponse<void>> {
-    return apiClient.post<void>(API_ENDPOINTS.AGENT.APPROVE(actionId));
+    return agentClient.post<void>(API_ENDPOINTS.AGENT.APPROVE(actionId));
   },
 
   /**
    * Rechaza una acción del agente con motivo
-   * POST /agent/reject/{actionId}
+   * POST /Agent/reject/{actionId}
    */
   async rejectAction(
     actionId: string,
     data: RejectActionRequest,
   ): Promise<ApiResponse<void>> {
-    return apiClient.post<void>(API_ENDPOINTS.AGENT.REJECT(actionId), data);
+    return agentClient.post<void>(API_ENDPOINTS.AGENT.REJECT(actionId), data);
   },
 };
 

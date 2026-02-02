@@ -53,13 +53,13 @@ export const API_ENDPOINTS = {
     BASE: "/assignments",
   },
 
-  // Agent IA
+  // Agent IA (sin /api prefix - usa agentClient)
   AGENT: {
-    QUERY: "/agent/query",
-    VALIDATE_SKILL: "/agent/validate-skill",
-    MATCH_CANDIDATES: "/agent/match-candidates",
-    APPROVE: (actionId: string) => `/agent/approve/${actionId}`,
-    REJECT: (actionId: string) => `/agent/reject/${actionId}`,
+    QUERY: "/Agent/query",
+    VALIDATE_SKILL: "/Agent/validate-skill",
+    MATCH_CANDIDATES: "/Agent/match-candidates",
+    APPROVE: (actionId: string) => `/Agent/approve/${actionId}`,
+    REJECT: (actionId: string) => `/Agent/reject/${actionId}`,
   },
 } as const;
 

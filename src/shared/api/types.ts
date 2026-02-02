@@ -269,11 +269,16 @@ export interface AgentQueryRequest {
 }
 
 export interface AgentQueryResponse {
-  answer: string;
-  reasoning: string;
-  requiresApproval: boolean;
+  response: string;           // Backend retorna 'response' (JSON string)
+  reasoningSteps: string;     // Backend retorna 'reasoningSteps'
+  toolsExecuted: Array<{
+    toolName: string;
+    input: string;
+    output: string;
+    success: boolean;
+  }>;
+  requiresHumanApproval: boolean; // Backend retorna 'requiresHumanApproval'
   actionId: string | null;
-  confidence: number;
 }
 
 export interface ValidateSkillAIRequest {

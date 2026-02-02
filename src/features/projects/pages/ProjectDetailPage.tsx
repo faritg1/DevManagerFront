@@ -15,19 +15,23 @@ import {
     XCircle,
     Clock,
     FileText,
-    DollarSign
+    DollarSign,
+    Plus
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, Badge, Button, Avatar } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Input } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, skillsService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
+import { useModal } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
     ProjectComplexity,
     ApplicationStatus,
     type ProjectResponse, 
     type SkillRequirementResponse,
-    type ApplicationResponse 
+    type ApplicationResponse,
+    type SkillDto,
+    type AddSkillRequirementRequest
 } from '../../../shared/api/types';
 
 // Helpers
@@ -128,6 +132,17 @@ export const ProjectDetailPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Modal para agregar requisito
+    const requirementModal = useModal();
+    const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
+    const [loadingSkills, setLoadingSkills] = useState(false);
+    const [savingRequirement, setSavingRequirement] = useState(false);
+    const [requirementForm, setRequirementForm] = useState<AddSkillRequirementRequest>({
+        skillId: '',
+        requiredLevel: 3,
+        isMandatory: true
+    });
+
     useEffect(() => {
         if (!id) return;
 
@@ -197,6 +212,79 @@ export const ProjectDetailPage: React.FC = () => {
                 type: 'error',
                 message: 'Error de conexión'
             });
+        }
+    };
+
+    // Abrir modal de agregar requisito
+    const handleOpenRequirementModal = async () => {
+        requirementModal.open();
+        setRequirementForm({ skillId: '', requiredLevel: 3, isMandatory: true });
+        
+        // Cargar skills disponibles si no se han cargado
+        if (availableSkills.length === 0) {
+            setLoadingSkills(true);
+            try {
+                const response = await skillsService.getAll();
+                if (response.success && response.data) {
+                    // Filtrar skills que ya están como requisito
+                    const existingSkillIds = requirements.map(r => r.skillId);
+                    const filtered = response.data.filter(s => !existingSkillIds.includes(s.id));
+                    setAvailableSkills(filtered);
+                }
+            } catch (err) {
+                console.error('Error loading skills:', err);
+                showNotification({
+                    type: 'error',
+                    message: 'Error al cargar habilidades'
+                });
+            } finally {
+                setLoadingSkills(false);
+            }
+        }
+    };
+
+    // Guardar requisito
+    const handleSaveRequirement = async () => {
+        if (!id || !requirementForm.skillId) {
+            showNotification({
+                type: 'error',
+                message: 'Selecciona una habilidad'
+            });
+            return;
+        }
+
+        setSavingRequirement(true);
+        try {
+            const response = await projectsService.addRequirement(id, requirementForm);
+            
+            if (response.success) {
+                showNotification({
+                    type: 'success',
+                    message: 'Requisito agregado exitosamente'
+                });
+                requirementModal.close();
+                
+                // Refrescar requisitos
+                const reqsRes = await projectsService.getRequirements(id);
+                if (reqsRes.success && reqsRes.data) {
+                    setRequirements(reqsRes.data);
+                    // Actualizar skills disponibles (quitar la que se acaba de agregar)
+                    setAvailableSkills(prev => prev.filter(s => s.id !== requirementForm.skillId));
+                }
+            } else {
+                showNotification({
+                    type: 'error',
+                    message: response.message || 'Error al agregar requisito'
+                });
+            }
+        } catch (err) {
+            console.error('Error saving requirement:', err);
+            showNotification({
+                type: 'error',
+                message: 'Error de conexión'
+            });
+        } finally {
+            setSavingRequirement(false);
         }
     };
 
@@ -361,10 +449,20 @@ export const ProjectDetailPage: React.FC = () => {
                     {/* Requirements Section */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Target className="text-primary" size={20} />
-                                Requisitos de Habilidades
-                                <Badge variant="default">{requirements.length}</Badge>
+                            <CardTitle className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                    <Target className="text-primary" size={20} />
+                                    Requisitos de Habilidades
+                                    <Badge variant="default">{requirements.length}</Badge>
+                                </div>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    icon={Plus}
+                                    onClick={handleOpenRequirementModal}
+                                >
+                                    Agregar
+                                </Button>
                             </CardTitle>
                         </CardHeader>
 
@@ -373,7 +471,12 @@ export const ProjectDetailPage: React.FC = () => {
                                 <p className="text-slate-500 dark:text-slate-400 mb-4">
                                     No hay requisitos definidos
                                 </p>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    icon={Plus}
+                                    onClick={handleOpenRequirementModal}
+                                >
                                     Agregar Requisito
                                 </Button>
                             </div>
@@ -486,6 +589,141 @@ export const ProjectDetailPage: React.FC = () => {
                     </Card>
                 </div>
             </div>
+
+            {/* Modal Agregar Requisito */}
+            <Modal
+                isOpen={requirementModal.isOpen}
+                onClose={requirementModal.close}
+                title="Agregar Requisito de Habilidad"
+                icon={<Target className="text-primary" size={20} />}
+                size="md"
+                footer={
+                    <>
+                        <Button 
+                            onClick={handleSaveRequirement}
+                            disabled={savingRequirement || !requirementForm.skillId}
+                            icon={savingRequirement ? Loader2 : Plus}
+                        >
+                            {savingRequirement ? 'Guardando...' : 'Agregar Requisito'}
+                        </Button>
+                        <Button variant="outline" onClick={requirementModal.close}>
+                            Cancelar
+                        </Button>
+                    </>
+                }
+            >
+                <div className="space-y-5">
+                    {/* Selector de Skill */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-slate-700 dark:text-white text-sm font-bold">
+                            Habilidad *
+                        </label>
+                        {loadingSkills ? (
+                            <div className="flex items-center gap-2 text-slate-500">
+                                <Loader2 className="animate-spin" size={16} />
+                                Cargando habilidades...
+                            </div>
+                        ) : (
+                            <select
+                                value={requirementForm.skillId}
+                                onChange={(e) => setRequirementForm(prev => ({ ...prev, skillId: e.target.value }))}
+                                className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                            >
+                                <option value="">Seleccionar habilidad...</option>
+                                {availableSkills.map(skill => (
+                                    <option key={skill.id} value={skill.id}>
+                                        {skill.name} {skill.category && `(${skill.category})`}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        {availableSkills.length === 0 && !loadingSkills && (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                No hay habilidades disponibles o todas ya están asignadas.
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Nivel Requerido */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-slate-700 dark:text-white text-sm font-bold">
+                            Nivel Requerido *
+                        </label>
+                        <div className="grid grid-cols-5 gap-2">
+                            {[1, 2, 3, 4, 5].map(level => (
+                                <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => setRequirementForm(prev => ({ ...prev, requiredLevel: level }))}
+                                    className={`
+                                        p-3 rounded-xl border text-center transition-all
+                                        ${requirementForm.requiredLevel === level
+                                            ? 'border-primary bg-primary/10 text-primary'
+                                            : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
+                                        }
+                                    `}
+                                >
+                                    <p className="text-lg font-bold">{level}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        {getLevelLabel(level)}
+                                    </p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Es Obligatorio */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-slate-700 dark:text-white text-sm font-bold">
+                            Tipo de Requisito
+                        </label>
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setRequirementForm(prev => ({ ...prev, isMandatory: true }))}
+                                className={`
+                                    flex-1 p-4 rounded-xl border text-center transition-all
+                                    ${requirementForm.isMandatory
+                                        ? 'border-rose-500 bg-rose-50 dark:bg-rose-500/10'
+                                        : 'border-slate-200 dark:border-[#233948] hover:border-rose-500/50'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center justify-center gap-2 mb-1">
+                                    <div className={`h-2 w-2 rounded-full ${requirementForm.isMandatory ? 'bg-rose-500' : 'bg-slate-300'}`} />
+                                    <p className={`font-bold ${requirementForm.isMandatory ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                                        Obligatorio
+                                    </p>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    El candidato debe tenerla
+                                </p>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setRequirementForm(prev => ({ ...prev, isMandatory: false }))}
+                                className={`
+                                    flex-1 p-4 rounded-xl border text-center transition-all
+                                    ${!requirementForm.isMandatory
+                                        ? 'border-slate-500 bg-slate-50 dark:bg-slate-500/10'
+                                        : 'border-slate-200 dark:border-[#233948] hover:border-slate-500/50'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center justify-center gap-2 mb-1">
+                                    <div className={`h-2 w-2 rounded-full ${!requirementForm.isMandatory ? 'bg-slate-500' : 'bg-slate-300'}`} />
+                                    <p className={`font-bold ${!requirementForm.isMandatory ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        Opcional
+                                    </p>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    Deseable pero no excluyente
+                                </p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

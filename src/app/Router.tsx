@@ -16,6 +16,7 @@ import {
     OrganizationsPage,
     UsersPage,
     AgentsPage,
+    ProfilePage,
 } from '../features';
 
 // Placeholder pages for routes not yet implemented
@@ -62,7 +63,7 @@ export const AppRouter: React.FC = () => {
                             <Route path={ROUTES.ROLES} element={<PlaceholderPage title="Gestión de Roles" />} />
                             
                             {/* User */}
-                            <Route path={ROUTES.PROFILE} element={<PlaceholderPage title="Mi Perfil" />} />
+                            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
                         </Route>
 
                         {/* Fallback */}

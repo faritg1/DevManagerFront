@@ -23,7 +23,7 @@ import {
   Modal,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
-import { useNotification } from "../../../shared/context";
+import { useNotification, useConfig } from "../../../shared/context";
 import { ROUTES } from "../../../shared/config/constants";
 import { projectsService, skillsService } from "../../../shared/api";
 import {
@@ -49,32 +49,11 @@ const formatDateForInput = (dateString: string | null): string => {
   return new Date(dateString).toISOString().split("T")[0];
 };
 
-const getStatusLabel = (status: ProjectStatus): string => {
-  const labels: Record<ProjectStatus, string> = {
-    [ProjectStatus.Draft]: "Borrador",
-    [ProjectStatus.Active]: "Activo",
-    [ProjectStatus.OnHold]: "En Pausa",
-    [ProjectStatus.Completed]: "Completado",
-    [ProjectStatus.Cancelled]: "Cancelado",
-  };
-  return labels[status] || "Desconocido";
-};
-
-const getLevelLabel = (level: number): string => {
-  const levels: Record<number, string> = {
-    1: "Básico",
-    2: "Intermedio",
-    3: "Competente",
-    4: "Avanzado",
-    5: "Experto",
-  };
-  return levels[level] || `Nivel ${level}`;
-};
-
 export const EditProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showNotification } = useNotification();
+  const { catalogs } = useConfig();
   const addSkillModal = useModal();
 
   const [project, setProject] = useState<ProjectResponse | null>(null);
@@ -90,6 +69,14 @@ export const EditProjectPage: React.FC = () => {
   const [newSkillId, setNewSkillId] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("3");
   const [newSkillMandatory, setNewSkillMandatory] = useState(true);
+
+  const getStatusLabel = (statusId: number) => {
+    return catalogs?.projectStatuses.find(s => s.id === statusId)?.name || "Desconocido";
+  };
+
+  const getLevelLabel = (levelId: number) => {
+    return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
+  };
 
   // Estado del formulario - se inicializa con valores vacíos y se actualiza cuando llega el proyecto
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -352,11 +339,9 @@ export const EditProjectPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 >
-                  {Object.values(ProjectStatus)
-                    .filter((v) => typeof v === "number")
-                    .map((status) => (
-                      <option key={status} value={status}>
-                        {getStatusLabel(status as ProjectStatus)}
+                  {catalogs?.projectStatuses.map((status) => (
+                      <option key={status.id} value={status.id}>
+                        {status.name}
                       </option>
                     ))}
                 </select>
@@ -411,9 +396,11 @@ export const EditProjectPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 >
-                  <option value="0">Baja</option>
-                  <option value="1">Media</option>
-                  <option value="2">Alta</option>
+                  {catalogs?.complexityLevels.map((level) => (
+                    <option key={level.id} value={level.id}>
+                      {level.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <Input
@@ -563,11 +550,11 @@ export const EditProjectPage: React.FC = () => {
               onChange={(e) => setNewSkillLevel(e.target.value)}
               className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
             >
-              <option value="1">1 - Básico</option>
-              <option value="2">2 - Intermedio</option>
-              <option value="3">3 - Competente</option>
-              <option value="4">4 - Avanzado</option>
-              <option value="5">5 - Experto</option>
+              {catalogs?.skillLevels.map((level) => (
+                <option key={level.id} value={level.id}>
+                  {level.id} - {level.name}
+                </option>
+              ))}
             </select>
           </div>
 

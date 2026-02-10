@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Info, Users, Save, X, Calendar, DollarSign, Loader2 } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle } from '../../../shared/ui';
 import { useForm } from '../../../shared/hooks';
-import { useNotification } from '../../../shared/context';
+import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectComplexity } from '../../../shared/api/types';
@@ -21,6 +21,7 @@ interface ProjectFormData {
 export const CreateProjectPage: React.FC = () => {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+    const { catalogs } = useConfig();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const { values, handleChange, handleBlur } = useForm<ProjectFormData>({
@@ -176,9 +177,11 @@ export const CreateProjectPage: React.FC = () => {
                                     onChange={handleChange as React.ChangeEventHandler<HTMLSelectElement>}
                                     className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 >
-                                    <option value="0">Baja</option>
-                                    <option value="1">Media</option>
-                                    <option value="2">Alta</option>
+                                    {catalogs?.complexityLevels.map(level => (
+                                        <option key={level.id} value={level.id}>
+                                            {level.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <Input

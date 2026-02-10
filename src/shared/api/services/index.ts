@@ -12,3 +12,4 @@ export { projectsService } from "./projectsService";
 export { applicationsService } from "./applicationsService";
 export { assignmentsService } from "./assignmentsService";
 export { agentService } from "./agentService";
+export { configService } from "./config.service";

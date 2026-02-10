@@ -21,7 +21,7 @@ import {
 import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Input } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, skillsService } from '../../../shared/api';
-import { useNotification } from '../../../shared/context';
+import { useNotification, useConfig } from '../../../shared/context';
 import { useModal } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
@@ -35,60 +35,6 @@ import {
 } from '../../../shared/api/types';
 
 // Helpers
-const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string; icon: React.ReactNode } => {
-    switch (status) {
-        case ProjectStatus.Active:
-            return { variant: 'success', label: 'Activo', icon: <CheckCircle2 size={16} /> };
-        case ProjectStatus.Draft:
-            return { variant: 'default', label: 'Borrador', icon: <FileText size={16} /> };
-        case ProjectStatus.OnHold:
-            return { variant: 'warning', label: 'En Pausa', icon: <Clock size={16} /> };
-        case ProjectStatus.Completed:
-            return { variant: 'info', label: 'Completado', icon: <CheckCircle2 size={16} /> };
-        case ProjectStatus.Cancelled:
-            return { variant: 'danger', label: 'Cancelado', icon: <XCircle size={16} /> };
-        default:
-            return { variant: 'default', label: 'Desconocido', icon: null };
-    }
-};
-
-const getComplexityConfig = (complexity: ProjectComplexity): { variant: 'success' | 'warning' | 'danger'; label: string } => {
-    switch (complexity) {
-        case ProjectComplexity.Low:
-            return { variant: 'success', label: 'Baja' };
-        case ProjectComplexity.Medium:
-            return { variant: 'warning', label: 'Media' };
-        case ProjectComplexity.High:
-            return { variant: 'danger', label: 'Alta' };
-        default:
-            return { variant: 'success', label: 'Baja' };
-    }
-};
-
-const getApplicationStatusConfig = (status: ApplicationStatus): { variant: 'success' | 'warning' | 'danger'; label: string } => {
-    switch (status) {
-        case ApplicationStatus.Pending:
-            return { variant: 'warning', label: 'Pendiente' };
-        case ApplicationStatus.Approved:
-            return { variant: 'success', label: 'Aprobada' };
-        case ApplicationStatus.Rejected:
-            return { variant: 'danger', label: 'Rechazada' };
-        default:
-            return { variant: 'warning', label: 'Pendiente' };
-    }
-};
-
-const getLevelLabel = (level: number): string => {
-    const levels: Record<number, string> = {
-        1: 'Básico',
-        2: 'Intermedio', 
-        3: 'Competente',
-        4: 'Avanzado',
-        5: 'Experto'
-    };
-    return levels[level] || `Nivel ${level}`;
-};
-
 const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Sin definir';
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -142,6 +88,79 @@ export const ProjectDetailPage: React.FC = () => {
         requiredLevel: 3,
         isMandatory: true
     });
+    
+    const { catalogs } = useConfig();
+
+    const getStatusConfig = (status: number) => {
+        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name || 'Desconocido';
+        // Keep hardcoded variants for now as backend doesn't provide them
+        let variant: 'success' | 'warning' | 'danger' | 'info' | 'default' = 'default';
+        let icon = null;
+        
+        switch (status) {
+            case ProjectStatus.Active:
+                variant = 'success';
+                icon = <CheckCircle2 size={16} />;
+                break;
+            case ProjectStatus.Draft:
+                variant = 'default';
+                icon = <FileText size={16} />;
+                break;
+            case ProjectStatus.OnHold:
+                variant = 'warning';
+                icon = <Clock size={16} />;
+                break;
+            case ProjectStatus.Completed:
+                variant = 'info';
+                icon = <CheckCircle2 size={16} />;
+                break;
+            case ProjectStatus.Cancelled:
+                variant = 'danger';
+                icon = <XCircle size={16} />;
+                break;
+        }
+        return { variant, label, icon };
+    };
+
+    const getComplexityConfig = (complexity: number) => {
+        const label = catalogs?.complexityLevels.find(c => c.id === complexity)?.name || 'Desconocido';
+        let variant: 'success' | 'warning' | 'danger' = 'success';
+        
+        switch (complexity) {
+            case ProjectComplexity.Low:
+                variant = 'success';
+                break;
+            case ProjectComplexity.Medium:
+                variant = 'warning';
+                break;
+            case ProjectComplexity.High:
+                variant = 'danger';
+                break;
+        }
+        return { variant, label };
+    };
+    
+    const getApplicationStatusConfig = (status: number) => {
+        const label = catalogs?.applicationStatuses.find(s => s.id === status)?.name || 'Desconocido';
+        let variant: 'success' | 'warning' | 'danger' = 'warning';
+        
+        switch (status) {
+            case ApplicationStatus.Pending:
+                variant = 'warning';
+                break;
+            case ApplicationStatus.Approved:
+                variant = 'success';
+                break;
+            case ApplicationStatus.Rejected:
+                variant = 'danger';
+                break;
+        }
+        return { variant, label };
+    };
+
+    const getLevelLabel = (level: number) => {
+        return catalogs?.skillLevels.find(l => l.id === level)?.name || `Nivel ${level}`;
+    };
 
     useEffect(() => {
         if (!id) return;
@@ -650,22 +669,22 @@ export const ProjectDetailPage: React.FC = () => {
                             Nivel Requerido *
                         </label>
                         <div className="grid grid-cols-5 gap-2">
-                            {[1, 2, 3, 4, 5].map(level => (
+                            {catalogs?.skillLevels.map(level => (
                                 <button
-                                    key={level}
+                                    key={level.id}
                                     type="button"
-                                    onClick={() => setRequirementForm(prev => ({ ...prev, requiredLevel: level }))}
+                                    onClick={() => setRequirementForm(prev => ({ ...prev, requiredLevel: level.id }))}
                                     className={`
                                         p-3 rounded-xl border text-center transition-all
-                                        ${requirementForm.requiredLevel === level
+                                        ${requirementForm.requiredLevel === level.id
                                             ? 'border-primary bg-primary/10 text-primary'
                                             : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
                                         }
                                     `}
                                 >
-                                    <p className="text-lg font-bold">{level}</p>
+                                    <p className="text-lg font-bold">{level.id}</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {getLevelLabel(level)}
+                                        {level.name}
                                     </p>
                                 </button>
                             ))}

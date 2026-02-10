@@ -23,4 +23,5 @@ export {
   applicationsService,
   assignmentsService,
   agentService,
+  configService,
 } from "./services";

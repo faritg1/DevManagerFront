@@ -296,6 +296,69 @@ export interface ValidateSkillAIResponse {
   recommendations: string[];
 }
 
+// ============ CONFIGURATION (CATALOGS) ============
+
+export interface ConfigItemDto {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+export interface ProjectStatusDto extends ConfigItemDto {
+  allowsApplications: boolean;
+}
+
+export interface ProjectComplexityLevelDto extends ConfigItemDto {
+  experienceMultiplier: number;
+}
+
+export interface ApplicationStatusDto extends ConfigItemDto {
+  requiresReviewNotes: boolean;
+  isFinalState: boolean;
+}
+
+export interface AssignmentStatusDto extends ConfigItemDto {}
+
+export interface SkillLevelDto extends ConfigItemDto {}
+
+export interface ContributionScoreDto extends ConfigItemDto {}
+
+export interface EvaluationSourceDto extends ConfigItemDto {}
+
+export interface SkillTypeDto extends ConfigItemDto {}
+
+export interface SkillCategoryDto extends ConfigItemDto {
+  parentCategoryId: number | null;
+  parentCategoryName: string | null;
+}
+
+export interface AgentActionTypeDto extends ConfigItemDto {}
+
+export interface AgentActionStatusDto extends ConfigItemDto {}
+
+export interface SeniorityLevelDto extends ConfigItemDto {
+  minYearsExperience: number;
+  maxYearsExperience: number | null;
+}
+
+export interface AllConfigCatalogsDto {
+  projectStatuses: ProjectStatusDto[];
+  complexityLevels: ProjectComplexityLevelDto[];
+  applicationStatuses: ApplicationStatusDto[];
+  assignmentStatuses: AssignmentStatusDto[];
+  skillLevels: SkillLevelDto[];
+  contributionScores: ContributionScoreDto[];
+  evaluationSources: EvaluationSourceDto[];
+  skillTypes: SkillTypeDto[];
+  skillCategories: SkillCategoryDto[];
+  agentActionTypes: AgentActionTypeDto[];
+  agentActionStatuses: AgentActionStatusDto[];
+  seniorityLevels: SeniorityLevelDto[];
+}
+
 export interface MatchCandidatesRequest {
   projectId: string;
   requireApproval?: boolean;

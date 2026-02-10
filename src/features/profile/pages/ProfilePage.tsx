@@ -18,7 +18,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, Badge, Button, Input, Avatar, Modal } from '../../../shared/ui';
-import { useAuth, useNotification } from '../../../shared/context';
+import { useAuth, useNotification, useConfig } from '../../../shared/context';
 import { useModal } from '../../../shared/hooks';
 import { profileService, skillsService } from '../../../shared/api';
 import type { 
@@ -30,17 +30,6 @@ import type {
 } from '../../../shared/api/types';
 
 // Helpers
-const getLevelLabel = (level: number): string => {
-    const levels: Record<number, string> = {
-        1: 'Básico',
-        2: 'Intermedio', 
-        3: 'Competente',
-        4: 'Avanzado',
-        5: 'Experto'
-    };
-    return levels[level] || `Nivel ${level}`;
-};
-
 const getLevelColor = (level: number): string => {
     if (level >= 5) return 'text-purple-500';
     if (level >= 4) return 'text-blue-500';
@@ -60,6 +49,7 @@ const getLevelBg = (level: number): string => {
 export const ProfilePage: React.FC = () => {
     const { user } = useAuth();
     const { showNotification } = useNotification();
+    const { catalogs } = useConfig();
     
     // Profile state
     const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -82,6 +72,10 @@ export const ProfilePage: React.FC = () => {
         level: 3,
         evidenceUrl: ''
     });
+
+    const getLevelLabel = (levelId: number) => {
+        return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
+    };
 
     // Cargar perfil
     useEffect(() => {
@@ -518,11 +512,11 @@ export const ProfilePage: React.FC = () => {
                                             
                                             {/* Barra de nivel */}
                                             <div className="flex gap-1 mb-2">
-                                                {[1, 2, 3, 4, 5].map((lvl) => (
+                                                {catalogs?.skillLevels.map((lvl) => (
                                                     <div 
-                                                        key={lvl}
+                                                        key={lvl.id}
                                                         className={`h-1.5 flex-1 rounded-full ${
-                                                            lvl <= skill.level 
+                                                            lvl.id <= skill.level 
                                                                 ? 'bg-primary' 
                                                                 : 'bg-slate-200 dark:bg-slate-700'
                                                         }`}
@@ -612,22 +606,22 @@ export const ProfilePage: React.FC = () => {
                             Nivel de Dominio *
                         </label>
                         <div className="grid grid-cols-5 gap-2">
-                            {[1, 2, 3, 4, 5].map(level => (
+                            {catalogs?.skillLevels.map(level => (
                                 <button
-                                    key={level}
+                                    key={level.id}
                                     type="button"
-                                    onClick={() => setSkillForm(prev => ({ ...prev, level }))}
+                                    onClick={() => setSkillForm(prev => ({ ...prev, level: level.id }))}
                                     className={`
                                         p-3 rounded-xl border text-center transition-all
-                                        ${skillForm.level === level
+                                        ${skillForm.level === level.id
                                             ? 'border-primary bg-primary/10 text-primary'
                                             : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
                                         }
                                     `}
                                 >
-                                    <p className="text-lg font-bold">{level}</p>
+                                    <p className="text-lg font-bold">{level.id}</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {getLevelLabel(level)}
+                                        {level.name}
                                     </p>
                                 </button>
                             ))}

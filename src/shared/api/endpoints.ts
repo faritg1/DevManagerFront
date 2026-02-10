@@ -61,6 +61,23 @@ export const API_ENDPOINTS = {
     APPROVE: (actionId: string) => `/Agent/approve/${actionId}`,
     REJECT: (actionId: string) => `/Agent/reject/${actionId}`,
   },
+
+  // Configuration (Catalogs)
+  CONFIG: {
+    BASE: "/Config",
+    PROJECT_STATUSES: "/Config/project-statuses",
+    COMPLEXITY_LEVELS: "/Config/complexity-levels",
+    APPLICATION_STATUSES: "/Config/application-statuses",
+    ASSIGNMENT_STATUSES: "/Config/assignment-statuses",
+    SKILL_LEVELS: "/Config/skill-levels",
+    CONTRIBUTION_SCORES: "/Config/contribution-scores",
+    EVALUATION_SOURCES: "/Config/evaluation-sources",
+    SKILL_TYPES: "/Config/skill-types",
+    SKILL_CATEGORIES: "/Config/skill-categories",
+    AGENT_ACTION_TYPES: "/Config/agent-action-types",
+    AGENT_ACTION_STATUSES: "/Config/agent-action-statuses",
+    SENIORITY_LEVELS: "/Config/seniority-levels",
+  },
 } as const;
 
 export type ApiEndpoints = typeof API_ENDPOINTS;

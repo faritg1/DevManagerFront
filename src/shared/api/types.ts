@@ -365,33 +365,28 @@ export interface MatchCandidatesRequest {
   minScore?: number;
 }
 
+export interface SkillAlignment {
+  skillName: string;
+  requiredLevel: number;
+  currentLevel: number;
+  isMandatory: boolean;
+  meets: boolean;
+}
+
 export interface CandidateMatch {
   userId: string;
   fullName: string;
+  email: string;
   matchScore: number;
-  matchDetails: {
-    mandatorySkillsMatch: string;
-    optionalSkillsMatch: string;
-    averageSkillLevel: number;
-    yearsExperience: number;
-  };
-  strengths: string[];
-  gaps: string[];
-  recommendation: string;
+  skillAlignments: SkillAlignment[];
+  recommendationReason: string;
 }
 
 export interface MatchCandidatesResponse {
   projectId: string;
   projectName: string;
-  totalCandidates: number;
-  requiresApproval: boolean;
-  actionId: string | null;
   candidates: CandidateMatch[];
-  summary: {
-    bestMatch: string;
-    averageScore: number;
-    candidatesAbove90: number;
-  };
+  analysisNarrative: string;
 }
 
 export interface RejectActionRequest {

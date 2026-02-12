@@ -16,11 +16,17 @@ import {
     Clock,
     FileText,
     DollarSign,
-    Plus
+    Plus,
+    Sparkles,
+    Star,
+    TrendingUp,
+    TrendingDown,
+    Award,
+    RefreshCw
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Input } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
-import { projectsService, skillsService } from '../../../shared/api';
+import { projectsService, skillsService, applicationsService, agentService } from '../../../shared/api';
 import { useNotification, useConfig } from '../../../shared/context';
 import { useModal } from '../../../shared/hooks';
 import { 
@@ -31,7 +37,9 @@ import {
     type SkillRequirementResponse,
     type ApplicationResponse,
     type SkillDto,
-    type AddSkillRequirementRequest
+    type AddSkillRequirementRequest,
+    type MatchCandidatesResponse,
+    type CandidateMatch
 } from '../../../shared/api/types';
 
 // Helpers
@@ -88,6 +96,19 @@ export const ProjectDetailPage: React.FC = () => {
         requiredLevel: 3,
         isMandatory: true
     });
+
+    // Modal para revisar postulación
+    const reviewModal = useModal();
+    const [selectedApplication, setSelectedApplication] = useState<ApplicationResponse | null>(null);
+    const [reviewAction, setReviewAction] = useState<'approve' | 'reject'>('approve');
+    const [reviewNotes, setReviewNotes] = useState('');
+    const [isReviewing, setIsReviewing] = useState(false);
+
+    // Modal para matching IA de candidatos
+    const matchingModal = useModal();
+    const [matchingResults, setMatchingResults] = useState<MatchCandidatesResponse | null>(null);
+    const [isMatching, setIsMatching] = useState(false);
+    const [minMatchScore, setMinMatchScore] = useState(70);
     
     const { catalogs } = useConfig();
 
@@ -307,6 +328,145 @@ export const ProjectDetailPage: React.FC = () => {
         }
     };
 
+    // Abrir modal de review
+    const handleOpenReviewModal = (app: ApplicationResponse, action: 'approve' | 'reject') => {
+        setSelectedApplication(app);
+        setReviewAction(action);
+        setReviewNotes('');
+        reviewModal.open();
+    };
+
+    // Procesar review de postulación
+    const handleSubmitReview = async () => {
+        if (!selectedApplication) return;
+
+        setIsReviewing(true);
+        try {
+            const status = reviewAction === 'approve' 
+                ? ApplicationStatus.Approved 
+                : ApplicationStatus.Rejected;
+
+            const response = await applicationsService.review(selectedApplication.id, {
+                status,
+                reviewNotes: reviewNotes.trim() || null
+            });
+
+            if (response.success) {
+                showNotification({
+                    type: 'success',
+                    message: reviewAction === 'approve' 
+                        ? `Postulación de ${selectedApplication.userFullName} aprobada`
+                        : `Postulación de ${selectedApplication.userFullName} rechazada`
+                });
+                reviewModal.close();
+
+                // Actualizar lista de postulaciones
+                setApplications(prev => prev.map(app => 
+                    app.id === selectedApplication.id 
+                        ? { ...app, status, statusName: status === ApplicationStatus.Approved ? 'Aprobada' : 'Rechazada' }
+                        : app
+                ));
+            } else {
+                showNotification({
+                    type: 'error',
+                    message: response.message || 'Error al procesar la postulación'
+                });
+            }
+        } catch (err) {
+            console.error('Error reviewing application:', err);
+            showNotification({
+                type: 'error',
+                message: 'Error de conexión al procesar la postulación'
+            });
+        } finally {
+            setIsReviewing(false);
+        }
+    };
+
+    // Estado para error de matching
+    const [matchingError, setMatchingError] = useState<string | null>(null);
+
+    // Buscar candidatos con IA
+    const handleMatchCandidates = async () => {
+        if (!id) return;
+
+        setIsMatching(true);
+        setMatchingResults(null);
+        setMatchingError(null);
+        matchingModal.open();
+
+        try {
+            const response = await agentService.matchCandidates({
+                projectId: id,
+                minScore: minMatchScore,
+                requireApproval: false
+            });
+
+            if (response.success && response.data) {
+                setMatchingResults(response.data);
+                if (response.data.candidates.length === 0) {
+                    showNotification({
+                        type: 'warning',
+                        message: 'No se encontraron candidatos que cumplan el puntaje mínimo'
+                    });
+                }
+            } else {
+                // Detectar error de servidor saturado
+                const errorMsg = response.message || 'Error al buscar candidatos';
+                const isServerOverloaded = errorMsg.includes('interno') || 
+                    errorMsg.includes('INTERNAL_ERROR') ||
+                    errorMsg.includes('saturado');
+                
+                setMatchingError(isServerOverloaded 
+                    ? 'El servidor está procesando muchas solicitudes. Por favor, intenta nuevamente en unos segundos.'
+                    : errorMsg
+                );
+            }
+        } catch (err: unknown) {
+            console.error('Error matching candidates:', err);
+            // Detectar timeout o error de red
+            const errorMessage = err instanceof Error ? err.message : '';
+            const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('ECONNABORTED');
+            const isNetworkError = errorMessage.includes('Network') || errorMessage.includes('ECONNREFUSED');
+            
+            if (isTimeout) {
+                setMatchingError('El análisis está tomando más tiempo del esperado. El servidor puede estar sobrecargado. Intenta nuevamente en unos momentos.');
+            } else if (isNetworkError) {
+                setMatchingError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+            } else {
+                setMatchingError('Error al conectar con el agente IA. Por favor, intenta nuevamente.');
+            }
+        } finally {
+            setIsMatching(false);
+        }
+    };
+
+    // Helpers para calcular estadísticas de candidatos
+    const getCandidateStats = () => {
+        if (!matchingResults) return { total: 0, above90: 0, avgScore: 0, bestMatch: null };
+        const candidates = matchingResults.candidates;
+        const total = candidates.length;
+        const above90 = candidates.filter(c => c.matchScore >= 90).length;
+        const avgScore = total > 0 ? candidates.reduce((acc, c) => acc + c.matchScore, 0) / total : 0;
+        const bestMatch = candidates.length > 0 ? candidates[0] : null;
+        return { total, above90, avgScore, bestMatch };
+    };
+
+    // Helper para color de score
+    const getScoreColor = (score: number): string => {
+        if (score >= 90) return 'text-emerald-500';
+        if (score >= 70) return 'text-blue-500';
+        if (score >= 50) return 'text-amber-500';
+        return 'text-rose-500';
+    };
+
+    const getScoreBg = (score: number): string => {
+        if (score >= 90) return 'bg-emerald-50 dark:bg-emerald-500/10';
+        if (score >= 70) return 'bg-blue-50 dark:bg-blue-500/10';
+        if (score >= 50) return 'bg-amber-50 dark:bg-amber-500/10';
+        return 'bg-rose-50 dark:bg-rose-500/10';
+    };
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full py-20">
@@ -383,13 +543,21 @@ export const ProjectDetailPage: React.FC = () => {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
                                 <Button 
                                     variant="outline" 
                                     icon={Edit}
                                     onClick={() => navigate(`/projects/${id}/edit`)}
                                 >
                                     Editar
+                                </Button>
+                                <Button 
+                                    variant="outline"
+                                    icon={Sparkles}
+                                    onClick={handleMatchCandidates}
+                                    className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                                >
+                                    Buscar Candidatos IA
                                 </Button>
                                 <Button 
                                     icon={UserPlus}
@@ -578,10 +746,12 @@ export const ProjectDetailPage: React.FC = () => {
                             <div className="space-y-3">
                                 {applications.map((app) => {
                                     const appStatusConfig = getApplicationStatusConfig(app.status);
+                                    const isPending = app.status === ApplicationStatus.Pending;
+                                    
                                     return (
                                         <div 
                                             key={app.id}
-                                            className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]"
+                                            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] gap-3"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Avatar 
@@ -594,12 +764,39 @@ export const ProjectDetailPage: React.FC = () => {
                                                     </p>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400">
                                                         {new Date(app.appliedAt).toLocaleDateString('es-ES')}
+                                                        {app.message && (
+                                                            <span className="ml-2 text-slate-400">• "{app.message}"</span>
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Badge variant={appStatusConfig.variant}>
-                                                {appStatusConfig.label}
-                                            </Badge>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                {isPending ? (
+                                                    <>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            icon={XCircle}
+                                                            onClick={() => handleOpenReviewModal(app, 'reject')}
+                                                            className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-rose-200 dark:border-rose-500/30"
+                                                        >
+                                                            Rechazar
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            icon={CheckCircle2}
+                                                            onClick={() => handleOpenReviewModal(app, 'approve')}
+                                                        >
+                                                            Aprobar
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <Badge variant={appStatusConfig.variant}>
+                                                        {appStatusConfig.label}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -741,6 +938,356 @@ export const ProjectDetailPage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            </Modal>
+
+            {/* Modal Revisar Postulación */}
+            <Modal
+                isOpen={reviewModal.isOpen}
+                onClose={reviewModal.close}
+                title={reviewAction === 'approve' ? 'Aprobar Postulación' : 'Rechazar Postulación'}
+                icon={reviewAction === 'approve' 
+                    ? <CheckCircle2 className="text-emerald-500" size={20} />
+                    : <XCircle className="text-rose-500" size={20} />
+                }
+                size="md"
+                footer={
+                    <>
+                        <Button
+                            onClick={handleSubmitReview}
+                            disabled={isReviewing || (reviewAction === 'reject' && !reviewNotes.trim())}
+                            icon={isReviewing ? Loader2 : (reviewAction === 'approve' ? CheckCircle2 : XCircle)}
+                            className={reviewAction === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : ''}
+                        >
+                            {isReviewing 
+                                ? 'Procesando...' 
+                                : (reviewAction === 'approve' ? 'Aprobar' : 'Rechazar')
+                            }
+                        </Button>
+                        <Button variant="outline" onClick={reviewModal.close}>
+                            Cancelar
+                        </Button>
+                    </>
+                }
+            >
+                {selectedApplication && (
+                    <div className="space-y-5">
+                        {/* Información del postulante */}
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                            <Avatar name={selectedApplication.userFullName} size="lg" />
+                            <div>
+                                <p className="font-bold text-slate-900 dark:text-white text-lg">
+                                    {selectedApplication.userFullName}
+                                </p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Postulado el {new Date(selectedApplication.appliedAt).toLocaleDateString('es-ES', {
+                                        day: '2-digit',
+                                        month: 'long',
+                                        year: 'numeric'
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Mensaje del postulante */}
+                        {selectedApplication.message && (
+                            <div>
+                                <label className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
+                                    Mensaje del postulante
+                                </label>
+                                <p className="p-3 rounded-xl bg-slate-100 dark:bg-[#0d1419] text-slate-700 dark:text-slate-300 text-sm italic">
+                                    "{selectedApplication.message}"
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Confirmación */}
+                        <div className={`p-4 rounded-xl border ${
+                            reviewAction === 'approve' 
+                                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' 
+                                : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/30'
+                        }`}>
+                            <p className={`text-sm ${
+                                reviewAction === 'approve' 
+                                    ? 'text-emerald-700 dark:text-emerald-400' 
+                                    : 'text-rose-700 dark:text-rose-400'
+                            }`}>
+                                {reviewAction === 'approve' 
+                                    ? `¿Estás seguro de aprobar la postulación de ${selectedApplication.userFullName}? El candidato será notificado.`
+                                    : `¿Estás seguro de rechazar la postulación de ${selectedApplication.userFullName}? Esta acción no se puede deshacer.`
+                                }
+                            </p>
+                        </div>
+
+                        {/* Notas de revisión */}
+                        <div>
+                            <label className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
+                                Notas de revisión {reviewAction === 'reject' && <span className="text-rose-500">*</span>}
+                            </label>
+                            <textarea
+                                value={reviewNotes}
+                                onChange={(e) => setReviewNotes(e.target.value)}
+                                placeholder={reviewAction === 'approve' 
+                                    ? 'Opcional: Agrega comentarios sobre la aprobación...'
+                                    : 'Obligatorio: Indica el motivo del rechazo...'
+                                }
+                                rows={3}
+                                className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
+                            />
+                            {reviewAction === 'reject' && !reviewNotes.trim() && (
+                                <p className="text-xs text-rose-500 mt-1">
+                                    Las notas son obligatorias para rechazar una postulación
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Modal Matching IA de Candidatos */}
+            <Modal
+                isOpen={matchingModal.isOpen}
+                onClose={matchingModal.close}
+                title="Candidatos Sugeridos por IA"
+                icon={<Sparkles className="text-purple-500" size={20} />}
+                size="lg"
+            >
+                <div className="space-y-6">
+                    {/* Loading */}
+                    {isMatching && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <div className="relative">
+                                <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+                                <Sparkles className="w-5 h-5 text-purple-400 absolute -top-1 -right-1 animate-pulse" />
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-400 mt-4 font-medium">
+                                Analizando perfiles con IA...
+                            </p>
+                            <p className="text-slate-500 dark:text-slate-500 text-sm mt-1">
+                                Esto puede tomar unos segundos
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {!isMatching && matchingError && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <div className="p-4 rounded-full bg-amber-100 dark:bg-amber-500/10 mb-4">
+                                <AlertCircle className="w-10 h-10 text-amber-500" />
+                            </div>
+                            <p className="text-slate-700 dark:text-slate-300 text-center font-medium mb-2">
+                                No se pudo completar el análisis
+                            </p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm text-center max-w-md mb-4">
+                                {matchingError}
+                            </p>
+                            <Button 
+                                variant="primary" 
+                                onClick={() => {
+                                    setMatchingError(null);
+                                    handleMatchCandidates();
+                                }}
+                                icon={RefreshCw}
+                            >
+                                Reintentar
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Results */}
+                    {!isMatching && !matchingError && matchingResults && (() => {
+                        const stats = getCandidateStats();
+                        return (
+                            <>
+                                {/* Summary Cards */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-center">
+                                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                            {stats.total}
+                                        </p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Candidatos</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-center">
+                                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                            {stats.above90}
+                                        </p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Score +90%</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-center">
+                                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                            {stats.avgScore.toFixed(0)}%
+                                        </p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Score Promedio</p>
+                                    </div>
+                                </div>
+
+                                {/* Best Match Highlight */}
+                                {stats.bestMatch && (
+                                    <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-200 dark:border-purple-500/30">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Award className="text-purple-500" size={18} />
+                                            <span className="text-sm font-bold text-purple-600 dark:text-purple-400">Mejor Candidato</span>
+                                        </div>
+                                        <p className="text-slate-700 dark:text-slate-300">
+                                            {stats.bestMatch.fullName} con {stats.bestMatch.matchScore}% de compatibilidad
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Analysis Narrative */}
+                                {matchingResults.analysisNarrative && (
+                                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0d1419] border border-slate-200 dark:border-[#233948]">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Sparkles className="text-purple-500" size={16} />
+                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Análisis de la IA</span>
+                                        </div>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed">
+                                            {matchingResults.analysisNarrative.length > 500 
+                                                ? matchingResults.analysisNarrative.substring(0, 500) + '...'
+                                                : matchingResults.analysisNarrative
+                                            }
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Candidates List */}
+                                {matchingResults.candidates.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-500/10 inline-block mb-4">
+                                            <Users className="w-8 h-8 text-slate-400" />
+                                        </div>
+                                        <p className="text-slate-600 dark:text-slate-400">
+                                            No se encontraron candidatos con score mínimo de {minMatchScore}%
+                                        </p>
+                                        <p className="text-slate-500 dark:text-slate-500 text-sm mt-1">
+                                            Intenta reducir el puntaje mínimo requerido
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                            Ranking de Candidatos ({matchingResults.candidates.length})
+                                        </h4>
+                                        
+                                        {matchingResults.candidates.map((candidate, idx) => {
+                                            const strengths = candidate.skillAlignments.filter(s => s.meets);
+                                            const gaps = candidate.skillAlignments.filter(s => !s.meets);
+                                            const mandatoryMet = candidate.skillAlignments.filter(s => s.isMandatory && s.meets).length;
+                                            const mandatoryTotal = candidate.skillAlignments.filter(s => s.isMandatory).length;
+                                            
+                                            return (
+                                                <div 
+                                                    key={candidate.userId}
+                                                    className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] border border-slate-200 dark:border-[#233948]"
+                                                >
+                                                    {/* Header */}
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="relative">
+                                                                <Avatar name={candidate.fullName} size="md" />
+                                                                {idx === 0 && (
+                                                                    <div className="absolute -top-1 -right-1 p-1 bg-amber-400 rounded-full">
+                                                                        <Star className="w-3 h-3 text-white" fill="white" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900 dark:text-white">
+                                                                    {candidate.fullName}
+                                                                </p>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                                    {candidate.email}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Score */}
+                                                        <div className={`px-4 py-2 rounded-xl ${getScoreBg(candidate.matchScore)}`}>
+                                                            <p className={`text-2xl font-black ${getScoreColor(candidate.matchScore)}`}>
+                                                                {candidate.matchScore}%
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Match Details */}
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="text-sm">
+                                                            <span className="text-slate-500 dark:text-slate-400">Skills Obligatorias:</span>
+                                                            <span className={`ml-2 font-medium ${mandatoryMet === mandatoryTotal ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                                {mandatoryMet}/{mandatoryTotal}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm">
+                                                            <span className="text-slate-500 dark:text-slate-400">Skills Cumplidas:</span>
+                                                            <span className="ml-2 font-medium text-slate-900 dark:text-white">
+                                                                {strengths.length}/{candidate.skillAlignments.length}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Strengths & Gaps */}
+                                                    <div className="grid grid-cols-2 gap-4 mb-3">
+                                                        {strengths.length > 0 && (
+                                                            <div>
+                                                                <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+                                                                    <TrendingUp size={14} />
+                                                                    Fortalezas ({strengths.length})
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {strengths.slice(0, 4).map((s, i) => (
+                                                                        <Badge key={i} variant="success" className="text-xs">
+                                                                            {s.skillName} (Nv.{s.currentLevel})
+                                                                        </Badge>
+                                                                    ))}
+                                                                    {strengths.length > 4 && (
+                                                                        <Badge variant="default" className="text-xs">
+                                                                            +{strengths.length - 4} más
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {gaps.length > 0 && (
+                                                            <div>
+                                                                <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 mb-2">
+                                                                    <TrendingDown size={14} />
+                                                                    Brechas ({gaps.length})
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {gaps.slice(0, 4).map((g, i) => (
+                                                                        <Badge key={i} variant={g.isMandatory ? "error" : "warning"} className="text-xs">
+                                                                            {g.skillName} ({g.currentLevel}/{g.requiredLevel})
+                                                                        </Badge>
+                                                                    ))}
+                                                                    {gaps.length > 4 && (
+                                                                        <Badge variant="default" className="text-xs">
+                                                                            +{gaps.length - 4} más
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Recommendation */}
+                                                    {candidate.recommendationReason && (
+                                                        <details className="group">
+                                                            <summary className="cursor-pointer text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1">
+                                                                💡 Ver recomendación de la IA
+                                                            </summary>
+                                                            <div className="mt-2 p-3 rounded-lg bg-slate-100 dark:bg-[#0d1419] text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                                                {candidate.recommendationReason}
+                                                            </div>
+                                                        </details>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </Modal>
         </div>

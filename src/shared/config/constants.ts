@@ -27,6 +27,7 @@ export const ROUTES = {
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
     ROLES: '/roles',
+    PERMISSIONS: '/permissions',
     
     // Agents (AI Agents)
     AGENTS: '/agents',

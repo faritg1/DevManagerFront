@@ -3,7 +3,7 @@ import { Plus, Bot, Cpu, Activity, MoreHorizontal, Play, Pause, Settings, Send, 
 import { Button, Card, Badge, Avatar, ProgressBar } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService } from '../../../shared/api';
-import type { Agent, AgentStatus } from '../../../shared/types';
+import type { Agent, AgentStatus } from '@entities/agent';
 import type { AgentQueryResponse } from '../../../shared/api/types';
 
 interface ChatMessage {

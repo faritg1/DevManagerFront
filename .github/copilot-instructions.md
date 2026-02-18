@@ -1,182 +1,75 @@
-# DevManager Frontend - AI Coding Instructions
+# DevManager Frontend — Critical AI Instructions
 
-## Project Overview
-DevManager es una plataforma de gestión de talento para proyectos, asignación de recursos y agentes IA. Construido con **React 19 + TypeScript + Vite** usando arquitectura **Feature-Sliced Design (FSD)**.
+## 🎯 Purpose & Principles
+Strict guidelines for an AI agent to generate production-ready code in this **React 19 + TypeScript + Vite** repository, following **Feature-Sliced Design (FSD)**.
 
-## Arquitectura Feature-Sliced Design
+**Non-Negotiable Principles:**
+- **Architecture:** Logic must be decomposed into `app`, `pages`, `widgets`, `features`, `entities`, and `shared`. Cross-imports between features are forbidden.
+- **UI-First & UX-Driven:** Every async action MUST provide user feedback (loading states, optimistic updates, success/error toasts). **Never leave the user guessing.**
+- **React 19 Native:** Use modern hooks (`useActionState`, `useOptimistic`, `use`). No Class components.
+- **Type Safety:** Zero `any`. Use `unknown` if truly uncertain. All props must be explicitly typed.
 
-El proyecto sigue la estructura FSD en `src/`. Ver [ARCHITECTURE.md](../ARCHITECTURE.md) para documentación completa.
+## 🏗️ Architecture: Feature-Sliced Design (FSD)
+**Strict Layer Hierarchy (Imports flow DOWN only):**
 
-```
-src/
-├── app/           # Router, layouts, providers globales
-├── features/      # Módulos de dominio autocontenidos (auth, dashboard, agents, etc.)
-├── widgets/       # Componentes complejos reutilizables (Sidebar, Header)
-└── shared/        # UI atómicos, hooks, api, context, utils, types
-```
+1. **`src/app/`**: Global setup (Router, Providers, global styles).
+2. **`src/pages/`**: Route components. **Composition ONLY**. No business logic here. Assembles Widgets/Features.
+3. **`src/widgets/`**: Composition of multiple features/components (e.g., `Header`, `ProjectGrid`).
+4. **`src/features/`**: User-facing actions that bring value (e.g., `AuthByEmail`, `CreateProject`). Self-contained.
+5. **`src/entities/`**: Business logic & data models (e.g., `User`, `Project`). Defines interfaces and simple API calls.
+6. **`src/shared/`**: Reusable primitives (`@shared/ui`), API clients, and constants.
 
-**Regla de dependencias:** `shared` → `widgets` → `features` → `app` (nunca al revés)
+## 💻 React 19 & TypeScript Rules
+- **State & Actions:**
+  - Use `useActionState` for handling form actions and async state.
+  - Use `useOptimistic` for immediate UI feedback before the server responds.
+  - Use `use` hook for resource reading (promises/context) instead of `useEffect` where possible.
+- **Components:**
+  - Functional components ONLY with named exports (`export const MyComponent`).
+  - No `forwardRef`; pass `ref` as a standard prop.
+- **TypeScript:**
+  - Prefer `interface` for public APIs/Props and `type` for unions/aliases.
+  - Use `const` assertions (`as const`) for enum-like objects.
+  - Avoid object literal props in JSX to prevent re-renders.
 
-## Imports y Aliases
+## 🎨 UI/UX & Feedback (Crucial)
+**Every interaction must feel responsive and polished.**
+- **Loading States:**
+  - Use `Suspense` boundaries with Skeleton loaders for page data.
+  - Use disabled buttons + spinners (from `@shared/ui`) during form submissions (`isPending`).
+- **Feedback:**
+  - Show a **Toast/Notification** upon success or error of an action.
+  - Handle `null` data gracefully (Empty states).
+- **Styling:**
+  - **Use `@shared/ui` primitives first.** Do not reinvent the wheel.
+  - **Dark Mode:** Every Tailwind class must consider `dark:` variant.
+  - **Icons:** Use `lucide-react`. Standard sizes: `size={20}` (inline), `size={24}` (headers).
 
-Usa alias configurados en [vite.config.ts](../vite.config.ts):
-```tsx
-import { Button, Card, Badge } from '@shared/ui';
-import { useModal, useForm } from '@shared/hooks';
-import { ROUTES, PROJECT_STATUS } from '@shared/config/constants';
-import { apiClient, API_ENDPOINTS } from '@shared/api';
-```
+## 🔌 API & AI Integration
+- **Clients:**
+  - `apiClient`: For standard backend (`/api`). Handles auth tokens automatically.
+  - `agentClient`: **STRICTLY** for `/Agent/*` endpoints. No `/api` prefix.
+- **AI Service:** Use `src/shared/services/geminiService.ts`. Ignore root `services/`.
+- **Entities alias:** `@entities` is available (see `vite.config.ts`) — import domain models from `@entities/<model>`.
+- **Data Shape:** Always expect `ApiResponse<T>`.
+  - Validate response success manually (`if (response.success)`).
+  - Do not use Zod (backend handles validation). Trust the `ApiResponse` type.
 
-## Componentes UI Reutilizables
+## 🛠️ Workflow: Adding a Feature
+1. **Model:** Define Types/Interfaces in `src/entities/<model>/`.
+2. **Route:** Add constant to `@shared/config/constants` and update `src/app/Router.tsx`.
+3. **Feature:** Build logic in `src/features/<name>/` using `useActionState`.
+4. **UX Check:** Add loading indicators and success/error handling.
+5. **Export:** Ensure public API is available via `index.ts`.
 
-Usa siempre componentes de [src/shared/ui/](../src/shared/ui/) en lugar de estilos inline:
-```tsx
-// ✅ Correcto
-<Button variant="primary" icon={Plus}>Crear</Button>
-<Card hoverable padding="md"><Badge variant="success" dot>Active</Badge></Card>
+## ⚠️ Forbidden Practices (Zero Tolerance)
+- **NO** hardcoded route strings. Use `ROUTES` constants.
+- **NO** `localStorage` direct access. Use `AuthContext` or `STORAGE_KEYS`.
+- **NO** inline styles. Use Tailwind utility classes.
+- **NO** `useEffect` for basic data fetching. Use React Query or Services.
+- **NO** nesting `pages` inside `features`.
+- **NO** logic inside UI primitives (Keep `shared/ui` dumb).
 
-// ❌ Evitar - No crear estilos de botón/card manualmente
-<button className="bg-primary rounded-xl...">Crear</button>
-```
-
-**Componentes disponibles:** `Button`, `Card`, `Badge`, `Avatar`, `Input`, `Modal`, `ProgressBar`, `StatCard`
-
-## Sistema de Estilos
-
-**Tailwind con dark mode obligatorio** - siempre incluye variantes `dark:`:
-- Fondos: `bg-white dark:bg-[#16222b]` (cards), `dark:bg-[#111b22]` (inputs/sidebar)
-- Bordes: `border-slate-200 dark:border-[#233948]`
-- Texto: `text-slate-900 dark:text-white` (primario), `text-slate-500 dark:text-slate-400` (secundario)
-
-## Rutas y Navegación
-
-**HashRouter** - URLs usan formato `#/path`. Usa constantes de [constants.ts](../src/shared/config/constants.ts):
-```tsx
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@shared/config/constants';
-
-const navigate = useNavigate();
-navigate(ROUTES.DASHBOARD);  // ✅ Usar constantes
-navigate('/dashboard');      // ❌ Evitar strings hardcodeados
-```
-
-## Estado y Contextos
-
-Usa contextos de [src/shared/context/](../src/shared/context/):
-```tsx
-import { useAuth, useNotification } from '@shared/context';
-
-const { user, login, logout } = useAuth();
-const { showNotification } = useNotification();
-```
-
-## API Client (Backend .NET)
-
-**Base URL:** `https://devmanagerapi.runasp.net/api` | **Guía completa:** [API_GUIDE.md](../API_GUIDE.md)
-
-### Servicios por Dominio
-
-```tsx
-import { 
-    authService, 
-    usersService, 
-    projectsService, 
-    skillsService, 
-    profileService,
-    applicationsService,
-    assignmentsService,
-    agentService 
-} from '@shared/api';
-```
-
-### Ejemplos de Uso
-
-```tsx
-// ============ AUTH ============
-await authService.login({ email, password });
-await authService.registerOrganization({ organizationName, adminEmail, adminPassword, adminFullName });
-authService.logout();
-
-// ============ USERS ============
-const { data: users } = await usersService.getAll();
-await usersService.create({ email, password, fullName, roleId });
-await usersService.update(id, { fullName, isActive });
-
-// ============ PROFILE ============
-const { data: profile } = await profileService.getMyProfile();
-await profileService.updateMyProfile({ bio, yearsExperience, linkedinUrl });
-
-// ============ SKILLS ============
-const { data: skills } = await skillsService.getAll();
-await skillsService.upsertEmployeeSkill({ skillId, level: 4, evidenceUrl });
-await skillsService.validateSkill(skillId, { newLevel: 4 });
-
-// ============ PROJECTS ============
-const { data: projects } = await projectsService.getAll(ProjectStatus.Active);
-await projectsService.create({ name, description, complexity: ProjectComplexity.Medium });
-await projectsService.addRequirement(projectId, { skillId, requiredLevel: 4, isMandatory: true });
-await projectsService.apply(projectId, { message: 'Me interesa participar...' });
-
-// ============ APPLICATIONS ============
-await applicationsService.review(applicationId, { status: ApplicationStatus.Approved, reviewNotes });
-
-// ============ ASSIGNMENTS ============
-await assignmentsService.create({ projectId, userId, role: 'Backend Developer', hoursPerWeek: 40 });
-
-// ============ AGENT IA ============
-const { data: answer } = await agentService.query({ query: '¿Cuántos devs con Java 4+?' });
-const { data: candidates } = await agentService.matchCandidates({ projectId, minScore: 70 });
-await agentService.approveAction(actionId);
-```
-
-### Respuesta Estándar del API
-
-```tsx
-interface ApiResponse<T> {
-    success: boolean;
-    message: string | null;
-    data: T;
-    timestamp: string;
-}
-```
-
-### Enums Importantes
-
-```tsx
-// Estados de Proyecto: 0=Draft, 1=Active, 2=OnHold, 3=Completed, 4=Cancelled
-// Complejidad: 0=Low, 1=Medium, 2=High
-// Estado Postulación: 0=Pending, 1=Approved, 2=Rejected
-// Tipo Skill: 0=Global, 1=Organizational
-// Nivel Skill: 1=Básico, 2=Intermedio, 3=Competente, 4=Avanzado, 5=Experto
-```
-
-Los tipos del API están en [src/shared/api/types.ts](../src/shared/api/types.ts).
-
-## Crear Nueva Feature
-
-1. Crear carpeta en `src/features/{nombre}/`
-2. Añadir `pages/`, `components/` según necesidad
-3. Exportar en `src/features/{nombre}/index.ts`
-4. Re-exportar en `src/features/index.ts`
-5. Añadir ruta en [Router.tsx](../src/app/Router.tsx) usando `ROUTES` constante
-
-## Comandos de Desarrollo
-
-```bash
-npm run dev      # Servidor en puerto 3000
-npm run build    # Build producción
-npm run preview  # Preview del build
-```
-
-**Variables de entorno** en `.env.local`:
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_GEMINI_API_KEY=tu_api_key
-```
-
-## Convenciones Clave
-
-- **Iconos:** Lucide React con `size={20}` o `size={24}` - `import { Plus, Users } from 'lucide-react'`
-- **Componentes:** Funcionales tipados `const MyComponent: React.FC = () => {}`
-- **Tipos:** Definir en `src/shared/types/index.ts`, usar tipos existentes como `Agent`, `Project`, `Organization`
-- **Hooks personalizados:** En `src/shared/hooks/` - `useModal`, `useForm`, `useLoading`, `useTheme`
+## 🔧 Debugging
+- Env: `VITE_API_URL`, `VITE_GEMINI_API_KEY`.
+- Use the Network tab to debug `apiClient` issues (interceptors handle logging).

@@ -1,15 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
+/* DEPRECATED: legacy index entry (project now boots from /src/main.tsx via index.html)
+   Use `src/main.tsx` instead. This file preserved only for backward reference.
+*/
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
+// no-op entry (deprecated)
+console.warn('Deprecated root index.tsx - use src/main.tsx');
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);

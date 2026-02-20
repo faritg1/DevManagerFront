@@ -4,6 +4,7 @@ import { rbacService } from "../../../shared/api";
 import { PermissionList } from "../components/PermissionList";
 import { PermissionFormModal } from "../components/PermissionFormModal";
 import { useToast } from "../../../shared/context";
+import { useConfirm } from "../../../shared/hooks";
 
 export const PermissionsPage: React.FC = () => {
   const toast = useToast();
@@ -42,8 +43,13 @@ export const PermissionsPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const { confirm } = useConfirm();
+
   const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de eliminar este permiso?")) return;
+    const ok = await confirm({
+      message: '¿Estás seguro de eliminar este permiso?'
+    });
+    if (!ok) return;
 
     try {
       const response = await rbacService.deletePermission(id);

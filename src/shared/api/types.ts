@@ -80,6 +80,8 @@ export interface UpdateUserRequest {
 }
 
 // ============ PROFILE ============
+export type AvailabilityStatus = 'Available' | 'OpenToOffers' | 'NotAvailable';
+
 export interface ProfileResponse {
   userId: string;
   bio: string | null;
@@ -87,6 +89,12 @@ export interface ProfileResponse {
   linkedinUrl: string | null;
   githubUrl: string | null;
   portfolioUrl: string | null;
+  seniorityLevelId?: number | null;
+  location?: string | null;
+  timezone?: string | null;
+  availability?: AvailabilityStatus | null;
+  preferredTitle?: string | null;
+  hourlyRate?: number | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -97,6 +105,12 @@ export interface UpdateProfileRequest {
   linkedinUrl?: string | null;
   githubUrl?: string | null;
   portfolioUrl?: string | null;
+  seniorityLevelId?: number | null;
+  location?: string | null;
+  timezone?: string | null;
+  availability?: AvailabilityStatus | null;
+  preferredTitle?: string | null;
+  hourlyRate?: number | null;
 }
 
 // ============ SKILLS (CATALOG) ============
@@ -141,6 +155,7 @@ export interface EmployeeSkillResponse {
 }
 
 export interface UpsertEmployeeSkillRequest {
+  id?: string; // optional when updating existing employee skill
   skillId: string;
   level: number;
   evidenceUrl?: string | null;

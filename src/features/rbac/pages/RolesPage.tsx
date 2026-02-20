@@ -5,6 +5,7 @@ import { RoleDto } from "../../../shared/api/types";
 import { RoleList } from "../components/RoleList";
 import { RoleFormModal } from "../components/RoleFormModal";
 import { useToast } from "../../../shared/context";
+import { useConfirm } from "../../../shared/hooks";
 
 export const RolesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,8 +65,13 @@ export const RolesPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const { confirm } = useConfirm();
+
   const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de eliminar este rol?")) return;
+    const ok = await confirm({
+      message: '¿Estás seguro de eliminar este rol?'
+    });
+    if (!ok) return;
 
     try {
       const response = await rbacService.deleteRole(id);

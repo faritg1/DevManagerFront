@@ -18,7 +18,8 @@ import {
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
-import { useAuth } from '../../shared/context';
+import { useAuth, useNotification } from '../../shared/context';
+import { useConfirm } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
 
 interface NavItemProps {
@@ -59,6 +60,18 @@ const NavSection: React.FC<NavSectionProps> = ({ title, children }) => (
 export const Sidebar: React.FC = () => {
     const location = useLocation();
     const { user, logout } = useAuth();
+    const { showNotification } = useNotification();
+    const { confirm } = useConfirm();
+
+    const handleLogout = async () => {
+        const ok = await confirm({
+            message: '¿Estás seguro de que deseas cerrar sesión?'
+        });
+        if (ok) {
+            logout();
+            showNotification({ type: 'success', message: 'Sesión cerrada' });
+        }
+    };
 
     // Función que verifica si una ruta está activa (incluyendo rutas hijas)
     const isActive = (path: string) => {
@@ -150,7 +163,7 @@ export const Sidebar: React.FC = () => {
             <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
                 <button 
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10"
                 >
                     <LogOut size={20} />

@@ -297,6 +297,72 @@ Crea o actualiza el perfil del usuario autenticado (upsert).
 
 ---
 
+### ✅ Certificaciones
+
+El perfil también incluye las certificaciones del empleado. Un endpoint específico permite gestionarlas.
+
+#### GET `/api/certifications/me`
+
+Obtiene todas las certificaciones del usuario autenticado.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cccccccc-0000-0000-0000-000000000005",
+      "userId": "11111111-0000-0000-0000-000000000003",
+      "name": "Microsoft Certified: Azure Developer Associate",
+      "issuer": "Microsoft",
+      "issueDate": "2023-07-10T00:00:00Z",
+      "expirationDate": "2026-07-10T00:00:00Z",
+      "evidenceUrl": "https://www.example.com/certif.pdf"
+    }
+  ]
+}
+```
+
+#### POST `/api/certifications/me`
+
+Crea una nueva certificación para el usuario autenticado.
+
+**Request:**
+```json
+{
+  "name": "AWS Certified Solutions Architect",
+  "issuer": "Amazon",
+  "issueDate": "2025-01-15T00:00:00Z",
+  "expirationDate": "2028-01-15T00:00:00Z",
+  "evidenceUrl": "https://cert.example.com/aws.pdf"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Certificación creada exitosamente",
+  "data": "dddddddd-0000-0000-0000-000000000006"
+}
+```
+
+#### GET `/api/certifications/me/{id}`
+
+Recupera una certificación propia por ID.
+
+#### PUT `/api/certifications/me/{id}`
+
+Actualiza una certificación del usuario.
+
+#### DELETE `/api/certifications/me/{id}`
+
+Elimina (soft delete) una certificación propia.
+
+---
+
+---
+
 ## 🎯 Habilidades (Catálogo)
 
 ### GET `/api/skills`

@@ -24,7 +24,7 @@ import {
     Award,
     RefreshCw
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Input } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Input, LevelSelector } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, skillsService, applicationsService, agentService } from '../../../shared/api';
 import { useNotification, useConfig } from '../../../shared/context';
@@ -865,27 +865,11 @@ export const ProjectDetailPage: React.FC = () => {
                         <label className="text-slate-700 dark:text-white text-sm font-bold">
                             Nivel Requerido *
                         </label>
-                        <div className="grid grid-cols-5 gap-2">
-                            {catalogs?.skillLevels.map(level => (
-                                <button
-                                    key={level.id}
-                                    type="button"
-                                    onClick={() => setRequirementForm(prev => ({ ...prev, requiredLevel: level.id }))}
-                                    className={`
-                                        p-3 rounded-xl border text-center transition-all
-                                        ${requirementForm.requiredLevel === level.id
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
-                                        }
-                                    `}
-                                >
-                                    <p className="text-lg font-bold">{level.id}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {level.name}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
+                        <LevelSelector
+                            levels={catalogs?.skillLevels || []}
+                            selectedId={requirementForm.requiredLevel}
+                            onSelect={(id) => setRequirementForm(prev => ({ ...prev, requiredLevel: id }))}
+                        />
                     </div>
 
                     {/* Es Obligatorio */}

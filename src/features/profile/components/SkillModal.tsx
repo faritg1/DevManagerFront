@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Input } from '../../../shared/ui';
+import { Modal, Button, Input, LevelSelector } from '../../../shared/ui';
 import { Award, Loader2, Link as LinkIcon, Save, Plus } from 'lucide-react';
 import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse } from '../../../shared/api/types';
 
@@ -88,27 +88,11 @@ export const SkillModal: React.FC<Props> = ({
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Nivel de Dominio *
                     </label>
-                    <div className="grid grid-cols-5 gap-2">
-                        {catalogs?.skillLevels.map(level => (
-                            <button
-                                key={level.id}
-                                type="button"
-                                onClick={() => setForm(prev => ({ ...prev, level: level.id }))}
-                                className={`
-                                    p-3 rounded-xl border text-center transition-all
-                                    ${form.level === level.id
-                                        ? 'border-primary bg-primary/10 text-primary'
-                                        : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
-                                    }
-                                `}
-                            >
-                                <p className="text-lg font-bold">{level.id}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {level.name}
-                                </p>
-                            </button>
-                        ))}
-                    </div>
+                    <LevelSelector
+                        levels={catalogs?.skillLevels || []}
+                        selectedId={form.level}
+                        onSelect={(id) => setForm(prev => ({ ...prev, level: id }))}
+                    />
                 </div>
 
                 {/* URL de evidencia */}

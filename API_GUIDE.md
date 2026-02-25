@@ -365,9 +365,252 @@ Elimina (soft delete) una certificación propia.
 
 ## 🎯 Habilidades (Catálogo)
 
-### GET `/api/skills`
+## ⚙️ Configuración / Catálogos
+### GET `/api/config`
+Obtiene todos los catálogos de configuración en una sola llamada (uso para dropdowns iniciales).
 
-Obtiene el catálogo de habilidades (globales + organizacionales).
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "projectStatuses": [
+      { "id": 1, "code": "DRAFT", "name": "Borrador", "description": "Proyecto en creación", "displayOrder": 1, "isActive": true, "allowsApplications": false },
+      { "id": 2, "code": "OPEN", "name": "Abierto", "description": "Aceptando postulaciones", "displayOrder": 2, "isActive": true, "allowsApplications": true }
+    ],
+    "complexityLevels": [
+      { "id": 1, "code": "LOW", "name": "Baja", "description": "Requiere poco esfuerzo", "displayOrder": 1, "isActive": true, "experienceMultiplier": 0.75 },
+      { "id": 2, "code": "MEDIUM", "name": "Media", "description": "Complejidad estándar", "displayOrder": 2, "isActive": true, "experienceMultiplier": 1.0 }
+    ],
+    "applicationStatuses": [
+      { "id": 1, "code": "APPLIED", "name": "Postulado", "description": "Candidato postulado", "displayOrder": 1, "isActive": true, "requiresReviewNotes": false, "isFinalState": false },
+      { "id": 2, "code": "APPROVED", "name": "Aprobado", "description": "Postulación aceptada", "displayOrder": 2, "isActive": true, "requiresReviewNotes": true, "isFinalState": true }
+    ],
+    "assignmentStatuses": [
+      { "id": 1, "code": "ASSIGNED", "name": "Asignado", "description": "Empleado asignado", "displayOrder": 1, "isActive": true, "isFinalState": false }
+    ],
+    "skillLevels": [
+      { "id": 1, "code": "NOVICE", "name": "Novato", "description": "Conocimientos básicos", "displayOrder": 1, "isActive": true, "minYearsExperience": 0 },
+      { "id": 5, "code": "EXPERT", "name": "Experto", "description": "Referencia técnica", "displayOrder": 5, "isActive": true, "minYearsExperience": 7 }
+    ],
+    "contributionScores": [
+      { "id": 1, "code": "LOW", "name": "Bajo", "description": "Contribución mínima", "displayOrder": 1, "isActive": true, "experienceBonus": 0.0 }
+    ],
+    "evaluationSources": [
+      { "id": 1, "code": "SELF", "name": "Autoevaluación", "description": "Declarado por el empleado", "displayOrder": 1, "isActive": true, "isAutomated": false }
+    ],
+    "skillTypes": [
+      { "id": 1, "code": "HARD", "name": "Técnica", "description": "Habilidades técnicas", "displayOrder": 1, "isActive": true }
+    ],
+    "skillCategories": [
+      { "id": 1, "code": "PROGRAMMING", "name": "Lenguajes de Programación", "description": "Categoría principal", "displayOrder": 1, "isActive": true, "parentCategoryId": null, "parentCategoryName": null }
+    ],
+    "agentActionTypes": [
+      { "id": 1, "code": "SKILL_VALIDATION", "name": "Validación de Skill", "description": "Acción automática del agente", "displayOrder": 1, "isActive": true, "requiresApproval": false }
+    ],
+    "agentActionStatuses": [
+      { "id": 1, "code": "SUCCESS", "name": "Exitoso", "description": "Acción completada", "displayOrder": 1, "isActive": true, "isFinalState": true }
+    ],
+    "seniorityLevels": [
+      { "id": 1, "code": "INTERN", "name": "Practicante", "description": "Nivel inicial", "displayOrder": 1, "isActive": true, "minYearsExperience": 0, "maxYearsExperience": 1 },
+      { "id": 7, "code": "ARCHITECT", "name": "Arquitecto", "description": "Máxima seniority técnica", "displayOrder": 7, "isActive": true, "minYearsExperience": 12, "maxYearsExperience": null }
+    ]
+  }
+}
+```
+
+---
+
+### GET `/api/config/project-statuses`
+Listar estados de proyecto (respuesta por catálogo, útil para menús desplegables).
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "code": "DRAFT",
+      "name": "Borrador",
+      "description": "Proyecto en creación",
+      "displayOrder": 1,
+      "isActive": true,
+      "allowsApplications": false
+    },
+    {
+      "id": 2,
+      "code": "OPEN",
+      "name": "Abierto",
+      "description": "Aceptando postulaciones",
+      "displayOrder": 2,
+      "isActive": true,
+      "allowsApplications": true
+    }
+  ]
+}
+```
+
+### GET `/api/config/complexity-levels`
+Listar niveles de complejidad.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "LOW", "name": "Baja", "description": "Requiere poco esfuerzo", "displayOrder": 1, "isActive": true, "experienceMultiplier": 0.75 },
+    { "id": 2, "code": "MEDIUM", "name": "Media", "description": "Complejidad estándar", "displayOrder": 2, "isActive": true, "experienceMultiplier": 1.0 }
+  ]
+}
+```
+
+### GET `/api/config/application-statuses`
+Listar estados de postulación.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "APPLIED", "name": "Postulado", "requiresReviewNotes": false, "isFinalState": false, "displayOrder": 1, "isActive": true },
+    { "id": 2, "code": "APPROVED", "name": "Aprobado", "requiresReviewNotes": true, "isFinalState": true, "displayOrder": 2, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/assignment-statuses`
+Listar estados de asignación.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "ASSIGNED", "name": "Asignado", "isFinalState": false, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/skill-levels`
+Listar niveles de habilidad.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "NOVICE", "name": "Novato", "minYearsExperience": 0, "displayOrder": 1, "isActive": true },
+    { "id": 5, "code": "EXPERT", "name": "Experto", "minYearsExperience": 7, "displayOrder": 5, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/contribution-scores`
+Listar puntajes de contribución.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "LOW", "name": "Bajo", "experienceBonus": 0.0, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/evaluation-sources`
+Listar fuentes de evaluación.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "SELF", "name": "Autoevaluación", "isAutomated": false, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/skill-types`
+Listar tipos de habilidad.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "HARD", "name": "Técnica", "displayOrder": 1, "isActive": true },
+    { "id": 2, "code": "SOFT", "name": "Blanda", "displayOrder": 2, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/skill-categories`
+Listar categorías de habilidad (incluye parent si aplica).
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "PROGRAMMING", "name": "Lenguajes de Programación", "parentCategoryId": null, "parentCategoryName": null, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/agent-action-types`
+Listar tipos de acción del agente.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "SKILL_VALIDATION", "name": "Validación de Skill", "requiresApproval": false, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/agent-action-statuses`
+Listar estados de acción del agente.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "SUCCESS", "name": "Exitoso", "isFinalState": true, "displayOrder": 1, "isActive": true }
+  ]
+}
+```
+
+### GET `/api/config/seniority-levels`
+Listar niveles de seniority.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "INTERN", "name": "Practicante", "minYearsExperience": 0, "maxYearsExperience": 1, "displayOrder": 1, "isActive": true },
+    { "id": 7, "code": "ARCHITECT", "name": "Arquitecto", "minYearsExperience": 12, "maxYearsExperience": null, "displayOrder": 7, "isActive": true }
+  ]
+}
+```
+
+
+
+## 🎯 Habilidades (Catálogo)
+### GET `/api/skills`
+Obtiene el catálogo de habilidades (globales + organizacionales). Filtra automáticamente por `OrganizationId` para skills organizacionales.
+
+Headers:
+- `Authorization: Bearer {token}`
+
+Query params (opcionales):
+- `q` (string): búsqueda por nombre o categoría
+- `skillType` (0|1): filtra por tipo (Global u Organizational)
 
 **Response (200 OK):**
 ```json
@@ -392,19 +635,44 @@ Obtiene el catálogo de habilidades (globales + organizacionales).
 }
 ```
 
-**Tipos de Skill:**
-| Valor | Tipo | Descripción |
-|-------|------|-------------|
-| 0 | Global | Disponible para todas las organizaciones |
-| 1 | Organizational | Específico de la organización |
+Campos devueltos (por item):
+- `id` (GUID)
+- `name` (string)
+- `category` (string?)
+- `skillType` (int): 0 = Global, 1 = Organizational
+- `organizationId` (GUID?): presente si `skillType` = 1
+
+---
+
+### GET `/api/skills/{id}`
+Obtiene una habilidad por su `id`.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "aaaaaaaa-0000-0000-0000-000000000001",
+    "name": "C#",
+    "category": "Backend",
+    "skillType": 0,
+    "organizationId": null
+  }
+}
+```
+
+**Errores:**
+- `404 Not Found` si la skill no existe o no pertenece a la organización.
 
 ---
 
 ### POST `/api/skills`
-
 Crea una nueva habilidad organizacional. Requiere rol Admin o Manager.
 
-**Request:**
+Headers:
+- `Authorization: Bearer {token}`
+
+**Request (application/json):**
 ```json
 {
   "name": "SAP ERP",
@@ -412,6 +680,11 @@ Crea una nueva habilidad organizacional. Requiere rol Admin o Manager.
   "skillType": 1
 }
 ```
+
+Validaciones (DTO - `SkillDto`):
+- `name`: requerido, máximo 120 caracteres, único por organización.
+- `category`: opcional, máximo 80 caracteres.
+- `skillType`: sólo `1` para creación vía API (organisational).
 
 **Response (201 Created):**
 ```json
@@ -422,13 +695,65 @@ Crea una nueva habilidad organizacional. Requiere rol Admin o Manager.
 }
 ```
 
+**Errores:**
+- `400 Bad Request` → payload inválido o validación fallida.
+- `403 Forbidden` → rol insuficiente.
+- `409 Conflict` → nombre duplicado.
+
+---
+
+### PUT `/api/skills/{id}`
+Actualiza datos de una habilidad existente. Requiere rol Admin o Manager.
+
+**Request (application/json):** (mismo `SkillDto`, `id` en ruta debe coincidir con `id` en body)
+```json
+{
+  "id": "cccccccc-0000-0000-0000-000000000001",
+  "name": "SAP ERP",
+  "category": "Sistemas Empresariales",
+  "skillType": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Habilidad actualizada exitosamente"
+}
+```
+
+**Errores:**
+- `400 Bad Request` → `id` discordante o validación.
+- `404 Not Found` → skill no encontrada.
+
+---
+
+### DELETE `/api/skills/{id}`
+Elimina lógicamente una skill (soft delete). Requiere rol Admin o Manager.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Habilidad eliminada"
+}
+```
+
+**Errores:**
+- `404 Not Found` → skill no encontrada.
+
 ---
 
 ## 💼 Habilidades de Empleados
 
-### GET `/api/employees/{id}/skills`
+Endpoints para gestionar las habilidades de un empleado (auto-declaradas y validadas por managers).
 
-Obtiene todas las habilidades de un empleado específico.
+### GET `/api/employees/{id}/skills`
+Obtiene todas las habilidades de un empleado específico (incluye metadata de validación).
+
+Headers:
+- `Authorization: Bearer {token}`
 
 **Response (200 OK):**
 ```json
@@ -450,22 +775,22 @@ Obtiene todas las habilidades de un empleado específico.
 }
 ```
 
-**Niveles de Proficiencia:**
-| Nivel | Descripción |
-|-------|-------------|
-| 1 | Básico - Conocimiento teórico |
-| 2 | Intermedio - Puede trabajar con supervisión |
-| 3 | Competente - Trabajo autónomo |
-| 4 | Avanzado - Puede enseñar a otros |
-| 5 | Experto - Referente técnico |
+Niveles de Proficiencia (valor del campo `level`):
+- `1` Básico
+- `2` Intermedio
+- `3` Competente
+- `4` Avanzado
+- `5` Experto
 
 ---
 
 ### POST `/api/employees/skills`
+Crea o actualiza (upsert) la habilidad del usuario autenticado. `OrganizationId` y `userId` se toman del JWT.
 
-Crea o actualiza una habilidad del usuario autenticado (auto-declaración, upsert).
+Headers:
+- `Authorization: Bearer {token}`
 
-**Request:**
+**Request (application/json) — DTO `UpsertEmployeeSkillRequest`:**
 ```json
 {
   "skillId": "aaaaaaaa-0000-0000-0000-000000000008",
@@ -473,6 +798,11 @@ Crea o actualiza una habilidad del usuario autenticado (auto-declaración, upser
   "evidenceUrl": "https://github.com/myuser/kubernetes-project"
 }
 ```
+
+Validaciones:
+- `skillId`: requerido (GUID) y debe existir en catálogo.
+- `level`: obligatorio, valor entre 1 y 5.
+- `evidenceUrl`: opcional, si se envía debe ser URL válida.
 
 **Response (200 OK):**
 ```json
@@ -482,25 +812,26 @@ Crea o actualiza una habilidad del usuario autenticado (auto-declaración, upser
 }
 ```
 
+Errores:
+- `400 Bad Request`: validación de payload fallida.
+- `404 Not Found`: `skillId` no existe.
+
 ---
 
 ### PUT `/api/employees/skills/{id}/validate`
+Endpoint para que un Manager/Admin valide la habilidad declarada por un empleado.
 
-Valida una habilidad de un empleado. Requiere rol Manager o Admin.
+Headers:
+- `Authorization: Bearer {token}` (requiere rol Manager o Admin)
 
-**Request - Solo validar:**
-```json
-{
-  "newLevel": null
-}
-```
-
-**Request - Validar y ajustar nivel:**
+**Request (application/json) — DTO `ValidateSkillRequest`:**
 ```json
 {
   "newLevel": 3
 }
 ```
+
+- `newLevel`: opcional (null = solo marcar como validada sin cambiar nivel). Si se proporciona, debe estar en 1-5.
 
 **Response (200 OK):**
 ```json
@@ -509,6 +840,11 @@ Valida una habilidad de un empleado. Requiere rol Manager o Admin.
   "message": "Habilidad validada exitosamente"
 }
 ```
+
+Errores:
+- `400 Bad Request`: `newLevel` fuera de rango.
+- `403 Forbidden`: rol insuficiente.
+- `404 Not Found`: skill del empleado no encontrada.
 
 ---
 

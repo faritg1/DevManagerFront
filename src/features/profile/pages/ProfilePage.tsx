@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { Loader2, UserX, Sparkles, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
+import {
+  Loader2,
+  UserX,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  TrendingUp,
+} from "lucide-react";
 import { useAuth, useNotification, useConfig } from "../../../shared/context";
 import { useModal } from "../../../shared/hooks";
 import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
+import { useCertifications } from "../hooks/useCertifications";
 import { agentService } from "../../../shared/api";
 import { Card, Badge, Button, Modal } from "../../../shared/ui";
 import {
@@ -13,6 +21,7 @@ import {
   LinksCard,
   RolesPermissionsCard,
   SkillsSection,
+  CertificationsSection,
   SkillModal,
   RequestRoleModal,
 } from "../components";
@@ -20,6 +29,8 @@ import type {
   EmployeeSkillResponse,
   UpsertEmployeeSkillRequest,
   ValidateSkillAIResponse,
+  CertificationResponse,
+  CreateCertificationRequest,
 } from "../../../shared/api/types";
 
 export const ProfilePage: React.FC = () => {
@@ -30,8 +41,10 @@ export const ProfilePage: React.FC = () => {
   const {
     profile,
     isLoading: isLoadingProfile,
+    error,
     isEditing,
     isSaving,
+    isDeleting,
     profileForm,
     effectivePerms,
     permsLoading,
@@ -43,8 +56,10 @@ export const ProfilePage: React.FC = () => {
     startEditing,
     cancelEditing,
     saveProfile,
+    deleteProfile,
     loadAvailableRoles,
     requestRoleChange,
+    reload,
   } = useProfile();
 
   const {
@@ -58,6 +73,14 @@ export const ProfilePage: React.FC = () => {
     deleteSkill,
   } = useSkills();
 
+  const {
+    certifications,
+    isLoading: isLoadingCerts,
+    opLoading: certOpLoading,
+    saveCertification,
+    deleteCertification,
+  } = useCertifications();
+
   const skillModal = useModal();
   const requestRoleModal = useModal();
   const aiValidationModal = useModal();
@@ -67,8 +90,11 @@ export const ProfilePage: React.FC = () => {
     skillId: "",
     level: 3,
     evidenceUrl: "",
+    experienceDescription: "",
   });
-  const [validatingSkillId, setValidatingSkillId] = useState<string | null>(null);
+  const [validatingSkillId, setValidatingSkillId] = useState<string | null>(
+    null,
+  );
   const [aiValidationResult, setAiValidationResult] = useState<{
     skillName: string;
     level: number;
@@ -77,7 +103,7 @@ export const ProfilePage: React.FC = () => {
 
   const addSkill = async () => {
     setEditingSkill(null);
-    setSkillForm({ skillId: "", level: 3, evidenceUrl: "" });
+    setSkillForm({ skillId: "", level: 3, evidenceUrl: "", experienceDescription: "" });
     // always refresh list when opening
     await fetchAvailableSkills();
     skillModal.open();
@@ -90,6 +116,7 @@ export const ProfilePage: React.FC = () => {
       skillId: skill.skillId,
       level: skill.level,
       evidenceUrl: skill.evidenceUrl || "",
+      experienceDescription: skill.experienceDescription || "",
     });
     skillModal.open();
   };
@@ -183,6 +210,16 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-20 text-center px-4">
+        <AlertTriangle className="w-12 h-12 text-amber-500 mb-4" />
+        <p className="text-slate-700 dark:text-slate-300 mb-4">{error}</p>
+        <Button onClick={reload}>Reintentar</Button>
+      </div>
+    );
+  }
+
   if (!profile && !isEditing && !isLoadingProfile) {
     return (
       <div className="flex flex-col h-full overflow-y-auto w-full items-center justify-center p-6">
@@ -191,7 +228,7 @@ export const ProfilePage: React.FC = () => {
             <UserX className="w-8 h-8 text-slate-400" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-            Perfil no encontrado
+            Tu perfil no se encontró
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-8">
             Aún no has configurado tu perfil profesional. Completalo para
@@ -210,7 +247,7 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="max-w-5xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8 pb-20">
+      <div className="max-w-full w-full mx-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 flex flex-col gap-8 pb-20">
         <ProfileHeader
           userName={user?.name}
           userEmail={user?.email}
@@ -220,25 +257,46 @@ export const ProfilePage: React.FC = () => {
           catalogs={catalogs}
           isEditing={isEditing}
           isSaving={isSaving}
+          isDeleting={isDeleting}
           onStartEdit={startEditing}
           onCancelEdit={cancelEditing}
           onSave={async () => {
-            const ok = await saveProfile();
-            if (ok)
+            const result = await saveProfile();
+            if (result.success) {
               showNotification({
                 type: "success",
-                message: "Perfil actualizado exitosamente",
+                message: result.message || "Perfil actualizado exitosamente",
               });
-            else
+            } else {
               showNotification({
                 type: "error",
-                message: "Error al guardar perfil",
+                message: result.message || "Error al guardar perfil",
               });
+            }
+          }}
+          onDelete={async () => {
+            if (
+              window.confirm(
+                "¿Seguro que deseas eliminar tu perfil? Esta acción no se puede deshacer.",
+              )
+            ) {
+              const ok = await deleteProfile();
+              if (ok)
+                showNotification({
+                  type: "success",
+                  message: "Perfil eliminado",
+                });
+              else
+                showNotification({
+                  type: "error",
+                  message: "Error al eliminar perfil",
+                });
+            }
           }}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
+          <div className="xl:col-span-8 space-y-6">
             <BioCard
               bio={profile?.bio}
               isEditing={isEditing}
@@ -269,7 +327,7 @@ export const ProfilePage: React.FC = () => {
               }}
             />
           </div>
-          <div className="space-y-6">
+          <div className="xl:col-span-4 space-y-6">
             <SkillsSection
               skills={mySkills}
               isLoading={isLoadingSkills}
@@ -280,6 +338,46 @@ export const ProfilePage: React.FC = () => {
               onDelete={removeSkill}
               onValidateAI={handleValidateSkillAI}
               catalogs={catalogs}
+            />
+            <CertificationsSection
+              certifications={certifications}
+              isLoading={isLoadingCerts}
+              opLoading={certOpLoading}
+              onDelete={async (cert) => {
+                if (
+                  !window.confirm(`¿Eliminar la certificación "${cert.name}"?`)
+                )
+                  return;
+                const ok = await deleteCertification(cert);
+                if (ok) {
+                  showNotification({
+                    type: "success",
+                    message: "Certificación eliminada",
+                  });
+                } else {
+                  showNotification({
+                    type: "error",
+                    message: "Error al eliminar certificación",
+                  });
+                }
+              }}
+              onSave={async (payload, id) => {
+                const ok = await saveCertification(payload, id);
+                if (ok) {
+                  showNotification({
+                    type: "success",
+                    message: id
+                      ? "Certificación actualizada"
+                      : "Certificación creada",
+                  });
+                } else {
+                  showNotification({
+                    type: "error",
+                    message: "Error al guardar certificación",
+                  });
+                }
+                return ok;
+              }}
             />
           </div>
         </div>
@@ -325,27 +423,40 @@ export const ProfilePage: React.FC = () => {
         {aiValidationResult && (
           <div className="space-y-5">
             {/* Header con resultado */}
-            <div className={`p-4 rounded-xl border ${
-              aiValidationResult.result.isValid
-                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
-                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
-            }`}>
+            <div
+              className={`p-4 rounded-xl border ${
+                aiValidationResult.result.isValid
+                  ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30"
+                  : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30"
+              }`}
+            >
               <div className="flex items-center gap-3 mb-2">
                 {aiValidationResult.result.isValid ? (
-                  <CheckCircle2 className="text-emerald-500 shrink-0" size={24} />
+                  <CheckCircle2
+                    className="text-emerald-500 shrink-0"
+                    size={24}
+                  />
                 ) : (
-                  <AlertTriangle className="text-amber-500 shrink-0" size={24} />
+                  <AlertTriangle
+                    className="text-amber-500 shrink-0"
+                    size={24}
+                  />
                 )}
                 <div>
                   <h4 className="font-bold text-slate-900 dark:text-white">
-                    {aiValidationResult.skillName} — Nivel {aiValidationResult.level}
+                    {aiValidationResult.skillName} — Nivel{" "}
+                    {aiValidationResult.level}
                   </h4>
-                  <p className={`text-sm font-medium ${
-                    aiValidationResult.result.isValid
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-amber-600 dark:text-amber-400'
-                  }`}>
-                    {aiValidationResult.result.isValid ? 'Nivel validado correctamente' : 'Requiere revisión'}
+                  <p
+                    className={`text-sm font-medium ${
+                      aiValidationResult.result.isValid
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}
+                  >
+                    {aiValidationResult.result.isValid
+                      ? "Nivel validado correctamente"
+                      : "Requiere revisión"}
                   </p>
                 </div>
               </div>
@@ -353,7 +464,9 @@ export const ProfilePage: React.FC = () => {
               {/* Barra de confianza */}
               <div className="mt-3">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-500 dark:text-slate-400">Confianza del análisis</span>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    Confianza del análisis
+                  </span>
                   <span className="font-bold text-slate-700 dark:text-slate-300">
                     {aiValidationResult.result.confidence}%
                   </span>
@@ -362,12 +475,14 @@ export const ProfilePage: React.FC = () => {
                   <div
                     className={`h-full rounded-full transition-all ${
                       aiValidationResult.result.confidence >= 70
-                        ? 'bg-emerald-500'
+                        ? "bg-emerald-500"
                         : aiValidationResult.result.confidence >= 40
-                          ? 'bg-amber-500'
-                          : 'bg-red-500'
+                          ? "bg-amber-500"
+                          : "bg-red-500"
                     }`}
-                    style={{ width: `${aiValidationResult.result.confidence}%` }}
+                    style={{
+                      width: `${aiValidationResult.result.confidence}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -397,7 +512,9 @@ export const ProfilePage: React.FC = () => {
                       key={i}
                       className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0d1419] p-3 rounded-lg border border-slate-200 dark:border-[#233948]"
                     >
-                      <Badge variant="default" className="shrink-0 mt-0.5">{i + 1}</Badge>
+                      <Badge variant="default" className="shrink-0 mt-0.5">
+                        {i + 1}
+                      </Badge>
                       <span>{rec}</span>
                     </li>
                   ))}

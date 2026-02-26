@@ -80,6 +80,8 @@ export interface UpdateUserRequest {
 }
 
 // ============ PROFILE ============
+export type AvailabilityStatus = 'Available' | 'OpenToOffers' | 'NotAvailable';
+
 export interface ProfileResponse {
   userId: string;
   bio: string | null;
@@ -87,6 +89,12 @@ export interface ProfileResponse {
   linkedinUrl: string | null;
   githubUrl: string | null;
   portfolioUrl: string | null;
+  seniorityLevelId?: number | null;
+  location?: string | null;
+  timezone?: string | null;
+  availability?: AvailabilityStatus | null;
+  preferredTitle?: string | null;
+  hourlyRate?: number | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -97,6 +105,12 @@ export interface UpdateProfileRequest {
   linkedinUrl?: string | null;
   githubUrl?: string | null;
   portfolioUrl?: string | null;
+  seniorityLevelId?: number | null;
+  location?: string | null;
+  timezone?: string | null;
+  availability?: AvailabilityStatus | null;
+  preferredTitle?: string | null;
+  hourlyRate?: number | null;
 }
 
 // ============ SKILLS (CATALOG) ============
@@ -141,6 +155,7 @@ export interface EmployeeSkillResponse {
 }
 
 export interface UpsertEmployeeSkillRequest {
+  id?: string; // optional when updating existing employee skill
   skillId: string;
   level: number;
   evidenceUrl?: string | null;
@@ -269,8 +284,8 @@ export interface AgentQueryRequest {
 }
 
 export interface AgentQueryResponse {
-  response: string;           // Backend retorna 'response' (JSON string)
-  reasoningSteps: string;     // Backend retorna 'reasoningSteps'
+  response: string; // Backend retorna 'response' (JSON string)
+  reasoningSteps: string; // Backend retorna 'reasoningSteps'
   toolsExecuted: Array<{
     toolName: string;
     input: string;
@@ -391,4 +406,93 @@ export interface MatchCandidatesResponse {
 
 export interface RejectActionRequest {
   reason: string;
+}
+
+// ============ RBAC (ROLES & PERMISSIONS) ============
+export interface RoleDto {
+  id: string;
+  name: string;
+  description: string | null;
+  permissionCount: number;
+  userCount: number;
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  description?: string | null;
+  permissionIds?: string[] | null;
+}
+
+export interface UpdateRoleRequest {
+  name: string;
+  description?: string | null;
+}
+
+export interface PermissionDto {
+  id: string;
+  code: string; // e.g., "users.read"
+  name: string;
+  module: string;
+  description?: string | null;
+}
+
+export interface CreatePermissionRequest {
+  code: string;
+  name: string;
+  module: string;
+  description?: string | null;
+}
+
+export interface UpdatePermissionRequest {
+  code?: string;
+  name?: string;
+  module?: string;
+  description?: string | null;
+}
+
+export interface PermissionGroupDto {
+  module: string;
+  permissions: PermissionDto[];
+}
+
+export interface RolePermissionsResponse {
+  id: string;
+  name: string;
+  permissions: PermissionDto[];
+}
+
+export interface UpdateRolePermissionsRequest {
+  permissionIds: string[];
+}
+
+export interface AssignRoleRequest {
+  userId: string;
+  roleId: string;
+}
+
+export interface RevokeRoleRequest {
+  userId: string;
+  roleId: string;
+}
+
+export interface AssignPermissionOverrideRequest {
+  userId: string;
+  permissionId: string;
+  isGranted: boolean;
+}
+
+export interface EffectivePermissionsResponse {
+  userId: string;
+  roles: { name: string }[];
+  effectivePermissions: { code: string }[];
+  directOverrides: { permissionCode: string; isGranted: boolean }[];
+}
+
+export interface ValidatePermissionRequest {
+  userId: string;
+  permissionCode: string;
+}
+
+export interface ValidatePermissionResponse {
+  hasPermission: boolean;
 }

@@ -11,13 +11,15 @@ import {
     UserCheck,
     Search,
     Phone,
-    Calendar
+    Calendar,
+    ShieldCheck,
+    Key
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
-import { usersService } from '../../../shared/api';
-import type { UserResponse, CreateUserRequest, UpdateUserRequest } from '../../../shared/api/types';
+import { usersService, rbacService } from '../../../shared/api';
+import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse } from '../../../shared/api/types';
 
 // Helpers
 const formatDate = (dateString: string): string => {
@@ -43,6 +45,8 @@ export const UsersPage: React.FC = () => {
     const createModal = useModal();
     const editModal = useModal();
     const deleteModal = useModal();
+    const rolesModal = useModal();
+    const permissionsModal = useModal();
 
     // Form states
     const [isSaving, setIsSaving] = useState(false);
@@ -55,6 +59,15 @@ export const UsersPage: React.FC = () => {
         phoneNumber: ''
     });
     const [editForm, setEditForm] = useState<UpdateUserRequest>({});
+
+    // Roles & permissions states
+    const [roles, setRoles] = useState<RoleDto[]>([]);
+    const [rolesLoading, setRolesLoading] = useState(false);
+    const [rolesSaving, setRolesSaving] = useState(false);
+    const [userAssignedRoleIds, setUserAssignedRoleIds] = useState<Set<string>>(new Set());
+
+    const [permsLoading, setPermsLoading] = useState(false);
+    const [effectivePerms, setEffectivePerms] = useState<EffectivePermissionsResponse | null>(null);
 
     // Cargar usuarios
     useEffect(() => {
@@ -90,8 +103,46 @@ export const UsersPage: React.FC = () => {
         try {
             const response = await usersService.getAll();
             if (response.success && response.data) {
-                setUsers(response.data);
-                setFilteredUsers(response.data);
+                const usersData = response.data;
+
+                // Detect users missing roleName and try to resolve their primary role via RBAC service
+                const missingRoleUsers = usersData.filter(u => !u.roleName || !u.roleName.trim());
+
+                if (missingRoleUsers.length > 0) {
+                    try {
+                        const lookups = await Promise.allSettled(
+                            missingRoleUsers.map((u) => rbacService.getUserEffectivePermissions(u.id)),
+                        );
+
+                        lookups.forEach((res, idx) => {
+                            if (res.status === 'fulfilled' && res.value.success && res.value.data) {
+                                const effective = res.value.data;
+                                const firstRoleName = effective.roles?.[0]?.name;
+                                const userId = missingRoleUsers[idx].id;
+                                const target = usersData.find(x => x.id === userId);
+                                if (target) {
+                                    target.roleName = firstRoleName || 'Sin rol';
+                                }
+                            } else {
+                                const userId = missingRoleUsers[idx].id;
+                                const target = usersData.find(x => x.id === userId);
+                                if (target) target.roleName = 'Sin rol';
+                            }
+                        });
+                    } catch (err) {
+                        console.warn('RBAC lookup failed for users roleName population', err);
+                        // fallback: mark missing as 'Sin rol'
+                        usersData.forEach(u => {
+                            if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol';
+                        });
+                    }
+                }
+
+                // Ensure all users have a visible roleName
+                usersData.forEach(u => { if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol'; });
+
+                setUsers(usersData);
+                setFilteredUsers(usersData);
             } else {
                 setError(response.message || 'Error al cargar usuarios');
             }
@@ -150,6 +201,57 @@ export const UsersPage: React.FC = () => {
         });
         editModal.open();
         setActiveDropdown(null);
+    };
+
+    // Load roles for Manage Roles modal
+    useEffect(() => {
+        const loadRolesForUser = async () => {
+            if (!rolesModal.isOpen || !selectedUser) return;
+
+            setRolesLoading(true);
+            try {
+                const [rolesResp, effResp] = await Promise.all([
+                    rbacService.getRoles(),
+                    rbacService.getUserEffectivePermissions(selectedUser.id),
+                ]);
+
+                if (rolesResp.success && rolesResp.data) setRoles(rolesResp.data);
+                if (effResp.success && effResp.data) {
+                    const assigned = new Set(effResp.data.roles.map(r => findRoleIdByName(rolesResp.data || [], r.name)).filter(Boolean) as string[]);
+                    setUserAssignedRoleIds(assigned);
+                    setEffectivePerms(effResp.data);
+                }
+            } catch (err) {
+                console.error('Failed loading roles/permissions', err);
+            } finally {
+                setRolesLoading(false);
+            }
+        };
+
+        loadRolesForUser();
+    }, [rolesModal.isOpen, selectedUser]);
+
+    // Load effective permissions when permissions modal opens
+    useEffect(() => {
+        const loadEffective = async () => {
+            if (!permissionsModal.isOpen || !selectedUser) return;
+            setPermsLoading(true);
+            try {
+                const resp = await rbacService.getUserEffectivePermissions(selectedUser.id);
+                if (resp.success && resp.data) setEffectivePerms(resp.data);
+            } catch (err) {
+                console.error('Failed loading effective permissions', err);
+            } finally {
+                setPermsLoading(false);
+            }
+        };
+
+        loadEffective();
+    }, [permissionsModal.isOpen, selectedUser]);
+
+    const findRoleIdByName = (list: RoleDto[], name: string) => {
+        const r = list.find(x => x.name === name);
+        return r ? r.id : undefined;
     };
 
     // Guardar edición
@@ -416,6 +518,31 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <Edit size={16} /> Editar
                                                     </button>
+
+                                                    {/* Manage roles */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedUser(user);
+                                                            rolesModal.open();
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                    >
+                                                        <ShieldCheck size={16} /> Gestionar roles
+                                                    </button>
+
+                                                    {/* View effective permissions */}
+                                                    <button
+                                                        onClick={async () => {
+                                                            setSelectedUser(user);
+                                                            permissionsModal.open();
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                    >
+                                                        <Key size={16} /> Permisos efectivos
+                                                    </button>
+
                                                     <button
                                                         onClick={() => handleToggleStatus(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
@@ -597,6 +724,132 @@ export const UsersPage: React.FC = () => {
                             Esta acción no se puede deshacer. El usuario perderá acceso al sistema.
                         </p>
                     </div>
+                )}
+            </Modal>
+
+            {/* Manage Roles Modal */}
+            <Modal
+                isOpen={rolesModal.isOpen}
+                onClose={() => {
+                    rolesModal.close();
+                    setRoles([]);
+                    setUserAssignedRoleIds(new Set());
+                }}
+                title={selectedUser ? `Roles — ${selectedUser.fullName}` : 'Roles'}
+                size="md"
+                footer={
+                    <>
+                        <Button variant="outline" onClick={() => { rolesModal.close(); }}>
+                            Cerrar
+                        </Button>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    {rolesLoading ? (
+                        <div className="text-center py-8">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                        </div>
+                    ) : (
+                        roles.map((role) => {
+                            const checked = userAssignedRoleIds.has(role.id);
+                            return (
+                                <div key={role.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#111b22]">
+                                    <div>
+                                        <p className="font-semibold text-slate-900 dark:text-white">{role.name}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{role.description || `${role.permissionCount} permisos`}</p>
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            disabled={rolesSaving}
+                                            onChange={async () => {
+                                                if (!selectedUser) return;
+                                                setRolesSaving(true);
+                                                try {
+                                                    if (checked) {
+                                                        await rbacService.revokeRoleFromUser({ userId: selectedUser.id, roleId: role.id });
+                                                        setUserAssignedRoleIds(prev => { const next = new Set(prev); next.delete(role.id); return next; });
+                                                        showNotification({ type: 'success', message: 'Rol revocado' });
+                                                    } else {
+                                                        await rbacService.assignRoleToUser({ userId: selectedUser.id, roleId: role.id });
+                                                        setUserAssignedRoleIds(prev => { const next = new Set(prev); next.add(role.id); return next; });
+                                                        showNotification({ type: 'success', message: 'Rol asignado' });
+                                                    }
+
+                                                    // Refresh users list to reflect possible primary roleName change
+                                                    fetchUsers();
+                                                } catch (err) {
+                                                    console.error('RBAC error', err);
+                                                    showNotification({ type: 'error', message: 'No se pudo actualizar el rol' });
+                                                } finally {
+                                                    setRolesSaving(false);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </Modal>
+
+            {/* Effective Permissions Modal */}
+            <Modal
+                isOpen={permissionsModal.isOpen}
+                onClose={() => { permissionsModal.close(); setEffectivePerms(null); }}
+                title={selectedUser ? `Permisos — ${selectedUser.fullName}` : 'Permisos'}
+                size="md"
+                footer={
+                    <>
+                        <Button variant="outline" onClick={() => { permissionsModal.close(); }}>
+                            Cerrar
+                        </Button>
+                    </>
+                }
+            >
+                {permsLoading ? (
+                    <div className="text-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                    </div>
+                ) : effectivePerms ? (
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-sm text-slate-500 mb-2">Roles asignados</p>
+                            <div className="flex flex-wrap gap-2">
+                                {effectivePerms.roles.map((r) => (
+                                    <Badge key={r.name} variant="purple">{r.name}</Badge>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <p className="text-sm text-slate-500 mb-2">Permisos efectivos</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {effectivePerms.effectivePermissions.map((p) => (
+                                    <div key={p.code} className="p-2 bg-slate-50 dark:bg-[#111b22] rounded-md text-sm text-slate-600 dark:text-slate-300">{p.code}</div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {effectivePerms.directOverrides && effectivePerms.directOverrides.length > 0 && (
+                            <div>
+                                <p className="text-sm text-slate-500 mb-2">Overrides directos</p>
+                                <div className="space-y-2">
+                                    {effectivePerms.directOverrides.map((o) => (
+                                        <div key={o.permissionCode} className="flex items-center gap-2 text-sm">
+                                            <span className={`px-2 py-1 rounded ${o.isGranted ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{o.isGranted ? 'Grant' : 'Revoke'}</span>
+                                            <span className="text-slate-600 dark:text-slate-300">{o.permissionCode}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-sm text-slate-500">No hay permisos disponibles</div>
                 )}
             </Modal>
         </div>

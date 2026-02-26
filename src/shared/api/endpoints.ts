@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   // Skills (Catalog)
   SKILLS: {
     BASE: "/skills",
+    BY_ID: (id: string) => `/skills/${id}`,
   },
 
   // Employee Skills
@@ -60,6 +61,26 @@ export const API_ENDPOINTS = {
     MATCH_CANDIDATES: "/Agent/match-candidates",
     APPROVE: (actionId: string) => `/Agent/approve/${actionId}`,
     REJECT: (actionId: string) => `/Agent/reject/${actionId}`,
+  },
+
+  // Roles & Permissions (RBAC)
+  ROLES: {
+    BASE: "/roles",
+    BY_ID: (id: string) => `/roles/${id}`,
+    PERMISSIONS: (id: string) => `/roles/${id}/permissions`,
+    PERMISSION_REVOKE: (roleId: string, permissionId: string) =>
+      `/roles/${roleId}/permissions/${permissionId}`,
+    ASSIGN_TO_USER: "/roles/assign-to-user",
+    REVOKE_FROM_USER: "/roles/revoke-from-user",
+  },
+
+  PERMISSIONS: {
+    BASE: "/permissions",
+    BY_ID: (id: string) => `/permissions/${id}`,
+    GROUPED: "/permissions/grouped",
+    ASSIGN_TO_USER: "/permissions/assign-to-user",
+    USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
+    VALIDATE: "/permissions/validate",
   },
 
   // Configuration (Catalogs)

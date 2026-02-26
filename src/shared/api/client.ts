@@ -162,6 +162,16 @@ class ApiClient {
         window.location.hash = "#/";
       }
 
+      // Dispatch global api error event except for 401 and 404
+      if (
+        typeof window !== "undefined" &&
+        error.status !== 401 &&
+        error.status !== 404
+      ) {
+        const event = new CustomEvent("DevManagerApiError", { detail: error });
+        window.dispatchEvent(event);
+      }
+
       return this.applyErrorInterceptors(error);
     }
 

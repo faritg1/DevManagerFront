@@ -27,11 +27,15 @@ export const ROUTES = {
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
     ROLES: '/roles',
+    PERMISSIONS: '/permissions',
     
     // Agents (AI Agents)
     AGENTS: '/agents',
     AGENT_DETAIL: '/agents/:id',
     CREATE_AGENT: '/agents/create',
+    
+    // Skills Catalog
+    SKILLS_CATALOG: '/skills',
     
     // User
     PROFILE: '/profile',

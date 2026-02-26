@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, 
@@ -13,10 +13,14 @@ import {
     Bot,
     Cpu,
     Settings,
+    ChevronDown,
+    Key,
+    Code2,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
-import { useAuth } from '../../shared/context';
+import { useAuth, useNotification } from '../../shared/context';
+import { useConfirm } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
 
 interface NavItemProps {
@@ -57,6 +61,18 @@ const NavSection: React.FC<NavSectionProps> = ({ title, children }) => (
 export const Sidebar: React.FC = () => {
     const location = useLocation();
     const { user, logout } = useAuth();
+    const { showNotification } = useNotification();
+    const { confirm } = useConfirm();
+
+    const handleLogout = async () => {
+        const ok = await confirm({
+            message: '¿Estás seguro de que deseas cerrar sesión?'
+        });
+        if (ok) {
+            logout();
+            showNotification({ type: 'success', message: 'Sesión cerrada' });
+        }
+    };
 
     // Función que verifica si una ruta está activa (incluyendo rutas hijas)
     const isActive = (path: string) => {
@@ -67,6 +83,11 @@ export const Sidebar: React.FC = () => {
         // Para otras rutas, verificar si la ruta actual comienza con el path
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
+
+    // Estado local para desplegable 'Seguridad'
+    const [securityOpen, setSecurityOpen] = useState<boolean>(
+        () => isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS),
+    );
 
     return (
         <aside className="w-64 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0">
@@ -102,6 +123,7 @@ export const Sidebar: React.FC = () => {
                 <NavSection title={NAV_SECTIONS.PLATFORM}>
                     <NavItem to={ROUTES.DASHBOARD} icon={LayoutDashboard} label="Dashboard" isActive={isActive(ROUTES.DASHBOARD)} />
                     <NavItem to={ROUTES.PROJECTS} icon={Briefcase} label="Proyectos" isActive={isActive(ROUTES.PROJECTS)} />
+                    <NavItem to={ROUTES.SKILLS_CATALOG} icon={Code2} label="Habilidades" isActive={isActive(ROUTES.SKILLS_CATALOG)} />
                     <NavItem to={ROUTES.REPORTS} icon={BarChart2} label="Reportes IA" isActive={isActive(ROUTES.REPORTS)} />
                 </NavSection>
 
@@ -113,7 +135,29 @@ export const Sidebar: React.FC = () => {
                 <NavSection title={NAV_SECTIONS.ADMIN}>
                     <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
                     <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
-                    <NavItem to={ROUTES.ROLES} icon={ShieldCheck} label="Roles y Permisos" isActive={isActive(ROUTES.ROLES)} />
+
+                    {/* Seguridad (Roles & Permisos) - sección desplegable */}
+                    <div>
+                        <div
+                            onClick={() => setSecurityOpen((s) => !s)}
+                            className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                                isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS)
+                                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck size={20} />
+                                <span className="text-sm font-medium">Seguridad</span>
+                            </div>
+                            <ChevronDown size={18} className={`transition-transform ${securityOpen ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        <div className={`mt-2 space-y-2 pl-10 ${securityOpen ? 'block' : 'hidden'}`}>
+                            <NavItem to={ROUTES.ROLES} icon={ShieldCheck} label="Roles" isActive={isActive(ROUTES.ROLES)} />
+                            <NavItem to={ROUTES.PERMISSIONS} icon={Key} label="Permisos" isActive={isActive(ROUTES.PERMISSIONS)} />
+                        </div>
+                    </div>
                 </NavSection>
             </nav>
 
@@ -121,7 +165,7 @@ export const Sidebar: React.FC = () => {
             <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
                 <button 
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10"
                 >
                     <LogOut size={20} />

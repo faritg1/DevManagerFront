@@ -1,652 +1,420 @@
-import React, { useState, useEffect } from 'react';
-import { 
-    User, 
-    Briefcase, 
-    Link as LinkIcon,
-    Github,
-    Linkedin,
-    Globe,
-    Edit,
-    Save,
-    X,
-    Loader2,
-    AlertCircle,
-    Plus,
-    Award,
-    CheckCircle2,
-    Clock,
-    Trash2
-} from 'lucide-react';
-import { Card, CardHeader, CardTitle, Badge, Button, Input, Avatar, Modal } from '../../../shared/ui';
-import { useAuth, useNotification, useConfig } from '../../../shared/context';
-import { useModal } from '../../../shared/hooks';
-import { profileService, skillsService } from '../../../shared/api';
-import type { 
-    ProfileResponse, 
-    UpdateProfileRequest,
-    EmployeeSkillResponse,
-    SkillDto,
-    UpsertEmployeeSkillRequest
-} from '../../../shared/api/types';
-
-// Helpers
-const getLevelColor = (level: number): string => {
-    if (level >= 5) return 'text-purple-500';
-    if (level >= 4) return 'text-blue-500';
-    if (level >= 3) return 'text-emerald-500';
-    if (level >= 2) return 'text-yellow-500';
-    return 'text-slate-400';
-};
-
-const getLevelBg = (level: number): string => {
-    if (level >= 5) return 'bg-purple-50 dark:bg-purple-500/10';
-    if (level >= 4) return 'bg-blue-50 dark:bg-blue-500/10';
-    if (level >= 3) return 'bg-emerald-50 dark:bg-emerald-500/10';
-    if (level >= 2) return 'bg-yellow-50 dark:bg-yellow-500/10';
-    return 'bg-slate-50 dark:bg-slate-500/10';
-};
+import React, { useState } from "react";
+import { Loader2, UserX, Sparkles, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
+import { useAuth, useNotification, useConfig } from "../../../shared/context";
+import { useModal } from "../../../shared/hooks";
+import { useProfile } from "../hooks/useProfile";
+import { useSkills } from "../hooks/useSkills";
+import { agentService } from "../../../shared/api";
+import { Card, Badge, Button, Modal } from "../../../shared/ui";
+import {
+  ProfileHeader,
+  BioCard,
+  ProfessionalInfoCard,
+  LinksCard,
+  RolesPermissionsCard,
+  SkillsSection,
+  SkillModal,
+  RequestRoleModal,
+} from "../components";
+import type {
+  EmployeeSkillResponse,
+  UpsertEmployeeSkillRequest,
+  ValidateSkillAIResponse,
+} from "../../../shared/api/types";
 
 export const ProfilePage: React.FC = () => {
-    const { user } = useAuth();
-    const { showNotification } = useNotification();
-    const { catalogs } = useConfig();
-    
-    // Profile state
-    const [profile, setProfile] = useState<ProfileResponse | null>(null);
-    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [profileForm, setProfileForm] = useState<UpdateProfileRequest>({});
+  const { user } = useAuth();
+  const { showNotification } = useNotification();
+  const { catalogs } = useConfig();
 
-    // Skills state
-    const [mySkills, setMySkills] = useState<EmployeeSkillResponse[]>([]);
-    const [isLoadingSkills, setIsLoadingSkills] = useState(true);
-    
-    // Add skill modal
-    const skillModal = useModal();
-    const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
-    const [loadingAvailableSkills, setLoadingAvailableSkills] = useState(false);
-    const [savingSkill, setSavingSkill] = useState(false);
-    const [skillForm, setSkillForm] = useState<UpsertEmployeeSkillRequest>({
-        skillId: '',
-        level: 3,
-        evidenceUrl: ''
+  const {
+    profile,
+    isLoading: isLoadingProfile,
+    isEditing,
+    isSaving,
+    profileForm,
+    effectivePerms,
+    permsLoading,
+    availableRoles,
+    rolesLoading,
+    requestingRoleId,
+    setRequestingRoleId,
+    setProfileForm,
+    startEditing,
+    cancelEditing,
+    saveProfile,
+    loadAvailableRoles,
+    requestRoleChange,
+  } = useProfile();
+
+  const {
+    skills: mySkills,
+    isLoading: isLoadingSkills,
+    opLoading: skillOpLoading,
+    availableSkills,
+    loadingAvailable,
+    fetchAvailableSkills,
+    saveSkill,
+    deleteSkill,
+  } = useSkills();
+
+  const skillModal = useModal();
+  const requestRoleModal = useModal();
+  const aiValidationModal = useModal();
+  const [editingSkill, setEditingSkill] =
+    useState<EmployeeSkillResponse | null>(null);
+  const [skillForm, setSkillForm] = useState<UpsertEmployeeSkillRequest>({
+    skillId: "",
+    level: 3,
+    evidenceUrl: "",
+  });
+  const [validatingSkillId, setValidatingSkillId] = useState<string | null>(null);
+  const [aiValidationResult, setAiValidationResult] = useState<{
+    skillName: string;
+    level: number;
+    result: ValidateSkillAIResponse;
+  } | null>(null);
+
+  const addSkill = async () => {
+    setEditingSkill(null);
+    setSkillForm({ skillId: "", level: 3, evidenceUrl: "" });
+    // always refresh list when opening
+    await fetchAvailableSkills();
+    skillModal.open();
+  };
+
+  const editSkill = (skill: EmployeeSkillResponse) => {
+    setEditingSkill(skill);
+    setSkillForm({
+      id: skill.id,
+      skillId: skill.skillId,
+      level: skill.level,
+      evidenceUrl: skill.evidenceUrl || "",
     });
+    skillModal.open();
+  };
 
-    const getLevelLabel = (levelId: number) => {
-        return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
-    };
+  const removeSkill = async (skill: EmployeeSkillResponse) => {
+    if (!window.confirm("¿Seguro que deseas eliminar esta habilidad?")) return;
+    const ok = await deleteSkill(skill);
+    if (ok)
+      showNotification({ type: "success", message: "Habilidad eliminada" });
+  };
 
-    // Cargar perfil
-    useEffect(() => {
-        const fetchProfile = async () => {
-            setIsLoadingProfile(true);
-            try {
-                const response = await profileService.getMyProfile();
-                if (response.success) {
-                    setProfile(response.data);
-                    setProfileForm({
-                        bio: response.data?.bio || '',
-                        yearsExperience: response.data?.yearsExperience || 0,
-                        linkedinUrl: response.data?.linkedinUrl || '',
-                        githubUrl: response.data?.githubUrl || '',
-                        portfolioUrl: response.data?.portfolioUrl || ''
-                    });
-                }
-            } catch (err) {
-                console.error('Error loading profile:', err);
-            } finally {
-                setIsLoadingProfile(false);
-            }
-        };
-
-        fetchProfile();
-    }, []);
-
-    // Cargar mis skills
-    useEffect(() => {
-        const fetchMySkills = async () => {
-            if (!user?.id) return;
-            
-            setIsLoadingSkills(true);
-            try {
-                const response = await skillsService.getEmployeeSkills(user.id);
-                if (response.success && response.data) {
-                    setMySkills(response.data);
-                }
-            } catch (err) {
-                console.error('Error loading skills:', err);
-            } finally {
-                setIsLoadingSkills(false);
-            }
-        };
-
-        fetchMySkills();
-    }, [user?.id]);
-
-    // Guardar perfil
-    const handleSaveProfile = async () => {
-        setIsSaving(true);
-        try {
-            const response = await profileService.updateMyProfile(profileForm);
-            if (response.success) {
-                setProfile(prev => prev ? { ...prev, ...profileForm } : null);
-                setIsEditing(false);
-                showNotification({
-                    type: 'success',
-                    message: 'Perfil actualizado exitosamente'
-                });
-            } else {
-                showNotification({
-                    type: 'error',
-                    message: response.message || 'Error al actualizar perfil'
-                });
-            }
-        } catch (err) {
-            showNotification({
-                type: 'error',
-                message: 'Error de conexión'
-            });
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Abrir modal de agregar skill
-    const handleOpenSkillModal = async () => {
-        skillModal.open();
-        setSkillForm({ skillId: '', level: 3, evidenceUrl: '' });
-        
-        if (availableSkills.length === 0) {
-            setLoadingAvailableSkills(true);
-            try {
-                const response = await skillsService.getAll();
-                if (response.success && response.data) {
-                    // Filtrar skills que ya tengo
-                    const mySkillIds = mySkills.map(s => s.skillId);
-                    const filtered = response.data.filter(s => !mySkillIds.includes(s.id));
-                    setAvailableSkills(filtered);
-                }
-            } catch (err) {
-                console.error('Error loading skills:', err);
-            } finally {
-                setLoadingAvailableSkills(false);
-            }
-        }
-    };
-
-    // Guardar skill
-    const handleSaveSkill = async () => {
-        if (!skillForm.skillId) {
-            showNotification({
-                type: 'error',
-                message: 'Selecciona una habilidad'
-            });
-            return;
-        }
-
-        setSavingSkill(true);
-        try {
-            const response = await skillsService.upsertEmployeeSkill(skillForm);
-            if (response.success) {
-                showNotification({
-                    type: 'success',
-                    message: 'Habilidad agregada exitosamente'
-                });
-                skillModal.close();
-                
-                // Refrescar mis skills
-                if (user?.id) {
-                    const skillsRes = await skillsService.getEmployeeSkills(user.id);
-                    if (skillsRes.success && skillsRes.data) {
-                        setMySkills(skillsRes.data);
-                        // Actualizar skills disponibles
-                        setAvailableSkills(prev => prev.filter(s => s.id !== skillForm.skillId));
-                    }
-                }
-            } else {
-                showNotification({
-                    type: 'error',
-                    message: response.message || 'Error al agregar habilidad'
-                });
-            }
-        } catch (err) {
-            showNotification({
-                type: 'error',
-                message: 'Error de conexión'
-            });
-        } finally {
-            setSavingSkill(false);
-        }
-    };
-
-    if (isLoadingProfile) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando perfil...</p>
-            </div>
-        );
+  const saveSkillHandler = async () => {
+    if (!skillForm.skillId) {
+      showNotification({ type: "error", message: "Selecciona una habilidad" });
+      return;
     }
+    const ok = await saveSkill(skillForm);
+    if (ok) {
+      showNotification({
+        type: "success",
+        message: editingSkill
+          ? "Habilidad actualizada exitosamente"
+          : "Habilidad agregada exitosamente",
+      });
+      skillModal.close();
+      setEditingSkill(null);
+    } else {
+      showNotification({
+        type: "error",
+        message: "Error al guardar habilidad",
+      });
+    }
+  };
 
+  const handleRequestRole = async () => {
+    if (!requestingRoleId) return;
+    const ok = await requestRoleChange(requestingRoleId);
+    if (ok) {
+      showNotification({
+        type: "success",
+        message: "Solicitud enviada / Rol actualizado (si tienes permisos)",
+      });
+      requestRoleModal.close();
+    } else {
+      showNotification({
+        type: "error",
+        message: "No se pudo solicitar el cambio",
+      });
+    }
+  };
+
+  const handleValidateSkillAI = async (skill: EmployeeSkillResponse) => {
+    if (!user?.id) return;
+    setValidatingSkillId(skill.id);
+    try {
+      const response = await agentService.validateSkill({
+        userId: user.id,
+        skillId: skill.skillId,
+        level: skill.level,
+        evidenceUrl: skill.evidenceUrl,
+      });
+      if (response.success && response.data) {
+        setAiValidationResult({
+          skillName: skill.skillName,
+          level: skill.level,
+          result: response.data,
+        });
+        aiValidationModal.open();
+      } else {
+        showNotification({
+          type: "error",
+          message: response.message || "Error al validar la habilidad con IA",
+        });
+      }
+    } catch (err) {
+      showNotification({
+        type: "error",
+        message: "Error de conexión al servicio de IA",
+      });
+    } finally {
+      setValidatingSkillId(null);
+    }
+  };
+
+  if (isLoadingProfile) {
     return (
-        <div className="flex flex-col h-full overflow-y-auto">
-            <div className="max-w-5xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8 pb-20">
-                
-                {/* Header */}
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                    {/* Avatar grande */}
-                    <div className="relative">
-                        <Avatar 
-                            name={user?.name || 'Usuario'} 
-                            size="xl"
-                            className="h-28 w-28 text-3xl"
-                        />
-                        <div className="absolute -bottom-2 -right-2 p-2 bg-emerald-500 rounded-full text-white">
-                            <CheckCircle2 size={16} />
-                        </div>
-                    </div>
+      <div className="flex flex-col items-center justify-center h-full py-20">
+        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+        <p className="text-slate-500 dark:text-slate-400">Cargando perfil...</p>
+      </div>
+    );
+  }
 
-                    {/* Info principal */}
-                    <div className="flex-1">
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div>
-                                <h1 className="text-slate-900 dark:text-white text-3xl font-black">
-                                    {user?.name || 'Mi Perfil'}
-                                </h1>
-                                <p className="text-slate-500 dark:text-slate-400 mt-1">
-                                    {user?.email}
-                                </p>
-                                <div className="flex items-center gap-3 mt-3">
-                                    <Badge variant="purple">{user?.role || 'Usuario'}</Badge>
-                                    {profile?.yearsExperience && (
-                                        <Badge variant="info">
-                                            {profile.yearsExperience} años de experiencia
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            {!isEditing ? (
-                                <Button 
-                                    variant="outline" 
-                                    icon={Edit}
-                                    onClick={() => setIsEditing(true)}
-                                >
-                                    Editar Perfil
-                                </Button>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <Button 
-                                        variant="outline"
-                                        icon={X}
-                                        onClick={() => setIsEditing(false)}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button 
-                                        icon={isSaving ? Loader2 : Save}
-                                        onClick={handleSaveProfile}
-                                        disabled={isSaving}
-                                    >
-                                        {isSaving ? 'Guardando...' : 'Guardar'}
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+  if (!profile && !isEditing && !isLoadingProfile) {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto w-full items-center justify-center p-6">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-md w-full text-center">
+          <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-6">
+            <UserX className="w-8 h-8 text-slate-400" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+            Perfil no encontrado
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-8">
+            Aún no has configurado tu perfil profesional. Completalo para
+            destacar en el equipo y compartir tus habilidades.
+          </p>
+          <button
+            onClick={startEditing}
+            className="bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-lg font-medium transition-colors w-full"
+          >
+            Crear mi Perfil
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto">
+      <div className="max-w-5xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8 pb-20">
+        <ProfileHeader
+          userName={user?.name}
+          userEmail={user?.email}
+          userRole={user?.role}
+          profile={profile}
+          profileForm={profileForm}
+          catalogs={catalogs}
+          isEditing={isEditing}
+          isSaving={isSaving}
+          onStartEdit={startEditing}
+          onCancelEdit={cancelEditing}
+          onSave={async () => {
+            const ok = await saveProfile();
+            if (ok)
+              showNotification({
+                type: "success",
+                message: "Perfil actualizado exitosamente",
+              });
+            else
+              showNotification({
+                type: "error",
+                message: "Error al guardar perfil",
+              });
+          }}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <BioCard
+              bio={profile?.bio}
+              isEditing={isEditing}
+              formValue={profileForm.bio || ""}
+              onChange={(val) =>
+                setProfileForm((prev) => ({ ...prev, bio: val }))
+              }
+            />
+            <ProfessionalInfoCard
+              profile={profile}
+              form={profileForm}
+              catalogs={catalogs}
+              isEditing={isEditing}
+              onChange={(p) => setProfileForm((prev) => ({ ...prev, ...p }))}
+            />
+            <LinksCard
+              profile={profile}
+              form={profileForm}
+              isEditing={isEditing}
+              onChange={(p) => setProfileForm((prev) => ({ ...prev, ...p }))}
+            />
+            <RolesPermissionsCard
+              effectivePerms={effectivePerms}
+              permsLoading={permsLoading}
+              onRequestRoleOpen={async () => {
+                await loadAvailableRoles();
+                requestRoleModal.open();
+              }}
+            />
+          </div>
+          <div className="space-y-6">
+            <SkillsSection
+              skills={mySkills}
+              isLoading={isLoadingSkills}
+              opLoading={skillOpLoading}
+              validatingSkillId={validatingSkillId}
+              onAdd={addSkill}
+              onEdit={editSkill}
+              onDelete={removeSkill}
+              onValidateAI={handleValidateSkillAI}
+              catalogs={catalogs}
+            />
+          </div>
+        </div>
+      </div>
+
+      <SkillModal
+        isOpen={skillModal.isOpen}
+        onClose={() => {
+          skillModal.close();
+          setEditingSkill(null);
+        }}
+        loadingSkills={loadingAvailable}
+        availableSkills={availableSkills}
+        form={skillForm}
+        setForm={setSkillForm}
+        saving={skillOpLoading}
+        editing={editingSkill}
+        onSave={saveSkillHandler}
+        catalogs={catalogs}
+      />
+
+      <RequestRoleModal
+        isOpen={requestRoleModal.isOpen}
+        onClose={() => {
+          requestRoleModal.close();
+          setRequestingRoleId(null);
+        }}
+        availableRoles={availableRoles}
+        loading={rolesLoading}
+        selectedRoleId={requestingRoleId}
+        setSelectedRoleId={(id) => setRequestingRoleId(id)}
+        onRequest={handleRequestRole}
+      />
+
+      {/* Modal resultado de validación IA */}
+      <Modal
+        isOpen={aiValidationModal.isOpen}
+        onClose={aiValidationModal.close}
+        title="Validación IA de Habilidad"
+        icon={<Sparkles className="text-purple-500" size={20} />}
+        size="md"
+      >
+        {aiValidationResult && (
+          <div className="space-y-5">
+            {/* Header con resultado */}
+            <div className={`p-4 rounded-xl border ${
+              aiValidationResult.result.isValid
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+            }`}>
+              <div className="flex items-center gap-3 mb-2">
+                {aiValidationResult.result.isValid ? (
+                  <CheckCircle2 className="text-emerald-500 shrink-0" size={24} />
+                ) : (
+                  <AlertTriangle className="text-amber-500 shrink-0" size={24} />
+                )}
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white">
+                    {aiValidationResult.skillName} — Nivel {aiValidationResult.level}
+                  </h4>
+                  <p className={`text-sm font-medium ${
+                    aiValidationResult.result.isValid
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-amber-600 dark:text-amber-400'
+                  }`}>
+                    {aiValidationResult.result.isValid ? 'Nivel validado correctamente' : 'Requiere revisión'}
+                  </p>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Columna izquierda - Info personal */}
-                    <div className="lg:col-span-2 space-y-6">
-                        
-                        {/* Bio */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <User className="text-primary" size={20} />
-                                    Acerca de mí
-                                </CardTitle>
-                            </CardHeader>
-                            
-                            {isEditing ? (
-                                <textarea
-                                    value={profileForm.bio || ''}
-                                    onChange={(e) => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
-                                    placeholder="Escribe una breve descripción sobre ti, tu experiencia y lo que te apasiona..."
-                                    rows={4}
-                                    className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white placeholder:text-slate-400 p-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
-                                />
-                            ) : (
-                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                    {profile?.bio || 'No has agregado una descripción aún. Haz clic en "Editar Perfil" para agregar información sobre ti.'}
-                                </p>
-                            )}
-                        </Card>
-
-                        {/* Información profesional */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Briefcase className="text-primary" size={20} />
-                                    Información Profesional
-                                </CardTitle>
-                            </CardHeader>
-
-                            <div className="space-y-4">
-                                {/* Años de experiencia */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                                        Años de Experiencia
-                                    </label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            max={50}
-                                            value={profileForm.yearsExperience || ''}
-                                            onChange={(e) => setProfileForm(prev => ({ 
-                                                ...prev, 
-                                                yearsExperience: parseInt(e.target.value) || 0 
-                                            }))}
-                                            placeholder="Ej: 5"
-                                        />
-                                    ) : (
-                                        <p className="text-slate-900 dark:text-white">
-                                            {profile?.yearsExperience ?? 'No especificado'}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Enlaces */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <LinkIcon className="text-primary" size={20} />
-                                    Enlaces
-                                </CardTitle>
-                            </CardHeader>
-
-                            <div className="space-y-4">
-                                {/* LinkedIn */}
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10">
-                                        <Linkedin className="text-blue-600" size={20} />
-                                    </div>
-                                    {isEditing ? (
-                                        <Input
-                                            value={profileForm.linkedinUrl || ''}
-                                            onChange={(e) => setProfileForm(prev => ({ ...prev, linkedinUrl: e.target.value }))}
-                                            placeholder="https://linkedin.com/in/tu-perfil"
-                                            className="flex-1"
-                                        />
-                                    ) : profile?.linkedinUrl ? (
-                                        <a 
-                                            href={profile.linkedinUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500 hover:underline"
-                                        >
-                                            {profile.linkedinUrl}
-                                        </a>
-                                    ) : (
-                                        <span className="text-slate-400">No configurado</span>
-                                    )}
-                                </div>
-
-                                {/* GitHub */}
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-500/10">
-                                        <Github className="text-slate-700 dark:text-slate-300" size={20} />
-                                    </div>
-                                    {isEditing ? (
-                                        <Input
-                                            value={profileForm.githubUrl || ''}
-                                            onChange={(e) => setProfileForm(prev => ({ ...prev, githubUrl: e.target.value }))}
-                                            placeholder="https://github.com/tu-usuario"
-                                            className="flex-1"
-                                        />
-                                    ) : profile?.githubUrl ? (
-                                        <a 
-                                            href={profile.githubUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500 hover:underline"
-                                        >
-                                            {profile.githubUrl}
-                                        </a>
-                                    ) : (
-                                        <span className="text-slate-400">No configurado</span>
-                                    )}
-                                </div>
-
-                                {/* Portfolio */}
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10">
-                                        <Globe className="text-purple-500" size={20} />
-                                    </div>
-                                    {isEditing ? (
-                                        <Input
-                                            value={profileForm.portfolioUrl || ''}
-                                            onChange={(e) => setProfileForm(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                                            placeholder="https://tu-portafolio.com"
-                                            className="flex-1"
-                                        />
-                                    ) : profile?.portfolioUrl ? (
-                                        <a 
-                                            href={profile.portfolioUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500 hover:underline"
-                                        >
-                                            {profile.portfolioUrl}
-                                        </a>
-                                    ) : (
-                                        <span className="text-slate-400">No configurado</span>
-                                    )}
-                                </div>
-                            </div>
-                        </Card>
-                    </div>
-
-                    {/* Columna derecha - Skills */}
-                    <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center justify-between w-full">
-                                    <div className="flex items-center gap-2">
-                                        <Award className="text-primary" size={20} />
-                                        Mis Habilidades
-                                        <Badge variant="default">{mySkills.length}</Badge>
-                                    </div>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        icon={Plus}
-                                        onClick={handleOpenSkillModal}
-                                    >
-                                        Agregar
-                                    </Button>
-                                </CardTitle>
-                            </CardHeader>
-
-                            {isLoadingSkills ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="animate-spin text-primary" size={24} />
-                                </div>
-                            ) : mySkills.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <Award className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
-                                    <p className="text-slate-500 dark:text-slate-400 mb-4">
-                                        No has agregado habilidades aún
-                                    </p>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        icon={Plus}
-                                        onClick={handleOpenSkillModal}
-                                    >
-                                        Agregar mi primera habilidad
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {mySkills.map((skill) => (
-                                        <div 
-                                            key={skill.id}
-                                            className={`p-3 rounded-xl ${getLevelBg(skill.level)} border border-transparent hover:border-slate-200 dark:hover:border-[#233948] transition-all`}
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="font-semibold text-slate-900 dark:text-white">
-                                                    {skill.skillName}
-                                                </span>
-                                                <Badge 
-                                                    variant={skill.level >= 4 ? 'success' : skill.level >= 3 ? 'info' : 'default'}
-                                                >
-                                                    {getLevelLabel(skill.level)}
-                                                </Badge>
-                                            </div>
-                                            
-                                            {/* Barra de nivel */}
-                                            <div className="flex gap-1 mb-2">
-                                                {catalogs?.skillLevels.map((lvl) => (
-                                                    <div 
-                                                        key={lvl.id}
-                                                        className={`h-1.5 flex-1 rounded-full ${
-                                                            lvl.id <= skill.level 
-                                                                ? 'bg-primary' 
-                                                                : 'bg-slate-200 dark:bg-slate-700'
-                                                        }`}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            {/* Validación */}
-                                            <div className="flex items-center gap-1.5 text-xs">
-                                                {skill.lastValidatedAt ? (
-                                                    <>
-                                                        <CheckCircle2 className="text-emerald-500" size={12} />
-                                                        <span className="text-emerald-600 dark:text-emerald-400">
-                                                            Validado por {skill.validatedByName}
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Clock className="text-slate-400" size={12} />
-                                                        <span className="text-slate-500">
-                                                            Pendiente de validación
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
+              {/* Barra de confianza */}
+              <div className="mt-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-500 dark:text-slate-400">Confianza del análisis</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">
+                    {aiValidationResult.result.confidence}%
+                  </span>
                 </div>
+                <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      aiValidationResult.result.confidence >= 70
+                        ? 'bg-emerald-500'
+                        : aiValidationResult.result.confidence >= 40
+                          ? 'bg-amber-500'
+                          : 'bg-red-500'
+                    }`}
+                    style={{ width: `${aiValidationResult.result.confidence}%` }}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Modal Agregar Skill */}
-            <Modal
-                isOpen={skillModal.isOpen}
-                onClose={skillModal.close}
-                title="Agregar Habilidad"
-                icon={<Award className="text-primary" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button 
-                            onClick={handleSaveSkill}
-                            disabled={savingSkill || !skillForm.skillId}
-                            icon={savingSkill ? Loader2 : Plus}
-                        >
-                            {savingSkill ? 'Guardando...' : 'Agregar Habilidad'}
-                        </Button>
-                        <Button variant="outline" onClick={skillModal.close}>
-                            Cancelar
-                        </Button>
-                    </>
-                }
-            >
-                <div className="space-y-5">
-                    {/* Selector de Skill */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">
-                            Habilidad *
-                        </label>
-                        {loadingAvailableSkills ? (
-                            <div className="flex items-center gap-2 text-slate-500">
-                                <Loader2 className="animate-spin" size={16} />
-                                Cargando habilidades...
-                            </div>
-                        ) : (
-                            <select
-                                value={skillForm.skillId}
-                                onChange={(e) => setSkillForm(prev => ({ ...prev, skillId: e.target.value }))}
-                                className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
-                            >
-                                <option value="">Seleccionar habilidad...</option>
-                                {availableSkills.map(skill => (
-                                    <option key={skill.id} value={skill.id}>
-                                        {skill.name} {skill.category && `(${skill.category})`}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                    </div>
+            {/* Razonamiento */}
+            <div>
+              <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <TrendingUp size={16} className="text-primary" />
+                Análisis
+              </h5>
+              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed bg-slate-50 dark:bg-[#0d1419] p-3 rounded-xl border border-slate-200 dark:border-[#233948]">
+                {aiValidationResult.result.reasoning}
+              </p>
+            </div>
 
-                    {/* Nivel de dominio */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">
-                            Nivel de Dominio *
-                        </label>
-                        <div className="grid grid-cols-5 gap-2">
-                            {catalogs?.skillLevels.map(level => (
-                                <button
-                                    key={level.id}
-                                    type="button"
-                                    onClick={() => setSkillForm(prev => ({ ...prev, level: level.id }))}
-                                    className={`
-                                        p-3 rounded-xl border text-center transition-all
-                                        ${skillForm.level === level.id
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
-                                        }
-                                    `}
-                                >
-                                    <p className="text-lg font-bold">{level.id}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {level.name}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+            {/* Recomendaciones */}
+            {aiValidationResult.result.recommendations.length > 0 && (
+              <div>
+                <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                  <Sparkles size={16} className="text-purple-500" />
+                  Recomendaciones
+                </h5>
+                <ul className="space-y-2">
+                  {aiValidationResult.result.recommendations.map((rec, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0d1419] p-3 rounded-lg border border-slate-200 dark:border-[#233948]"
+                    >
+                      <Badge variant="default" className="shrink-0 mt-0.5">{i + 1}</Badge>
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-                    {/* URL de evidencia */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">
-                            Evidencia (opcional)
-                        </label>
-                        <Input
-                            value={skillForm.evidenceUrl || ''}
-                            onChange={(e) => setSkillForm(prev => ({ ...prev, evidenceUrl: e.target.value }))}
-                            placeholder="https://github.com/tu-proyecto o certificación"
-                            icon={LinkIcon}
-                        />
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Agrega un link a un proyecto, repositorio o certificación que demuestre tu dominio.
-                        </p>
-                    </div>
-                </div>
-            </Modal>
-        </div>
-    );
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={aiValidationModal.close}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
 };
 
 export default ProfilePage;

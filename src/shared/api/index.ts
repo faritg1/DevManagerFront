@@ -18,6 +18,7 @@ export {
   authService,
   usersService,
   profileService,
+  certificationService,
   skillsService,
   projectsService,
   applicationsService,

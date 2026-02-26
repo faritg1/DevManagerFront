@@ -121,6 +121,7 @@ export const ProjectDetailPage: React.FC = () => {
     const [assignHours, setAssignHours] = useState(40);
     const [isAssigning, setIsAssigning] = useState(false);
     const [userSearch, setUserSearch] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
     const { confirm } = useConfirm();
     
     const { catalogs } = useConfig();
@@ -265,6 +266,43 @@ export const ProjectDetailPage: React.FC = () => {
                 type: 'error',
                 message: 'Error de conexión'
             });
+        }
+    };
+
+    // Eliminar proyecto
+    const handleDeleteProject = async () => {
+        if (!id || !project) return;
+        const confirmed = await confirm({
+            title: 'Eliminar proyecto',
+            message: `¿Estás seguro de que deseas eliminar el proyecto "${project.name}"? Esta acción no se puede deshacer.`,
+            confirmText: 'Eliminar',
+            cancelText: 'Cancelar',
+            type: 'warning'
+        });
+        if (!confirmed) return;
+
+        setIsDeleting(true);
+        try {
+            const response = await projectsService.delete(id);
+            if (response.success) {
+                showNotification({
+                    type: 'success',
+                    message: `Proyecto "${project.name}" eliminado exitosamente`
+                });
+                navigate(ROUTES.PROJECTS);
+            } else {
+                showNotification({
+                    type: 'error',
+                    message: response.message || 'Error al eliminar el proyecto'
+                });
+            }
+        } catch (err) {
+            showNotification({
+                type: 'error',
+                message: 'Error de conexión al eliminar el proyecto'
+            });
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -635,6 +673,15 @@ export const ProjectDetailPage: React.FC = () => {
                                     onClick={() => navigate(`/projects/${id}/edit`)}
                                 >
                                     Editar
+                                </Button>
+                                <Button 
+                                    variant="outline"
+                                    icon={isDeleting ? Loader2 : Trash2}
+                                    onClick={handleDeleteProject}
+                                    disabled={isDeleting}
+                                    className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
+                                >
+                                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
                                 </Button>
                                 <Button 
                                     variant="outline"

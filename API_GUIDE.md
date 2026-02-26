@@ -1133,7 +1133,9 @@ Asigna un usuario a un proyecto. Requiere rol Manager o Admin.
 
 ### POST `/agent/query`
 
-Consulta en lenguaje natural al agente de IA.
+Consulta en lenguaje natural al agente de IA. El agente puede responder preguntas sobre la organización o personalizadas sobre ti mismo.
+
+#### Consultas Organizacionales
 
 **Request:**
 ```json
@@ -1143,10 +1145,35 @@ Consulta en lenguaje natural al agente de IA.
 }
 ```
 
-**Ejemplos de consultas:**
+**Ejemplos de consultas organizacionales:**
 - "¿Cuántos desarrolladores tenemos con Java nivel 4 o superior?"
 - "Analiza las brechas de capacitación en el equipo de frontend"
 - "¿Qué skills están más demandadas en los proyectos activos?"
+
+#### Consultas Personalizadas (Contexto del Usuario Actual)
+
+El agente ahora puede responder preguntas personalizadas sobre TI. Utiliza pronombres como "yo", "mi", "mis" para referirte a ti mismo. El sistema extrae automáticamente tu userId del token JWT.
+
+**Request:**
+```json
+{
+  "query": "¿Qué habilidades me recomiendan aprender?",
+  "requireApproval": false
+}
+```
+
+**Ejemplos de consultas personalizadas:**
+- "¿Qué habilidades me recomiendan aprender?"
+- "¿Qué proyectos encajan con mis habilidades?"
+- "Analiza mi perfil y dime en qué proyectos puedo contribuir"
+- "Dame recomendaciones para mejorar mi carrera profesional"
+- "¿Cuáles son mis fortalezas y debilidades técnicas?"
+
+**Detección Automática:**
+El sistema detecta automáticamente cuando la consulta se refiere al usuario actual mediante estos patrones:
+- "yo", "mi", "mis", "mí"
+- "para mí", "para mi"
+- "me recomi", "me适合" (soporte multilingüe)
 
 **Response (200 OK):**
 ```json
@@ -1159,6 +1186,21 @@ Consulta en lenguaje natural al agente de IA.
     "requiresApproval": false,
     "actionId": null,
     "confidence": 95
+  }
+}
+```
+
+**Response (200 OK) - Consulta Personalizada:**
+```json
+{
+  "success": true,
+  "message": "Consulta procesada exitosamente",
+  "data": {
+    "answer": "Basado en tu perfil actual (C# nivel 4, React nivel 3, 5 años de experiencia), te recomiendo:\n\n1. **Aprender Azure DevOps** - Complementa tus habilidades actuales y es muy demandada\n2. **Mejorar tu nivel de Kubernetes** - De 2 a 3+ para acceder a proyectos cloud-native\n3. **Considerar certificación AWS Solutions Architect** - Ampliaría tus oportunidades",
+    "reasoning": "Analicé tu perfil: C# (4), React (3), SQL Server (4). Comparé con los requisitos de proyectos activos y skills más demandadas en la organización.",
+    "requiresApproval": false,
+    "actionId": null,
+    "confidence": 88
   }
 }
 ```

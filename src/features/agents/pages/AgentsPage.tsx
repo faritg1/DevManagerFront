@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Bot, Cpu, Activity, MoreHorizontal, Play, Pause, Settings, Send, Loader2, Sparkles, MessageSquare, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
-import { Button, Card, Badge, Avatar, ProgressBar } from '../../../shared/ui';
+import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService } from '../../../shared/api';
-import type { Agent, AgentStatus } from '../../../shared/types';
-import type { AgentQueryResponse } from '../../../shared/api/types';
 
 interface ChatMessage {
     id: string;
@@ -12,73 +10,14 @@ interface ChatMessage {
     content: string;
     timestamp: Date;
     reasoning?: string;
+    toolsExecuted?: Array<{ toolName: string; input: string; output: string; success: boolean }>;
     requiresApproval?: boolean;
     actionId?: string | null;
     confidence?: number;
+    /** Track HITL resolution per message */
+    hitlStatus?: 'pending' | 'approved' | 'rejected';
+    hitlNote?: string;
 }
-
-// Mock agents data
-const mockAgents: (Agent & { executions: number; successRate: number })[] = [
-    {
-        id: '1',
-        name: 'Code Reviewer',
-        description: 'Analiza pull requests y sugiere mejoras de código',
-        type: 'analyzer',
-        status: 'Active',
-        configuration: { model: 'gemini-2.0-flash' },
-        executions: 1245,
-        successRate: 94,
-    },
-    {
-        id: '2',
-        name: 'Doc Generator',
-        description: 'Genera documentación automática del código',
-        type: 'automator',
-        status: 'Active',
-        configuration: { model: 'gemini-2.0-flash' },
-        executions: 856,
-        successRate: 98,
-    },
-    {
-        id: '3',
-        name: 'Security Scanner',
-        description: 'Detecta vulnerabilidades en el código',
-        type: 'monitor',
-        status: 'Training',
-        configuration: { model: 'gemini-2.0-flash' },
-        executions: 234,
-        successRate: 87,
-    },
-    {
-        id: '4',
-        name: 'Test Generator',
-        description: 'Crea tests unitarios automáticamente',
-        type: 'automator',
-        status: 'Inactive',
-        configuration: { model: 'gemini-2.0-flash' },
-        executions: 567,
-        successRate: 91,
-    },
-];
-
-const getStatusVariant = (status: AgentStatus): 'success' | 'warning' | 'danger' | 'default' => {
-    switch (status) {
-        case 'Active': return 'success';
-        case 'Training': return 'warning';
-        case 'Error': return 'danger';
-        default: return 'default';
-    }
-};
-
-const getTypeIcon = (type: string) => {
-    switch (type) {
-        case 'analyzer': return '🔍';
-        case 'automator': return '⚙️';
-        case 'monitor': return '👁️';
-        case 'assistant': return '💬';
-        default: return '🤖';
-    }
-};
 
 export const AgentsPage: React.FC = () => {
     const { showNotification } = useNotification();
@@ -96,6 +35,11 @@ export const AgentsPage: React.FC = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [requireApproval, setRequireApproval] = useState(false);
+    const [approvingId, setApprovingId] = useState<string | null>(null);
+    const [rejectModal, setRejectModal] = useState<{ open: boolean; messageId: string; actionId: string }>({ open: false, messageId: '', actionId: '' });
+    const [rejectReason, setRejectReason] = useState('');
+    const [isRejecting, setIsRejecting] = useState(false);
 
     // Scroll automático al último mensaje
     useEffect(() => {
@@ -120,7 +64,7 @@ export const AgentsPage: React.FC = () => {
         try {
             const response = await agentService.query({
                 query: inputValue,
-                requireApproval: false
+                requireApproval: requireApproval
             });
 
             if (response.success && response.data) {
@@ -141,9 +85,11 @@ export const AgentsPage: React.FC = () => {
                     content: answerText,
                     timestamp: new Date(),
                     reasoning: response.data.reasoningSteps,
+                    toolsExecuted: response.data.toolsExecuted,
                     requiresApproval: response.data.requiresHumanApproval,
                     actionId: response.data.actionId,
-                    confidence: 0.95 // Backend no retorna confidence, usar default
+                    hitlStatus: response.data.requiresHumanApproval ? 'pending' : undefined,
+                    confidence: 0.95
                 };
                 setMessages(prev => [...prev, agentMessage]);
             } else {
@@ -201,9 +147,57 @@ export const AgentsPage: React.FC = () => {
         setInputValue(query);
     };
 
-    // Formatear respuesta JSON del agente (sin formatear, mostrar como JSON)
-    const formatAgentResponse = (parsed: any): string => {
+    // Formatear respuesta JSON del agente
+    const formatAgentResponse = (parsed: unknown): string => {
         return JSON.stringify(parsed, null, 2);
+    };
+
+    // HITL: Aprobar acción
+    const handleApproveAction = async (messageId: string, actionId: string) => {
+        setApprovingId(messageId);
+        try {
+            const response = await agentService.approveAction(actionId);
+            if (response.success) {
+                setMessages(prev => prev.map(m =>
+                    m.id === messageId ? { ...m, hitlStatus: 'approved' as const, hitlNote: 'Acción aprobada' } : m
+                ));
+                showNotification({ type: 'success', message: 'Acción del agente aprobada exitosamente' });
+            } else {
+                showNotification({ type: 'error', message: response.message || 'Error al aprobar la acción' });
+            }
+        } catch {
+            showNotification({ type: 'error', message: 'Error de conexión al aprobar' });
+        } finally {
+            setApprovingId(null);
+        }
+    };
+
+    // HITL: Rechazar acción
+    const handleRejectAction = async () => {
+        if (!rejectReason.trim()) {
+            showNotification({ type: 'error', message: 'Debes indicar un motivo para rechazar' });
+            return;
+        }
+        setIsRejecting(true);
+        try {
+            const response = await agentService.rejectAction(rejectModal.actionId, { reason: rejectReason });
+            if (response.success) {
+                setMessages(prev => prev.map(m =>
+                    m.id === rejectModal.messageId
+                        ? { ...m, hitlStatus: 'rejected' as const, hitlNote: rejectReason }
+                        : m
+                ));
+                showNotification({ type: 'success', message: 'Acción rechazada' });
+                setRejectModal({ open: false, messageId: '', actionId: '' });
+                setRejectReason('');
+            } else {
+                showNotification({ type: 'error', message: response.message || 'Error al rechazar' });
+            }
+        } catch {
+            showNotification({ type: 'error', message: 'Error de conexión al rechazar' });
+        } finally {
+            setIsRejecting(false);
+        }
     };
 
     return (
@@ -301,9 +295,19 @@ export const AgentsPage: React.FC = () => {
                                             </div>
                                         )}
 
-                                        {message.requiresApproval && (
+                                                        {message.requiresApproval && message.hitlStatus === 'pending' && (
                                             <Badge variant="warning" className="text-xs py-0.5 px-2">
-                                                Requiere aprobación
+                                                ⏳ Pendiente de aprobación
+                                            </Badge>
+                                        )}
+                                        {message.hitlStatus === 'approved' && (
+                                            <Badge variant="success" className="text-xs py-0.5 px-2">
+                                                ✅ Aprobada
+                                            </Badge>
+                                        )}
+                                        {message.hitlStatus === 'rejected' && (
+                                            <Badge variant="danger" className="text-xs py-0.5 px-2">
+                                                ❌ Rechazada
                                             </Badge>
                                         )}
                                     </div>
@@ -313,10 +317,62 @@ export const AgentsPage: React.FC = () => {
                                 {message.reasoning && (
                                     <details className="text-xs text-slate-500 dark:text-slate-400 px-2">
                                         <summary className="cursor-pointer hover:text-primary">Ver razonamiento</summary>
-                                        <p className="mt-2 p-3 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948]">
+                                        <p className="mt-2 p-3 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948] whitespace-pre-wrap">
                                             {message.reasoning}
                                         </p>
                                     </details>
+                                )}
+
+                                {/* Tools executed (colapsable) */}
+                                {message.toolsExecuted && message.toolsExecuted.length > 0 && (
+                                    <details className="text-xs text-slate-500 dark:text-slate-400 px-2">
+                                        <summary className="cursor-pointer hover:text-primary">Herramientas ejecutadas ({message.toolsExecuted.length})</summary>
+                                        <div className="mt-2 space-y-2">
+                                            {message.toolsExecuted.map((tool, idx) => (
+                                                <div key={idx} className="p-2 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948]">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        {tool.success ? (
+                                                            <CheckCircle2 className="text-emerald-500" size={12} />
+                                                        ) : (
+                                                            <XCircle className="text-red-500" size={12} />
+                                                        )}
+                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{tool.toolName}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </details>
+                                )}
+
+                                {/* HITL Approve / Reject buttons */}
+                                {message.requiresApproval && message.actionId && message.hitlStatus === 'pending' && (
+                                    <div className="flex gap-2 px-2 pt-1">
+                                        <Button
+                                            size="sm"
+                                            icon={approvingId === message.id ? Loader2 : ShieldCheck}
+                                            onClick={() => handleApproveAction(message.id, message.actionId!)}
+                                            disabled={approvingId === message.id}
+                                            className={`bg-emerald-500 hover:bg-emerald-600 text-white text-xs ${approvingId === message.id ? '[&_svg]:animate-spin' : ''}`}
+                                        >
+                                            {approvingId === message.id ? 'Aprobando...' : 'Aprobar'}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            icon={ShieldX}
+                                            onClick={() => setRejectModal({ open: true, messageId: message.id, actionId: message.actionId! })}
+                                            className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs"
+                                        >
+                                            Rechazar
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Nota de HITL resuelto */}
+                                {message.hitlStatus === 'rejected' && message.hitlNote && (
+                                    <p className="text-xs text-red-500 dark:text-red-400 px-2 italic">
+                                        Motivo: {message.hitlNote}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -362,6 +418,30 @@ export const AgentsPage: React.FC = () => {
 
                 {/* Input */}
                 <div className="border-t border-slate-200 dark:border-[#233948] p-4">
+                    {/* Require approval toggle */}
+                    <div className="flex items-center gap-2 mb-3">
+                        <button
+                            type="button"
+                            onClick={() => setRequireApproval(prev => !prev)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                                requireApproval
+                                    ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-400'
+                                    : 'bg-slate-50 dark:bg-[#111b22] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400'
+                            }`}
+                        >
+                            {requireApproval ? (
+                                <ToggleRight className="text-amber-500" size={16} />
+                            ) : (
+                                <ToggleLeft size={16} />
+                            )}
+                            Requerir aprobación (HITL)
+                        </button>
+                        {requireApproval && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">
+                                Las acciones del agente requerirán tu aprobación antes de ejecutarse.
+                            </span>
+                        )}
+                    </div>
                     <div className="flex gap-3">
                         <textarea
                             value={inputValue}
@@ -392,6 +472,41 @@ export const AgentsPage: React.FC = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Modal de Rechazo */}
+            <Modal
+                isOpen={rejectModal.open}
+                onClose={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}
+                title="Rechazar Acción del Agente"
+                icon={<ShieldX className="text-red-500" size={20} />}
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Indica el motivo por el cual rechazas esta acción. Esto ayudará al agente a mejorar sus futuras sugerencias.
+                    </p>
+                    <textarea
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Ej: El candidato ya está asignado a otro proyecto de alta prioridad..."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    />
+                    <div className="flex justify-end gap-3">
+                        <Button variant="outline" onClick={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleRejectAction}
+                            disabled={!rejectReason.trim() || isRejecting}
+                            icon={isRejecting ? Loader2 : ShieldX}
+                            className={`bg-red-500 hover:bg-red-600 text-white ${isRejecting ? '[&_svg]:animate-spin' : ''}`}
+                        >
+                            {isRejecting ? 'Rechazando...' : 'Confirmar Rechazo'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

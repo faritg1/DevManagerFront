@@ -1,34 +1,6 @@
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    avatar: string;
-}
+/* DEPRECATED: root-level `types.ts` replaced — use `src/shared/types` or `@entities/*`.
+   This file kept only for backwards reference.
+*/
 
-export interface Project {
-    id: string;
-    name: string;
-    client: string;
-    status: 'In Progress' | 'Blocked' | 'Completed' | 'New';
-    progress: number;
-    initials: string;
-    color: string;
-}
+export {};
 
-export interface Opportunity {
-    id: string;
-    title: string;
-    department: string;
-    type: string;
-    image: string;
-    isNew?: boolean;
-    isHot?: boolean;
-}
-
-export interface ChatMessage {
-    id: string;
-    role: 'user' | 'model';
-    text: string;
-    timestamp: number;
-}

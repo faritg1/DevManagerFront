@@ -7,13 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // Environment-safe API key access
 const getApiKey = (): string => {
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-        return import.meta.env.VITE_GEMINI_API_KEY || '';
-    }
-    if (typeof process !== 'undefined' && process.env) {
-        return process.env.API_KEY || process.env.GEMINI_API_KEY || '';
-    }
-    return '';
+    return import.meta.env.VITE_GEMINI_API_KEY || '';
 };
 
 const apiKey = getApiKey();

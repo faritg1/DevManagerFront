@@ -95,21 +95,28 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 >
                     DevManager
                 </Link>
-                {breadcrumbs.map((crumb, index) => (
-                    <React.Fragment key={crumb.path}>
-                        <ChevronRight size={14} className="text-slate-400 mx-1" />
-                        {index === breadcrumbs.length - 1 ? (
-                            <span className="text-slate-500 dark:text-slate-400">{crumb.name}</span>
-                        ) : (
-                            <Link 
-                                to={crumb.path}
-                                className="hover:text-primary dark:hover:text-primary transition-colors"
-                            >
-                                {crumb.name}
-                            </Link>
-                        )}
-                    </React.Fragment>
-                ))}
+                {breadcrumbs.map((crumb, index) => {
+                    const isRoleIdPath = /^\/roles\/[^\/]+$/.test(crumb.path);
+                    const displayName = isRoleIdPath ? (location.state as any)?.roleName ?? 'Rol' : crumb.name;
+                    // Si es un segmento /roles/:id no linkear a /roles/:id (ruta no existe); enlazamos al listado de roles
+                    const linkTo = isRoleIdPath ? ROUTES.ROLES : crumb.path;
+
+                    return (
+                        <React.Fragment key={crumb.path}>
+                            <ChevronRight size={14} className="text-slate-400 mx-1" />
+                            {index === breadcrumbs.length - 1 ? (
+                                <span className="text-slate-500 dark:text-slate-400">{displayName}</span>
+                            ) : (
+                                <Link 
+                                    to={linkTo}
+                                    className="hover:text-primary dark:hover:text-primary transition-colors"
+                                >
+                                    {displayName}
+                                </Link>
+                            )}
+                        </React.Fragment>
+                    );
+                })}
             </nav>
 
             {/* Search (optional) */}

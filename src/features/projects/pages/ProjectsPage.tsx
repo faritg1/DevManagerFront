@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
     Plus, 
     Search, 
-    Filter, 
     FolderOpen, 
     Calendar,
     ArrowRight,
@@ -141,7 +140,8 @@ export const ProjectsPage: React.FC = () => {
             <div className="max-w-7xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                {/* Header + actions */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-tight">
                             Proyectos
@@ -150,41 +150,39 @@ export const ProjectsPage: React.FC = () => {
                             Gestiona y monitorea todos los proyectos de la organización.
                         </p>
                     </div>
-                    <Link to={ROUTES.CREATE_PROJECT}>
-                        <Button icon={Plus}>
-                            Nuevo Proyecto
-                        </Button>
-                    </Link>
+
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <div className="w-full md:w-80">
+                            <Input
+                                placeholder="Buscar proyectos..."
+                                icon={Search}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Link to={ROUTES.CREATE_PROJECT}>
+                            <Button icon={Plus}>
+                                Nuevo Proyecto
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
-                {/* Filters Row */}
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    {/* Status Tabs */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-                        {STATUS_TABS.map((tab) => (
-                            <button
-                                key={tab.label}
-                                onClick={() => setActiveTab(tab.value)}
-                                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
-                                    activeTab === tab.value
-                                        ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                                        : 'bg-slate-100 dark:bg-[#16222b] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1c2c38]'
-                                }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Search */}
-                    <div className="w-full md:w-80">
-                        <Input
-                            placeholder="Buscar proyectos..."
-                            icon={Search}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                {/* Status Tabs Row */}
+                <div className="flex gap-2 overflow-x-auto pb-2 mt-4">
+                    {STATUS_TABS.map((tab) => (
+                        <button
+                            key={tab.label}
+                            onClick={() => setActiveTab(tab.value)}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                                activeTab === tab.value
+                                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                                    : 'bg-slate-100 dark:bg-[#16222b] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1c2c38]'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Content */}

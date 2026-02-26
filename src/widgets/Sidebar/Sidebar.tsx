@@ -15,6 +15,7 @@ import {
     Settings,
     ChevronDown,
     Key,
+    Code2,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -122,6 +123,7 @@ export const Sidebar: React.FC = () => {
                 <NavSection title={NAV_SECTIONS.PLATFORM}>
                     <NavItem to={ROUTES.DASHBOARD} icon={LayoutDashboard} label="Dashboard" isActive={isActive(ROUTES.DASHBOARD)} />
                     <NavItem to={ROUTES.PROJECTS} icon={Briefcase} label="Proyectos" isActive={isActive(ROUTES.PROJECTS)} />
+                    <NavItem to={ROUTES.SKILLS_CATALOG} icon={Code2} label="Habilidades" isActive={isActive(ROUTES.SKILLS_CATALOG)} />
                     <NavItem to={ROUTES.REPORTS} icon={BarChart2} label="Reportes IA" isActive={isActive(ROUTES.REPORTS)} />
                 </NavSection>
 

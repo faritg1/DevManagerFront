@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   // Skills (Catalog)
   SKILLS: {
     BASE: "/skills",
+    BY_ID: (id: string) => `/skills/${id}`,
   },
 
   // Employee Skills

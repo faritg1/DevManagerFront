@@ -26,6 +26,7 @@ import {
   RolesPage,
   RolePermissionsPage,
   PermissionsPage,
+  SkillsCatalogPage,
 } from "../features";
 
 // Placeholder pages for routes not yet implemented
@@ -106,6 +107,9 @@ export const AppRouter: React.FC = () => {
                   element={<RolePermissionsPage />}
                 />
                 <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+
+                {/* Skills Catalog */}
+                <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />
 
                 {/* User */}
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />

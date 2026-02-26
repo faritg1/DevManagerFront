@@ -12,3 +12,4 @@ export { UsersPage } from "./users";
 export { AgentsPage } from "./agents";
 export { ProfilePage } from "./profile";
 export { RolesPage, RolePermissionsPage, PermissionsPage } from "./rbac";
+export { SkillsCatalogPage } from "./skills";

@@ -34,6 +34,9 @@ export const ROUTES = {
     AGENT_DETAIL: '/agents/:id',
     CREATE_AGENT: '/agents/create',
     
+    // Skills Catalog
+    SKILLS_CATALOG: '/skills',
+    
     // User
     PROFILE: '/profile',
     SETTINGS: '/settings',

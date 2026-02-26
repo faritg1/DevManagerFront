@@ -35,6 +35,24 @@ export const skillsService = {
     return apiClient.post<string>(API_ENDPOINTS.SKILLS.BASE, data);
   },
 
+  /**
+   * Actualiza una habilidad existente
+   * PUT /api/skills/{id}
+   * Requiere rol Admin o Manager
+   */
+  async update(id: string, data: SkillDto): Promise<ApiResponse<void>> {
+    return apiClient.put<void>(API_ENDPOINTS.SKILLS.BY_ID(id), data);
+  },
+
+  /**
+   * Elimina lógicamente una skill (soft delete)
+   * DELETE /api/skills/{id}
+   * Requiere rol Admin o Manager
+   */
+  async delete(id: string): Promise<ApiResponse<void>> {
+    return apiClient.delete<void>(API_ENDPOINTS.SKILLS.BY_ID(id));
+  },
+
   // ============ SKILLS DE EMPLEADOS ============
 
   /**

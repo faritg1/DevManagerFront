@@ -1,15 +1,17 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
-import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock } from 'lucide-react';
+import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 import type { EmployeeSkillResponse } from '../../../shared/api/types';
 
 interface Props {
     skills: EmployeeSkillResponse[];
     isLoading: boolean;
     opLoading: boolean;
+    validatingSkillId?: string | null;
     onAdd: () => void;
     onEdit: (skill: EmployeeSkillResponse) => void;
     onDelete: (skill: EmployeeSkillResponse) => void;
+    onValidateAI?: (skill: EmployeeSkillResponse) => void;
     catalogs: any;
 }
 
@@ -33,9 +35,11 @@ export const SkillsSection: React.FC<Props> = ({
     skills,
     isLoading,
     opLoading,
+    validatingSkillId,
     onAdd,
     onEdit,
     onDelete,
+    onValidateAI,
     catalogs,
 }) => {
     const getLevelLabel = (levelId: number) => {
@@ -106,6 +110,21 @@ export const SkillsSection: React.FC<Props> = ({
                                         {getLevelLabel(skill.level)}
                                     </Badge>
                                     <div className="flex gap-1">
+                                        {onValidateAI && (
+                                            <button
+                                                type="button"
+                                                disabled={opLoading || validatingSkillId === skill.id}
+                                                onClick={() => onValidateAI(skill)}
+                                                title="Validar con IA"
+                                                className="p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-500 disabled:opacity-50"
+                                            >
+                                                {validatingSkillId === skill.id ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <Sparkles size={16} />
+                                                )}
+                                            </button>
+                                        )}
                                         <button
                                             type="button"
                                             disabled={opLoading}

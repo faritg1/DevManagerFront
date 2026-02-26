@@ -90,10 +90,6 @@ export const AppRouter: React.FC = () => {
                   path={ROUTES.AGENT_DETAIL}
                   element={<PlaceholderPage title="Detalle del Agente" />}
                 />
-                <Route
-                  path={ROUTES.MARKETPLACE}
-                  element={<PlaceholderPage title="Marketplace de Agentes" />}
-                />
 
                 {/* Administration */}
                 <Route

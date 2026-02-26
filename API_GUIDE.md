@@ -810,6 +810,7 @@ Headers:
       "skillName": "C#",
       "level": 5,
       "evidenceUrl": "https://github.com/juan/dotnet-core",
+      "experienceDescription": "He desarrollado aplicaciones enterprise con .NET Core por más de 5 años, incluyendo microservicios y arquitecturas serverless...",
       "lastValidatedAt": "2025-12-01T10:00:00Z",
       "validatedByUserId": "11111111-0000-0000-0000-000000000002",
       "validatedByName": "María García"
@@ -838,14 +839,18 @@ Headers:
 {
   "skillId": "aaaaaaaa-0000-0000-0000-000000000008",
   "level": 3,
-  "evidenceUrl": "https://github.com/myuser/kubernetes-project"
+  "evidenceUrl": "https://github.com/myuser/kubernetes-project",
+  "experienceDescription": "He trabajado con Kubernetes en producción por 2 años, gestionando clusters de Azure AKS y EKS. He implementado pipelines de CI/CD con GitHub Actions y desplegado aplicaciones con Helm..."
 }
 ```
 
-Validaciones:
-- `skillId`: requerido (GUID) y debe existir en catálogo.
-- `level`: obligatorio, valor entre 1 y 5.
-- `evidenceUrl`: opcional, si se envía debe ser URL válida.
+**Campos:**
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| skillId | GUID | Sí | ID de la skill del catálogo |
+| level | byte (1-5) | Sí | Nivel de proficiency |
+| evidenceUrl | string | No | URL con evidencia (GitHub, proyecto, etc.) |
+| experienceDescription | string (max 1000) | No | Descripción textual de la experiencia con esta habilidad |
 
 **Response (200 OK):**
 ```json
@@ -858,6 +863,8 @@ Validaciones:
 Errores:
 - `400 Bad Request`: validación de payload fallida.
 - `404 Not Found`: `skillId` no existe.
+
+**Nota:** El campo `experienceDescription` permite al empleado describir su experiencia de forma libre, útil cuando no tiene una URL de evidencia o desea complementar la información.
 
 ---
 
@@ -1261,8 +1268,11 @@ Validación semántica de habilidades usando IA.
   "skillId": "aaaaaaaa-0000-0000-0000-000000000001",
   "level": 5,
   "evidenceUrl": "https://github.com/juan/dotnet-microservices-framework",
-  "yearsExperience": 8
+  "experienceDescription": "He liderado proyectos de microservicios con .NET Core por 5 años, implementando arquitecturas CQRS, Event Sourcing y patrones de DDD en equipos de más de 10 desarrolladores..."
 }
+```
+
+**Nota:** El campo `experienceDescription` es opcional y permite al agente analizar la descripción textual de experiencia además de la URL de evidencia.
 ```
 
 **Response (200 OK) - Válido:**

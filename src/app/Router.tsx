@@ -6,6 +6,7 @@ import {
   ConfirmProvider,
 } from "../shared/context";
 import { MainLayout, AuthLayout } from "./layouts";
+import { ProtectedRoute, PublicRoute } from "./guards";
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
 
@@ -43,14 +44,17 @@ export const AppRouter: React.FC = () => {
           <NotificationProvider>
             <GlobalErrorListener />
             <Routes>
-              {/* Public Routes */}
-              <Route element={<AuthLayout />}>
-                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-                <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+              {/* Public Routes - Redirect to dashboard if already authenticated */}
+              <Route element={<PublicRoute />}>
+                <Route element={<AuthLayout />}>
+                  <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                  <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+                </Route>
               </Route>
 
-              {/* Protected Routes wrapped in MainLayout */}
-              <Route element={<MainLayout />}>
+              {/* Protected Routes - Require authentication */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<MainLayout />}>
                 {/* Dashboard */}
                 <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
 
@@ -97,6 +101,7 @@ export const AppRouter: React.FC = () => {
 
                 {/* User */}
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                </Route>
               </Route>
 
               {/* Fallback */}

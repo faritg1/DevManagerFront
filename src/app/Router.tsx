@@ -82,6 +82,14 @@ export const AppRouter: React.FC = () => {
                 {/* Agents */}
                 <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
                 <Route
+                  path={ROUTES.CREATE_AGENT}
+                  element={<PlaceholderPage title="Crear Agente" />}
+                />
+                <Route
+                  path={ROUTES.AGENT_DETAIL}
+                  element={<PlaceholderPage title="Detalle del Agente" />}
+                />
+                <Route
                   path={ROUTES.MARKETPLACE}
                   element={<PlaceholderPage title="Marketplace de Agentes" />}
                 />
@@ -97,10 +105,14 @@ export const AppRouter: React.FC = () => {
                   path={`${ROUTES.ROLES}/:id/permissions`}
                   element={<RolePermissionsPage />}
                 />
-                <Route path="/permissions" element={<PermissionsPage />} />
+                <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
 
                 {/* User */}
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                <Route
+                  path={ROUTES.SETTINGS}
+                  element={<PlaceholderPage title="Configuración" />}
+                />
                 </Route>
               </Route>
 

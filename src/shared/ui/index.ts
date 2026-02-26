@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Re-export all UI components
 export * from './Button';
 export * from './Input';

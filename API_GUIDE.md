@@ -270,11 +270,49 @@ Obtiene el perfil profesional del usuario autenticado.
 }
 ```
 
+**Errores:**
+| Código | Descripción |
+|--------|-------------|
+| 404 | Perfil no encontrado |
+
+---
+
+### POST `/api/profile/me`
+
+Crea un nuevo perfil para el usuario autenticado. Si el perfil fue eliminado anteriormente, lo reactiva con los nuevos datos.
+
+**Request:**
+```json
+{
+  "bio": "Senior Full Stack Developer especializado en arquitecturas cloud-native",
+  "yearsExperience": 8,
+  "linkedinUrl": "https://linkedin.com/in/juan-martinez-dev",
+  "githubUrl": "https://github.com/juanmartinez",
+  "portfolioUrl": "https://juandev.io"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Perfil creado exitosamente"
+}
+```
+
+**Errores:**
+| Código | Descripción |
+|--------|-------------|
+| 400 | Datos inválidos (validación fallida) |
+| 409 | Perfil ya existe (usar PUT para actualizar) |
+
+**Nota:** Si el perfil fue soft-deleted, se reactivará automáticamente con los nuevos datos.
+
 ---
 
 ### PUT `/api/profile/me`
 
-Crea o actualiza el perfil del usuario autenticado (upsert).
+Crea, actualiza o reactiva el perfil del usuario autenticado (upsert).
 
 **Request:**
 ```json
@@ -294,6 +332,11 @@ Crea o actualiza el perfil del usuario autenticado (upsert).
   "message": "Perfil actualizado exitosamente"
 }
 ```
+
+**Comportamiento:**
+- Si NO existe perfil → Lo CREA
+- Si existe perfil activo → Lo ACTUALIZA
+- Si el perfil fue eliminado → Lo REACTIVA y ACTUALIZA
 
 ---
 
@@ -1406,9 +1449,10 @@ Rechaza una acción del agente con motivo.
 
 ```
 1. POST /api/users                    → Admin crea usuario
-2. PUT  /api/profile/me               → Empleado completa perfil
-3. POST /api/employees/skills         → Empleado declara skills
-4. PUT  /api/employees/skills/{id}/validate  → Manager valida skills
+2. POST /api/profile/me               → Empleado crea su perfil
+3. PUT  /api/profile/me               → Empleado actualiza su perfil
+4. POST /api/employees/skills         → Empleado declara skills
+5. PUT  /api/employees/skills/{id}/validate  → Manager valida skills
 ```
 
 ### Flujo 2: Asignación a Proyecto

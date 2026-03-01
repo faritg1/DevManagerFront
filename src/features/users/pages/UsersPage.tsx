@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-    UserPlus, 
+    UserPlus,
+    Eye, 
     MoreVertical, 
     Mail, 
     Loader2, 
@@ -13,13 +15,18 @@ import {
     Phone,
     Calendar,
     ShieldCheck,
-    Key
+    Key,
+    Award,
+    CheckCircle2,
+    ChevronUp,
+    ChevronDown,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
-import { usersService, rbacService } from '../../../shared/api';
-import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse } from '../../../shared/api/types';
+import { usersService, rbacService, skillsService } from '../../../shared/api';
+import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
+import { ROUTES } from '../../../shared/config/constants';
 
 // Helpers
 const formatDate = (dateString: string): string => {
@@ -32,6 +39,7 @@ const formatDate = (dateString: string): string => {
 
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
+    const navigate = useNavigate();
     
     // State
     const [users, setUsers] = useState<UserResponse[]>([]);
@@ -68,6 +76,14 @@ export const UsersPage: React.FC = () => {
 
     const [permsLoading, setPermsLoading] = useState(false);
     const [effectivePerms, setEffectivePerms] = useState<EffectivePermissionsResponse | null>(null);
+
+    // Skills validation
+    const skillsModal = useModal();
+    const [userSkills, setUserSkills] = useState<EmployeeSkillResponse[]>([]);
+    const [skillsLoading, setSkillsLoading] = useState(false);
+    const [validatingSkillId, setValidatingSkillId] = useState<string | null>(null);
+    const [adjustingSkillId, setAdjustingSkillId] = useState<string | null>(null);
+    const [adjustLevel, setAdjustLevel] = useState<number>(3);
 
     // Cargar usuarios
     useEffect(() => {
@@ -248,6 +264,60 @@ export const UsersPage: React.FC = () => {
 
         loadEffective();
     }, [permissionsModal.isOpen, selectedUser]);
+
+    // Load employee skills when modal opens
+    useEffect(() => {
+        const loadUserSkills = async () => {
+            if (!skillsModal.isOpen || !selectedUser) return;
+            setSkillsLoading(true);
+            try {
+                const resp = await skillsService.getEmployeeSkills(selectedUser.id);
+                if (resp.success && resp.data) {
+                    setUserSkills(resp.data);
+                } else {
+                    setUserSkills([]);
+                }
+            } catch (err) {
+                console.error('Failed loading user skills', err);
+                setUserSkills([]);
+            } finally {
+                setSkillsLoading(false);
+            }
+        };
+        loadUserSkills();
+    }, [skillsModal.isOpen, selectedUser]);
+
+    const handleValidateSkill = async (skill: EmployeeSkillResponse, newLevel: number | null) => {
+        setValidatingSkillId(skill.id);
+        try {
+            const data: ValidateSkillRequest = { newLevel };
+            const resp = await skillsService.validateSkill(skill.id, data);
+            if (resp.success) {
+                showNotification({
+                    type: 'success',
+                    message: newLevel
+                        ? `Skill "${skill.skillName}" validada y ajustada a nivel ${newLevel}`
+                        : `Skill "${skill.skillName}" validada exitosamente`,
+                });
+                // Refresh skills list
+                const refreshed = await skillsService.getEmployeeSkills(selectedUser!.id);
+                if (refreshed.success && refreshed.data) setUserSkills(refreshed.data);
+                setAdjustingSkillId(null);
+            } else {
+                showNotification({ type: 'error', message: resp.message || 'Error al validar skill' });
+            }
+        } catch (err) {
+            console.error('Validate skill error:', err);
+            showNotification({ type: 'error', message: 'Error de conexión al validar' });
+        } finally {
+            setValidatingSkillId(null);
+        }
+    };
+
+    const getLevelLabel = (level: number) => {
+        const labels: Record<number, string> = { 1: 'Básico', 2: 'Intermedio', 3: 'Competente', 4: 'Avanzado', 5: 'Experto' };
+        return labels[level] || `Nivel ${level}`;
+    };
 
     const findRoleIdByName = (list: RoleDto[], name: string) => {
         const r = list.find(x => x.name === name);
@@ -513,6 +583,15 @@ export const UsersPage: React.FC = () => {
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <button
+                                                        onClick={() => {
+                                                            navigate(ROUTES.USER_DETAIL.replace(':id', user.id));
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                    >
+                                                        <Eye size={16} /> Ver perfil
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleOpenEdit(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
                                                     >
@@ -541,6 +620,18 @@ export const UsersPage: React.FC = () => {
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
                                                     >
                                                         <Key size={16} /> Permisos efectivos
+                                                    </button>
+
+                                                    {/* View & validate skills */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedUser(user);
+                                                            skillsModal.open();
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                    >
+                                                        <Award size={16} /> Skills / Validar
                                                     </button>
 
                                                     <button
@@ -850,6 +941,141 @@ export const UsersPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="text-sm text-slate-500">No hay permisos disponibles</div>
+                )}
+            </Modal>
+
+            {/* Skills Validation Modal */}
+            <Modal
+                isOpen={skillsModal.isOpen}
+                onClose={() => { skillsModal.close(); setUserSkills([]); setAdjustingSkillId(null); }}
+                title={selectedUser ? `Skills — ${selectedUser.fullName}` : 'Skills'}
+                icon={<Award size={20} className="text-primary" />}
+                size="lg"
+                footer={
+                    <Button variant="outline" onClick={() => skillsModal.close()}>
+                        Cerrar
+                    </Button>
+                }
+            >
+                {skillsLoading ? (
+                    <div className="text-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                        <p className="text-sm text-slate-400 mt-2">Cargando habilidades...</p>
+                    </div>
+                ) : userSkills.length === 0 ? (
+                    <div className="text-center py-8">
+                        <Award size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                        <p className="text-sm text-slate-500">Este usuario no tiene habilidades declaradas</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        <p className="text-xs text-slate-400 mb-2">
+                            {userSkills.length} habilidades declaradas. Puedes validar o ajustar el nivel de cada una.
+                        </p>
+                        {userSkills.map((skill) => (
+                            <div
+                                key={skill.id}
+                                className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                                            <Award size={16} className="text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                                {skill.skillName}
+                                            </p>
+                                            <p className="text-xs text-slate-400">
+                                                Nivel declarado: <span className="font-medium">{skill.level} — {getLevelLabel(skill.level)}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        {skill.lastValidatedAt ? (
+                                            <Badge variant="success" icon={CheckCircle2}>
+                                                Validada {skill.validatedByName ? `por ${skill.validatedByName}` : ''}
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="warning">Pendiente</Badge>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Evidence */}
+                                {skill.experienceDescription && (
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                                        {skill.experienceDescription}
+                                    </p>
+                                )}
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Validate at current level */}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        icon={CheckCircle2}
+                                        isLoading={validatingSkillId === skill.id && adjustingSkillId !== skill.id}
+                                        onClick={() => handleValidateSkill(skill, null)}
+                                    >
+                                        Validar (nivel actual)
+                                    </Button>
+
+                                    {/* Toggle adjust level */}
+                                    {adjustingSkillId === skill.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAdjustLevel((prev) => Math.max(1, prev - 1))}
+                                                    className="p-0.5 hover:text-primary"
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </button>
+                                                <span className="text-sm font-bold w-16 text-center text-slate-900 dark:text-white">
+                                                    {adjustLevel} — {getLevelLabel(adjustLevel)}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAdjustLevel((prev) => Math.min(5, prev + 1))}
+                                                    className="p-0.5 hover:text-primary"
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </button>
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                isLoading={validatingSkillId === skill.id}
+                                                onClick={() => handleValidateSkill(skill, adjustLevel)}
+                                            >
+                                                Aplicar
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setAdjustingSkillId(null)}
+                                            >
+                                                Cancelar
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                                setAdjustingSkillId(skill.id);
+                                                setAdjustLevel(skill.level);
+                                            }}
+                                        >
+                                            Ajustar nivel
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </Modal>
         </div>

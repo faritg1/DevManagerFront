@@ -80,7 +80,7 @@ export interface UpdateUserRequest {
 }
 
 // ============ PROFILE ============
-export type AvailabilityStatus = 'Available' | 'OpenToOffers' | 'NotAvailable';
+export type AvailabilityStatus = "Available" | "OpenToOffers" | "NotAvailable";
 
 export interface ProfileResponse {
   userId: string;
@@ -111,6 +111,33 @@ export interface UpdateProfileRequest {
   availability?: AvailabilityStatus | null;
   preferredTitle?: string | null;
   hourlyRate?: number | null;
+}
+
+// ============ CERTIFICATIONS ============
+export interface CertificationResponse {
+  id: string;
+  userId: string;
+  name: string;
+  issuer: string;
+  issueDate: string;
+  expirationDate: string | null;
+  evidenceUrl: string | null;
+}
+
+export interface CreateCertificationRequest {
+  name: string;
+  issuer: string;
+  issueDate: string;
+  expirationDate?: string | null;
+  evidenceUrl?: string | null;
+}
+
+export interface UpdateCertificationRequest {
+  name?: string;
+  issuer?: string;
+  issueDate?: string;
+  expirationDate?: string | null;
+  evidenceUrl?: string | null;
 }
 
 // ============ SKILLS (CATALOG) ============
@@ -149,6 +176,7 @@ export interface EmployeeSkillResponse {
   skillName: string;
   level: number;
   evidenceUrl: string | null;
+  experienceDescription: string | null;
   lastValidatedAt: string | null;
   validatedByUserId: string | null;
   validatedByName: string | null;
@@ -159,6 +187,7 @@ export interface UpsertEmployeeSkillRequest {
   skillId: string;
   level: number;
   evidenceUrl?: string | null;
+  experienceDescription?: string | null;
 }
 
 export interface ValidateSkillRequest {

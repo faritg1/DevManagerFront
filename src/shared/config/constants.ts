@@ -16,16 +16,14 @@ export const ROUTES = {
     PROJECT_DETAIL: '/projects/:id',
     CREATE_PROJECT: '/create-project',
     EDIT_PROJECT: '/projects/:id/edit',
-    
-    // Marketplace
-    MARKETPLACE: '/marketplace',
-    
+
     // Reports
     REPORTS: '/reports',
     
     // Administration
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
+    USER_DETAIL: '/users/:id',
     ROLES: '/roles',
     PERMISSIONS: '/permissions',
     

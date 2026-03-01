@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
-import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import type { EmployeeSkillResponse } from '../../../shared/api/types';
 
 interface Props {
@@ -94,54 +94,61 @@ export const SkillsSection: React.FC<Props> = ({
                             className={`p-3 rounded-xl ${getLevelBg(skill.level)} border border-transparent hover:border-slate-200 dark:hover:border-[#233948] transition-all relative`}
                         >
                             {opLoading && (
-                                <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center">
+                                <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center z-10">
                                     <Loader2 className="animate-spin text-primary" />
                                 </div>
                             )}
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-slate-900 dark:text-white">
-                                    {skill.skillName}
-                                </span>
-
-                                <div className="flex items-center gap-2">
+                            
+                            {/* Header: Nombre + Badge + Botones */}
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                                {/* Nombre y Badge */}
+                                <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                                    <span className="font-semibold text-slate-900 dark:text-white truncate">
+                                        {skill.skillName}
+                                    </span>
                                     <Badge 
                                         variant={skill.level >= 4 ? 'success' : skill.level >= 3 ? 'info' : 'default'}
+                                        className="flex-shrink-0"
                                     >
                                         {getLevelLabel(skill.level)}
                                     </Badge>
-                                    <div className="flex gap-1">
-                                        {onValidateAI && (
-                                            <button
-                                                type="button"
-                                                disabled={opLoading || validatingSkillId === skill.id}
-                                                onClick={() => onValidateAI(skill)}
-                                                title="Validar con IA"
-                                                className="p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-500 disabled:opacity-50"
-                                            >
-                                                {validatingSkillId === skill.id ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <Sparkles size={16} />
-                                                )}
-                                            </button>
-                                        )}
+                                </div>
+                                
+                                {/* Botones de acción */}
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                    {onValidateAI && (
                                         <button
                                             type="button"
-                                            disabled={opLoading}
-                                            onClick={() => onEdit(skill)}
-                                            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-[#233948]"
+                                            disabled={opLoading || validatingSkillId === skill.id}
+                                            onClick={() => onValidateAI(skill)}
+                                            title="Validar con IA"
+                                            className="p-1.5 rounded hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-500 disabled:opacity-50"
                                         >
-                                            <Edit size={16} />
+                                            {validatingSkillId === skill.id ? (
+                                                <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                                <Sparkles size={16} />
+                                            )}
                                         </button>
-                                        <button
-                                            type="button"
-                                            disabled={opLoading}
-                                            onClick={() => onDelete(skill)}
-                                            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-[#233948]"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        disabled={opLoading}
+                                        onClick={() => onEdit(skill)}
+                                        title="Editar"
+                                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-[#233948]"
+                                    >
+                                        <Edit size={16} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={opLoading}
+                                        onClick={() => onDelete(skill)}
+                                        title="Eliminar"
+                                        className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
                             
@@ -158,6 +165,33 @@ export const SkillsSection: React.FC<Props> = ({
                                     />
                                 ))}
                             </div>
+
+                            {/* Descripción de experiencia */}
+                            {skill.experienceDescription && (
+                                <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-700/30 rounded-lg">
+                                    <div className="flex items-start gap-2">
+                                        <FileText size={14} className="text-slate-500 mt-0.5 shrink-0" />
+                                        <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3">
+                                            {skill.experienceDescription}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Evidencia URL */}
+                            {skill.evidenceUrl && (
+                                <div className="mt-2 flex items-center gap-1.5 text-xs">
+                                    <ExternalLink size={12} className="text-primary" />
+                                    <a 
+                                        href={skill.evidenceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline"
+                                    >
+                                        Ver evidencia
+                                    </a>
+                                </div>
+                            )}
 
                             {/* Validación */}
                             <div className="flex items-center gap-1.5 text-xs">

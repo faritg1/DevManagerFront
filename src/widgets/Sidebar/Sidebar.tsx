@@ -129,7 +129,6 @@ export const Sidebar: React.FC = () => {
 
                 <NavSection title={NAV_SECTIONS.AGENTS}>
                     <NavItem to={ROUTES.AGENTS} icon={Bot} label="Mis Agentes" isActive={isActive(ROUTES.AGENTS)} />
-                    <NavItem to={ROUTES.MARKETPLACE} icon={Cpu} label="Marketplace" isActive={isActive(ROUTES.MARKETPLACE)} />
                 </NavSection>
 
                 <NavSection title={NAV_SECTIONS.ADMIN}>

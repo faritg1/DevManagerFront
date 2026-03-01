@@ -7,6 +7,7 @@
 export { authService } from "./authService";
 export { usersService } from "./usersService";
 export { profileService } from "./profileService";
+export { certificationService } from "./certificationService";
 export { skillsService } from "./skillsService";
 export { projectsService } from "./projectsService";
 export { applicationsService } from "./applicationsService";

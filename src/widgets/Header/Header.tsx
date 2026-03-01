@@ -13,7 +13,6 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.DASHBOARD]: 'Dashboard',
     [ROUTES.PROJECTS]: 'Proyectos',
     [ROUTES.CREATE_PROJECT]: 'Nuevo Proyecto',
-    [ROUTES.MARKETPLACE]: 'Marketplace',
     [ROUTES.REPORTS]: 'Reportes IA',
     [ROUTES.AGENTS]: 'Agentes IA',
     [ROUTES.ORGANIZATIONS]: 'Organizaciones',

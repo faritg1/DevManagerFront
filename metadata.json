@@ -1,5 +1,5 @@
 {
   "name": "DevManager",
-  "description": "A comprehensive talent management platform featuring project dashboards, marketplace, and an AI-powered reporting copilot.",
+  "description": "A comprehensive talent management platform featuring project dashboards, and an AI-powered reporting copilot.",
   "requestFramePermissions": []
 }

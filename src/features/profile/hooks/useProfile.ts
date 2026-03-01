@@ -11,8 +11,10 @@ import { useAuth } from "../../../shared/context";
 interface UseProfileResult {
   profile: ProfileResponse | null;
   isLoading: boolean;
+  error: string | null;
   isEditing: boolean;
   isSaving: boolean;
+  isDeleting: boolean;
   profileForm: UpdateProfileRequest;
   effectivePerms: EffectivePermissionsResponse | null;
   permsLoading: boolean;
@@ -23,9 +25,11 @@ interface UseProfileResult {
   setProfileForm: React.Dispatch<React.SetStateAction<UpdateProfileRequest>>;
   startEditing: () => void;
   cancelEditing: () => void;
-  saveProfile: () => Promise<boolean>;
+  saveProfile: () => Promise<{ success: boolean; message?: string }>;
+  deleteProfile: () => Promise<boolean>;
   loadAvailableRoles: () => Promise<void>;
   requestRoleChange: (roleId: string) => Promise<boolean>;
+  reload: () => void;
 }
 
 export function useProfile(): UseProfileResult {
@@ -33,8 +37,10 @@ export function useProfile(): UseProfileResult {
 
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [profileForm, setProfileForm] = useState<UpdateProfileRequest>({});
 
   const [effectivePerms, setEffectivePerms] =
@@ -45,82 +51,215 @@ export function useProfile(): UseProfileResult {
   const [rolesLoading, setRolesLoading] = useState(false);
   const [requestingRoleId, setRequestingRoleId] = useState<string | null>(null);
 
-  // load profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      try {
-        const response = await profileService.getMyProfile();
-        if (response.success && response.data) {
-          setProfile(response.data);
-          setProfileForm({
-            bio: response.data.bio || "",
-            yearsExperience: response.data.yearsExperience || 0,
-            linkedinUrl: response.data.linkedinUrl || "",
-            githubUrl: response.data.githubUrl || "",
-            portfolioUrl: response.data.portfolioUrl || "",
-            seniorityLevelId: response.data.seniorityLevelId ?? undefined,
-            location: response.data.location ?? undefined,
-            timezone: response.data.timezone ?? undefined,
-            availability: response.data.availability ?? undefined,
-            preferredTitle: response.data.preferredTitle ?? undefined,
-            hourlyRate: response.data.hourlyRate ?? undefined,
-          });
-        }
+  // function to load profile (reusable)
+  const fetchProfile = async () => {
+    setIsLoading(true);
+    setError(null);
+    console.log('[Profile] Iniciando carga de perfil...');
+    try {
+      const response = await profileService.getMyProfile();
+      console.log('[Profile] Respuesta getMyProfile:', response);
 
-        // load perms regardless
-        if (user?.id) {
-          setPermsLoading(true);
-          try {
-            const permResp = await rbacService.getUserEffectivePermissions(
-              user.id,
-            );
-            if (permResp.success && permResp.data) {
-              setEffectivePerms(permResp.data);
-            }
-          } catch (err) {
-            console.error("Failed to load effective permissions", err);
-          } finally {
-            setPermsLoading(false);
-          }
-        }
-      } catch (err: any) {
-        // if 404 not found, handle it gracefully by letting the user create it via UI
-        if (err && err.status === 404) {
-          setProfile(null);
-          setProfileForm({});
-        } else {
-          console.error("Error fetching profile", err);
-        }
-      } finally {
-        setIsLoading(false);
+      if (response.success && response.data) {
+        console.log('[Profile] Perfil encontrado:', response.data);
+        setProfile(response.data);
+        setProfileForm({
+          bio: response.data.bio || "",
+          yearsExperience: response.data.yearsExperience || 0,
+          linkedinUrl: response.data.linkedinUrl || "",
+          githubUrl: response.data.githubUrl || "",
+          portfolioUrl: response.data.portfolioUrl || "",
+          seniorityLevelId: response.data.seniorityLevelId ?? undefined,
+          location: response.data.location ?? undefined,
+          timezone: response.data.timezone ?? undefined,
+          availability: response.data.availability ?? undefined,
+          preferredTitle: response.data.preferredTitle ?? undefined,
+          hourlyRate: response.data.hourlyRate ?? undefined,
+        });
+      } else {
+        console.log('[Profile] No se encontró perfil (respuesta sin datos)');
+        setProfile(null);
+        setProfileForm({});
       }
-    };
+
+      // load perms regardless
+      if (user?.id) {
+        setPermsLoading(true);
+        try {
+          const permResp = await rbacService.getUserEffectivePermissions(
+            user.id,
+          );
+          if (permResp.success && permResp.data) {
+            setEffectivePerms(permResp.data);
+          }
+        } catch (err) {
+          console.error("[Profile] Error al cargar permisos:", err);
+        } finally {
+          setPermsLoading(false);
+        }
+      }
+    } catch (err: any) {
+      console.error('[Profile] Error fetching profile:', err);
+      // Verificar si es error 404
+      const status = err?.status || err?.response?.status;
+      if (status === 404) {
+        console.log('[Profile] Perfil no encontrado (404)');
+        setProfile(null);
+        setProfileForm({});
+      } else {
+        setError("No se pudo cargar el perfil. Intenta de nuevo más tarde.");
+      }
+    } finally {
+      setIsLoading(false);
+      console.log('[Profile] Carga de perfil finalizada');
+    }
+  };
+
+  // load profile on mount / user change
+  useEffect(() => {
     fetchProfile();
   }, [user?.id]);
 
   const startEditing = () => setIsEditing(true);
   const cancelEditing = () => setIsEditing(false);
 
-  const saveProfile = async (): Promise<boolean> => {
-    setIsSaving(true);
-    try {
-      const response = await profileService.updateMyProfile(profileForm);
-      if (response.success) {
-        setProfile((prev) => {
-          if (prev) return { ...prev, ...profileForm };
-          // create new profile object from form
-          return { userId: user?.id || '', ...profileForm } as ProfileResponse;
-        });
-        setIsEditing(false);
+  // Función para limpiar y preparar datos del perfil antes de enviar
+  const cleanProfileData = (data: UpdateProfileRequest): UpdateProfileRequest => {
+    const cleaned: UpdateProfileRequest = {};
+    
+    // Bio - texto libre
+    if (data.bio && data.bio.trim()) {
+      cleaned.bio = data.bio.trim();
+    }
+    
+    // Years experience - número positivo
+    if (data.yearsExperience !== undefined && data.yearsExperience !== null && data.yearsExperience >= 0) {
+      cleaned.yearsExperience = data.yearsExperience;
+    }
+    
+    // URLs - solo enviar si son válidas o vacías
+    const isValidUrl = (url: string | null | undefined): boolean => {
+      if (!url || url.trim() === '') return false;
+      try {
+        new URL(url);
         return true;
+      } catch {
+        return false;
       }
-      return false;
-    } catch {
-      return false;
+    };
+    
+    if (isValidUrl(data.linkedinUrl)) {
+      cleaned.linkedinUrl = data.linkedinUrl;
+    }
+    if (isValidUrl(data.githubUrl)) {
+      cleaned.githubUrl = data.githubUrl;
+    }
+    if (isValidUrl(data.portfolioUrl)) {
+      cleaned.portfolioUrl = data.portfolioUrl;
+    }
+    
+    // Otros campos opcionales
+    if (data.seniorityLevelId !== undefined) cleaned.seniorityLevelId = data.seniorityLevelId;
+    if (data.location) cleaned.location = data.location;
+    if (data.timezone) cleaned.timezone = data.timezone;
+    if (data.availability) cleaned.availability = data.availability;
+    if (data.preferredTitle) cleaned.preferredTitle = data.preferredTitle;
+    if (data.hourlyRate !== undefined) cleaned.hourlyRate = data.hourlyRate;
+    
+    console.log('[Profile] Datos limpiados:', cleaned);
+    return cleaned;
+  };
+
+  const saveProfile = async (): Promise<{
+    success: boolean;
+    message?: string;
+  }> => {
+    setIsSaving(true);
+    console.log('[Profile] Iniciando guardado...', { profileExists: !!profile, formData: profileForm });
+    
+    try {
+      // Limpiar y validar datos antes de enviar
+      const cleanedData = cleanProfileData(profileForm);
+      
+      let response;
+      
+      if (!profile) {
+        // No existe perfil -> Usar POST para crear nuevo
+        // POST reactiva el perfil si fue soft-deleted
+        console.log('[Profile] No existe perfil, usando POST (crear) /api/profile/me...');
+        
+        try {
+          response = await profileService.createMyProfile(cleanedData);
+          console.log('[Profile] Respuesta createMyProfile (POST):', response);
+        } catch (postError: any) {
+          // Si POST retorna 409 (perfil ya existe), intentamos con PUT
+          console.log('[Profile] POST lanzó error:', postError);
+          if (postError?.status === 409) {
+            console.log('[Profile] POST retornó 409, intentando con PUT...');
+            response = await profileService.updateMyProfile(cleanedData);
+            console.log('[Profile] Respuesta updateMyProfile (fallback PUT):', response);
+          } else {
+            // Rethrow si no es 409
+            throw postError;
+          }
+        }
+      } else {
+        // Existe perfil -> Usar PUT para actualizar
+        console.log('[Profile] Perfil existe, usando PUT (actualizar) /api/profile/me...');
+        response = await profileService.updateMyProfile(cleanedData);
+        console.log('[Profile] Respuesta updateMyProfile (PUT):', response);
+      }
+
+      if (response.success) {
+        console.log('[Profile] Guardado exitoso, recargando perfil...');
+        await fetchProfile();
+        setIsEditing(false);
+        console.log('[Profile] Perfil guardado exitosamente');
+        return { success: true, message: response.message || 'Perfil guardado exitosamente' };
+      } else {
+        // Mostrar errores de validación del servidor
+        const validationErrors = (response as any).errors ? 
+          Object.entries((response as any).errors).map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`).join('; ') 
+          : response.message;
+        console.warn('[Profile] Guardado falló:', validationErrors);
+        return { success: false, message: validationErrors || 'Error al guardar perfil' };
+      }
+    } catch (err: any) {
+      console.error('[Profile] Excepción durante guardado:', err);
+      
+      // Manejar errores de validación (400 con errors)
+      if (err?.errors) {
+        const validationErrors = Object.entries(err.errors)
+          .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+          .join('; ');
+        console.error('[Profile] Errores de validación:', validationErrors);
+        return { success: false, message: validationErrors };
+      }
+      
+      const errorMessage = err?.message || 'Error de conexión al guardar perfil';
+      return { success: false, message: errorMessage };
     } finally {
       setIsSaving(false);
+      console.log('[Profile] Guardado finalizado');
     }
+  };
+
+  const deleteProfile = async (): Promise<boolean> => {
+    setIsDeleting(true);
+    try {
+      const resp = await profileService.deleteMyProfile();
+      if (resp.success) {
+        // nothing additional
+      }
+    } catch (err) {
+      console.warn("deleteMyProfile failed or not implemented", err);
+    } finally {
+      setProfile(null);
+      setProfileForm({});
+      setIsEditing(false);
+      setIsDeleting(false);
+    }
+    return true;
   };
 
   const loadAvailableRoles = async () => {
@@ -154,8 +293,10 @@ export function useProfile(): UseProfileResult {
   return {
     profile,
     isLoading,
+    error,
     isEditing,
     isSaving,
+    isDeleting,
     profileForm,
     effectivePerms,
     permsLoading,
@@ -167,7 +308,10 @@ export function useProfile(): UseProfileResult {
     startEditing,
     cancelEditing,
     saveProfile,
+    deleteProfile,
     loadAvailableRoles,
     requestRoleChange,
+    // allow consumer to refetch
+    reload: fetchProfile,
   };
 }

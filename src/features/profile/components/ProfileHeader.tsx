@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Save, X, CheckCircle2, Loader2 } from 'lucide-react';
+import { Edit, Save, X, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import { Avatar, Button, Badge } from '../../../shared/ui';
 import type { ProfileResponse } from '../../../shared/api/types';
 
@@ -12,9 +12,11 @@ interface Props {
     catalogs: any;
     isEditing: boolean;
     isSaving: boolean;
+    isDeleting?: boolean;
     onStartEdit: () => void;
     onCancelEdit: () => void;
     onSave: () => void;
+    onDelete?: () => void;
 }
 
 export const ProfileHeader: React.FC<Props> = ({
@@ -26,9 +28,11 @@ export const ProfileHeader: React.FC<Props> = ({
     catalogs,
     isEditing,
     isSaving,
+    isDeleting,
     onStartEdit,
     onCancelEdit,
     onSave,
+    onDelete,
 }) => {
     return (
         <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -71,13 +75,26 @@ export const ProfileHeader: React.FC<Props> = ({
                     </div>
                     
                     {!isEditing ? (
-                        <Button 
-                            variant="outline" 
-                            icon={Edit}
-                            onClick={onStartEdit}
-                        >
-                            Editar Perfil
-                        </Button>
+                        <div className="flex gap-2 items-center">
+                            {onDelete && profile && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    icon={Trash2}
+                                    onClick={onDelete}
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                                </Button>
+                            )}
+                            <Button 
+                                variant="outline" 
+                                icon={Edit}
+                                onClick={onStartEdit}
+                            >
+                                Editar Perfil
+                            </Button>
+                        </div>
                     ) : (
                         <div className="flex gap-2">
                             <Button 

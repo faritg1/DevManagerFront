@@ -8,7 +8,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useAuth, useNotification, useConfig } from "../../../shared/context";
-import { useModal } from "../../../shared/hooks";
+import { useModal, useConfirm } from "../../../shared/hooks";
 import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
 import { useCertifications } from "../hooks/useCertifications";
@@ -84,6 +84,7 @@ export const ProfilePage: React.FC = () => {
   const skillModal = useModal();
   const requestRoleModal = useModal();
   const aiValidationModal = useModal();
+  const { confirm } = useConfirm();
   const [editingSkill, setEditingSkill] =
     useState<EmployeeSkillResponse | null>(null);
   const [skillForm, setSkillForm] = useState<UpsertEmployeeSkillRequest>({
@@ -122,7 +123,11 @@ export const ProfilePage: React.FC = () => {
   };
 
   const removeSkill = async (skill: EmployeeSkillResponse) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta habilidad?")) return;
+    const confirmed = await confirm({
+      message: "¿Seguro que deseas eliminar esta habilidad?",
+      type: "warning",
+    });
+    if (!confirmed) return;
     const ok = await deleteSkill(skill);
     if (ok)
       showNotification({ type: "success", message: "Habilidad eliminada" });
@@ -275,11 +280,11 @@ export const ProfilePage: React.FC = () => {
             }
           }}
           onDelete={async () => {
-            if (
-              window.confirm(
-                "¿Seguro que deseas eliminar tu perfil? Esta acción no se puede deshacer.",
-              )
-            ) {
+            const confirmed = await confirm({
+              message: "¿Seguro que deseas eliminar tu perfil? Esta acción no se puede deshacer.",
+              type: "warning",
+            });
+            if (confirmed) {
               const ok = await deleteProfile();
               if (ok)
                 showNotification({
@@ -344,10 +349,11 @@ export const ProfilePage: React.FC = () => {
               isLoading={isLoadingCerts}
               opLoading={certOpLoading}
               onDelete={async (cert) => {
-                if (
-                  !window.confirm(`¿Eliminar la certificación "${cert.name}"?`)
-                )
-                  return;
+                const confirmed = await confirm({
+                  message: `¿Eliminar la certificación "${cert.name}"?`,
+                  type: "warning",
+                });
+                if (!confirmed) return;
                 const ok = await deleteCertification(cert);
                 if (ok) {
                   showNotification({

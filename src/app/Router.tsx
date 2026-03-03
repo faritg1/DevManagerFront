@@ -21,12 +21,15 @@ import {
   EditProjectPage,
   OrganizationsPage,
   UsersPage,
+  UserDetailPage,
   AgentsPage,
   ProfilePage,
   RolesPage,
   RolePermissionsPage,
   PermissionsPage,
   SkillsCatalogPage,
+  ReportsPage,
+  SettingsPage,
 } from "../features";
 
 // Placeholder pages for routes not yet implemented
@@ -75,10 +78,7 @@ export const AppRouter: React.FC = () => {
                 />
 
                 {/* Reports */}
-                <Route
-                  path={ROUTES.REPORTS}
-                  element={<PlaceholderPage title="Reportes IA" />}
-                />
+                <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
 
                 {/* Agents */}
                 <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
@@ -97,6 +97,7 @@ export const AppRouter: React.FC = () => {
                   element={<OrganizationsPage />}
                 />
                 <Route path={ROUTES.USERS} element={<UsersPage />} />
+                <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
                 <Route path={ROUTES.ROLES} element={<RolesPage />} />
                 <Route
                   path={`${ROUTES.ROLES}/:id/permissions`}
@@ -111,7 +112,7 @@ export const AppRouter: React.FC = () => {
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
                 <Route
                   path={ROUTES.SETTINGS}
-                  element={<PlaceholderPage title="Configuración" />}
+                  element={<SettingsPage />}
                 />
                 </Route>
               </Route>

@@ -23,6 +23,7 @@ export const ROUTES = {
     // Administration
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
+    USER_DETAIL: '/users/:id',
     ROLES: '/roles',
     PERMISSIONS: '/permissions',
     

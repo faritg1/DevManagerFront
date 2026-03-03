@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { CertificationResponse } from "../../../shared/api/types";
 import { CertificationModal } from "./CertificationModal";
+import { useConfirm } from "../../../shared/hooks";
 
 interface Props {
   certifications: CertificationResponse[];
@@ -45,6 +46,7 @@ export const CertificationsSection: React.FC<Props> = ({
   const [editingCert, setEditingCert] = useState<CertificationResponse | null>(
     null,
   );
+  const { confirm } = useConfirm();
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
@@ -76,7 +78,11 @@ export const CertificationsSection: React.FC<Props> = ({
   };
 
   const handleDelete = async (cert: CertificationResponse) => {
-    if (window.confirm(`¿Eliminar la certificación "${cert.name}"?`)) {
+    const confirmed = await confirm({
+      message: `¿Eliminar la certificación "${cert.name}"?`,
+      type: "warning",
+    });
+    if (confirmed) {
       await onDelete(cert);
     }
   };

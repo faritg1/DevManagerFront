@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
+import ReactMarkdown from 'react-markdown';
+import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench } from 'lucide-react';
+import { Button, Card, Badge, Avatar, Modal } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService } from '../../../shared/api';
 
@@ -9,12 +10,13 @@ interface ChatMessage {
     role: 'user' | 'agent';
     content: string;
     timestamp: Date;
+    markdown?: string;
     reasoning?: string;
-    toolsExecuted?: Array<{ toolName: string; input: string; output: string; success: boolean }>;
+    toolsExecuted?: Array<{ tool_name: string; input: string; output: string; success: boolean }>;
     requiresApproval?: boolean;
     actionId?: string | null;
     confidence?: number;
-    /** Track HITL resolution per message */
+    suggestedActions?: Array<{ label: string; query: string }>;
     hitlStatus?: 'pending' | 'approved' | 'rejected';
     hitlNote?: string;
 }
@@ -68,27 +70,20 @@ export const AgentsPage: React.FC = () => {
             });
 
             if (response.success && response.data) {
-                // Parsear el response JSON si viene como string
-                let answerText = response.data.response;
-                try {
-                    const parsed = JSON.parse(response.data.response);
-                    // Formatear como texto legible
-                    answerText = formatAgentResponse(parsed);
-                } catch {
-                    // Si no es JSON, usar tal cual
-                    answerText = response.data.response;
-                }
-
+                const data = response.data;
+                
                 const agentMessage: ChatMessage = {
                     id: (Date.now() + 1).toString(),
                     role: 'agent',
-                    content: answerText,
+                    content: data.markdown || data.payload?.text || data.summary || '',
+                    markdown: data.markdown,
                     timestamp: new Date(),
-                    reasoning: response.data.reasoningSteps,
-                    toolsExecuted: response.data.toolsExecuted,
-                    requiresApproval: response.data.requiresHumanApproval,
-                    actionId: response.data.actionId,
-                    hitlStatus: response.data.requiresHumanApproval ? 'pending' : undefined,
+                    reasoning: data.metadata?.reasoning,
+                    toolsExecuted: data.metadata?.tools_executed,
+                    requiresApproval: data.metadata?.requires_human_approval,
+                    actionId: data.metadata?.action_id,
+                    suggestedActions: data.suggested_actions,
+                    hitlStatus: data.metadata?.requires_human_approval ? 'pending' : undefined,
                     confidence: 0.95
                 };
                 setMessages(prev => [...prev, agentMessage]);
@@ -145,11 +140,6 @@ export const AgentsPage: React.FC = () => {
 
     const handleExampleClick = (query: string) => {
         setInputValue(query);
-    };
-
-    // Formatear respuesta JSON del agente
-    const formatAgentResponse = (parsed: unknown): string => {
-        return JSON.stringify(parsed, null, 2);
     };
 
     // HITL: Aprobar acción
@@ -274,7 +264,36 @@ export const AgentsPage: React.FC = () => {
                                         ? 'bg-primary text-white' 
                                         : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white'
                                 }`}>
-                                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                    {message.role === 'agent' && message.markdown ? (
+                                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none 
+                                            prose-headings:mt-3 prose-headings:mb-2 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
+                                            prose-p:mb-2 prose-p:mt-0 prose-ul:my-1 prose-li:my-0
+                                            prose-strong:text-primary dark:prose-strong:text-primary prose-strong:font-semibold
+                                            prose-code:bg-slate-200 dark:prose-code:bg-slate-700 prose-code:px-1 prose-code:rounded prose-code:text-xs
+                                            prose-em:italic">
+                                            <ReactMarkdown>{message.markdown}</ReactMarkdown>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                    )}
+                                    
+                                    {/* Suggested actions */}
+                                    {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
+                                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Sugerencias:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {message.suggestedActions.map((action, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => setInputValue(action.query)}
+                                                        className="text-xs px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary text-slate-700 dark:text-slate-300 transition-colors"
+                                                    >
+                                                        {action.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Metadata del agente */}
@@ -326,7 +345,10 @@ export const AgentsPage: React.FC = () => {
                                 {/* Tools executed (colapsable) */}
                                 {message.toolsExecuted && message.toolsExecuted.length > 0 && (
                                     <details className="text-xs text-slate-500 dark:text-slate-400 px-2">
-                                        <summary className="cursor-pointer hover:text-primary">Herramientas ejecutadas ({message.toolsExecuted.length})</summary>
+                                        <summary className="cursor-pointer hover:text-primary flex items-center gap-1">
+                                            <Wrench size={12} />
+                                            Herramientas usadas ({message.toolsExecuted.length})
+                                        </summary>
                                         <div className="mt-2 space-y-2">
                                             {message.toolsExecuted.map((tool, idx) => (
                                                 <div key={idx} className="p-2 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948]">
@@ -336,7 +358,10 @@ export const AgentsPage: React.FC = () => {
                                                         ) : (
                                                             <XCircle className="text-red-500" size={12} />
                                                         )}
-                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{tool.toolName}</span>
+                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{tool.tool_name}</span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 dark:text-slate-400 pl-5">
+                                                        {tool.output}
                                                     </div>
                                                 </div>
                                             ))}

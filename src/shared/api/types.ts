@@ -312,17 +312,34 @@ export interface AgentQueryRequest {
   requireApproval?: boolean;
 }
 
+export interface AgentToolExecuted {
+  tool_name: string;
+  input: string;
+  output: string;
+  success: boolean;
+}
+
+export interface AgentMetadata {
+  reasoning: string;
+  tools_executed: AgentToolExecuted[];
+  requires_human_approval: boolean;
+  action_id: string | null;
+}
+
+export interface AgentSuggestedAction {
+  label: string;
+  query: string;
+}
+
 export interface AgentQueryResponse {
-  response: string; // Backend retorna 'response' (JSON string)
-  reasoningSteps: string; // Backend retorna 'reasoningSteps'
-  toolsExecuted: Array<{
-    toolName: string;
-    input: string;
-    output: string;
-    success: boolean;
-  }>;
-  requiresHumanApproval: boolean; // Backend retorna 'requiresHumanApproval'
-  actionId: string | null;
+  response_type: 'text' | 'mixed' | 'table';
+  summary: string;
+  markdown: string;
+  payload: {
+    text: string;
+  };
+  metadata: AgentMetadata;
+  suggested_actions: AgentSuggestedAction[];
 }
 
 export interface ValidateSkillAIRequest {

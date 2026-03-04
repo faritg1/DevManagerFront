@@ -22,6 +22,12 @@ export const API_ENDPOINTS = {
     ME: "/profile/me",
   },
 
+  // Certifications
+  CERTIFICATIONS: {
+    ME: "/certifications/me",
+    BY_ID: (id: string) => `/certifications/me/${id}`,
+  },
+
   // Skills (Catalog)
   SKILLS: {
     BASE: "/skills",

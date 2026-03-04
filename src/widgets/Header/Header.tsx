@@ -13,7 +13,6 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.DASHBOARD]: 'Dashboard',
     [ROUTES.PROJECTS]: 'Proyectos',
     [ROUTES.CREATE_PROJECT]: 'Nuevo Proyecto',
-    [ROUTES.MARKETPLACE]: 'Marketplace',
     [ROUTES.REPORTS]: 'Reportes IA',
     [ROUTES.AGENTS]: 'Agentes IA',
     [ROUTES.ORGANIZATIONS]: 'Organizaciones',
@@ -78,46 +77,53 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     }, [location.pathname]);
 
     return (
-        <header className="h-16 border-b border-slate-200 dark:border-[#233948] bg-white/80 dark:bg-[#111b22]/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-10">
-            {/* Mobile Menu Button */}
-            <button 
-                onClick={onMenuClick}
-                className="md:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-                <Menu size={24} />
-            </button>
-            
-            {/* Breadcrumbs Dinámicos */}
-            <nav className="hidden md:flex text-sm text-slate-500 dark:text-slate-400 font-medium items-center gap-1">
-                <Link 
-                    to={ROUTES.DASHBOARD} 
-                    className="text-slate-900 dark:text-white font-semibold hover:text-primary dark:hover:text-primary transition-colors"
+        <header className="h-16 border-b border-slate-200 dark:border-[#233948] bg-white/80 dark:bg-[#111b22]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+            {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
+            <div className="flex items-center gap-2 min-w-0">
+                {/* Mobile Menu Button */}
+                <button 
+                    onClick={onMenuClick}
+                    className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg"
                 >
-                    DevManager
-                </Link>
-                {breadcrumbs.map((crumb, index) => {
-                    const isRoleIdPath = /^\/roles\/[^\/]+$/.test(crumb.path);
-                    const displayName = isRoleIdPath ? (location.state as any)?.roleName ?? 'Rol' : crumb.name;
-                    // Si es un segmento /roles/:id no linkear a /roles/:id (ruta no existe); enlazamos al listado de roles
-                    const linkTo = isRoleIdPath ? ROUTES.ROLES : crumb.path;
+                    <Menu size={24} />
+                </button>
 
-                    return (
-                        <React.Fragment key={crumb.path}>
-                            <ChevronRight size={14} className="text-slate-400 mx-1" />
-                            {index === breadcrumbs.length - 1 ? (
-                                <span className="text-slate-500 dark:text-slate-400">{displayName}</span>
-                            ) : (
-                                <Link 
-                                    to={linkTo}
-                                    className="hover:text-primary dark:hover:text-primary transition-colors"
-                                >
-                                    {displayName}
-                                </Link>
-                            )}
-                        </React.Fragment>
-                    );
-                })}
-            </nav>
+                {/* Mobile Page Title */}
+                <h1 className="md:hidden text-base font-semibold text-slate-900 dark:text-white truncate">
+                    {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : 'DevManager'}
+                </h1>
+            
+                {/* Breadcrumbs Dinámicos (desktop) */}
+                <nav className="hidden md:flex text-sm text-slate-500 dark:text-slate-400 font-medium items-center gap-1">
+                    <Link 
+                        to={ROUTES.DASHBOARD} 
+                        className="text-slate-900 dark:text-white font-semibold hover:text-primary dark:hover:text-primary transition-colors"
+                    >
+                        DevManager
+                    </Link>
+                    {breadcrumbs.map((crumb, index) => {
+                        const isRoleIdPath = /^\/roles\/[^\/]+$/.test(crumb.path);
+                        const displayName = isRoleIdPath ? (location.state as any)?.roleName ?? 'Rol' : crumb.name;
+                        const linkTo = isRoleIdPath ? ROUTES.ROLES : crumb.path;
+
+                        return (
+                            <React.Fragment key={crumb.path}>
+                                <ChevronRight size={14} className="text-slate-400 mx-1" />
+                                {index === breadcrumbs.length - 1 ? (
+                                    <span className="text-slate-500 dark:text-slate-400">{displayName}</span>
+                                ) : (
+                                    <Link 
+                                        to={linkTo}
+                                        className="hover:text-primary dark:hover:text-primary transition-colors"
+                                    >
+                                        {displayName}
+                                    </Link>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </nav>
+            </div>
 
             {/* Search (optional) */}
             <div className="hidden lg:flex flex-1 max-w-md mx-8">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, 
@@ -11,8 +11,7 @@ import {
     LogOut,
     Hexagon,
     Bot,
-    Cpu,
-    Settings,
+    X,
     ChevronDown,
     Key,
     Code2,
@@ -58,11 +57,33 @@ const NavSection: React.FC<NavSectionProps> = ({ title, children }) => (
     </div>
 );
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
     const location = useLocation();
     const { user, logout } = useAuth();
     const { showNotification } = useNotification();
     const { confirm } = useConfirm();
+
+    // Auto-close mobile drawer on route change
+    const onCloseRef = useRef(onClose);
+    useEffect(() => { onCloseRef.current = onClose; });
+    useEffect(() => {
+        onCloseRef.current?.();
+    }, [location.pathname]);
+
+    // Lock body scroll when mobile drawer is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isOpen]);
 
     const handleLogout = async () => {
         const ok = await confirm({
@@ -89,14 +110,26 @@ export const Sidebar: React.FC = () => {
         () => isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS),
     );
 
-    return (
-        <aside className="w-64 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0">
+    // Sidebar content shared by desktop & mobile views
+    const renderContent = () => (
+        <>
             {/* Logo Area */}
-            <div className="p-6 flex items-center gap-3">
-                <div className="size-8 text-primary">
-                    <Hexagon fill="currentColor" className="w-full h-full" />
+            <div className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="size-8 text-primary">
+                        <Hexagon fill="currentColor" className="w-full h-full" />
+                    </div>
+                    <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">DevManager</span>
                 </div>
-                <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">DevManager</span>
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        className="md:hidden p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
+                        aria-label="Cerrar menú"
+                    >
+                        <X size={20} />
+                    </button>
+                )}
             </div>
 
             {/* User Mini Profile */}
@@ -171,7 +204,34 @@ export const Sidebar: React.FC = () => {
                     <span className="text-sm font-medium">Cerrar Sesión</span>
                 </button>
             </div>
-        </aside>
+        </>
+    );
+
+    return (
+        <>
+            {/* ── Desktop Sidebar ── visible md+ ── */}
+            <aside className="w-64 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0">
+                {renderContent()}
+            </aside>
+
+            {/* ── Mobile Overlay ── */}
+            <div
+                className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ${
+                    isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={onClose}
+                aria-hidden="true"
+            />
+
+            {/* ── Mobile Drawer ── */}
+            <aside
+                className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
+                    isOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                {renderContent()}
+            </aside>
+        </>
     );
 };
 

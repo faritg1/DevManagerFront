@@ -45,7 +45,7 @@ export const LoginPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-slate-900 dark:text-white text-3xl sm:text-4xl font-black leading-tight tracking-tight mb-2">
-              Bienvenido de vuelta, jeje.
+              Bienvenido de vuelta
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-base">
               Ingresa tus credenciales para acceder a tu workspace.

@@ -32,6 +32,14 @@ export const SkillModal: React.FC<Props> = ({
         return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
     };
 
+    // Validación: Nivel >= 4 requiere evidencias
+    const requiresEvidence = form.level >= 4;
+    const hasValidEvidence = requiresEvidence 
+        ? (form.evidenceUrl?.trim() && form.experienceDescription?.trim())
+        : true;
+
+    const isFormValid = form.skillId && hasValidEvidence;
+
     return (
         <Modal
             isOpen={isOpen}
@@ -43,7 +51,7 @@ export const SkillModal: React.FC<Props> = ({
                 <>
                     <Button 
                         onClick={onSave}
-                        disabled={saving || !form.skillId}
+                        disabled={saving || !isFormValid}
                         icon={saving ? Loader2 : (editing ? Save : Plus)}
                     >
                         {saving ? 'Guardando...' : (editing ? 'Guardar cambios' : 'Agregar Habilidad')}
@@ -93,12 +101,18 @@ export const SkillModal: React.FC<Props> = ({
                         selectedId={form.level}
                         onSelect={(id) => setForm(prev => ({ ...prev, level: id }))}
                     />
+                    {requiresEvidence && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <Award size={12} />
+                            Nivel avanzado: requiere evidencias obligatorias
+                        </p>
+                    )}
                 </div>
 
                 {/* URL de evidencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
-                        Evidencia (opcional)
+                        Evidencia {requiresEvidence && '*'}
                     </label>
                     <Input
                         value={form.evidenceUrl || ''}
@@ -107,14 +121,16 @@ export const SkillModal: React.FC<Props> = ({
                         icon={LinkIcon}
                     />
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Agrega un link a un proyecto, repositorio o certificación que demuestre tu dominio.
+                        {requiresEvidence 
+                            ? '⚠️ Obligatorio para niveles avanzados (4+). Agrega un link a un proyecto o certificación.'
+                            : 'Agrega un link a un proyecto, repositorio o certificación que demuestre tu dominio.'}
                     </p>
                 </div>
 
                 {/* Descripción de experiencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
-                        Descripción de Experiencia (opcional)
+                        Descripción de Experiencia {requiresEvidence && '*'}
                     </label>
                     <textarea
                         value={form.experienceDescription || ''}
@@ -125,7 +141,9 @@ export const SkillModal: React.FC<Props> = ({
                         className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white placeholder:text-slate-400 p-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
                     />
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Describe tu experiencia (máx 1000 caracteres). Útil si no tienes URL de evidencia.
+                        {requiresEvidence
+                            ? '⚠️ Obligatorio para niveles avanzados (4+). Describe tu experiencia (máx 1000 caracteres).'
+                            : 'Describe tu experiencia (máx 1000 caracteres). Útil si no tienes URL de evidencia.'}
                     </p>
                 </div>
             </div>

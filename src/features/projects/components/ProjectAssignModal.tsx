@@ -111,9 +111,9 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
 
   const filteredUsers = orgUsers.filter(
     (u) =>
-      u.fullName.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.roleName.toLowerCase().includes(userSearch.toLowerCase())
+      u.fullName?.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.roleName?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
   return (
@@ -123,6 +123,21 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
       title="Asignar Miembro al Proyecto"
       icon={<UserPlus className="text-emerald-500" size={20} />}
       size="lg"
+      footer={
+        <>
+          <Button
+            onClick={handleAssign}
+            disabled={!selectedUserId || isAssigning}
+            icon={isAssigning ? Loader2 : UserPlus}
+            className={isAssigning ? "[&_svg]:animate-spin" : ""}
+          >
+            {isAssigning ? "Asignando..." : "Asignar al Proyecto"}
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+        </>
+      }
     >
       <div className="space-y-5">
         <Input
@@ -219,20 +234,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
             </div>
           </div>
         )}
-
-        <div className="flex justify-end gap-3 pt-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleAssign}
-            disabled={!selectedUserId || isAssigning}
-            icon={isAssigning ? Loader2 : UserPlus}
-            className={isAssigning ? "[&_svg]:animate-spin" : ""}
-          >
-            {isAssigning ? "Asignando..." : "Asignar al Proyecto"}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

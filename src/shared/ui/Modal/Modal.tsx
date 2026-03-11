@@ -34,7 +34,7 @@ export const Modal: React.FC<ModalProps> = ({
             <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 {/* Backdrop */}
                 <div 
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-0" 
                     onClick={onClose}
                     aria-hidden="true"
                 />
@@ -52,8 +52,9 @@ export const Modal: React.FC<ModalProps> = ({
                         shadow-2xl transform transition-all 
                         sm:my-8 sm:align-middle ${sizeStyles[size]} w-full 
                         border border-slate-200 dark:border-[#233948] 
-                        relative z-10
+                        relative z-20
                     `}
+                    onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
                     {title && (

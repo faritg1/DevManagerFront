@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench } from 'lucide-react';
+import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService } from '../../../shared/api';
@@ -21,20 +21,52 @@ interface ChatMessage {
     hitlNote?: string;
 }
 
+const CHAT_STORAGE_KEY = 'devmanager_chat_history';
+const MAX_MESSAGES = 100;
+
+const INITIAL_MESSAGE: ChatMessage = {
+    id: '1',
+    role: 'agent',
+    content: '¡Hola! Soy tu asistente IA de DevManager. Puedo ayudarte a analizar tu equipo, buscar candidatos para proyectos, o responder preguntas sobre habilidades y recursos. ¿En qué puedo ayudarte?',
+    timestamp: new Date(),
+    confidence: 1
+};
+
+// Cargar mensajes desde localStorage
+const loadMessagesFromStorage = (): ChatMessage[] => {
+    try {
+        const stored = localStorage.getItem(CHAT_STORAGE_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Convertir timestamps de string a Date
+            return parsed.map((msg: any) => ({
+                ...msg,
+                timestamp: new Date(msg.timestamp)
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+    }
+    return [INITIAL_MESSAGE];
+};
+
+// Guardar mensajes en localStorage
+const saveMessagesToStorage = (messages: ChatMessage[]) => {
+    try {
+        // Limitar a los últimos MAX_MESSAGES mensajes
+        const toSave = messages.slice(-MAX_MESSAGES);
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+    } catch (error) {
+        console.error('Error saving chat history:', error);
+    }
+};
+
 export const AgentsPage: React.FC = () => {
     const { showNotification } = useNotification();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     
-    // Chat state
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: '1',
-            role: 'agent',
-            content: '¡Hola! Soy tu asistente IA de DevManager. Puedo ayudarte a analizar tu equipo, buscar candidatos para proyectos, o responder preguntas sobre habilidades y recursos. ¿En qué puedo ayudarte?',
-            timestamp: new Date(),
-            confidence: 1
-        }
-    ]);
+    // Chat state - Cargar desde localStorage
+    const [messages, setMessages] = useState<ChatMessage[]>(loadMessagesFromStorage);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [requireApproval, setRequireApproval] = useState(false);
@@ -46,6 +78,11 @@ export const AgentsPage: React.FC = () => {
     // Scroll automático al último mensaje
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    // Guardar mensajes automáticamente cuando cambian
+    useEffect(() => {
+        saveMessagesToStorage(messages);
     }, [messages]);
 
     // Enviar consulta al agente
@@ -190,6 +227,13 @@ export const AgentsPage: React.FC = () => {
         }
     };
 
+    // Limpiar historial
+    const handleClearHistory = () => {
+        setMessages([INITIAL_MESSAGE]);
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+        showNotification({ type: 'success', message: 'Historial de chat limpiado' });
+    };
+
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto w-full h-full flex flex-col">
             {/* Header */}
@@ -203,6 +247,16 @@ export const AgentsPage: React.FC = () => {
                         Consulta en lenguaje natural sobre tu equipo y proyectos.
                     </p>
                 </div>
+                {messages.length > 1 && (
+                    <Button
+                        variant="outline"
+                        icon={Trash2}
+                        onClick={handleClearHistory}
+                        className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                    >
+                        Limpiar Historial
+                    </Button>
+                )}
             </div>
 
             {/* Stats (mini) */}

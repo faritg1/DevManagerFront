@@ -312,37 +312,60 @@ export const AgentsPage: React.FC = () => {
                             </div>
 
                             {/* Message Content */}
-                            <div className={`flex-1 max-w-2xl ${message.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
-                                <div className={`rounded-2xl px-4 py-3 ${
+                            <div className={`flex-1 max-w-3xl ${message.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
+                                <div className={`rounded-2xl ${
                                     message.role === 'user' 
-                                        ? 'bg-primary text-white' 
-                                        : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white'
+                                        ? 'bg-primary text-white px-4 py-3' 
+                                        : message.markdown 
+                                            ? 'bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 p-6 shadow-lg'
+                                            : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3'
                                 }`}>
                                     {message.role === 'agent' && message.markdown ? (
-                                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none 
-                                            prose-headings:mt-3 prose-headings:mb-2 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
-                                            prose-p:mb-2 prose-p:mt-0 prose-ul:my-1 prose-li:my-0
-                                            prose-strong:text-primary dark:prose-strong:text-primary prose-strong:font-semibold
-                                            prose-code:bg-slate-200 dark:prose-code:bg-slate-700 prose-code:px-1 prose-code:rounded prose-code:text-xs
-                                            prose-em:italic">
+                                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none space-y-4
+                                            prose-headings:font-black prose-headings:tracking-tight prose-headings:scroll-mt-20
+                                            prose-h1:text-xl prose-h1:mb-4 prose-h1:mt-0 prose-h1:pb-3 prose-h1:border-b-2 prose-h1:border-primary/30 prose-h1:text-primary dark:prose-h1:text-primary
+                                            prose-h2:text-base prose-h2:mb-3 prose-h2:mt-6 prose-h2:text-slate-800 dark:prose-h2:text-slate-200 prose-h2:bg-slate-100 dark:prose-h2:bg-slate-800/50 prose-h2:px-3 prose-h2:py-2 prose-h2:rounded-lg prose-h2:-mx-1
+                                            prose-h3:text-sm prose-h3:mb-2 prose-h3:mt-4 prose-h3:text-primary dark:prose-h3:text-primary prose-h3:font-bold prose-h3:uppercase prose-h3:tracking-wide prose-h3:text-xs
+                                            prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-relaxed prose-p:my-3
+                                            prose-strong:text-primary dark:prose-strong:text-primary prose-strong:font-bold prose-strong:bg-primary/10 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded prose-strong:mx-0.5
+                                            prose-em:text-blue-600 dark:prose-em:text-blue-400 prose-em:not-italic prose-em:font-semibold
+                                            prose-ul:my-4 prose-ul:space-y-2 prose-ul:bg-slate-50 dark:prose-ul:bg-slate-900/30 prose-ul:p-4 prose-ul:rounded-xl prose-ul:border prose-ul:border-slate-200 dark:prose-ul:border-slate-700
+                                            prose-ol:my-4 prose-ol:space-y-2 prose-ol:bg-slate-50 dark:prose-ol:bg-slate-900/30 prose-ol:p-4 prose-ol:rounded-xl prose-ol:border prose-ol:border-slate-200 dark:prose-ol:border-slate-700
+                                            prose-li:text-slate-700 dark:prose-li:text-slate-300 prose-li:leading-relaxed prose-li:my-1.5
+                                            prose-li::marker:text-primary prose-li::marker:font-bold prose-li::marker:text-base
+                                            prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:decoration-2 prose-a:underline-offset-2
+                                            prose-code:bg-slate-800 dark:prose-code:bg-slate-900 prose-code:text-emerald-400 dark:prose-code:text-emerald-300 prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:text-xs prose-code:font-mono prose-code:font-semibold prose-code:before:content-[''] prose-code:after:content-[''] prose-code:border prose-code:border-slate-700
+                                            prose-pre:bg-slate-950 dark:prose-pre:bg-black prose-pre:border-2 prose-pre:border-slate-700 dark:prose-pre:border-slate-800 prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-4 prose-pre:shadow-lg
+                                            prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-950/30 prose-blockquote:pl-4 prose-blockquote:pr-4 prose-blockquote:py-3 prose-blockquote:my-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-slate-700 dark:prose-blockquote:text-slate-300 prose-blockquote:shadow-sm
+                                            prose-table:my-4 prose-table:w-full prose-table:border-collapse prose-table:bg-white dark:prose-table:bg-slate-900 prose-table:rounded-xl prose-table:overflow-hidden prose-table:shadow-md prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-700
+                                            prose-thead:bg-gradient-to-r prose-thead:from-primary prose-thead:to-blue-500
+                                            prose-th:border-0 prose-th:px-4 prose-th:py-3 prose-th:font-bold prose-th:text-white prose-th:text-left prose-th:text-xs prose-th:uppercase prose-th:tracking-wider
+                                            prose-td:border prose-td:border-slate-200 dark:prose-td:border-slate-700 prose-td:px-4 prose-td:py-3 prose-td:text-slate-700 dark:prose-td:text-slate-300
+                                            prose-tbody:divide-y prose-tbody:divide-slate-200 dark:prose-tbody:divide-slate-700
+                                            prose-tr:transition-colors hover:prose-tr:bg-slate-50 dark:hover:prose-tr:bg-slate-800/50
+                                            prose-hr:border-slate-300 dark:prose-hr:border-slate-700 prose-hr:my-6 prose-hr:border-t-2
+                                            prose-img:rounded-xl prose-img:shadow-lg prose-img:my-4 prose-img:border prose-img:border-slate-200 dark:prose-img:border-slate-700">
                                             <ReactMarkdown>{message.markdown}</ReactMarkdown>
                                         </div>
                                     ) : (
-                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                                     )}
                                     
                                     {/* Suggested actions */}
                                     {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
-                                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Sugerencias:</p>
+                                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                            <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
+                                                <Sparkles size={12} className="text-primary" />
+                                                Sugerencias para continuar:
+                                            </p>
                                             <div className="flex flex-wrap gap-2">
                                                 {message.suggestedActions.map((action, idx) => (
                                                     <button
                                                         key={idx}
                                                         onClick={() => setInputValue(action.query)}
-                                                        className="text-xs px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary text-slate-700 dark:text-slate-300 transition-colors"
+                                                        className="text-xs px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-primary hover:text-white dark:hover:bg-primary text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700 hover:border-primary hover:shadow-md font-medium"
                                                     >
-                                                        {action.label}
+                                                        💡 {action.label}
                                                     </button>
                                                 ))}
                                             </div>
@@ -352,34 +375,43 @@ export const AgentsPage: React.FC = () => {
 
                                 {/* Metadata del agente */}
                                 {message.role === 'agent' && (
-                                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 px-2">
-                                        <span>{message.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 px-2 flex-wrap">
+                                        <span className="flex items-center gap-1">
+                                            <Activity size={12} className="text-slate-400" />
+                                            {message.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
                                         
                                         {message.confidence !== undefined && (
-                                            <div className="flex items-center gap-1">
+                                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${
+                                                message.confidence >= 0.8 
+                                                    ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                                                    : message.confidence >= 0.5
+                                                        ? 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
+                                                        : 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400'
+                                            }`}>
                                                 {message.confidence >= 0.8 ? (
-                                                    <CheckCircle2 className="text-emerald-500" size={12} />
+                                                    <CheckCircle2 size={12} />
                                                 ) : message.confidence >= 0.5 ? (
-                                                    <AlertCircle className="text-yellow-500" size={12} />
+                                                    <AlertCircle size={12} />
                                                 ) : (
-                                                    <XCircle className="text-rose-500" size={12} />
+                                                    <XCircle size={12} />
                                                 )}
-                                                <span>Confianza: {Math.round(message.confidence * 100)}%</span>
+                                                <span className="font-medium">Confianza: {Math.round(message.confidence * 100)}%</span>
                                             </div>
                                         )}
 
-                                                        {message.requiresApproval && message.hitlStatus === 'pending' && (
-                                            <Badge variant="warning" className="text-xs py-0.5 px-2">
+                                        {message.requiresApproval && message.hitlStatus === 'pending' && (
+                                            <Badge variant="warning" className="text-xs py-1 px-2.5 font-medium">
                                                 ⏳ Pendiente de aprobación
                                             </Badge>
                                         )}
                                         {message.hitlStatus === 'approved' && (
-                                            <Badge variant="success" className="text-xs py-0.5 px-2">
+                                            <Badge variant="success" className="text-xs py-1 px-2.5 font-medium">
                                                 ✅ Aprobada
                                             </Badge>
                                         )}
                                         {message.hitlStatus === 'rejected' && (
-                                            <Badge variant="danger" className="text-xs py-0.5 px-2">
+                                            <Badge variant="danger" className="text-xs py-1 px-2.5 font-medium">
                                                 ❌ Rechazada
                                             </Badge>
                                         )}
@@ -388,9 +420,12 @@ export const AgentsPage: React.FC = () => {
 
                                 {/* Reasoning (opcional, colapsable) */}
                                 {message.reasoning && (
-                                    <details className="text-xs text-slate-500 dark:text-slate-400 px-2">
-                                        <summary className="cursor-pointer hover:text-primary">Ver razonamiento</summary>
-                                        <p className="mt-2 p-3 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948] whitespace-pre-wrap">
+                                    <details className="text-xs text-slate-500 dark:text-slate-400 px-2 group">
+                                        <summary className="cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
+                                            <AlertCircle size={14} className="text-blue-500" />
+                                            Ver razonamiento del agente
+                                        </summary>
+                                        <p className="mt-2.5 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border-l-4 border-blue-500 shadow-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300 leading-relaxed">
                                             {message.reasoning}
                                         </p>
                                     </details>
@@ -398,23 +433,27 @@ export const AgentsPage: React.FC = () => {
 
                                 {/* Tools executed (colapsable) */}
                                 {message.toolsExecuted && message.toolsExecuted.length > 0 && (
-                                    <details className="text-xs text-slate-500 dark:text-slate-400 px-2">
-                                        <summary className="cursor-pointer hover:text-primary flex items-center gap-1">
-                                            <Wrench size={12} />
+                                    <details className="text-xs text-slate-500 dark:text-slate-400 px-2 group">
+                                        <summary className="cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
+                                            <Wrench size={14} className="text-purple-500" />
                                             Herramientas usadas ({message.toolsExecuted.length})
                                         </summary>
-                                        <div className="mt-2 space-y-2">
+                                        <div className="mt-2.5 space-y-2">
                                             {message.toolsExecuted.map((tool, idx) => (
-                                                <div key={idx} className="p-2 bg-slate-50 dark:bg-[#0d1419] rounded-lg border border-slate-200 dark:border-[#233948]">
-                                                    <div className="flex items-center gap-2 mb-1">
+                                                <div key={idx} className={`p-3 rounded-xl border-l-4 shadow-sm ${
+                                                    tool.success 
+                                                        ? 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-500'
+                                                        : 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-500'
+                                                }`}>
+                                                    <div className="flex items-center gap-2 mb-2">
                                                         {tool.success ? (
-                                                            <CheckCircle2 className="text-emerald-500" size={12} />
+                                                            <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" size={14} />
                                                         ) : (
-                                                            <XCircle className="text-red-500" size={12} />
+                                                            <XCircle className="text-red-600 dark:text-red-400" size={14} />
                                                         )}
-                                                        <span className="font-medium text-slate-700 dark:text-slate-300">{tool.tool_name}</span>
+                                                        <span className="font-bold text-slate-800 dark:text-slate-200">{tool.tool_name}</span>
                                                     </div>
-                                                    <div className="text-xs text-slate-500 dark:text-slate-400 pl-5">
+                                                    <div className="text-xs text-slate-600 dark:text-slate-400 pl-5 leading-relaxed">
                                                         {tool.output}
                                                     </div>
                                                 </div>
@@ -460,13 +499,16 @@ export const AgentsPage: React.FC = () => {
                     {/* Loading indicator */}
                     {isLoading && (
                         <div className="flex gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg">
                                 <Bot className="text-white" size={20} />
                             </div>
                             <div className="flex-1 max-w-2xl">
-                                <div className="rounded-2xl px-4 py-3 bg-slate-100 dark:bg-[#111b22] inline-flex items-center gap-2">
+                                <div className="rounded-2xl px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-[#111b22] dark:to-[#0d1419] border border-slate-200 dark:border-[#233948] inline-flex items-center gap-3 shadow-sm">
                                     <Loader2 className="animate-spin text-primary" size={16} />
-                                    <span className="text-sm text-slate-600 dark:text-slate-400">Pensando...</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-slate-900 dark:text-white">Pensando...</span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">Analizando tu consulta con IA</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -478,17 +520,18 @@ export const AgentsPage: React.FC = () => {
                 {/* Examples (si no hay mensajes) */}
                 {messages.length === 1 && (
                     <div className="px-6 pb-4">
-                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-3">
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                            <Sparkles size={14} className="text-primary" />
                             Prueba con estas consultas:
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {exampleQueries.map((query, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => handleExampleClick(query)}
-                                    className="text-left px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:bg-slate-100 dark:hover:bg-[#1a2632] border border-slate-200 dark:border-[#233948] transition-all text-sm text-slate-700 dark:text-slate-300"
+                                    className="text-left px-4 py-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#111b22] dark:to-[#0d1419] hover:from-primary/10 hover:to-primary/5 dark:hover:from-primary/10 dark:hover:to-primary/5 border border-slate-200 dark:border-[#233948] hover:border-primary/30 transition-all text-sm text-slate-700 dark:text-slate-300 font-medium group shadow-sm hover:shadow"
                                 >
-                                    💬 {query}
+                                    <span className="group-hover:text-primary transition-colors">💬 {query}</span>
                                 </button>
                             ))}
                         </div>

@@ -16,6 +16,20 @@ interface ProjectApplicationsSectionProps {
   onApplicationsChange: (apps: ApplicationResponse[]) => void;
 }
 
+const formatApplicationDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return 'Fecha inválida';
+  }
+};
+
 export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProps> = ({
   applications,
   onApplicationsChange,
@@ -134,7 +148,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                         {app.userFullName}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {new Date(app.appliedAt).toLocaleDateString("es-ES")}
+                        {formatApplicationDate(app.appliedAt)}
                         {app.message && (
                           <span className="ml-2 text-slate-400">• "{app.message}"</span>
                         )}

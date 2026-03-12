@@ -15,7 +15,7 @@ import {
 import { Card, Badge, Button } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
-import { useNotification, useConfig } from '../../../shared/context';
+import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
@@ -70,6 +70,7 @@ export const ProjectDetailPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { catalogs } = useConfig();
     const { confirm } = useConfirm();
+    const { user } = useAuth();
 
     // Core state
     const [project, setProject] = useState<ProjectResponse | null>(null);
@@ -210,6 +211,7 @@ export const ProjectDetailPage: React.FC = () => {
 
     const statusConfig = getStatusConfig(project.status);
     const complexityConfig = getComplexityConfig(project.complexity);
+    const hasAlreadyApplied = user ? applications.some(app => app.userId === user.id) : false;
 
     return (
         <div className="flex flex-col h-full overflow-y-auto">
@@ -283,9 +285,11 @@ export const ProjectDetailPage: React.FC = () => {
                                 >
                                     Asignar Miembro
                                 </Button>
-                                <Button icon={UserPlus} onClick={handleApply}>
-                                    Postularme
-                                </Button>
+                                {!hasAlreadyApplied && (
+                                    <Button icon={UserPlus} onClick={handleApply}>
+                                        Postularme
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

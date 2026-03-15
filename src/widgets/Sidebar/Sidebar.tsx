@@ -110,6 +110,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         () => isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS),
     );
 
+    // Sólo roles con acceso administrativo ven la sección de Seguridad
+    const ADMIN_ROLES = ['admin', 'administrator'];
+    const isAdmin = ADMIN_ROLES.includes((user?.role ?? '').toLowerCase().trim());
+
     // Sidebar content shared by desktop & mobile views
     const renderContent = () => (
         <>
@@ -168,7 +172,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                     <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
                     <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
 
-                    {/* Seguridad (Roles & Permisos) - sección desplegable */}
+                    {/* Seguridad (Roles & Permisos) - solo admins */}
+                    {isAdmin && (
                     <div>
                         <div
                             onClick={() => setSecurityOpen((s) => !s)}
@@ -190,6 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                             <NavItem to={ROUTES.PERMISSIONS} icon={Key} label="Permisos" isActive={isActive(ROUTES.PERMISSIONS)} />
                         </div>
                     </div>
+                    )}
                 </NavSection>
             </nav>
 

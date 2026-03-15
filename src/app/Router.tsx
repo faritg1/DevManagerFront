@@ -65,20 +65,26 @@ export const AppRouter: React.FC = () => {
                 {/* Projects */}
                 <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
                 <Route
-                  path={ROUTES.CREATE_PROJECT}
-                  element={<CreateProjectPage />}
-                />
-                <Route
-                  path={ROUTES.EDIT_PROJECT}
-                  element={<EditProjectPage />}
-                />
-                <Route
                   path={ROUTES.PROJECT_DETAIL}
                   element={<ProjectDetailPage />}
                 />
 
-                {/* Reports */}
-                <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+                {/* Projects — Admin only */}
+                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
+                  <Route
+                    path={ROUTES.CREATE_PROJECT}
+                    element={<CreateProjectPage />}
+                  />
+                  <Route
+                    path={ROUTES.EDIT_PROJECT}
+                    element={<EditProjectPage />}
+                  />
+                </Route>
+
+                {/* Reports — Admin only */}
+                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
+                  <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+                </Route>
 
                 {/* Agents */}
                 <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
@@ -91,13 +97,15 @@ export const AppRouter: React.FC = () => {
                   element={<PlaceholderPage title="Detalle del Agente" />}
                 />
 
-                {/* Administration */}
-                <Route
-                  path={ROUTES.ORGANIZATIONS}
-                  element={<OrganizationsPage />}
-                />
-                <Route path={ROUTES.USERS} element={<UsersPage />} />
-                <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                {/* Administration — Admin only */}
+                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
+                  <Route
+                    path={ROUTES.ORGANIZATIONS}
+                    element={<OrganizationsPage />}
+                  />
+                  <Route path={ROUTES.USERS} element={<UsersPage />} />
+                  <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                </Route>
 
                 {/* Security — Roles & Permissions (Admin only) */}
                 <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>

@@ -169,8 +169,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </NavSection>
 
                 <NavSection title={NAV_SECTIONS.ADMIN}>
-                    <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
-                    <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
+                    {isAdmin && (
+                        <>
+                            <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
+                            <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
+                        </>
+                    )}
 
                     {/* Seguridad (Roles & Permisos) - solo admins */}
                     {isAdmin && (

@@ -72,6 +72,9 @@ export const ProjectDetailPage: React.FC = () => {
     const { confirm } = useConfirm();
     const { user } = useAuth();
 
+    const ADMIN_ROLES = ['admin', 'administrator'] as const;
+    const isAdmin = ADMIN_ROLES.includes((user?.role ?? '').toLowerCase().trim() as typeof ADMIN_ROLES[number]);
+
     // Core state
     const [project, setProject] = useState<ProjectResponse | null>(null);
     const [requirements, setRequirements] = useState<SkillRequirementResponse[]>([]);
@@ -257,34 +260,38 @@ export const ProjectDetailPage: React.FC = () => {
 
                             {/* Actions */}
                             <div className="flex flex-wrap gap-3">
-                                <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
-                                    Editar
-                                </Button>
-                                <Button 
-                                    variant="outline"
-                                    icon={isDeleting ? Loader2 : Trash2}
-                                    onClick={handleDeleteProject}
-                                    disabled={isDeleting}
-                                    className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
-                                >
-                                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                                </Button>
-                                <Button 
-                                    variant="outline"
-                                    icon={Sparkles}
-                                    onClick={matchingModal.open}
-                                    className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                                >
-                                    Buscar Candidatos IA
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    icon={UserPlus}
-                                    onClick={assignModal.open}
-                                    className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                                >
-                                    Asignar Miembro
-                                </Button>
+                                {isAdmin && (
+                                    <>
+                                        <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
+                                            Editar
+                                        </Button>
+                                        <Button 
+                                            variant="outline"
+                                            icon={isDeleting ? Loader2 : Trash2}
+                                            onClick={handleDeleteProject}
+                                            disabled={isDeleting}
+                                            className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
+                                        >
+                                            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                                        </Button>
+                                        <Button 
+                                            variant="outline"
+                                            icon={Sparkles}
+                                            onClick={matchingModal.open}
+                                            className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                                        >
+                                            Buscar Candidatos IA
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            icon={UserPlus}
+                                            onClick={assignModal.open}
+                                            className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                        >
+                                            Asignar Miembro
+                                        </Button>
+                                    </>
+                                )}
                                 {!hasAlreadyApplied && (
                                     <Button icon={UserPlus} onClick={handleApply}>
                                         Postularme

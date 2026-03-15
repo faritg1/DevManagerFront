@@ -24,8 +24,8 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
-import { useModal } from '../../../shared/hooks';
-import { useNotification } from '../../../shared/context';
+import { useModal, usePermission } from '../../../shared/hooks';
+import { useNotification, useAuth } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
@@ -42,6 +42,10 @@ const formatDate = (dateString: string): string => {
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
+    const { hasPermission, isLoading: permsCheckLoading } = usePermission();
+    const { user: currentUser } = useAuth();
+    const ADMIN_ROLES = ['admin', 'administrator'];
+    const isAdmin = ADMIN_ROLES.includes((currentUser?.role ?? '').toLowerCase().trim());
     
     // State
     const [users, setUsers] = useState<UserResponse[]>([]);
@@ -492,9 +496,11 @@ export const UsersPage: React.FC = () => {
                         Administra el acceso y roles de los miembros del equipo.
                     </p>
                 </div>
-                <Button icon={UserPlus} onClick={createModal.open}>
-                    Invitar Usuario
-                </Button>
+                {(isAdmin || hasPermission('users.create')) && (
+                    <Button icon={UserPlus} onClick={createModal.open}>
+                        Invitar Usuario
+                    </Button>
+                )}
             </div>
 
             {/* Stats */}
@@ -626,14 +632,17 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <Eye size={16} /> Ver perfil
                                                     </button>
+                                                    {(isAdmin || hasPermission('users.update')) && (
                                                     <button
                                                         onClick={() => handleOpenEdit(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
                                                     >
                                                         <Edit size={16} /> Editar
                                                     </button>
+                                                    )}
 
                                                     {/* Manage roles */}
+                                                    {isAdmin && (
                                                     <button
                                                         onClick={() => {
                                                             setSelectedUser(user);
@@ -644,8 +653,10 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <ShieldCheck size={16} /> Gestionar roles
                                                     </button>
+                                                    )}
 
                                                     {/* View effective permissions */}
+                                                    {isAdmin && (
                                                     <button
                                                         onClick={async () => {
                                                             setSelectedUser(user);
@@ -656,6 +667,7 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <Key size={16} /> Permisos efectivos
                                                     </button>
+                                                    )}
 
                                                     {/* View & validate skills */}
                                                     <button
@@ -669,6 +681,7 @@ export const UsersPage: React.FC = () => {
                                                         <Award size={16} /> Skills / Validar
                                                     </button>
 
+                                                    {(isAdmin || hasPermission('users.update')) && (
                                                     <button
                                                         onClick={() => handleToggleStatus(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
@@ -679,6 +692,9 @@ export const UsersPage: React.FC = () => {
                                                             <><UserCheck size={16} /> Activar</>
                                                         )}
                                                     </button>
+                                                    )}
+                                                    {(isAdmin || hasPermission('users.delete')) && (
+                                                    <>
                                                     <hr className="my-2 border-slate-200 dark:border-[#233948]" />
                                                     <button
                                                         onClick={() => handleOpenDelete(user)}
@@ -686,6 +702,8 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <Trash2 size={16} /> Eliminar
                                                     </button>
+                                                    </>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>

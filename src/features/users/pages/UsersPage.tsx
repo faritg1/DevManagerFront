@@ -20,12 +20,14 @@ import {
     CheckCircle2,
     ChevronUp,
     ChevronDown,
+    Plus,
+    ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
-import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
+import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 
 // Helpers
@@ -76,6 +78,10 @@ export const UsersPage: React.FC = () => {
 
     const [permsLoading, setPermsLoading] = useState(false);
     const [effectivePerms, setEffectivePerms] = useState<EffectivePermissionsResponse | null>(null);
+    const [groupedPerms, setGroupedPerms] = useState<PermissionGroupDto[]>([]);
+    const [overridePermId, setOverridePermId] = useState('');
+    const [overrideIsGrant, setOverrideIsGrant] = useState(true);
+    const [overrideSaving, setOverrideSaving] = useState(false);
 
     // Skills validation
     const skillsModal = useModal();
@@ -253,8 +259,12 @@ export const UsersPage: React.FC = () => {
             if (!permissionsModal.isOpen || !selectedUser) return;
             setPermsLoading(true);
             try {
-                const resp = await rbacService.getUserEffectivePermissions(selectedUser.id);
+                const [resp, groupedResp] = await Promise.all([
+                    rbacService.getUserEffectivePermissions(selectedUser.id),
+                    rbacService.getGroupedPermissions(),
+                ]);
                 if (resp.success && resp.data) setEffectivePerms(resp.data);
+                if (groupedResp.success && groupedResp.data) setGroupedPerms(groupedResp.data);
             } catch (err) {
                 console.error('Failed loading effective permissions', err);
             } finally {
@@ -264,6 +274,31 @@ export const UsersPage: React.FC = () => {
 
         loadEffective();
     }, [permissionsModal.isOpen, selectedUser]);
+
+    const handleAddOverride = async () => {
+        if (!selectedUser || !overridePermId) return;
+        setOverrideSaving(true);
+        try {
+            const res = await rbacService.assignPermissionToUser({
+                userId: selectedUser.id,
+                permissionId: overridePermId,
+                isGranted: overrideIsGrant,
+            });
+            if (res.success) {
+                showNotification({ type: 'success', message: `Override ${overrideIsGrant ? 'concedido' : 'denegado'} correctamente` });
+                setOverridePermId('');
+                // Reload effective permissions to reflect the change
+                const updated = await rbacService.getUserEffectivePermissions(selectedUser.id);
+                if (updated.success && updated.data) setEffectivePerms(updated.data);
+            } else {
+                showNotification({ type: 'error', message: 'No se pudo guardar el override' });
+            }
+        } catch {
+            showNotification({ type: 'error', message: 'Error al guardar el override' });
+        } finally {
+            setOverrideSaving(false);
+        }
+    };
 
     // Load employee skills when modal opens
     useEffect(() => {
@@ -890,15 +925,14 @@ export const UsersPage: React.FC = () => {
             {/* Effective Permissions Modal */}
             <Modal
                 isOpen={permissionsModal.isOpen}
-                onClose={() => { permissionsModal.close(); setEffectivePerms(null); }}
+                onClose={() => { permissionsModal.close(); setEffectivePerms(null); setOverridePermId(''); setOverrideIsGrant(true); }}
                 title={selectedUser ? `Permisos — ${selectedUser.fullName}` : 'Permisos'}
-                size="md"
+                size="lg"
+                icon={<ShieldCheck size={20} className="text-primary" />}
                 footer={
-                    <>
-                        <Button variant="outline" onClick={() => { permissionsModal.close(); }}>
-                            Cerrar
-                        </Button>
-                    </>
+                    <Button variant="outline" onClick={() => { permissionsModal.close(); setEffectivePerms(null); setOverridePermId(''); setOverrideIsGrant(true); }}>
+                        Cerrar
+                    </Button>
                 }
             >
                 {permsLoading ? (
@@ -906,38 +940,126 @@ export const UsersPage: React.FC = () => {
                         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
                     </div>
                 ) : effectivePerms ? (
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                        {/* Roles asignados */}
                         <div>
-                            <p className="text-sm text-slate-500 mb-2">Roles asignados</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Roles asignados</p>
                             <div className="flex flex-wrap gap-2">
-                                {effectivePerms.roles.map((r) => (
-                                    <Badge key={r.name} variant="purple">{r.name}</Badge>
-                                ))}
+                                {effectivePerms.roles.length > 0
+                                    ? effectivePerms.roles.map((r) => (
+                                        <Badge key={r.name} variant="purple">{r.name}</Badge>
+                                    ))
+                                    : <span className="text-sm text-slate-400">Sin roles asignados</span>
+                                }
                             </div>
                         </div>
 
+                        {/* Permisos efectivos */}
                         <div>
-                            <p className="text-sm text-slate-500 mb-2">Permisos efectivos</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                {effectivePerms.effectivePermissions.map((p) => (
-                                    <div key={p.code} className="p-2 bg-slate-50 dark:bg-[#111b22] rounded-md text-sm text-slate-600 dark:text-slate-300">{p.code}</div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {effectivePerms.directOverrides && effectivePerms.directOverrides.length > 0 && (
-                            <div>
-                                <p className="text-sm text-slate-500 mb-2">Overrides directos</p>
-                                <div className="space-y-2">
-                                    {effectivePerms.directOverrides.map((o) => (
-                                        <div key={o.permissionCode} className="flex items-center gap-2 text-sm">
-                                            <span className={`px-2 py-1 rounded ${o.isGranted ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{o.isGranted ? 'Grant' : 'Revoke'}</span>
-                                            <span className="text-slate-600 dark:text-slate-300">{o.permissionCode}</span>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Permisos efectivos</p>
+                            {effectivePerms.effectivePermissions.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                                    {effectivePerms.effectivePermissions.map((p) => (
+                                        <div key={p.code} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-md text-xs text-emerald-700 dark:text-emerald-300 font-mono">
+                                            <CheckCircle2 size={12} className="shrink-0" />
+                                            {p.code}
                                         </div>
                                     ))}
                                 </div>
+                            ) : (
+                                <span className="text-sm text-slate-400">Sin permisos efectivos</span>
+                            )}
+                        </div>
+
+                        {/* Overrides activos */}
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Overrides directos</p>
+                            {effectivePerms.directOverrides && effectivePerms.directOverrides.length > 0 ? (
+                                <div className="space-y-1.5">
+                                    {effectivePerms.directOverrides.map((o) => (
+                                        <div key={o.permissionCode} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border ${
+                                            o.isGranted
+                                                ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-700'
+                                                : 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-700'
+                                        }`}>
+                                            {o.isGranted
+                                                ? <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                                : <ShieldOff size={14} className="text-rose-600 shrink-0" />
+                                            }
+                                            <span className={`font-semibold text-xs ${o.isGranted ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                                                {o.isGranted ? 'GRANT' : 'DENY'}
+                                            </span>
+                                            <span className="font-mono text-xs text-slate-600 dark:text-slate-300">{o.permissionCode}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <span className="text-sm text-slate-400">Sin overrides configurados</span>
+                            )}
+                        </div>
+
+                        {/* Agregar override */}
+                        <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Agregar / modificar override</p>
+                            <div className="flex flex-col gap-3">
+                                {/* Selector de permiso */}
+                                <div>
+                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
+                                    <select
+                                        value={overridePermId}
+                                        onChange={(e) => setOverridePermId(e.target.value)}
+                                        className="w-full text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#111b22] text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    >
+                                        <option value="">— Selecciona un permiso —</option>
+                                        {groupedPerms.map((group) => (
+                                            <optgroup key={group.module} label={group.module}>
+                                                {group.permissions.map((p) => (
+                                                    <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                                                ))}
+                                            </optgroup>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Toggle Grant / Deny */}
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOverrideIsGrant(true)}
+                                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+                                            overrideIsGrant
+                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                                : 'border-slate-200 dark:border-slate-600 text-slate-500 hover:border-emerald-300'
+                                        }`}
+                                    >
+                                        <CheckCircle2 size={16} />
+                                        Conceder
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOverrideIsGrant(false)}
+                                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+                                            !overrideIsGrant
+                                                ? 'bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
+                                                : 'border-slate-200 dark:border-slate-600 text-slate-500 hover:border-rose-300'
+                                        }`}
+                                    >
+                                        <ShieldOff size={16} />
+                                        Denegar
+                                    </button>
+                                </div>
+
+                                {/* Botón guardar */}
+                                <Button
+                                    onClick={handleAddOverride}
+                                    disabled={!overridePermId || overrideSaving}
+                                    icon={overrideSaving ? Loader2 : Plus}
+                                    className={overrideSaving ? 'animate-spin' : ''}
+                                >
+                                    {overrideSaving ? 'Guardando...' : 'Aplicar override'}
+                                </Button>
                             </div>
-                        )}
+                        </div>
                     </div>
                 ) : (
                     <div className="text-sm text-slate-500">No hay permisos disponibles</div>

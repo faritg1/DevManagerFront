@@ -6,7 +6,7 @@ import {
   ConfirmProvider,
 } from "../shared/context";
 import { MainLayout, AuthLayout } from "./layouts";
-import { ProtectedRoute, PublicRoute } from "./guards";
+import { ProtectedRoute, PublicRoute, RoleGuard } from "./guards";
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
 
@@ -98,12 +98,16 @@ export const AppRouter: React.FC = () => {
                 />
                 <Route path={ROUTES.USERS} element={<UsersPage />} />
                 <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
-                <Route path={ROUTES.ROLES} element={<RolesPage />} />
-                <Route
-                  path={`${ROUTES.ROLES}/:id/permissions`}
-                  element={<RolePermissionsPage />}
-                />
-                <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+
+                {/* Security — Roles & Permissions (Admin only) */}
+                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
+                  <Route path={ROUTES.ROLES} element={<RolesPage />} />
+                  <Route
+                    path={`${ROUTES.ROLES}/:id/permissions`}
+                    element={<RolePermissionsPage />}
+                  />
+                  <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+                </Route>
 
                 {/* Skills Catalog */}
                 <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />

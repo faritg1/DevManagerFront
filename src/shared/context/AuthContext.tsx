@@ -52,12 +52,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Initialize auth state from storage
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-            const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+            // El token puede estar en 'auth_token' (nuestro formato) o en 'token' (formato heredado)
+            const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+                ?? localStorage.getItem('token');
+            // El usuario puede estar en 'auth_user' (nuestro formato) o en 'user' (formato heredado)
+            const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
+                ?? localStorage.getItem('user');
 
             if (token && storedUser) {
                 try {
-                    const user = JSON.parse(storedUser);
+                    const raw = JSON.parse(storedUser);
+
+                    // Si el auth_user guardado no tiene rol (fue guardado con el formato
+                    // antiguo donde los campos API en español quedaron como undefined),
+                    // intentamos rescatar el rol desde la key 'user' heredada del backend.
+                    let roleResolved = raw.role ?? raw.rol ?? '';
+                    let nameResolved = raw.name ?? raw.nombreCompleto ?? '';
+                    let idResolved = raw.id ? String(raw.id) : '';
+
+                    if (!roleResolved || !idResolved) {
+                        const legacyRaw = localStorage.getItem('user');
+                        if (legacyRaw) {
+                            try {
+                                const legacy = JSON.parse(legacyRaw);
+                                roleResolved = roleResolved || legacy.rol || legacy.role || '';
+                                nameResolved = nameResolved || legacy.nombreCompleto || legacy.name || '';
+                                idResolved = idResolved || String(legacy.id ?? '');
+                            } catch { /* ignorar si falla el parse */ }
+                        }
+                    }
+
+                    const user: User = {
+                        id: idResolved,
+                        name: nameResolved,
+                        email: raw.email ?? '',
+                        role: roleResolved,
+                        avatar: raw.avatar,
+                        organizationId: raw.organizationId,
+                        organizationName: raw.organizationName,
+                    };
+
+                    // Reescribir auth_user con el objeto ya normalizado
+                    // para que las próximas recargas no necesiten el fallback
+                    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+
                     setState({
                         user,
                         token,
@@ -88,13 +126,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 throw new Error(response.message || 'Error al iniciar sesión');
             }
 
-            const { token, userId, fullName, role, organizationId, organizationName } = response.data;
+            const { token, id, nombreCompleto, rol, organizationId, organizationName } = response.data;
 
             const user: User = {
-                id: userId,
-                name: fullName,
+                id: String(id),
+                name: nombreCompleto,
                 email: email,
-                role: role,
+                role: rol,
                 organizationId: organizationId,
                 organizationName: organizationName,
             };

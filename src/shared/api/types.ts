@@ -29,15 +29,12 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  /** El backend retorna 'id' (no 'userId') */
-  id: number | string;
+  userId: string;
   email: string;
-  /** El backend retorna 'nombreCompleto' (no 'fullName') */
-  nombreCompleto: string;
-  /** El backend retorna 'rol' (no 'role') */
-  rol: string;
+  firstName: string;
+  lastName: string;
   organizationId?: string;
-  organizationName?: string;
+  expiresAt?: string;
 }
 
 export interface RegisterOrganizationRequest {

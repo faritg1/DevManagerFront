@@ -158,8 +158,9 @@ class ApiClient {
       if (interceptedResponse.status === 401) {
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
-        // Opcionalmente redirigir al login
-        window.location.hash = "#/";
+        // Disparar evento global para que AuthContext resetee el estado de React
+        // sin usar window.location (que causaría bucles con HashRouter)
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
 
       // Dispatch global api error event except for 401 and 404

@@ -235,15 +235,15 @@ export const AgentsPage: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full h-full flex flex-col">
+        <div className="p-3 sm:p-6 md:p-10 max-w-7xl mx-auto w-full h-full flex flex-col">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                        <Sparkles className="text-primary" size={28} />
+            <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
+                <div className="min-w-0">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
+                        <Sparkles className="text-primary shrink-0" size={24} />
                         Asistente IA
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                    <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-0.5 hidden sm:block">
                         Consulta en lenguaje natural sobre tu equipo y proyectos.
                     </p>
                 </div>
@@ -252,40 +252,40 @@ export const AgentsPage: React.FC = () => {
                         variant="outline"
                         icon={Trash2}
                         onClick={handleClearHistory}
-                        className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 shrink-0 text-xs sm:text-sm px-2 sm:px-4"
                     >
-                        Limpiar Historial
+                        <span className="hidden sm:inline">Limpiar Historial</span>
                     </Button>
                 )}
             </div>
 
             {/* Stats (mini) */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-                <Card className="flex items-center gap-3 p-3">
-                    <div className="p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg">
-                        <Bot className="text-emerald-500" size={20} />
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <Card className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
+                    <div className="p-1.5 sm:p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg shrink-0">
+                        <Bot className="text-emerald-500" size={16} />
                     </div>
-                    <div>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white">{messages.length - 1}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Consultas</p>
-                    </div>
-                </Card>
-                <Card className="flex items-center gap-3 p-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg">
-                        <Activity className="text-blue-500" size={20} />
-                    </div>
-                    <div>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white">Online</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Estado</p>
+                    <div className="min-w-0">
+                        <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{messages.length - 1}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Consultas</p>
                     </div>
                 </Card>
-                <Card className="flex items-center gap-3 p-3">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg">
-                        <Cpu className="text-purple-500" size={20} />
+                <Card className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
+                    <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg shrink-0">
+                        <Activity className="text-blue-500" size={16} />
                     </div>
-                    <div>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white">Gemini</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Modelo</p>
+                    <div className="min-w-0">
+                        <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Online</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Estado</p>
+                    </div>
+                </Card>
+                <Card className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
+                    <div className="p-1.5 sm:p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg shrink-0">
+                        <Cpu className="text-purple-500" size={16} />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Gemini</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Modelo</p>
                     </div>
                 </Card>
             </div>
@@ -294,17 +294,17 @@ export const AgentsPage: React.FC = () => {
             <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-[#16222b] rounded-2xl border border-slate-200 dark:border-[#233948] overflow-hidden">
                 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
                     {messages.map((message) => (
                         <div
                             key={message.id}
-                            className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+                            className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                         >
                             {/* Avatar */}
-                            <div className={`flex-shrink-0 ${message.role === 'user' ? '' : ''}`}>
+                            <div className="flex-shrink-0">
                                 {message.role === 'agent' ? (
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
-                                        <Bot className="text-white" size={20} />
+                                    <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
+                                        <Bot className="text-white" size={14} />
                                     </div>
                                 ) : (
                                     <Avatar name="Usuario" size="sm" />
@@ -312,13 +312,13 @@ export const AgentsPage: React.FC = () => {
                             </div>
 
                             {/* Message Content */}
-                            <div className={`flex-1 max-w-3xl ${message.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
-                                <div className={`rounded-2xl ${
+                            <div className={`min-w-0 flex-1 max-w-[85%] sm:max-w-3xl ${message.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1.5 sm:gap-2`}>
+                                <div className={`rounded-2xl w-full ${
                                     message.role === 'user' 
-                                        ? 'bg-primary text-white px-4 py-3' 
+                                        ? 'bg-primary text-white px-3 py-2.5 sm:px-4 sm:py-3' 
                                         : message.markdown 
-                                            ? 'bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 p-6 shadow-lg'
-                                            : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3'
+                                            ? 'bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 p-3 sm:p-6 shadow-lg overflow-x-auto'
+                                            : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white px-3 py-2.5 sm:px-4 sm:py-3'
                                 }`}>
                                     {message.role === 'agent' && message.markdown ? (
                                         <div className="text-sm prose prose-sm dark:prose-invert max-w-none space-y-4
@@ -375,7 +375,7 @@ export const AgentsPage: React.FC = () => {
 
                                 {/* Metadata del agente */}
                                 {message.role === 'agent' && (
-                                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 px-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5 sm:gap-3 text-xs text-slate-500 dark:text-slate-400 px-1 sm:px-2 flex-wrap">
                                         <span className="flex items-center gap-1">
                                             <Activity size={12} className="text-slate-400" />
                                             {message.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
@@ -498,16 +498,16 @@ export const AgentsPage: React.FC = () => {
 
                     {/* Loading indicator */}
                     {isLoading && (
-                        <div className="flex gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg">
-                                <Bot className="text-white" size={20} />
+                        <div className="flex gap-2 sm:gap-3">
+                            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shrink-0">
+                                <Bot className="text-white" size={14} />
                             </div>
                             <div className="flex-1 max-w-2xl">
-                                <div className="rounded-2xl px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-[#111b22] dark:to-[#0d1419] border border-slate-200 dark:border-[#233948] inline-flex items-center gap-3 shadow-sm">
-                                    <Loader2 className="animate-spin text-primary" size={16} />
+                                <div className="rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-[#111b22] dark:to-[#0d1419] border border-slate-200 dark:border-[#233948] inline-flex items-center gap-2 sm:gap-3 shadow-sm">
+                                    <Loader2 className="animate-spin text-primary shrink-0" size={16} />
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-slate-900 dark:text-white">Pensando...</span>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">Analizando tu consulta con IA</span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Analizando tu consulta con IA</span>
                                     </div>
                                 </div>
                             </div>
@@ -519,12 +519,12 @@ export const AgentsPage: React.FC = () => {
 
                 {/* Examples (si no hay mensajes) */}
                 {messages.length === 1 && (
-                    <div className="px-6 pb-4">
-                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <div className="px-3 sm:px-6 pb-3 sm:pb-4">
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 sm:mb-3 flex items-center gap-2">
                             <Sparkles size={14} className="text-primary" />
                             Prueba con estas consultas:
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {exampleQueries.map((query, idx) => (
                                 <button
                                     key={idx}
@@ -539,13 +539,13 @@ export const AgentsPage: React.FC = () => {
                 )}
 
                 {/* Input */}
-                <div className="border-t border-slate-200 dark:border-[#233948] p-4">
+                <div className="border-t border-slate-200 dark:border-[#233948] p-3 sm:p-4">
                     {/* Require approval toggle */}
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                         <button
                             type="button"
                             onClick={() => setRequireApproval(prev => !prev)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border shrink-0 ${
                                 requireApproval
                                     ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-400'
                                     : 'bg-slate-50 dark:bg-[#111b22] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400'
@@ -556,24 +556,25 @@ export const AgentsPage: React.FC = () => {
                             ) : (
                                 <ToggleLeft size={16} />
                             )}
-                            Requerir aprobación (HITL)
+                            <span>HITL</span>
+                            <span className="hidden sm:inline">– Requerir aprobación</span>
                         </button>
                         {requireApproval && (
-                            <span className="text-xs text-amber-600 dark:text-amber-400">
-                                Las acciones del agente requerirán tu aprobación antes de ejecutarse.
+                            <span className="text-xs text-amber-600 dark:text-amber-400 hidden sm:block">
+                                Las acciones del agente requerirán tu aprobación.
                             </span>
                         )}
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                         <textarea
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyPress}
-                            placeholder="Escribe tu consulta... (Shift + Enter para nueva línea)"
+                            placeholder="Escribe tu consulta..."
                             rows={1}
                             disabled={isLoading}
-                            className="flex-1 resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                            style={{ minHeight: '48px', maxHeight: '120px' }}
+                            className="flex-1 resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-3 py-2.5 sm:px-4 sm:py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            style={{ minHeight: '44px', maxHeight: '120px' }}
                             onInput={(e) => {
                                 const target = e.target as HTMLTextAreaElement;
                                 target.style.height = 'auto';
@@ -584,12 +585,12 @@ export const AgentsPage: React.FC = () => {
                             icon={isLoading ? Loader2 : Send}
                             onClick={handleSendMessage}
                             disabled={!inputValue.trim() || isLoading}
-                            className="self-end"
+                            className="self-end px-3 sm:px-4"
                         >
-                            {isLoading ? 'Enviando...' : 'Enviar'}
+                            <span className="hidden sm:inline">{isLoading ? 'Enviando...' : 'Enviar'}</span>
                         </Button>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 hidden sm:block">
                         💡 El agente puede acceder a información sobre proyectos, usuarios y habilidades de tu organización.
                     </p>
                 </div>

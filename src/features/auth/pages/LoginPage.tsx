@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Eye, EyeOff, Hexagon } from "lucide-react";
 import { useAuth } from "../../../shared/context";
@@ -7,11 +7,17 @@ import { ROUTES } from "../../../shared/config/constants";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate(ROUTES.DASHBOARD, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +25,6 @@ export const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
-      navigate(ROUTES.DASHBOARD);
     } catch (err: unknown) {
       const message =
         err instanceof Error

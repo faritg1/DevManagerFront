@@ -31,10 +31,10 @@ export interface LoginResponse {
   token: string;
   userId: string;
   email: string;
-  fullName: string;
-  organizationId: string;
-  organizationName: string;
-  role: string;
+  firstName: string;
+  lastName: string;
+  organizationId?: string;
+  expiresAt?: string;
 }
 
 export interface RegisterOrganizationRequest {

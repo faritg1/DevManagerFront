@@ -26,20 +26,8 @@ export const authService = {
       credentials,
     );
 
-    // Guardar token y datos de usuario si el login es exitoso
-    if (response.success && response.data) {
+    if (response.success && response.data?.token) {
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.data.token);
-      localStorage.setItem(
-        STORAGE_KEYS.AUTH_USER,
-        JSON.stringify({
-          id: response.data.userId,
-          email: response.data.email,
-          name: response.data.fullName,
-          role: response.data.role,
-          organizationId: response.data.organizationId,
-          organizationName: response.data.organizationName,
-        }),
-      );
     }
 
     return response;

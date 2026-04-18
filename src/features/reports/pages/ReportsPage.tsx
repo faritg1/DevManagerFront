@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import ReactMarkdown from 'react-markdown';
 import {
   BarChart2,
   Users,
@@ -461,7 +462,7 @@ export const ReportsPage: React.FC = () => {
           {aiSummary ? (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                {aiSummary}
+                <ReactMarkdown>{aiSummary}</ReactMarkdown>
               </div>
             </div>
           ) : aiSummaryLoading ? (

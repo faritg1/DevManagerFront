@@ -22,6 +22,7 @@ import {
   projectsService,
   usersService,
   skillsService,
+  reportsService,
 } from "../../../shared/api";
 import type {
   ProjectResponse,
@@ -76,6 +77,8 @@ export const ReportsPage: React.FC = () => {
   const [projectReqsMap, setProjectReqsMap] = useState<
     Record<string, SkillRequirementResponse[]>
   >({});
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -149,17 +152,31 @@ export const ReportsPage: React.FC = () => {
       });
       setEmployeeSkillsMap(empMap);
 
-      const reqMap: Record<string, SkillRequirementResponse[]> = {};
-      reqResults.forEach(({ projectId, reqs }) => {
-        reqMap[projectId] = reqs;
-      });
-      setProjectReqsMap(reqMap);
-    } catch (err) {
-      console.error("Reports data load error:", err);
-      setError("Error de conexión al cargar reportes");
-    } finally {
-      setIsLoading(false);
-    }
+       const reqMap: Record<string, SkillRequirementResponse[]> = {};
+       reqResults.forEach(({ projectId, reqs }) => {
+         reqMap[projectId] = reqs;
+       });
+       setProjectReqsMap(reqMap);
+
+       // Phase 3: Load AI summary (non-blocking, separate from main loading)
+       setAiSummaryLoading(true);
+       try {
+         const aiRes = await reportsService.getAiSummary();
+         if (aiRes.success && aiRes.data?.markdown) {
+           setAiSummary(aiRes.data.markdown);
+         }
+       } catch (aiErr) {
+         console.error("AI summary load error:", aiErr);
+         // Fail silently - AI summary is nice to have, not critical
+       } finally {
+         setAiSummaryLoading(false);
+       }
+     } catch (err) {
+       console.error("Reports data load error:", err);
+       setError("Error de conexión al cargar reportes");
+     } finally {
+       setIsLoading(false);
+     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -410,6 +427,54 @@ export const ReportsPage: React.FC = () => {
           Actualizar datos
         </Button>
       </div>
+
+      {/* ─── AI Insights Section ────────────────────── */}
+      {!isLoading && (
+        <Card className="border-l-4 border-l-primary bg-gradient-to-br from-primary/5 to-blue-500/5">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Sparkles size={20} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Insights de IA
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Análisis automático generado por Gemini
+                </p>
+              </div>
+            </div>
+            {aiSummaryLoading && (
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Loader2 size={14} className="animate-spin" />
+                Cargando...
+              </div>
+            )}
+          </div>
+          {aiSummary ? (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                {aiSummary}
+              </div>
+            </div>
+          ) : aiSummaryLoading ? (
+            <div className="text-center py-6">
+              <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Generando insights...
+              </p>
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <AlertTriangle size={20} className="text-amber-500 mx-auto mb-2" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                No pudimos generar insights en este momento. Intenta más tarde.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* ─── Summary Stats ──────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

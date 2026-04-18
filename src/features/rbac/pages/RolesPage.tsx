@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { rbacService, usersService } from "../../../shared/api";
+import { rbacService } from "../../../shared/api";
 import { RoleDto } from "../../../shared/api/types";
 import { RoleList } from "../components/RoleList";
 import { RoleFormModal } from "../components/RoleFormModal";
@@ -18,10 +18,7 @@ export const RolesPage: React.FC = () => {
   const loadRoles = async () => {
     setIsLoading(true);
     try {
-      const [rolesResp, usersResp] = await Promise.all([
-        rbacService.getRoles(),
-        usersService.getAll(),
-      ]);
+      const rolesResp = await rbacService.getRoles();
 
       if (!rolesResp.success) {
         throw new Error(rolesResp.message || 'Failed to load roles');
@@ -29,17 +26,11 @@ export const RolesPage: React.FC = () => {
 
       const rolesData = rolesResp.data || [];
 
-      // If we have users, compute counts by primary roleName (frontend source of truth)
-      const usersData = usersResp.success && usersResp.data ? usersResp.data : [];
-      const countsByRoleName: Record<string, number> = {};
-      usersData.forEach((u) => {
-        const rn = (u.roleName || 'Sin rol').trim();
-        countsByRoleName[rn] = (countsByRoleName[rn] || 0) + 1;
-      });
-
+      // Use userCount from API directly (backend provides accurate count)
+      // Fallback to 0 if not provided
       const enriched = rolesData.map((r) => ({
         ...r,
-        userCount: countsByRoleName[r.name] ?? r.userCount ?? 0,
+        userCount: r.userCount ?? 0,
       }));
 
       setRoles(enriched);

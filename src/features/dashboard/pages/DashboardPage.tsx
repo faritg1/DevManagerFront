@@ -6,6 +6,7 @@ import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { ProjectStatus, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
+import { getComplexityConfig } from '../../projects/utils/complexityConfig';
 
 // Helpers
 const getProjectGradient = (name: string): string => {
@@ -320,6 +321,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                         {projects.map((project) => {
                             const statusConfig = getStatusConfig(project.status);
+                            const complexityConfig = getComplexityConfig(project.complexity);
                             const progress = getProgressFromStatus(project.status);
                             
                             return (
@@ -363,8 +365,8 @@ export const DashboardPage: React.FC = () => {
                                         <Badge variant={statusConfig.variant} dot>
                                             {statusConfig.label}
                                         </Badge>
-                                        <Badge variant="default">
-                                            {project.complexityName}
+                                        <Badge variant={complexityConfig.variant}>
+                                            Complejidad: {complexityConfig.label}
                                         </Badge>
                                     </div>
 

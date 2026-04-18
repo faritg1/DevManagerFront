@@ -542,3 +542,8 @@ export interface ValidatePermissionRequest {
 export interface ValidatePermissionResponse {
   hasPermission: boolean;
 }
+
+// ============ REPORTS ============
+export interface AiSummaryResponse {
+  markdown: string;
+}

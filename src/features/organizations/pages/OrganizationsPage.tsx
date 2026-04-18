@@ -213,7 +213,7 @@ export const OrganizationsPage: React.FC = () => {
                     </p>
                   </div>
                   <Badge variant="default" className="text-xs shrink-0">
-                    {member.roleName}
+                    {member.roleName || 'Sin asignar'}
                   </Badge>
                   {member.isActive ? (
                     <CheckCircle2

@@ -152,37 +152,43 @@ export const ReportsPage: React.FC = () => {
       });
       setEmployeeSkillsMap(empMap);
 
-       const reqMap: Record<string, SkillRequirementResponse[]> = {};
-       reqResults.forEach(({ projectId, reqs }) => {
-         reqMap[projectId] = reqs;
-       });
-       setProjectReqsMap(reqMap);
+      const reqMap: Record<string, SkillRequirementResponse[]> = {};
+      reqResults.forEach(({ projectId, reqs }) => {
+        reqMap[projectId] = reqs;
+      });
+      setProjectReqsMap(reqMap);
 
-       // Phase 3: Load AI summary (non-blocking, separate from main loading)
-       setAiSummaryLoading(true);
-       try {
-         const aiRes = await reportsService.getAiSummary();
-         if (aiRes.success && aiRes.data?.markdown) {
-           setAiSummary(aiRes.data.markdown);
-         }
-       } catch (aiErr) {
-         console.error("AI summary load error:", aiErr);
-         // Fail silently - AI summary is nice to have, not critical
-       } finally {
-         setAiSummaryLoading(false);
-       }
-     } catch (err) {
-       console.error("Reports data load error:", err);
-       setError("Error de conexión al cargar reportes");
-     } finally {
-       setIsLoading(false);
-     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch (err) {
+      console.error("Reports data load error:", err);
+      setError("Error de conexión al cargar reportes");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadAiSummary = useCallback(async () => {
+    setAiSummaryLoading(true);
+    try {
+      const aiRes = await reportsService.getAiSummary();
+      if (aiRes.success && aiRes.data?.markdown) {
+        setAiSummary(aiRes.data.markdown);
+      }
+    } catch (aiErr) {
+      console.error("AI summary load error:", aiErr);
+    } finally {
+      setAiSummaryLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadAiSummary();
+  }, [loadData, loadAiSummary]);
+
+  const handleRefresh = useCallback(() => {
+    loadData();
+    loadAiSummary();
+  }, [loadData, loadAiSummary]);
 
   // ─── Computed: Skill Distribution ───────────────────────
   const skillDistribution = useMemo<SkillDistribution[]>(() => {
@@ -403,7 +409,7 @@ export const ReportsPage: React.FC = () => {
         <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
           {error}
         </p>
-        <Button variant="outline" icon={RefreshCw} onClick={loadData}>
+        <Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
           Reintentar
         </Button>
       </div>
@@ -423,7 +429,7 @@ export const ReportsPage: React.FC = () => {
             Análisis de habilidades, brechas de capacitación y métricas de equipo
           </p>
         </div>
-        <Button variant="outline" icon={RefreshCw} onClick={loadData}>
+        <Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
           Actualizar datos
         </Button>
       </div>

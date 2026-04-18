@@ -91,7 +91,7 @@ export const API_ENDPOINTS = {
 
   // Reports
   REPORTS: {
-    AI_SUMMARY: "/reports/ai-summary",
+    AI_SUMMARY: "/Reports/ai-summary",
   },
 
   // Configuration (Catalogs)

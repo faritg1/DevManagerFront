@@ -15,3 +15,4 @@ export { assignmentsService } from "./assignmentsService";
 export { agentService } from "./agentService";
 export { rbacService } from "./rbacService";
 export { configService } from "./configService";
+export { reportsService } from "./reportsService";

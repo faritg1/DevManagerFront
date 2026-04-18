@@ -89,6 +89,11 @@ export const API_ENDPOINTS = {
     VALIDATE: "/permissions/validate",
   },
 
+  // Reports
+  REPORTS: {
+    AI_SUMMARY: "/reports/ai-summary",
+  },
+
   // Configuration (Catalogs)
   CONFIG: {
     BASE: "/Config",

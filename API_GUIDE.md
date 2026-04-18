@@ -11,15 +11,17 @@
 
 1. [Autenticación](#-autenticación)
 2. [Usuarios](#-usuarios)
-3. [Perfiles](#-perfiles)
+3. [Roles y Permisos](#-roles-y-permisos)
+4. [Perfiles](#-perfiles)
 4. [Habilidades (Catálogo)](#-habilidades-catálogo)
 5. [Habilidades de Empleados](#-habilidades-de-empleados)
 6. [Proyectos](#-proyectos)
 7. [Postulaciones](#-postulaciones)
 8. [Asignaciones](#-asignaciones)
-9. [Agente IA](#-agente-ia)
-10. [Respuestas Estándar](#-respuestas-estándar)
-11. [Códigos de Error](#-códigos-de-error)
+9. [Reportes y Analítica](#-reportes-y-analítica)
+10. [Agente IA](#-agente-ia)
+11. [Respuestas Estándar](#-respuestas-estándar)
+12. [Códigos de Error](#-códigos-de-error)
 
 ---
 
@@ -122,6 +124,7 @@ Obtiene todos los usuarios de la organización.
       "id": "11111111-0000-0000-0000-000000000001",
       "email": "admin@techcorp.com",
       "fullName": "Admin TechCorp",
+      "roleId": "11111111-0001-0000-0000-000000000001",
       "roleName": "Admin",
       "phoneNumber": "+52 55 1234 5678",
       "isActive": true,
@@ -150,6 +153,7 @@ Obtiene un usuario específico por ID.
     "id": "11111111-0000-0000-0000-000000000002",
     "email": "maria.garcia@techcorp.com",
     "fullName": "María García",
+    "roleId": "11111111-0001-0000-0000-000000000002",
     "roleName": "Manager",
     "phoneNumber": "+52 55 9876 5432",
     "isActive": true,
@@ -162,6 +166,8 @@ Obtiene un usuario específico por ID.
 | Código | Descripción |
 |--------|-------------|
 | 404 | Usuario no encontrado |
+
+> 💡 **Nota sobre roles (Null-Safety):** Si un usuario no tiene un rol asignado, `roleId` vendrá como `null` y `roleName` se retornará como `"Sin asignar"`, garantizando seguridad en el Frontend.
 
 ---
 
@@ -244,6 +250,50 @@ Actualiza un usuario existente (partial update).
 Elimina lógicamente un usuario (soft delete). El registro se mantiene para auditoría.
 
 **Response (204 No Content)**
+
+---
+
+## 🔐 Roles y Permisos
+
+> La gestión de Roles y Permisos permite controlar el acceso granular a nivel de organización para la implementación RBAC (Role-Based Access Control).
+
+### GET `/api/roles`
+Obtiene todos los roles definidos para la organización actual junto con su contador de usuarios asignados.
+
+**Response (200 OK):** 
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "11111111-0001-0000-0000-000000000001",
+      "name": "Admin",
+      "description": "Administrador del sistema",
+      "userCount": 3
+    }
+  ]
+}
+```
+
+### GET `/api/roles/{id}`
+Obtiene el detalle de un rol específico.
+
+### POST `/api/roles`
+Crea un nuevo rol en la organización.
+**Request:** `{"name": "Tech Lead", "description": "Líder técnico del proyecto"}`
+
+### PUT `/api/roles/{id}`
+Actualiza el nombre y la descripción de un rol existente.
+
+### DELETE `/api/roles/{id}`
+Elimina un rol de forma lógica (soft delete).
+
+### GET `/api/permissions`
+Obtiene el catálogo completo de permisos disponibles en el sistema (ej. `projects.create`, `users.view`).
+**Nota:** Este endpoint retorna todos los permisos base o agrupados según el endpoint específico (`/api/permissions/grouped`).
+
+### POST `/api/roles/{id}/permissions` o `POST /api/roles/assign-to-user`
+Endpoints que permiten asignar o revocar permisos específicos a los roles, o asignar directamente un rol a un usuario determinado (`assign-to-user` / `revoke-from-user`).
 
 ---
 
@@ -337,6 +387,14 @@ Crea, actualiza o reactiva el perfil del usuario autenticado (upsert).
 - Si NO existe perfil → Lo CREA
 - Si existe perfil activo → Lo ACTUALIZA
 - Si el perfil fue eliminado → Lo REACTIVA y ACTUALIZA
+
+---
+
+### DELETE `/api/profile/me`
+
+Elimina (soft delete) el perfil del usuario autenticado.
+
+**Response (204 No Content)**
 
 ---
 
@@ -898,6 +956,13 @@ Errores:
 
 ---
 
+### DELETE `/api/employees/skills/{id}`
+Elimina lógicamente (soft delete) una habilidad del empleado.
+
+**Response (200 OK o 204 No Content)**
+
+---
+
 ## 📁 Proyectos
 
 ### GET `/api/projects`
@@ -999,6 +1064,31 @@ Crea un nuevo proyecto. Requiere rol Manager o Admin.
   "success": true,
   "message": "Proyecto creado exitosamente",
   "data": "ffffffff-0000-0000-0000-000000000001"
+}
+```
+
+---
+
+### PUT `/api/projects/{id}`
+
+Actualiza los detalles o el estado de un proyecto existente. Requiere rol Manager o Admin.
+
+**Request:** (Similar a la creación, incluye el ID en la ruta y los datos del proyecto en el cuerpo)
+```json
+{
+  "name": "App Móvil Actualizada",
+  "description": "Nueva descripción detallada",
+  "status": 2,
+  "complexity": 2,
+  "budgetEstimate": 300000.00
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Proyecto actualizado exitosamente"
 }
 ```
 
@@ -1174,6 +1264,114 @@ Asigna un usuario a un proyecto. Requiere rol Manager o Admin.
 |----------|-------------|
 | Application | Postulación voluntaria del empleado (bottom-up) |
 | Assignment | Asignación administrativa por manager (top-down) |
+
+---
+
+## 📊 Reportes y Analítica
+
+> Nuevos endpoints nativos para inteligencia de negocio, uso de talento y salud de la organización. Todos aplican Multi-tenancy automáticamente.
+
+### GET `/api/reports/skills-distribution`
+Calcula el nivel de madurez y la distribución de habilidades organizacionales (del nivel 1 al 5) en todos los empleados activos.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "skillName": "React",
+      "averageLevel": 3.5,
+      "totalEmployees": 42,
+      "levelDistribution": {
+        "1": 5, "2": 10, "3": 15, "4": 10, "5": 2
+      }
+    }
+  ]
+}
+```
+
+### GET `/api/reports/project-metrics`
+Retorna métricas clave de los proyectos activos frente a los requerimientos y la escasez de habilidades.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalActiveProjects": 12,
+    "projectsAtRisk": 3,
+    "mostDemandedSkills": [
+      { "skillName": "C#", "requiredInProjects": 8 },
+      { "skillName": "Azure", "requiredInProjects": 6 }
+    ]
+  }
+}
+```
+
+### GET `/api/reports/employee-utilization`
+Analiza la capacidad operativa calculando la utilización en base a la asignación de proyectos por empleado (1 proyecto = 25% asignación aproximada).
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalEmployees": 150,
+    "allocatedEmployees": 120,
+    "unallocatedEmployees": 30,
+    "overallUtilizationPercentage": 80.0,
+    "averageProjectsPerAllocatedEmployee": 1.5,
+    "utilizationDetails": [
+      {
+        "userId": "guid...",
+        "fullName": "Juan Martínez",
+        "activeProjectsCount": 2,
+        "utilizationPercentage": 50.0,
+        "yearsExperience": 5,
+        "allocationStatus": "Asignado",
+        "assignedProjects": ["App Móvil", "Portal Web"]
+      }
+    ]
+  }
+}
+```
+
+### GET `/api/reports/department-metrics`
+Entrega estadísticas globales de la organización sobre seniority y habilidades certificadas.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalEmployees": 150,
+    "activeEmployees": 145,
+    "averageSkillsPerEmployee": 4.2,
+    "employeesWithValidatedSkills": 95,
+    "totalUniqueSkillsInOrganization": 28,
+    "experienceDistribution": {
+      "juniorCount": 45,
+      "midLevelCount": 60,
+      "seniorCount": 35,
+      "leadCount": 10
+    }
+  }
+}
+```
+
+### GET `/api/reports/ai-summary`
+Se integra con Gemini para procesar los datos de la organización y devolver un **Resumen Ejecutivo** automático para presentarse en tableros organizacionales.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "markdown": "### Resumen Ejecutivo\nLa organización tiene una fuerte competencia en **Backend (.NET)**, pero existe una brecha crítica en **DevOps (Kubernetes)** para los 3 proyectos activos que lo requieren. Se recomienda iniciar capacitaciones de nivelación."
+  }
+}
+```
 
 ---
 

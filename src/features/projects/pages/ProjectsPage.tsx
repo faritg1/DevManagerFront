@@ -15,8 +15,9 @@ import { Card, Badge, ProgressBar, Button, Input } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, ProjectComplexity, type ProjectResponse } from '../../../shared/api/types';
+import { getComplexityConfig } from '../utils/complexityConfig';
 
-// Helpers para mapear estados y complejidad a badges
+// Helpers para mapear estados a badges
 const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string } => {
     switch (status) {
         case ProjectStatus.Active:
@@ -31,19 +32,6 @@ const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning
             return { variant: 'danger', label: 'Cancelado' };
         default:
             return { variant: 'default', label: 'Desconocido' };
-    }
-};
-
-const getComplexityConfig = (complexity: ProjectComplexity): { variant: 'success' | 'warning' | 'danger'; label: string } => {
-    switch (complexity) {
-        case ProjectComplexity.Low:
-            return { variant: 'success', label: 'Baja' };
-        case ProjectComplexity.Medium:
-            return { variant: 'warning', label: 'Media' };
-        case ProjectComplexity.High:
-            return { variant: 'danger', label: 'Alta' };
-        default:
-            return { variant: 'success', label: 'Baja' };
     }
 };
 

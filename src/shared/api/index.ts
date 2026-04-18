@@ -26,4 +26,5 @@ export {
   agentService,
   configService,
   rbacService,
+  reportsService,
 } from "./services";

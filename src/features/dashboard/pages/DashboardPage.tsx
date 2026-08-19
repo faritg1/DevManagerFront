@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Loader2, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp } from 'lucide-react';
+import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Loader2, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
 import { Card, StatCard, Badge, ProgressBar, Button } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
-import { projectsService, usersService, skillsService } from '../../../shared/api';
+import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { ProjectStatus, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../../projects/utils/complexityConfig';
@@ -45,6 +45,14 @@ export const DashboardPage: React.FC = () => {
     const [activeUsers, setActiveUsers] = useState<number>(0);
     const [totalSkills, setTotalSkills] = useState<number>(0);
     const [pendingApplications, setPendingApplications] = useState<number>(0);
+
+    // Solidarity KPIs (loaded best-effort; skipped gracefully if unavailable)
+    const [solidaridad, setSolidaridad] = useState({
+        excedentesPeriodo: 0,
+        pendientesARCO: 0,
+        programasBienestar: 0,
+        loaded: false,
+    });
 
     // Cargar datos del dashboard
     useEffect(() => {
@@ -100,6 +108,38 @@ export const DashboardPage: React.FC = () => {
 
         fetchDashboard();
     }, []);
+
+    // Cargar KPIs de gestión solidaria (best-effort: si un endpoint falla o no
+    // aplica a la organización, se omite sin romper el dashboard).
+    useEffect(() => {
+        const orgId = user?.organizationId;
+        if (!orgId) return;
+
+        const fetchSolidaridad = async () => {
+            try {
+                const [excedentesRes, arcoRes, bienestarRes] = await Promise.all([
+                    excedentesService.getByOrganizacion(orgId).catch(() => null),
+                    habeasDataService.getSolicitudesARCOPendientes(orgId).catch(() => null),
+                    bienestarService.getProgramas(orgId).catch(() => null),
+                ]);
+
+                const latestExcedente = excedentesRes?.success && excedentesRes.data && excedentesRes.data.length > 0
+                    ? excedentesRes.data[0].totalExcedentes
+                    : 0;
+
+                setSolidaridad({
+                    excedentesPeriodo: latestExcedente,
+                    pendientesARCO: arcoRes?.success && arcoRes.data ? arcoRes.data.length : 0,
+                    programasBienestar: bienestarRes?.success && bienestarRes.data ? bienestarRes.data.length : 0,
+                    loaded: true,
+                });
+            } catch {
+                setSolidaridad(prev => ({ ...prev, loaded: true }));
+            }
+        };
+
+        fetchSolidaridad();
+    }, [user?.organizationId]);
 
     // Calcular estadísticas
     const stats = {
@@ -221,6 +261,38 @@ export const DashboardPage: React.FC = () => {
                         iconBgColor="bg-purple-50 dark:bg-purple-500/10"
                     />
                 </div>
+
+                {/* Gestión Solidaria KPIs */}
+                {!isLoading && solidaridad.loaded && (
+                    <div>
+                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400 mb-3">
+                            Gestión Solidaria
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <StatCard
+                                title="Excedentes del período"
+                                value={new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(solidaridad.excedentesPeriodo)}
+                                icon={PiggyBank}
+                                iconColor="text-emerald-500"
+                                iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
+                            />
+                            <StatCard
+                                title="Solicitudes ARCO pendientes"
+                                value={solidaridad.pendientesARCO}
+                                icon={Shield}
+                                iconColor="text-amber-500"
+                                iconBgColor="bg-amber-50 dark:bg-amber-500/10"
+                            />
+                            <StatCard
+                                title="Programas de bienestar"
+                                value={solidaridad.programasBienestar}
+                                icon={HeartHandshake}
+                                iconColor="text-rose-500"
+                                iconBgColor="bg-rose-50 dark:bg-rose-500/10"
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Postulaciones pendientes + Quick Actions */}
                 {!isLoading && !error && (

@@ -46,7 +46,7 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
               ? `${roleResp.data.permissions.length} permisos asignados`
               : "",
           );
-          const initial = new Set(roleResp.data.permissions.map((p) => p.id));
+          const initial = new Set<string>(roleResp.data.permissions.map((p) => p.id));
           setSelected(initial);
         }
       } catch (err) {

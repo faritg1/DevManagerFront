@@ -259,13 +259,13 @@ export const UserDetailPage: React.FC = () => {
                           <CheckCircle2
                             size={14}
                             className="text-emerald-500"
-                            title={`Validado por ${skill.validatedByName || "manager"}`}
+                            aria-label={`Validado por ${skill.validatedByName || "manager"}`}
                           />
                         ) : (
                           <Clock
                             size={14}
                             className="text-amber-400"
-                            title="Pendiente de validación"
+                            aria-label="Pendiente de validación"
                           />
                         )}
                       </div>

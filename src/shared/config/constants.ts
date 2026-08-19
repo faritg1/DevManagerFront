@@ -38,6 +38,19 @@ export const ROUTES = {
     // User
     PROFILE: '/profile',
     SETTINGS: '/settings',
+
+    // ===== Gestión Humana Solidaria =====
+    ASOCIADOS: '/asociados',
+    NOMINA: '/nomina',
+    BIENESTAR: '/bienestar',
+    EDUCACION: '/educacion',
+    BALANCE_SOCIAL: '/balance-social',
+    SST: '/sst',
+    EXCEDENTES: '/excedentes',
+    HABEAS_DATA: '/habeas-data',
+    ORGANOS: '/organos',
+    REPORTES_SUPERSOLIDARIA: '/reportes-supersolidaria',
+    ASISTENTE: '/asistente',
 } as const;
 
 // Navigation sections for sidebar
@@ -45,6 +58,7 @@ export const NAV_SECTIONS = {
     PLATFORM: 'Plataforma',
     AGENTS: 'Agentes IA',
     ADMIN: 'Administración',
+    SOLIDARIO: 'Gestión Solidaria',
 } as const;
 
 // Project statuses

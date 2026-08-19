@@ -78,7 +78,7 @@ export const ProfileHeader: React.FC<Props> = ({
                         <div className="flex gap-2 items-center">
                             {onDelete && profile && (
                                 <Button
-                                    variant="destructive"
+                                    variant="danger"
                                     size="sm"
                                     icon={Trash2}
                                     onClick={onDelete}

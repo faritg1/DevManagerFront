@@ -156,8 +156,8 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleRequestRole = async () => {
-    if (!requestingRoleId) return;
+  const handleRequestRole = async (): Promise<boolean> => {
+    if (!requestingRoleId) return false;
     const ok = await requestRoleChange(requestingRoleId);
     if (ok) {
       showNotification({
@@ -165,11 +165,13 @@ export const ProfilePage: React.FC = () => {
         message: "Solicitud enviada / Rol actualizado (si tienes permisos)",
       });
       requestRoleModal.close();
+      return true;
     } else {
       showNotification({
         type: "error",
         message: "No se pudo solicitar el cambio",
       });
+      return false;
     }
   };
 

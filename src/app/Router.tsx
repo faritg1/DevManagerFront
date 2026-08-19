@@ -30,6 +30,17 @@ import {
   SkillsCatalogPage,
   ReportsPage,
   SettingsPage,
+  AsociadosPage,
+  NominaPage,
+  OrganosPage,
+  BienestarPage,
+  EducacionPage,
+  BalanceSocialPage,
+  SstPage,
+  ExcedentesPage,
+  HabeasDataPage,
+  ReportesSupersolidariaPage,
+  AsistentePage,
 } from "../features";
 
 // Placeholder pages for routes not yet implemented
@@ -126,6 +137,19 @@ export const AppRouter: React.FC = () => {
                   path={ROUTES.SETTINGS}
                   element={<SettingsPage />}
                 />
+
+                {/* ===== Gestión Humana Solidaria ===== */}
+                <Route path={ROUTES.ASOCIADOS} element={<AsociadosPage />} />
+                <Route path={ROUTES.NOMINA} element={<NominaPage />} />
+                <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
+                <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
+                <Route path={ROUTES.EDUCACION} element={<EducacionPage />} />
+                <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
+                <Route path={ROUTES.SST} element={<SstPage />} />
+                <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
+                <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
+                <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
+                <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                 </Route>
               </Route>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
+import {
     LayoutDashboard, 
     Building2, 
     Briefcase, 
@@ -15,6 +15,16 @@ import {
     ChevronDown,
     Key,
     Code2,
+    HeartHandshake,
+    Wallet,
+    GraduationCap,
+    Scale,
+    HardHat,
+    PiggyBank,
+    Shield,
+    Landmark,
+    FileBarChart2,
+    Sparkles,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -166,6 +176,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
                 <NavSection title={NAV_SECTIONS.AGENTS}>
                     <NavItem to={ROUTES.AGENTS} icon={Bot} label="Mis Agentes" isActive={isActive(ROUTES.AGENTS)} />
+                </NavSection>
+
+                <NavSection title={NAV_SECTIONS.SOLIDARIO}>
+                    <NavItem to={ROUTES.ASOCIADOS} icon={Users} label="Asociados" isActive={isActive(ROUTES.ASOCIADOS)} />
+                    <NavItem to={ROUTES.NOMINA} icon={Wallet} label="Nómina" isActive={isActive(ROUTES.NOMINA)} />
+                    <NavItem to={ROUTES.BIENESTAR} icon={HeartHandshake} label="Bienestar" isActive={isActive(ROUTES.BIENESTAR)} />
+                    <NavItem to={ROUTES.EDUCACION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCACION)} />
+                    <NavItem to={ROUTES.BALANCE_SOCIAL} icon={Scale} label="Balance Social" isActive={isActive(ROUTES.BALANCE_SOCIAL)} />
+                    <NavItem to={ROUTES.SST} icon={HardHat} label="SST" isActive={isActive(ROUTES.SST)} />
+                    <NavItem to={ROUTES.EXCEDENTES} icon={PiggyBank} label="Excedentes" isActive={isActive(ROUTES.EXCEDENTES)} />
+                    <NavItem to={ROUTES.HABEAS_DATA} icon={Shield} label="Habeas Data" isActive={isActive(ROUTES.HABEAS_DATA)} />
+                    <NavItem to={ROUTES.ORGANOS} icon={Landmark} label="Órganos" isActive={isActive(ROUTES.ORGANOS)} />
+                    <NavItem to={ROUTES.REPORTES_SUPERSOLIDARIA} icon={FileBarChart2} label="Reportes Supersolidaria" isActive={isActive(ROUTES.REPORTES_SUPERSOLIDARIA)} />
+                    <NavItem to={ROUTES.ASISTENTE} icon={Sparkles} label="Asistente" isActive={isActive(ROUTES.ASISTENTE)} />
                 </NavSection>
 
                 <NavSection title={NAV_SECTIONS.ADMIN}>

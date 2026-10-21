@@ -30,6 +30,9 @@ import {
   SkillsCatalogPage,
   ReportsPage,
   SettingsPage,
+  AssociatesPage,
+  AssociateDetailPage,
+  DataPoliciesPage,
 } from "../features";
 
 export const AppRouter: React.FC = () => {
@@ -89,6 +92,9 @@ export const AppRouter: React.FC = () => {
                   />
                   <Route path={ROUTES.USERS} element={<UsersPage />} />
                   <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                  <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                  <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                  <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
                 </Route>
 
                 {/* Security — Roles & Permissions (Admin only) */}

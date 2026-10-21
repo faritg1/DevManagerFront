@@ -32,6 +32,7 @@ interface RegisterData {
     email: string;
     password: string;
     organizationName?: string;
+    entityType?: number;
 }
 
 // Initial state
@@ -147,6 +148,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 adminEmail: data.email,
                 adminPassword: data.password,
                 adminFullName: data.name,
+                entityType: data.entityType,
             });
 
             if (!response.success || !response.data) {

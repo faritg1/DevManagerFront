@@ -15,6 +15,24 @@ export const API_ENDPOINTS = {
   USERS: {
     BASE: "/users",
     BY_ID: (id: string) => `/users/${id}`,
+    DOCUMENT: (id: string) => `/users/${id}/document`,
+    CONSENTS: (id: string) => `/users/${id}/consents`,
+  },
+
+  // Associates (Solidarity)
+  ASSOCIATES: {
+    BASE: "/associates",
+    BY_ID: (userId: string) => `/associates/${userId}`,
+    TRANSITIONS: (userId: string) => `/associates/${userId}/transitions`,
+  },
+
+  // Habeas Data
+  DATA_POLICIES: {
+    BASE: "/data-policies",
+    CURRENT: "/data-policies/current",
+  },
+  CONSENTS: {
+    REVOKE: (id: string) => `/consents/${id}/revoke`,
   },
 
   // Profile (Current User)

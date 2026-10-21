@@ -43,6 +43,7 @@ export interface RegisterOrganizationRequest {
   adminEmail: string;
   adminPassword: string;
   adminFullName: string;
+  entityType?: number | null;
 }
 
 export interface RegisterOrganizationResponse {
@@ -62,9 +63,13 @@ export interface UserResponse {
   phoneNumber: string | null;
   isActive: boolean;
   createdAt: string;
+  documentType?: number;
+  documentNumber?: string;
+  isEmployee?: boolean;
 }
 
 export interface CreateUserRequest {
+  isEmployee?: boolean;
   email: string;
   password: string;
   fullName: string;
@@ -73,6 +78,7 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
+  isEmployee?: boolean;
   fullName?: string;
   phoneNumber?: string | null;
   roleId?: string;
@@ -613,4 +619,85 @@ export interface DepartmentMetricsResponse {
     senior: number;
     lead: number;
   };
+}
+
+// ============ SOLIDARITY: ASSOCIATES ============
+export type AssociateStatus = 1 | 2 | 3 | 4; // Applicant, Active, Suspended, Withdrawn
+export type AssociateRole = "Associate" | "Employee" | "Both" | "None";
+
+export interface AssociateDto {
+  userId: string;
+  fullName: string;
+  documentType?: number;
+  documentNumber?: string;
+  status: AssociateStatus;
+  isEmployee: boolean;
+  role: AssociateRole;
+  currentAdmissionDate?: string;
+}
+
+export interface MembershipPeriodDto {
+  id: string;
+  applicationDate: string;
+  admissionDate?: string;
+  withdrawalDate?: string;
+  withdrawalReason?: string;
+}
+
+export interface AssociateDetailDto extends AssociateDto {
+  email: string;
+  hasActiveConsent: boolean;
+  periods: MembershipPeriodDto[];
+}
+
+export interface CreateAssociateRequest {
+  userId: string;
+  applicationDate?: string;
+}
+
+export interface TransitionRequest {
+  toStatus: AssociateStatus;
+  effectiveDate?: string;
+  reason?: string;
+}
+
+export interface TransitionResult {
+  status: AssociateStatus;
+  warnings: string[];
+}
+
+export interface SetDocumentRequest {
+  documentType: number;
+  documentNumber: string;
+}
+
+// ============ SOLIDARITY: HABEAS DATA ============
+export interface DataPolicyDto {
+  id: string;
+  version: string;
+  purpose: string;
+  text: string;
+  effectiveFrom: string;
+  createdAt: string;
+}
+
+export interface CreateDataPolicyRequest {
+  version: string;
+  purpose: string;
+  text: string;
+  effectiveFrom?: string;
+}
+
+export interface ConsentDto {
+  id: string;
+  userId: string;
+  policyVersionId: string;
+  policyVersion: string;
+  purpose: string;
+  grantedAt: string;
+  grantedByUserId: string;
+  revokedAt?: string;
+  revokedByUserId?: string;
+  revocationReason?: string;
+  isActive: boolean;
 }

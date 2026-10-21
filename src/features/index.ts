@@ -15,3 +15,4 @@ export { RolesPage, RolePermissionsPage, PermissionsPage } from "./rbac";
 export { SkillsCatalogPage } from "./skills";
 export { ReportsPage } from "./reports";
 export { SettingsPage } from "./settings";
+export { AssociatesPage, AssociateDetailPage, DataPoliciesPage } from "./associates";

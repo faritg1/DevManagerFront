@@ -26,6 +26,9 @@ export const ROUTES = {
     USER_DETAIL: '/users/:id',
     ROLES: '/roles',
     PERMISSIONS: '/permissions',
+    ASSOCIATES: '/associates',
+    ASSOCIATE_DETAIL: '/associates/:userId',
+    DATA_POLICIES: '/data-policies',
     
     // Agents (AI Agents)
     AGENTS: '/agents',
@@ -101,3 +104,5 @@ export type ProjectStatusLabel = typeof PROJECT_STATUS[keyof typeof PROJECT_STAT
 /** @deprecated Use AgentStatus from @shared/types instead */
 export type AgentStatusLabel = typeof AGENT_STATUS[keyof typeof AGENT_STATUS];
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+
+export const associateDetailPath = (userId: string): string => `/associates/${userId}`;

@@ -4,6 +4,7 @@ import { Building2, User, Mail, Eye, EyeOff, Hexagon } from 'lucide-react';
 import { useAuth } from '../../../shared/context';
 import { Button, Input } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
+import { ENTITY_TYPES } from '../../associates/labels';
 
 export const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export const RegisterPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         organizationName: '',
+        entityType: '',
         name: '',
         email: '',
         password: '',
@@ -45,6 +47,7 @@ export const RegisterPage: React.FC = () => {
                 email: formData.email,
                 password: formData.password,
                 organizationName: formData.organizationName,
+                entityType: formData.entityType ? Number(formData.entityType) : undefined,
             });
             navigate(ROUTES.DASHBOARD);
         } catch (err: unknown) {
@@ -95,6 +98,18 @@ export const RegisterPage: React.FC = () => {
                             icon={Building2}
                             required
                         />
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de entidad (opcional)</label>
+                            <select
+                                value={formData.entityType}
+                                onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
+                                className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                            >
+                                <option value="">No especificar</option>
+                                {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                            </select>
+                        </div>
 
                         <Input
                             label="Tu Nombre"

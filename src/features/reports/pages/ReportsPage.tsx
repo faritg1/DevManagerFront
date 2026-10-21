@@ -21,6 +21,7 @@ import type {
   DepartmentMetricsResponse,
 } from "../../../shared/api/types";
 import { Card, Badge, Button, StatCard } from "../../../shared/ui";
+import { EducationCoverageCard } from "../components/EducationCoverageCard";
 
 // ─── Component ────────────────────────────────────────────
 export const ReportsPage: React.FC = () => {
@@ -196,6 +197,8 @@ export const ReportsPage: React.FC = () => {
           Actualizar datos
         </Button>
       </div>
+
+      <EducationCoverageCard />
 
       {/* ─── AI Insights Section ────────────────────── */}
       <Card className="border-l-4 border-l-primary bg-gradient-to-br from-primary/5 to-blue-500/5">

@@ -29,6 +29,8 @@ export const ROUTES = {
     ASSOCIATES: '/associates',
     ASSOCIATE_DETAIL: '/associates/:userId',
     DATA_POLICIES: '/data-policies',
+    EDUCATION: '/education',
+    EDUCATION_PROGRAM: '/education/:programId',
     
     // Agents (AI Agents)
     AGENTS: '/agents',
@@ -106,3 +108,4 @@ export type AgentStatusLabel = typeof AGENT_STATUS[keyof typeof AGENT_STATUS];
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 
 export const associateDetailPath = (userId: string): string => `/associates/${userId}`;
+export const educationProgramPath = (programId: string): string => `/education/${programId}`;

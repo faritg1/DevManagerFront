@@ -18,3 +18,4 @@ export { configService } from "./configService";
 export { reportsService } from "./reportsService";
 export { associatesService } from "./associatesService";
 export { consentsService } from "./consentsService";
+export { educationService } from "./educationService";

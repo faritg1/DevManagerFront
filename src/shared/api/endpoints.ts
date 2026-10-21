@@ -26,6 +26,14 @@ export const API_ENDPOINTS = {
     TRANSITIONS: (userId: string) => `/associates/${userId}/transitions`,
   },
 
+  // Cooperative education
+  EDUCATION: {
+    PROGRAMS: "/education/programs",
+    PROGRAM: (id: string) => `/education/programs/${id}`,
+    ENROLLMENTS: (programId: string) => `/education/programs/${programId}/enrollments`,
+    ENROLLMENT: (id: string) => `/education/enrollments/${id}`,
+  },
+
   // Habeas Data
   DATA_POLICIES: {
     BASE: "/data-policies",
@@ -116,6 +124,7 @@ export const API_ENDPOINTS = {
     PROJECT_METRICS: "/reports/project-metrics",
     EMPLOYEE_UTILIZATION: "/reports/employee-utilization",
     DEPARTMENT_METRICS: "/reports/department-metrics",
+    EDUCATION_COVERAGE: "/reports/education-coverage",
   },
 
   // Configuration (Catalogs)

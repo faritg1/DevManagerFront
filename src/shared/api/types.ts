@@ -701,3 +701,57 @@ export interface ConsentDto {
   revocationReason?: string;
   isActive: boolean;
 }
+
+// ============ SOLIDARITY: COOPERATIVE EDUCATION ============
+export type ProgramType = 1 | 2 | 3 | 4;
+export type EnrollmentStatus = 1 | 2 | 3;
+
+export interface EducationProgramDto {
+  id: string;
+  name: string;
+  type: ProgramType;
+  requiredHours: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SaveProgramRequest {
+  name: string;
+  type: ProgramType;
+  requiredHours: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface EnrollmentDto {
+  id: string;
+  programId: string;
+  userId: string;
+  fullName: string;
+  status: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface EnrollRequest {
+  userId: string;
+  status?: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface UpdateEnrollmentRequest {
+  status: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface EducationCoverageResponse {
+  year: number;
+  eligibleAssociates: number;
+  coveredAssociates: number;
+  coverageRatio: number;
+  avgHours: number;
+  basicCompliant: boolean;
+  hoursByType: { Basic?: number; Permanent?: number; Governance?: number; Informal?: number };
+}

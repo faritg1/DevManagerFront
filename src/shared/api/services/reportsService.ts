@@ -12,6 +12,7 @@ import type {
   ProjectMetricsResponse,
   EmployeeUtilizationResponse,
   DepartmentMetricsResponse,
+  EducationCoverageResponse,
   ApiResponse,
 } from "../types";
 
@@ -58,6 +59,13 @@ export const reportsService = {
   async getDepartmentMetrics(): Promise<ApiResponse<DepartmentMetricsResponse>> {
     return apiClient.get<DepartmentMetricsResponse>(
       API_ENDPOINTS.REPORTS.DEPARTMENT_METRICS,
+    );
+  },
+
+  /** GET /api/reports/education-coverage?year= */
+  async getEducationCoverage(year: number): Promise<ApiResponse<EducationCoverageResponse>> {
+    return apiClient.get<EducationCoverageResponse>(
+      `${API_ENDPOINTS.REPORTS.EDUCATION_COVERAGE}?year=${year}`,
     );
   },
 };

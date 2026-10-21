@@ -28,5 +28,6 @@ export {
   rbacService,
   reportsService,
   associatesService,
+  educationService,
   consentsService,
 } from "./services";

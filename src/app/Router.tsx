@@ -32,6 +32,8 @@ import {
   SettingsPage,
   AssociatesPage,
   AssociateDetailPage,
+  EducationProgramsPage,
+  ProgramDetailPage,
   DataPoliciesPage,
 } from "../features";
 
@@ -95,6 +97,8 @@ export const AppRouter: React.FC = () => {
                   <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
                   <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
                   <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                  <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                  <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
                 </Route>
 
                 {/* Security — Roles & Permissions (Admin only) */}

@@ -17,6 +17,7 @@ import {
     Code2,
     HeartHandshake,
     FileText,
+    GraduationCap,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -177,6 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                             <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
                             <NavItem to={ROUTES.ASSOCIATES} icon={HeartHandshake} label="Asociados" isActive={isActive(ROUTES.ASSOCIATES)} />
                             <NavItem to={ROUTES.DATA_POLICIES} icon={FileText} label="Políticas de datos" isActive={isActive(ROUTES.DATA_POLICIES)} />
+                            <NavItem to={ROUTES.EDUCATION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCATION)} />
                         </>
                     )}
 

@@ -77,11 +77,14 @@ export const skillsService = {
     return apiClient.post<void>(API_ENDPOINTS.EMPLOYEE_SKILLS.UPSERT, data);
   },
 
-  // TODO: backend should support deleting employee skill
+  /**
+   * Elimina una habilidad del empleado
+   * DELETE /api/employees/skills/{id}
+   */
   async deleteEmployeeSkill(
     skillId: string,
   ): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`/employees/skills/${skillId}`);
+    return apiClient.delete<void>(API_ENDPOINTS.EMPLOYEE_SKILLS.BY_ID(skillId));
   },
 
   /**

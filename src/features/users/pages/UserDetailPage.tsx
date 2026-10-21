@@ -256,17 +256,13 @@ export const UserDetailPage: React.FC = () => {
                           {skill.level} — {getLevelLabel(skill.level)}
                         </Badge>
                         {skill.lastValidatedAt ? (
-                          <CheckCircle2
-                            size={14}
-                            className="text-emerald-500"
-                            title={`Validado por ${skill.validatedByName || "manager"}`}
-                          />
+                          <span title={`Validado por ${skill.validatedByName || "manager"}`}>
+                            <CheckCircle2 size={14} className="text-emerald-500" />
+                          </span>
                         ) : (
-                          <Clock
-                            size={14}
-                            className="text-amber-400"
-                            title="Pendiente de validación"
-                          />
+                          <span title="Pendiente de validación">
+                            <Clock size={14} className="text-amber-400" />
+                          </span>
                         )}
                       </div>
                     </div>

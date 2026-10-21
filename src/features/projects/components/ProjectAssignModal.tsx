@@ -11,6 +11,7 @@ import {
   ApplicationStatus,
   type UserResponse,
   type ApplicationResponse,
+  type AssignmentResponse,
   type CreateAssignmentRequest,
 } from "../../../shared/api/types";
 import { useNotification } from "../../../shared/context";
@@ -21,6 +22,11 @@ interface ProjectAssignModalProps {
   isOpen: boolean;
   onClose: () => void;
   applications: ApplicationResponse[];
+  /** Users already assigned to the project (hidden from the list) */
+  assignedUserIds?: string[];
+  /** When set, the modal reassigns this assignment instead of creating one */
+  assignment?: AssignmentResponse | null;
+  onSaved?: () => void;
 }
 
 export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
@@ -28,6 +34,9 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   isOpen,
   onClose,
   applications,
+  assignedUserIds = [],
+  assignment = null,
+  onSaved,
 }) => {
   const { showNotification } = useNotification();
   const { confirm } = useConfirm();
@@ -35,8 +44,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   const [orgUsers, setOrgUsers] = useState<UserResponse[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [assignRole, setAssignRole] = useState("Developer");
-  const [assignHours, setAssignHours] = useState(40);
   const [isAssigning, setIsAssigning] = useState(false);
   const [userSearch, setUserSearch] = useState("");
 
@@ -44,8 +51,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   React.useEffect(() => {
     if (!isOpen) return;
     setSelectedUserId("");
-    setAssignRole("Developer");
-    setAssignHours(40);
     setUserSearch("");
 
     const loadUsers = async () => {
@@ -57,7 +62,12 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
             .filter((a) => a.status === ApplicationStatus.Approved)
             .map((a) => a.userId);
           setOrgUsers(
-            response.data.filter((u) => u.isActive && !approvedUserIds.includes(u.id))
+            response.data.filter(
+              (u) =>
+                u.isActive &&
+                !approvedUserIds.includes(u.id) &&
+                !assignedUserIds.includes(u.id)
+            )
           );
         }
       } catch {
@@ -75,7 +85,9 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     if (!selectedUserId) return;
     const selectedUser = orgUsers.find((u) => u.id === selectedUserId);
     const ok = await confirm({
-      message: `¿Asignar a ${selectedUser?.fullName || "este usuario"} al proyecto como ${assignRole}?`,
+      message: assignment
+        ? `¿Reasignar el puesto de ${assignment.userName} a ${selectedUser?.fullName || "este usuario"}?`
+        : `¿Asignar a ${selectedUser?.fullName || "este usuario"} al proyecto?`,
     });
     if (!ok) return;
 
@@ -84,15 +96,19 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
       const data: CreateAssignmentRequest = {
         projectId,
         userId: selectedUserId,
-        role: assignRole,
-        hoursPerWeek: assignHours,
       };
+      // Backend PUT only updates projectRoleId, so reassigning a user is create-new + remove-old.
+      // Create first so a failure leaves the original assignment intact.
       const response = await assignmentsService.create(data);
+      if (response.success && assignment) {
+        await assignmentsService.delete(assignment.id);
+      }
       if (response.success) {
         showNotification({
           type: "success",
           message: `${selectedUser?.fullName} asignado exitosamente`,
         });
+        onSaved?.();
         onClose();
         setOrgUsers((prev) => prev.filter((u) => u.id !== selectedUserId));
         setSelectedUserId("");
@@ -120,7 +136,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Asignar Miembro al Proyecto"
+      title={assignment ? `Reasignar puesto de ${assignment.userName}` : "Asignar Miembro al Proyecto"}
       icon={<UserPlus className="text-emerald-500" size={20} />}
       size="lg"
       footer={
@@ -131,7 +147,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
             icon={isAssigning ? Loader2 : UserPlus}
             className={isAssigning ? "[&_svg]:animate-spin" : ""}
           >
-            {isAssigning ? "Asignando..." : "Asignar al Proyecto"}
+            {isAssigning ? "Asignando..." : assignment ? "Reasignar" : "Asignar al Proyecto"}
           </Button>
           <Button variant="outline" onClick={onClose}>
             Cancelar
@@ -193,45 +209,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
                 )}
               </div>
             ))}
-          </div>
-        )}
-
-        {selectedUserId && (
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0d1419] border border-slate-200 dark:border-[#233948] space-y-4">
-            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
-              Detalles de la asignación
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                  Rol en el Proyecto
-                </label>
-                <select
-                  value={assignRole}
-                  onChange={(e) => setAssignRole(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
-                >
-                  <option value="Developer">Developer</option>
-                  <option value="Tech Lead">Tech Lead</option>
-                  <option value="QA Engineer">QA Engineer</option>
-                  <option value="DevOps">DevOps</option>
-                  <option value="Designer">Designer</option>
-                  <option value="Project Manager">Project Manager</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                  Horas por semana
-                </label>
-                <Input
-                  type="number"
-                  value={assignHours.toString()}
-                  onChange={(e) => setAssignHours(Number(e.target.value) || 0)}
-                  min={1}
-                  max={48}
-                />
-              </div>
-            </div>
           </div>
         )}
       </div>

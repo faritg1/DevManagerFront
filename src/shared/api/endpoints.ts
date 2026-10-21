@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
     BY_EMPLOYEE: (id: string) => `/employees/${id}/skills`,
     UPSERT: "/employees/skills",
     VALIDATE: (id: string) => `/employees/skills/${id}/validate`,
+    BY_ID: (id: string) => `/employees/skills/${id}`,
   },
 
   // Projects
@@ -58,6 +59,7 @@ export const API_ENDPOINTS = {
   // Assignments
   ASSIGNMENTS: {
     BASE: "/assignments",
+    BY_ID: (id: string) => `/assignments/${id}`,
   },
 
   // Agent IA (sin /api prefix - usa agentClient)
@@ -92,6 +94,10 @@ export const API_ENDPOINTS = {
   // Reports
   REPORTS: {
     AI_SUMMARY: "/reports/ai-summary",
+    SKILLS_DISTRIBUTION: "/reports/skills-distribution",
+    PROJECT_METRICS: "/reports/project-metrics",
+    EMPLOYEE_UTILIZATION: "/reports/employee-utilization",
+    DEPARTMENT_METRICS: "/reports/department-metrics",
   },
 
   // Configuration (Catalogs)

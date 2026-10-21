@@ -300,10 +300,25 @@ export interface ReviewApplicationRequest {
 export interface CreateAssignmentRequest {
   projectId: string;
   userId: string;
-  role: string;
-  hoursPerWeek?: number;
-  startDate?: string | null;
-  endDate?: string | null;
+  projectRoleId?: string | null;
+  applicationId?: string | null;
+}
+
+export interface UpdateAssignmentRequest {
+  projectRoleId?: string | null;
+}
+
+/** status: 1=Active, 2=Removed, 3=Completed */
+export interface AssignmentResponse {
+  id: string;
+  projectId: string;
+  projectName: string;
+  userId: string;
+  userName: string;
+  roleName?: string | null;
+  status: number;
+  assignedAt: string;
+  endedAt?: string | null;
 }
 
 // ============ AGENT IA ============
@@ -546,4 +561,56 @@ export interface ValidatePermissionResponse {
 // ============ REPORTS ============
 export interface AiSummaryResponse {
   markdown: string;
+}
+
+export interface SkillDistributionResponse {
+  skillName: string;
+  averageLevel: number;
+  totalEmployees: number;
+  /** key: level "1".."5", value: employee count */
+  levelDistribution: Record<string, number>;
+}
+
+export interface ProjectMetricsResponse {
+  totalActiveProjects: number;
+  projectsAtRisk: number;
+  mostDemandedSkills: { skillName: string; requiredInProjects: number }[];
+}
+
+export interface EmployeeUtilizationDetail {
+  employeeId: string;
+  fullName: string;
+  email: string;
+  activeProjectCount: number;
+  assignedProjects: string[];
+  utilizationPercentage: number;
+  allocationStatus: string;
+  skillsCount: number;
+  yearsExperience?: number | null;
+}
+
+export interface EmployeeUtilizationResponse {
+  totalEmployees: number;
+  allocatedEmployees: number;
+  unallocatedEmployees: number;
+  averageProjectsPerEmployee: number;
+  /** percentage 0-100 */
+  utilizationRate: number;
+  employees: EmployeeUtilizationDetail[];
+}
+
+export interface DepartmentMetricsResponse {
+  totalEmployees: number;
+  activeEmployees: number;
+  averageSkillsPerEmployee: number;
+  totalUniqueSkills: number;
+  employeesWithCertifications: number;
+  averageYearsExperience: number;
+  totalRoles: number;
+  experienceDistribution: {
+    junior: number;
+    midLevel: number;
+    senior: number;
+    lead: number;
+  };
 }

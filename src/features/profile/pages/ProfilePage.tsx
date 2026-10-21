@@ -157,7 +157,7 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleRequestRole = async () => {
-    if (!requestingRoleId) return;
+    if (!requestingRoleId) return false;
     const ok = await requestRoleChange(requestingRoleId);
     if (ok) {
       showNotification({
@@ -171,6 +171,7 @@ export const ProfilePage: React.FC = () => {
         message: "No se pudo solicitar el cambio",
       });
     }
+    return ok;
   };
 
   const handleValidateSkillAI = async (skill: EmployeeSkillResponse) => {

@@ -32,14 +32,6 @@ import {
   SettingsPage,
 } from "../features";
 
-// Placeholder pages for routes not yet implemented
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div className="p-10 text-slate-500 text-center">
-    <h2 className="text-2xl font-bold mb-2">{title}</h2>
-    <p>Próximamente</p>
-  </div>
-);
-
 export const AppRouter: React.FC = () => {
   return (
     <HashRouter>
@@ -88,14 +80,6 @@ export const AppRouter: React.FC = () => {
 
                 {/* Agents */}
                 <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
-                <Route
-                  path={ROUTES.CREATE_AGENT}
-                  element={<PlaceholderPage title="Crear Agente" />}
-                />
-                <Route
-                  path={ROUTES.AGENT_DETAIL}
-                  element={<PlaceholderPage title="Detalle del Agente" />}
-                />
 
                 {/* Administration — Admin only */}
                 <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>

@@ -29,8 +29,6 @@ export const ROUTES = {
     
     // Agents (AI Agents)
     AGENTS: '/agents',
-    AGENT_DETAIL: '/agents/:id',
-    CREATE_AGENT: '/agents/create',
     
     // Skills Catalog
     SKILLS_CATALOG: '/skills',

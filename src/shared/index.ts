@@ -12,9 +12,6 @@ export * from './hooks';
 // API (contains ProjectStatus, ProjectComplexity, etc. enums)
 export * from './api';
 
-// Services
-export * from './services';
-
 // Context/State
 export * from './context';
 

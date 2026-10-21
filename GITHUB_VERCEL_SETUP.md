@@ -53,7 +53,6 @@ Configurar auto-deploy para que cada push a `main` (o `Farit_DevMag`) publique a
    - Click en "Environment Variables"
    - Agrega:
      - `VITE_API_URL` = `https://devmanagerapi.runasp.net/api`
-     - `VITE_GEMINI_API_KEY` = `tu-key-aqui`
 
 7. **Deploy:**
    - Click en "Deploy"

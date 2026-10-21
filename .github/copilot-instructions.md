@@ -49,7 +49,6 @@ Strict guidelines for an AI agent to generate production-ready code in this **Re
 - **Clients:**
   - `apiClient`: For standard backend (`/api`). Handles auth tokens automatically.
   - `agentClient`: **STRICTLY** for `/Agent/*` endpoints. No `/api` prefix.
-- **AI Service:** Use `src/shared/services/geminiService.ts`. Ignore root `services/`.
 - **Entities alias:** `@entities` is available (see `vite.config.ts`) — import domain models from `@entities/<model>`.
 - **Data Shape:** Always expect `ApiResponse<T>`.
   - Validate response success manually (`if (response.success)`).
@@ -71,5 +70,5 @@ Strict guidelines for an AI agent to generate production-ready code in this **Re
 - **NO** logic inside UI primitives (Keep `shared/ui` dumb).
 
 ## 🔧 Debugging
-- Env: `VITE_API_URL`, `VITE_GEMINI_API_KEY`.
+- Env: `VITE_API_URL`.
 - Use the Network tab to debug `apiClient` issues (interceptors handle logging).

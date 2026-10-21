@@ -38,12 +38,6 @@ const getRouteName = (path: string): string => {
         // /projects/:id
         return 'Detalle';
     }
-    if (path.startsWith('/agents/')) {
-        if (path.endsWith('/edit')) {
-            return 'Editar';
-        }
-        return 'Detalle';
-    }
     
     // Fallback: capitalizar el último segmento
     const segments = path.split('/').filter(Boolean);

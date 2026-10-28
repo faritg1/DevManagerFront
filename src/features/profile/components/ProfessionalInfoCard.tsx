@@ -1,3 +1,4 @@
+import { usd } from '../../../shared/format';
 import React from 'react';
 import { Card, CardHeader, CardTitle, Input, SELECT_CLASS } from '../../../shared/ui';
 import { Briefcase } from 'lucide-react';
@@ -116,7 +117,7 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                     {isEditing ? (
                         <Input id="professional-info-tarifa-estimada-usd" type="number" min={0} value={form.hourlyRate ?? profile?.hourlyRate ?? ''} onChange={(e) => onChange({ hourlyRate: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ej: 40" />
                     ) : (
-                        <p className="text-slate-900 dark:text-white">{profile?.hourlyRate ? `$${profile.hourlyRate}/h` : 'No especificado'}</p>
+                        <p className="text-slate-900 dark:text-white">{profile?.hourlyRate ? `${usd(profile.hourlyRate)}/h` : 'No especificado'}</p>
                     )}
                 </div>
             </div>

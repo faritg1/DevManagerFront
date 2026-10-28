@@ -27,6 +27,7 @@ import {
 
 import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
 import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
+import { formatDate as formatLongDate } from '../../../shared/format';
 
 import { ProjectRequirementsSection } from '../components/ProjectRequirementsSection';
 import { ProjectApplicationsSection } from '../components/ProjectApplicationsSection';
@@ -34,14 +35,8 @@ import { ProjectMatchingModal } from '../components/ProjectMatchingModal';
 import { ProjectAssignModal } from '../components/ProjectAssignModal';
 import { ProjectAssignmentsSection } from '../components/ProjectAssignmentsSection';
 
-const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Sin definir';
-    return new Date(dateString).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-};
+const formatDate = (d: string | null): string => formatLongDate(d, { day: '2-digit', month: 'long', year: 'numeric' }, 'Sin definir');
+
 
 export const ProjectDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();

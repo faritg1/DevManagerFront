@@ -1,3 +1,4 @@
+import { formatDate } from '../../../shared/format';
 import React, { useState } from "react";
 import {
   Users,
@@ -16,19 +17,7 @@ interface ProjectApplicationsSectionProps {
   onApplicationsChange: (apps: ApplicationResponse[]) => void;
 }
 
-const formatApplicationDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Fecha inválida';
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  } catch {
-    return 'Fecha inválida';
-  }
-};
+const formatApplicationDate = (d: string): string => formatDate(d, undefined, 'Fecha inválida');
 
 export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProps> = ({
   applications,
@@ -228,11 +217,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Postulado el{" "}
-                  {new Date(selectedApplication.appliedAt).toLocaleDateString("es-ES", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {formatDate(selectedApplication.appliedAt, { day: "2-digit", month: "long", year: "numeric" })}
                 </p>
               </div>
             </div>

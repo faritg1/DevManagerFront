@@ -1,3 +1,4 @@
+import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState } from "react";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { reportsService } from "../../../shared/api";
@@ -48,7 +49,7 @@ export const EducationCoverageCard: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-900 dark:text-white">
             <div><p className="text-xs text-slate-500 dark:text-slate-400">Cobertura</p><p className="text-2xl font-bold">{Math.round(data.coverageRatio * 100)}%</p></div>
             <div><p className="text-xs text-slate-500 dark:text-slate-400">Asociados cubiertos</p><p className="text-2xl font-bold">{data.coveredAssociates} / {data.eligibleAssociates}</p></div>
-            <div><p className="text-xs text-slate-500 dark:text-slate-400">Promedio de horas</p><p className="text-2xl font-bold">{data.avgHours.toFixed(1)} h</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">Promedio de horas</p><p className="text-2xl font-bold">{formatNumber(data.avgHours)} h</p></div>
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">Educación básica</p>
               <Badge variant={data.basicCompliant ? "success" : "warning"}>{data.basicCompliant ? "Cumple" : "No cumple"}</Badge>

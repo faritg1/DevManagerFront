@@ -1,3 +1,4 @@
+import { formatDate as formatSharedDate } from '../../../shared/format';
 import React, { useState } from "react";
 import {
   Card,
@@ -50,14 +51,7 @@ export const CertificationsSection: React.FC<Props> = ({
   );
   const { confirm } = useConfirm();
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const formatDate = (dateStr: string | null) => formatSharedDate(dateStr, undefined, "");
 
   const isExpired = (dateStr: string | null) => {
     if (!dateStr) return false;

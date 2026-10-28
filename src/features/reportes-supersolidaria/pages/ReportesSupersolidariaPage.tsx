@@ -140,7 +140,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                     <tr key={r.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
                                         <td className={TD_CLASS}><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
-                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(r.createdAt)}</td>
                                         <td className={TD_CLASS}>
                                             <Badge variant={r.isSent ? 'success' : 'warning'} dot>{r.isSent ? 'Enviado' : 'Pendiente'}</Badge>
                                         </td>

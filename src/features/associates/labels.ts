@@ -1,3 +1,4 @@
+import { formatDate as formatSharedDate } from '../../shared/format';
 import type { ApiError } from '../../shared/api';
 import type { AssociateRole, AssociateStatus } from '../../shared/api/types';
 import type { BadgeVariant } from '../../shared/ui';
@@ -44,8 +45,8 @@ export const ENTITY_TYPES: Record<number, string> = {
     6: 'Otra',
 };
 
-export const formatDate = (d?: string | null): string =>
-    d ? new Date(`${d.slice(0, 10)}T00:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+/** Shows only the calendar day of a date or timestamp. */
+export const formatDate = (d?: string | null): string => formatSharedDate(d?.slice(0, 10));
 
 export { formatDateTime } from '../../shared/format';
 

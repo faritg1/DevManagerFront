@@ -122,7 +122,7 @@ export const ExcedentesPage: React.FC = () => {
                                     <tr key={e.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
                                             <p className="font-bold text-slate-900 dark:text-white">{formatDate(e.period)}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(e.createdAt)}</p>
                                         </td>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{currency(e.totalSurplus)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.protectionReserve)}</td>

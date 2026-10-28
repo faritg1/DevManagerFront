@@ -11,7 +11,7 @@ import type {
     CreateCompensationRequest,
     PilaContributionDto,
 } from '../../../shared/api/types';
-import { currency, today } from '../../../shared/format';
+import { currency, formatDate, today } from '../../../shared/format';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
@@ -175,7 +175,7 @@ export const NominaPage: React.FC = () => {
                                 <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{MODEL_LABEL[c.model] ?? 'Modelo'}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(c.period).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(c.period, { month: 'long', year: 'numeric' })}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(c.calculatedValue)}</p>

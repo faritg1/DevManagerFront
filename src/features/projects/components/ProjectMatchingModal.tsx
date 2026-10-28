@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { formatNumber } from '../../../shared/format';
 import {
   Sparkles,
   Loader2,
@@ -168,7 +169,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                 {[
                   { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500 dark:text-slate-400" /> },
                   { label: "Excelentes (≥90%)", value: stats.above90, icon: <CheckCircle2 size={16} className="text-emerald-500" /> },
-                  { label: "Score promedio", value: `${stats.avgScore.toFixed(0)}%`, icon: <TrendingUp size={16} className="text-indigo-500" /> },
+                  { label: "Score promedio", value: `${formatNumber(stats.avgScore, 0)}%`, icon: <TrendingUp size={16} className="text-indigo-500" /> },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shrink-0">

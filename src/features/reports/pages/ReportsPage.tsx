@@ -1,3 +1,4 @@
+import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import {
@@ -337,7 +338,7 @@ export const ReportsPage: React.FC = () => {
                             : "default"
                         }
                       >
-                        Prom: {+skill.averageLevel.toFixed(1)}
+                        Prom: {formatNumber(skill.averageLevel)}
                       </Badge>
                     </div>
                   </div>

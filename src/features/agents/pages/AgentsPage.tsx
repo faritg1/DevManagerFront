@@ -1,3 +1,4 @@
+import { formatTime } from '../../../shared/format';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
@@ -353,7 +354,7 @@ export const AgentsPage: React.FC = () => {
                                     <div className="flex items-center gap-1.5 sm:gap-3 text-xs text-slate-500 dark:text-slate-400 px-1 sm:px-2 flex-wrap">
                                         <span className="flex items-center gap-1">
                                             <Activity size={12} className="text-slate-400" />
-                                            {message.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                            {formatTime(message.timestamp)}
                                         </span>
                                         
                                         {message.confidence !== undefined && (

@@ -14,24 +14,18 @@ import {
 import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
-import { ProjectStatus, ProjectComplexity, type ProjectResponse } from '../../../shared/api/types';
+import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../utils/complexityConfig';
 
 // Helpers para mapear estados a badges
 const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string } => {
+    const label = PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
     switch (status) {
-        case ProjectStatus.Active:
-            return { variant: 'success', label: 'Activo' };
-        case ProjectStatus.Draft:
-            return { variant: 'default', label: 'Borrador' };
-        case ProjectStatus.OnHold:
-            return { variant: 'warning', label: 'En Pausa' };
-        case ProjectStatus.Completed:
-            return { variant: 'info', label: 'Completado' };
-        case ProjectStatus.Cancelled:
-            return { variant: 'danger', label: 'Cancelado' };
-        default:
-            return { variant: 'default', label: 'Desconocido' };
+        case ProjectStatus.Open: return { variant: 'success', label };
+        case ProjectStatus.InProgress: return { variant: 'warning', label };
+        case ProjectStatus.Closed: return { variant: 'info', label };
+        case ProjectStatus.Cancelled: return { variant: 'danger', label };
+        default: return { variant: 'default', label };
     }
 };
 
@@ -68,10 +62,11 @@ const formatDate = (dateString: string | null): string => {
 // Tabs de filtro por estado
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
-    { label: 'Activos', value: ProjectStatus.Active },
     { label: 'Borradores', value: ProjectStatus.Draft },
-    { label: 'En Pausa', value: ProjectStatus.OnHold },
-    { label: 'Completados', value: ProjectStatus.Completed },
+    { label: 'Abiertos', value: ProjectStatus.Open },
+    { label: 'En progreso', value: ProjectStatus.InProgress },
+    { label: 'Cerrados', value: ProjectStatus.Closed },
+    { label: 'Cancelados', value: ProjectStatus.Cancelled },
 ];
 
 export const ProjectsPage: React.FC = () => {
@@ -209,7 +204,7 @@ export const ProjectsPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                             {filteredProjects.map((project, index) => {
                                 const statusConfig = getStatusConfig(project.status);
-                                const complexityConfig = getComplexityConfig(project.complexity);
+                                const complexityConfig = getComplexityConfig(project.complexityLevel);
                                 
                                 return (
                                     <Card 
@@ -271,17 +266,6 @@ export const ProjectsPage: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Budget if available */}
-                                        {project.budgetEstimate && (
-                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#233948]">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-slate-500 dark:text-slate-400">Presupuesto</span>
-                                                    <span className="text-slate-900 dark:text-white font-semibold">
-                                                        ${project.budgetEstimate.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
                                     </Card>
                                 );
                             })}

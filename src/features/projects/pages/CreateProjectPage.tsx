@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Info, Users, Save, X, Calendar, DollarSign, Loader2 } from 'lucide-react';
+import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader } from '../../../shared/ui';
 import { useForm } from '../../../shared/hooks';
 import { useNotification, useConfig } from '../../../shared/context';
@@ -14,8 +14,7 @@ interface ProjectFormData {
     description: string;
     startDate: string;
     endDate: string;
-    complexity: string;
-    budgetEstimate: string;
+    complexityLevel: string;
 }
 
 export const CreateProjectPage: React.FC = () => {
@@ -30,8 +29,7 @@ export const CreateProjectPage: React.FC = () => {
         description: '',
         startDate: '',
         endDate: '',
-        complexity: '1', // Medium by default
-        budgetEstimate: '',
+        complexityLevel: String(ProjectComplexity.Medium),
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -51,8 +49,7 @@ export const CreateProjectPage: React.FC = () => {
                 description: values.description || undefined,
                 startDate: values.startDate ? new Date(values.startDate).toISOString() : undefined,
                 endDate: values.endDate ? new Date(values.endDate).toISOString() : undefined,
-                complexity: parseInt(values.complexity) as ProjectComplexity,
-                budgetEstimate: values.budgetEstimate ? parseFloat(values.budgetEstimate) : undefined,
+                complexityLevel: parseInt(values.complexityLevel) as ProjectComplexity,
             });
 
             if (response.success) {
@@ -165,8 +162,8 @@ export const CreateProjectPage: React.FC = () => {
                             <div className="flex flex-col gap-2">
                                 <span className="text-slate-700 dark:text-white text-sm font-bold">Complejidad</span>
                                 <select
-                                    name="complexity"
-                                    value={values.complexity}
+                                    name="complexityLevel"
+                                    value={values.complexityLevel}
                                     onChange={handleChange as React.ChangeEventHandler<HTMLSelectElement>}
                                     className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 >
@@ -177,17 +174,6 @@ export const CreateProjectPage: React.FC = () => {
                                     ))}
                                 </select>
                             </div>
-                            <Input
-                                label="Presupuesto Estimado"
-                                type="number"
-                                name="budgetEstimate"
-                                value={values.budgetEstimate}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                placeholder="50000"
-                                icon={DollarSign}
-                                hint="En USD (opcional)"
-                            />
                         </div>
                     </Card>
                 </form>

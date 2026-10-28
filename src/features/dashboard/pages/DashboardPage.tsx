@@ -6,7 +6,7 @@ import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
-import { ProjectStatus, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
+import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../../projects/utils/complexityConfig';
 
 // Helpers
@@ -74,7 +74,7 @@ export const DashboardPage: React.FC = () => {
 
                     // Contar postulaciones pendientes de proyectos activos
                     const activeProjects = projectsRes.data.filter(
-                        p => p.status === ProjectStatus.Active
+                        p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress
                     );
                     let pending = 0;
                     // Cargar apps solo de los primeros 10 activos para no sobrecargar
@@ -144,21 +144,21 @@ export const DashboardPage: React.FC = () => {
 
     // Calcular estadísticas
     const stats = {
-        active: projects.filter(p => p.status === ProjectStatus.Active).length,
-        onHold: projects.filter(p => p.status === ProjectStatus.OnHold).length,
-        completed: projects.filter(p => p.status === ProjectStatus.Completed).length,
+        open: projects.filter(p => p.status === ProjectStatus.Open).length,
+        inProgress: projects.filter(p => p.status === ProjectStatus.InProgress).length,
+        closed: projects.filter(p => p.status === ProjectStatus.Closed).length,
         draft: projects.filter(p => p.status === ProjectStatus.Draft).length,
         total: projects.length
     };
 
     // Obtener configuración de estado
     const getStatusConfig = (status: ProjectStatus) => {
-        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name || 'Desconocido';
+        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name ?? PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
         let variant: 'success' | 'warning' | 'danger' | 'info' | 'default' = 'default';
         let icon = null;
 
         switch (status) {
-            case ProjectStatus.Active:
+            case ProjectStatus.Open:
                 variant = 'success';
                 icon = <CheckCircle2 size={14} />;
                 break;
@@ -166,11 +166,11 @@ export const DashboardPage: React.FC = () => {
                 variant = 'default';
                 icon = <FileText size={14} />;
                 break;
-            case ProjectStatus.OnHold:
+            case ProjectStatus.InProgress:
                 variant = 'warning';
                 icon = <Clock size={14} />;
                 break;
-            case ProjectStatus.Completed:
+            case ProjectStatus.Closed:
                 variant = 'info';
                 icon = <CheckCircle2 size={14} />;
                 break;
@@ -186,9 +186,9 @@ export const DashboardPage: React.FC = () => {
     const getProgressFromStatus = (status: ProjectStatus): number => {
         switch (status) {
             case ProjectStatus.Draft: return 10;
-            case ProjectStatus.Active: return 50;
-            case ProjectStatus.OnHold: return 30;
-            case ProjectStatus.Completed: return 100;
+            case ProjectStatus.Open: return 30;
+            case ProjectStatus.InProgress: return 60;
+            case ProjectStatus.Closed: return 100;
             case ProjectStatus.Cancelled: return 0;
             default: return 0;
         }
@@ -220,24 +220,24 @@ export const DashboardPage: React.FC = () => {
                         iconBgColor="bg-blue-50 dark:bg-blue-500/10"
                     />
                     <StatCard
-                        title="Activos"
-                        value={isLoading ? '-' : stats.active}
+                        title="Abiertos"
+                        value={isLoading ? '-' : stats.open}
                         icon={CheckCircle2}
                         iconColor="text-emerald-500"
                         iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
-                        trend={stats.active > 0 ? { value: 'En progreso', isPositive: true } : undefined}
+                        trend={stats.open > 0 ? { value: 'Postulaciones', isPositive: true } : undefined}
                     />
                     <StatCard
-                        title="En Pausa"
-                        value={isLoading ? '-' : stats.onHold}
+                        title="En progreso"
+                        value={isLoading ? '-' : stats.inProgress}
                         icon={Clock}
                         iconColor="text-amber-500"
                         iconBgColor="bg-amber-50 dark:bg-amber-500/10"
-                        trend={stats.onHold > 0 ? { value: 'Atención', isPositive: false } : undefined}
+                        trend={stats.inProgress > 0 ? { value: 'En ejecución', isPositive: true } : undefined}
                     />
                     <StatCard
-                        title="Completados"
-                        value={isLoading ? '-' : stats.completed}
+                        title="Cerrados"
+                        value={isLoading ? '-' : stats.closed}
                         icon={TrendingUp}
                         iconColor="text-blue-500"
                         iconBgColor="bg-blue-50 dark:bg-blue-500/10"
@@ -389,7 +389,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                         {projects.map((project) => {
                             const statusConfig = getStatusConfig(project.status);
-                            const complexityConfig = getComplexityConfig(project.complexity);
+                            const complexityConfig = getComplexityConfig(project.complexityLevel);
                             const progress = getProgressFromStatus(project.status);
                             
                             return (
@@ -443,8 +443,7 @@ export const DashboardPage: React.FC = () => {
                                         <ProgressBar 
                                             value={progress} 
                                             showLabel 
-                                            variant={project.status === ProjectStatus.OnHold ? 'warning' : 
-                                                    project.status === ProjectStatus.Cancelled ? 'danger' : 'primary'}
+                                            variant={project.status === ProjectStatus.Cancelled ? 'danger' : 'primary'}
                                         />
                                     </div>
 

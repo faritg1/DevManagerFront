@@ -5,7 +5,6 @@ import {
   Save,
   X,
   Calendar,
-  DollarSign,
   Loader2,
   ArrowLeft,
   Target,
@@ -41,9 +40,8 @@ interface ProjectFormData {
   description: string;
   startDate: string;
   endDate: string;
-  complexity: string;
+  complexityLevel: string;
   status: string;
-  budgetEstimate: string;
 }
 
 const formatDateForInput = (dateString: string | null): string => {
@@ -86,9 +84,8 @@ export const EditProjectPage: React.FC = () => {
     description: "",
     startDate: "",
     endDate: "",
-    complexity: "1",
-    status: "0",
-    budgetEstimate: "",
+    complexityLevel: String(ProjectComplexity.Medium),
+    status: String(ProjectStatus.Draft),
   });
 
   // Handlers del formulario
@@ -123,9 +120,8 @@ export const EditProjectPage: React.FC = () => {
             description: p.description || "",
             startDate: formatDateForInput(p.startDate),
             endDate: formatDateForInput(p.endDate),
-            complexity: p.complexity.toString(),
+            complexityLevel: p.complexityLevel.toString(),
             status: p.status.toString(),
-            budgetEstimate: p.budgetEstimate?.toString() || "",
           });
         } else {
           showNotification({
@@ -180,11 +176,8 @@ export const EditProjectPage: React.FC = () => {
         endDate: formData.endDate
           ? new Date(formData.endDate).toISOString()
           : null,
-        complexity: parseInt(formData.complexity) as ProjectComplexity,
+        complexityLevel: parseInt(formData.complexityLevel) as ProjectComplexity,
         status: parseInt(formData.status) as ProjectStatus,
-        budgetEstimate: formData.budgetEstimate
-          ? parseFloat(formData.budgetEstimate)
-          : null,
       });
 
       if (response.success) {
@@ -363,7 +356,7 @@ export const EditProjectPage: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="text-blue-500" size={24} />
-                Fechas y Presupuesto
+                Fechas y Complejidad
               </CardTitle>
             </CardHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -386,8 +379,8 @@ export const EditProjectPage: React.FC = () => {
                   Complejidad
                 </span>
                 <select
-                  name="complexity"
-                  value={formData.complexity}
+                  name="complexityLevel"
+                  value={formData.complexityLevel}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 >
@@ -398,16 +391,6 @@ export const EditProjectPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <Input
-                label="Presupuesto Estimado"
-                type="number"
-                name="budgetEstimate"
-                value={formData.budgetEstimate}
-                onChange={handleChange}
-                placeholder="50000"
-                icon={DollarSign}
-                hint="En USD (opcional)"
-              />
             </div>
           </Card>
 

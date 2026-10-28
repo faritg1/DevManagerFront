@@ -7,19 +7,18 @@
  * - Spanish label
  */
 
-import { ProjectComplexity } from "../../../shared/api/types";
+import { ProjectComplexity, PROJECT_COMPLEXITY_LABELS } from "../../../shared/api/types";
 
 export const getComplexityConfig = (
   complexity: ProjectComplexity
 ): { variant: "success" | "warning" | "danger"; label: string } => {
+  const label = PROJECT_COMPLEXITY_LABELS[complexity] ?? "Desconocido";
   switch (complexity) {
-    case ProjectComplexity.Low:
-      return { variant: "success", label: "Baja" };
     case ProjectComplexity.Medium:
-      return { variant: "warning", label: "Media" };
+      return { variant: "warning", label };
     case ProjectComplexity.High:
-      return { variant: "danger", label: "Alta" };
+      return { variant: "danger", label };
     default:
-      return { variant: "success", label: "Baja" };
+      return { variant: "success", label };
   }
 };

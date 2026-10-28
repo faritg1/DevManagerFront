@@ -10,7 +10,6 @@ import {
     Loader2,
     AlertCircle,
     Sparkles,
-    DollarSign,
 } from 'lucide-react';
 import { Card, Badge, Button, PageContainer } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
@@ -19,12 +18,15 @@ import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
-    ProjectComplexity,
+    PROJECT_STATUS_LABELS,
+    type ProjectComplexity,
     type ProjectResponse, 
     type SkillRequirementResponse,
     type ApplicationResponse,
     type AssignmentResponse,
 } from '../../../shared/api/types';
+
+import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
 
 // Sub-components
 import { ProjectRequirementsSection } from '../components/ProjectRequirementsSection';
@@ -92,26 +94,22 @@ export const ProjectDetailPage: React.FC = () => {
     const assignModal = useModal();
 
     // Config helpers
-    const getStatusConfig = (status: number) => {
-        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name || 'Desconocido';
+    const getStatusConfig = (status: ProjectStatus) => {
+        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name ?? PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
         let variant: 'success' | 'warning' | 'danger' | 'info' | 'default' = 'default';
         switch (status) {
-            case ProjectStatus.Active: variant = 'success'; break;
-            case ProjectStatus.OnHold: variant = 'warning'; break;
-            case ProjectStatus.Completed: variant = 'info'; break;
+            case ProjectStatus.Open: variant = 'success'; break;
+            case ProjectStatus.InProgress: variant = 'warning'; break;
+            case ProjectStatus.Closed: variant = 'info'; break;
             case ProjectStatus.Cancelled: variant = 'danger'; break;
         }
         return { variant, label };
     };
 
-    const getComplexityConfig = (complexity: number) => {
-        const label = catalogs?.complexityLevels.find(c => c.id === complexity)?.name || 'Desconocido';
-        let variant: 'success' | 'warning' | 'danger' = 'success';
-        switch (complexity) {
-            case ProjectComplexity.Medium: variant = 'warning'; break;
-            case ProjectComplexity.High: variant = 'danger'; break;
-        }
-        return { variant, label };
+    const getComplexityConfig = (complexity: ProjectComplexity) => {
+        const base = getSharedComplexityConfig(complexity);
+        const label = catalogs?.complexityLevels.find(c => c.id === complexity)?.name ?? base.label;
+        return { variant: base.variant, label };
     };
 
     // Data fetching
@@ -232,7 +230,7 @@ export const ProjectDetailPage: React.FC = () => {
     }
 
     const statusConfig = getStatusConfig(project.status);
-    const complexityConfig = getComplexityConfig(project.complexity);
+    const complexityConfig = getComplexityConfig(project.complexityLevel);
     const hasAlreadyApplied = user ? applications.some(app => app.userId === user.id) : false;
 
     return (
@@ -322,7 +320,7 @@ export const ProjectDetailPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <Card padding="md" className="text-center">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10">
@@ -363,21 +361,6 @@ export const ProjectDetailPage: React.FC = () => {
                             <p className="text-xs text-slate-500 dark:text-slate-400">Complejidad</p>
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {complexityConfig.label}
-                            </p>
-                        </div>
-                    </Card>
-
-                    <Card padding="md" className="text-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10">
-                                <DollarSign className="text-emerald-500" size={24} />
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Presupuesto</p>
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                                {project.budgetEstimate 
-                                    ? `$${project.budgetEstimate.toLocaleString()}`
-                                    : 'Sin definir'
-                                }
                             </p>
                         </div>
                     </Card>

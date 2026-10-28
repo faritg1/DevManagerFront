@@ -234,32 +234,45 @@ export interface ValidateSkillRequest {
 }
 
 // ============ PROJECTS ============
+// Mirrors Domain.Enums.ProjectStatus / ProjectComplexity (backend, serialized as numbers).
 export enum ProjectStatus {
-  Draft = 0,
-  Active = 1,
-  OnHold = 2,
-  Completed = 3,
-  Cancelled = 4,
+  Draft = 1,
+  Open = 2,
+  InProgress = 3,
+  Closed = 4,
+  Cancelled = 5,
 }
 
 export enum ProjectComplexity {
-  Low = 0,
-  Medium = 1,
-  High = 2,
+  Low = 1,
+  Medium = 2,
+  High = 3,
 }
+
+// Fallback labels; `satisfies` makes a missing enum value fail typecheck.
+export const PROJECT_STATUS_LABELS = {
+  [ProjectStatus.Draft]: 'Borrador',
+  [ProjectStatus.Open]: 'Abierto',
+  [ProjectStatus.InProgress]: 'En progreso',
+  [ProjectStatus.Closed]: 'Cerrado',
+  [ProjectStatus.Cancelled]: 'Cancelado',
+} satisfies Record<ProjectStatus, string>;
+
+export const PROJECT_COMPLEXITY_LABELS = {
+  [ProjectComplexity.Low]: 'Baja',
+  [ProjectComplexity.Medium]: 'Media',
+  [ProjectComplexity.High]: 'Alta',
+} satisfies Record<ProjectComplexity, string>;
 
 export interface ProjectResponse {
   id: string;
   code: string | null;
   name: string;
   description: string | null;
-  status: ProjectStatus;
-  statusName: string;
   startDate: string | null;
   endDate: string | null;
-  complexity: ProjectComplexity;
-  complexityName: string;
-  budgetEstimate?: number | null;
+  complexityLevel: ProjectComplexity;
+  status: ProjectStatus;
   createdAt: string;
 }
 
@@ -269,8 +282,7 @@ export interface CreateProjectRequest {
   description?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  complexity: ProjectComplexity;
-  budgetEstimate?: number | null;
+  complexityLevel: ProjectComplexity;
 }
 
 /**
@@ -278,13 +290,13 @@ export interface CreateProjectRequest {
  * Los campos omitidos mantienen su valor actual
  */
 export interface UpdateProjectRequest {
+  code?: string | null;
   name?: string;
   description?: string | null;
-  status?: ProjectStatus;
   startDate?: string | null;
   endDate?: string | null;
-  complexity?: ProjectComplexity;
-  budgetEstimate?: number | null;
+  complexityLevel?: ProjectComplexity;
+  status?: ProjectStatus;
 }
 
 // ============ PROJECT REQUIREMENTS ============

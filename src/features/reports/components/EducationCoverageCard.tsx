@@ -1,9 +1,9 @@
 import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState } from "react";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { reportsService } from "../../../shared/api";
 import type { EducationCoverageResponse } from "../../../shared/api/types";
-import { Card, Badge, SELECT_SM_CLASS } from "../../../shared/ui";
+import { Card, Badge, LoadingBlock, SELECT_SM_CLASS } from "../../../shared/ui";
 import { HOURS_TYPE_LABELS } from "../../education/labels";
 
 const thisYear = new Date().getFullYear();
@@ -33,6 +33,7 @@ export const EducationCoverageCard: React.FC = () => {
           Cobertura de educación cooperativa
         </h2>
         <select
+          aria-label="Año"
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           className={SELECT_SM_CLASS}
@@ -41,7 +42,7 @@ export const EducationCoverageCard: React.FC = () => {
         </select>
       </div>
       {loading ? (
-        <div className="flex justify-center py-6"><Loader2 className="animate-spin text-primary" /></div>
+        <LoadingBlock className="py-6" />
       ) : !data ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">No se pudo cargar la cobertura.</p>
       ) : (

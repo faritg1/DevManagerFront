@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Eye, EyeOff, Hexagon } from "lucide-react";
+import { Mail, Hexagon } from "lucide-react";
 import { useAuth } from "../../../shared/context";
 import { Button, Input } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
@@ -8,7 +8,6 @@ import { ROUTES } from "../../../shared/config/constants";
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -37,7 +36,7 @@ export const LoginPage: React.FC = () => {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary blur-[120px] animate-pulse" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary blur-[120px] animate-pulse motion-reduce:animate-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-input-border blur-[100px]" />
       </div>
 
@@ -67,6 +66,7 @@ export const LoginPage: React.FC = () => {
             <Input
               label="Email Corporativo"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nombre@empresa.com"
@@ -74,33 +74,15 @@ export const LoginPage: React.FC = () => {
               required
             />
 
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-700 dark:text-white text-sm font-bold">
-                  Contraseña
-                </span>
-                <a href="#" className="text-xs text-primary hover:underline">
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-              <div className="relative">
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary dark:focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                  placeholder="••••••••"
-                  type={showPassword ? "text" : "password"}
-                  required
-                />
-                <button aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
+            <Input
+              label="Contraseña"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
 
             <Button
               type="submit"

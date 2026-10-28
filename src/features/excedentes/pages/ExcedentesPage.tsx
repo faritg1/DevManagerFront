@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Loader2, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
@@ -88,22 +88,16 @@ export const ExcedentesPage: React.FC = () => {
     const totalSurplus = distributions.reduce((s, e) => s + e.totalSurplus, 0);
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Excedentes Cooperativos
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Distribución de excedentes según Ley 79 (reserva, educación y solidaridad).
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Excedentes Cooperativos"
+                description="Distribución de excedentes según Ley 79 (reserva, educación y solidaridad)."
+                actions={isAdmin && (
                     <Button icon={Calculator} onClick={() => { setCalcForm(emptyCalc()); setCalcOpen(true); }}>
                         Calcular Distribución
                     </Button>
                 )}
-            </div>
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Distribuciones" value={distributions.length} icon={Coins} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
@@ -128,7 +122,7 @@ export const ExcedentesPage: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
                             {isLoading ? (
-                                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : distributions.length === 0 ? (
                                 <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay distribuciones de excedentes</td></tr>
                             ) : (
@@ -136,13 +130,13 @@ export const ExcedentesPage: React.FC = () => {
                                     <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
                                         <td className="px-6 py-4">
                                             <p className="font-bold text-slate-900 dark:text-white">{formatDate(e.period)}</p>
-                                            <p className="text-xs text-slate-500">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
                                         </td>
                                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{currency(e.totalSurplus)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(e.protectionReserve)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(e.educationFund)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(e.solidarityFund)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(e.remainder)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.protectionReserve)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.educationFund)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.solidarityFund)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.remainder)}</td>
                                         <td className="px-6 py-4">
                                             <Badge variant={e.approvedByAssembly ? 'success' : 'warning'} dot>
                                                 {e.approvedByAssembly ? 'Aprobada' : 'Pendiente'}
@@ -206,7 +200,7 @@ export const ExcedentesPage: React.FC = () => {
                     <Input type="number" label="Retorno cooperativo" value={cooperativeReturn ?? ''} onChange={(e) => setCooperativeReturn(e.target.value ? Number(e.target.value) : null)} />
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

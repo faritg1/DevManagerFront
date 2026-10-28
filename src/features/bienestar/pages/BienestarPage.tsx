@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -259,16 +259,16 @@ export const BienestarPage: React.FC = () => {
                 <p className="font-bold text-slate-900 dark:text-white">{AID_TYPE_LABEL[s.aidType] ?? s.aidType}</p>
                 {statusBadge(s.status)}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
                 {showName && <>{nameOf(s.userId)} · </>}{s.programName || 'Sin programa'} · {formatDate(s.requiredDate)}
             </p>
             <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{s.reason}</p>
-            {s.resolutionNotes && <p className="text-xs text-slate-500 mt-1">{s.resolutionNotes}</p>}
+            {s.resolutionNotes && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{s.resolutionNotes}</p>}
             <div className="flex items-center justify-between mt-2">
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                     {currency(s.approvedAmount ?? s.requestedAmount)}
                     {s.approvedAmount != null && s.approvedAmount !== s.requestedAmount && (
-                        <span className="text-xs text-slate-500 font-normal"> (solicitado {currency(s.requestedAmount)})</span>
+                        <span className="text-xs text-slate-500 font-normal dark:text-slate-400"> (solicitado {currency(s.requestedAmount)})</span>
                     )}
                 </p>
                 {requestActions(s)}
@@ -277,16 +277,11 @@ export const BienestarPage: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Bienestar Cooperativo
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Programas de bienestar, solicitudes, auxilios y fondo de solidaridad.
-                    </p>
-                </div>
+        <PageContainer>
+            <PageHeader
+                title="Bienestar Cooperativo"
+                description="Programas de bienestar, solicitudes, auxilios y fondo de solidaridad."
+                actions={<>
                 <div className="flex gap-3">
                     <Button variant="outline" icon={HandCoins} onClick={() => { setRequestForm(emptyRequest()); setRequestOpen(true); }}>
                         Nueva Solicitud
@@ -297,7 +292,8 @@ export const BienestarPage: React.FC = () => {
                         </Button>
                     )}
                 </div>
-            </div>
+                </>}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Programas" value={programs.length} icon={Heart} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
@@ -312,10 +308,10 @@ export const BienestarPage: React.FC = () => {
                 </div>
                 {fund ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                        <div><p className="text-xs text-slate-500">Saldo disponible</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(fund.availableBalance)}</p></div>
-                        <div><p className="text-xs text-slate-500">Aporte del período</p><p className="font-bold">{currency(fund.contribution)}</p></div>
-                        <div><p className="text-xs text-slate-500">Saldo trasladado</p><p className="font-bold">{currency(fund.carriedOver)}</p></div>
-                        <div><p className="text-xs text-slate-500">Total desembolsado</p><p className="font-bold">{currency(fund.totalDisbursed)}</p></div>
+                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Saldo disponible</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(fund.availableBalance)}</p></div>
+                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Aporte del período</p><p className="font-bold">{currency(fund.contribution)}</p></div>
+                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Saldo trasladado</p><p className="font-bold">{currency(fund.carriedOver)}</p></div>
+                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Total desembolsado</p><p className="font-bold">{currency(fund.totalDisbursed)}</p></div>
                     </div>
                 ) : (
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Sin fondo registrado para esta organización.</p>
@@ -353,7 +349,7 @@ export const BienestarPage: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
                             {progLoading ? (
-                                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : programs.length === 0 ? (
                                 <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay programas de bienestar</td></tr>
                             ) : (
@@ -361,11 +357,11 @@ export const BienestarPage: React.FC = () => {
                                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
                                         <td className="px-6 py-4">
                                             <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
-                                            {p.description && <p className="text-xs text-slate-500">{p.description}</p>}
+                                            {p.description && <p className="text-xs text-slate-500 dark:text-slate-400">{p.description}</p>}
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(p.budget)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{formatDate(p.startDate)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{formatDate(p.endDate)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.budget)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(p.startDate)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(p.endDate)}</td>
                                         <td className="px-6 py-4">
                                             <Badge variant={p.isActive ? 'success' : 'default'} dot>{p.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                         </td>
@@ -424,7 +420,7 @@ export const BienestarPage: React.FC = () => {
                                 <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{AID_TYPE_LABEL[a.aidType] ?? a.aidType}</p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
                                             {a.concept} · {formatDate(a.deliveredAt)}
                                             {a.requiresRepayment && <> · Reintegro {formatDate(a.repaymentDueDate)}</>}
                                         </p>
@@ -541,7 +537,7 @@ export const BienestarPage: React.FC = () => {
                     />
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

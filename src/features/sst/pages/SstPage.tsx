@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Loader2, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -217,17 +217,11 @@ export const SstPage: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Seguridad y Salud en el Trabajo (SST)
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Exámenes médicos, matriz de riesgos y accidentes de trabajo (FURAT).
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Seguridad y Salud en el Trabajo (SST)"
+                description="Exámenes médicos, matriz de riesgos y accidentes de trabajo (FURAT)."
+                actions={isAdmin && (
                     <div className="flex flex-wrap gap-2">
                         <Button icon={CalendarPlus} variant="outline" onClick={() => { setScheduleForm(emptySchedule()); setScheduleOpen(true); }}>
                             Programar Examen
@@ -240,7 +234,7 @@ export const SstPage: React.FC = () => {
                         </Button>
                     </div>
                 )}
-            </div>
+            />
 
             <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
                 <StatCard title={isAdmin ? (examScope ? 'Exámenes del asociado' : 'Exámenes pendientes') : 'Mis exámenes'} value={exams.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
@@ -272,13 +266,13 @@ export const SstPage: React.FC = () => {
                                 <div key={e.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-center justify-between gap-2">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">Examen de {EXAM_TYPE_LABEL[e.examType] ?? e.examType}</p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
                                             Programado: {formatDate(e.scheduledDate)}{isAdmin && <> · {nameOf(e.userId)}</>}
                                         </p>
                                         {e.performed && e.result && (
-                                            <p className="text-xs text-slate-500">Resultado: {EXAM_RESULT_LABEL[e.result]} ({formatDate(e.performedAt)})</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Resultado: {EXAM_RESULT_LABEL[e.result]} ({formatDate(e.performedAt)})</p>
                                         )}
-                                        {e.notes && <p className="text-xs text-slate-500">{e.notes}</p>}
+                                        {e.notes && <p className="text-xs text-slate-500 dark:text-slate-400">{e.notes}</p>}
                                         {e.fileUrl && <a href={e.fileUrl} target="_blank" rel="noreferrer" className="text-xs text-primary font-bold">Ver soporte</a>}
                                     </div>
                                     {e.performed ? (
@@ -313,8 +307,8 @@ export const SstPage: React.FC = () => {
                                             {RISK_LEVEL_LABEL[r.level] ?? `Nivel ${r.level}`}
                                         </Badge>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">{r.description}</p>
-                                    {r.controls && <p className="text-xs text-slate-500 mt-1"><ClipboardCheck size={12} className="inline" /> {r.controls}</p>}
+                                    <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{r.description}</p>
+                                    {r.controls && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400"><ClipboardCheck size={12} className="inline" /> {r.controls}</p>}
                                 </div>
                             ))}
                         </div>
@@ -354,14 +348,14 @@ export const SstPage: React.FC = () => {
                                 <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
                                     {accidents.map(a => (
                                         <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                            <td className="px-6 py-4 text-slate-500">{formatDate(a.occurredAt)}</td>
-                                            <td className="px-6 py-4 text-slate-500">{nameOf(a.userId)}</td>
-                                            <td className="px-6 py-4 text-slate-500">{a.accidentType}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(a.occurredAt)}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{nameOf(a.userId)}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.accidentType}</td>
                                             <td className="px-6 py-4">
                                                 <Badge variant={a.severity >= 2 ? 'danger' : 'warning'}>{SEVERITY_LABEL[a.severity] ?? a.severity}</Badge>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-500">{a.arl}</td>
-                                            <td className="px-6 py-4 text-slate-500">{a.furatNumber || '—'}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.arl}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.furatNumber || '—'}</td>
                                             <td className="px-6 py-4">
                                                 <Badge variant={a.investigationCompleted ? 'success' : 'warning'} dot>
                                                     {a.investigationCompleted ? `Investigado (${formatDate(a.investigationDate)})` : 'Pendiente'}
@@ -524,7 +518,7 @@ export const SstPage: React.FC = () => {
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <p className="text-xs text-slate-500">La investigación se registra una sola vez y no puede modificarse.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">La investigación se registra una sola vez y no puede modificarse.</p>
                     <Input type="date" label="Fecha de investigación *" max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
                     <div>
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Conclusiones *</label>
@@ -540,7 +534,7 @@ export const SstPage: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

@@ -4,7 +4,7 @@ import {
     Scale, CheckCircle2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
@@ -107,7 +107,7 @@ export const AsistentePage: React.FC = () => {
     const renderCitations = (r: CooperativeQueryResponse) => (
         r.citations.length > 0 && (
             <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Citaciones normativas</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 dark:text-slate-400">Citaciones normativas</p>
                 <div className="space-y-2">
                     {r.citations.map((c, i) => (
                         <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
@@ -115,7 +115,7 @@ export const AsistentePage: React.FC = () => {
                                 <Scale size={14} className="inline mr-1 text-primary" />
                                 {c.rule} — {c.article}
                             </p>
-                            {c.description && <p className="text-xs text-slate-500 mt-1">{c.description}</p>}
+                            {c.description && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{c.description}</p>}
                         </div>
                     ))}
                 </div>
@@ -126,7 +126,7 @@ export const AsistentePage: React.FC = () => {
     const renderAcciones = (r: CooperativeQueryResponse) => (
         r.suggestedActions.length > 0 && (
             <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Acciones sugeridas</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 dark:text-slate-400">Acciones sugeridas</p>
                 <ul className="space-y-1.5">
                     {r.suggestedActions.map((a, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -151,15 +151,11 @@ export const AsistentePage: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8">
-                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                    Asistente Cooperativo
-                </h1>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Consultas normativas (Ley 79/1988, Ley 454/1998, Circular Básica Jurídica 2020), Balance Social y cumplimiento.
-                </p>
-            </div>
+        <PageContainer>
+            <PageHeader
+                title="Asistente Cooperativo"
+                description="Consultas normativas (Ley 79/1988, Ley 454/1998, Circular Básica Jurídica 2020), Balance Social y cumplimiento."
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard title="Modo" value="Consultar" icon={BookOpen} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
@@ -272,14 +268,14 @@ export const AsistentePage: React.FC = () => {
                                                 </Badge>
                                             </div>
                                             {d.indicators.length > 0 && (
-                                                <p className="text-xs text-slate-500 mt-1">{d.indicators.map(i => i.name + ': ' + i.currentValue + (i.unit ? ' ' + i.unit : '')).join(' · ')}</p>
+                                                <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{d.indicators.map(i => i.name + ': ' + i.currentValue + (i.unit ? ' ' + i.unit : '')).join(' · ')}</p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                                 {reporteRes.strengths.length > 0 && (
                                     <div>
-                                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Fortalezas</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 dark:text-slate-400">Fortalezas</p>
                                         {reporteRes.strengths.map((f, i) => (
                                             <p key={i} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-start gap-1.5">
                                                 <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> {f}
@@ -335,8 +331,8 @@ export const AsistentePage: React.FC = () => {
                                             <p className="font-bold text-slate-900 dark:text-white text-sm">{a.name}</p>
                                             <Badge variant={a.compliant ? 'success' : 'danger'} dot>{a.compliant ? 'Cumple' : 'No cumple'}</Badge>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-1">{a.applicableRule} · {Math.round(a.coverage)}% cobertura</p>
-                                        {a.detail && <p className="text-xs text-slate-500 mt-1">{a.detail}</p>}
+                                        <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{a.applicableRule} · {Math.round(a.coverage)}% cobertura</p>
+                                        {a.detail && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{a.detail}</p>}
                                         {a.findings.length > 0 && (
                                             <ul className="mt-1 space-y-0.5">
                                                 {a.findings.map((h, i) => (
@@ -393,7 +389,7 @@ export const AsistentePage: React.FC = () => {
                     </Card>
                 </div>
             )}
-        </div>
+        </PageContainer>
     );
 };
 

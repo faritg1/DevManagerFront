@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Loader2, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -149,11 +149,11 @@ export const CompetenciasPage: React.FC = () => {
                             {showOwner && <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{c.fullName}</td>}
                             <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                                 <p className="font-bold">{c.name}</p>
-                                {c.notes && <p className="text-xs text-slate-500 whitespace-normal">{c.notes}</p>}
+                                {c.notes && <p className="text-xs text-slate-500 whitespace-normal dark:text-slate-400">{c.notes}</p>}
                             </td>
                             <td className="px-6 py-4"><Badge variant="purple">{levelName(c.level)}</Badge></td>
                             <td className="px-6 py-4">{availabilityCell(c)}</td>
-                            <td className="px-6 py-4 text-slate-500">{formatDate(c.updatedAt)}</td>
+                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(c.updatedAt)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -162,22 +162,16 @@ export const CompetenciasPage: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Competencias
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Competencias cooperativas de los asociados disponibles para el servicio solidario.
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Competencias"
+                description="Competencias cooperativas de los asociados disponibles para el servicio solidario."
+                actions={isAdmin && (
                     <Button icon={Plus} onClick={() => { setForm({ ...emptyForm(), userId: ownerId }); setCreateOpen(true); }}>
                         Registrar Competencia
                     </Button>
                 )}
-            </div>
+            />
 
             <Card className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -258,7 +252,7 @@ export const CompetenciasPage: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

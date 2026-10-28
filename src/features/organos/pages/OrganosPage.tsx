@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -379,36 +379,30 @@ export const OrganosPage: React.FC = () => {
     ] : [];
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Órganos
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Órganos de administración y control, miembros, actas, asambleas y votos.
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Órganos"
+                description="Órganos de administración y control, miembros, actas, asambleas y votos."
+                actions={isAdmin && (
                     <Button icon={Plus} onClick={() => setCreateOpen(true)}>
                         Crear Órgano
                     </Button>
                 )}
-            </div>
+            />
 
             {selected ? (
                 <Card>
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={() => setSelected(null)}
-                            className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary"
+                            className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary dark:text-slate-400"
                         >
                             <ChevronLeft size={16} /> Volver
                         </button>
                         <Badge variant="purple">{BODY_TYPE_LABEL[selected.type] ?? selected.type}</Badge>
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">{selected.name}</h2>
-                    <p className="text-sm text-slate-500 mb-6">
+                    <p className="text-sm text-slate-500 mb-6 dark:text-slate-400">
                         Constituido: {formatDate(selected.constitutionDate)}
                     </p>
 
@@ -422,12 +416,12 @@ export const OrganosPage: React.FC = () => {
                                     {isAdmin && <Button size="sm" variant="outline" icon={Plus} onClick={() => setMemberOpen(true)}>Asignar</Button>}
                                 </div>
                                 <div className="space-y-2">
-                                    {members.length === 0 && <p className="text-sm text-slate-500">Sin miembros.</p>}
+                                    {members.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Sin miembros.</p>}
                                     {members.map(m => (
                                         <div key={m.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-start justify-between gap-2">
                                             <div>
                                                 <p className="font-bold text-sm text-slate-900 dark:text-white">{m.fullName}</p>
-                                                <p className="text-xs text-slate-500">{m.position} · {formatDate(m.startDate)}{m.endDate ? ` – ${formatDate(m.endDate)}` : ''}</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{m.position} · {formatDate(m.startDate)}{m.endDate ? ` – ${formatDate(m.endDate)}` : ''}</p>
                                                 <Badge variant={m.isActive ? 'success' : 'default'}>{m.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                             </div>
                                             {isAdmin && (
@@ -450,7 +444,7 @@ export const OrganosPage: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    {minutes.length === 0 && <p className="text-sm text-slate-500">Sin actas.</p>}
+                                    {minutes.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Sin actas.</p>}
                                     {minutes.map(ac => (
                                         <button
                                             key={ac.id}
@@ -458,7 +452,7 @@ export const OrganosPage: React.FC = () => {
                                             className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:ring-1 hover:ring-primary"
                                         >
                                             <p className="font-bold text-sm text-slate-900 dark:text-white">Sesión {SESSION_TYPE_LABEL[ac.sessionType] ?? ac.sessionType}</p>
-                                            <p className="text-xs text-slate-500">{formatDate(ac.sessionDate)} · Quórum {ac.quorum}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(ac.sessionDate)} · Quórum {ac.quorum}</p>
                                             <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">{ac.decisions}</p>
                                         </button>
                                     ))}
@@ -475,7 +469,7 @@ export const OrganosPage: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    {assemblies.length === 0 && <p className="text-sm text-slate-500">Sin asambleas.</p>}
+                                    {assemblies.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Sin asambleas.</p>}
                                     {assemblies.map(as => (
                                         <button
                                             key={as.id}
@@ -489,7 +483,7 @@ export const OrganosPage: React.FC = () => {
                                                     <Badge variant={as.isClosed ? 'default' : 'success'}>{as.isClosed ? 'Cerrada' : 'Abierta'}</Badge>
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-slate-500">{formatDateTime(as.scheduledAt)} · Quórum mínimo {as.minimumQuorum} · Votos {as.votesCount}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{formatDateTime(as.scheduledAt)} · Quórum mínimo {as.minimumQuorum} · Votos {as.votesCount}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -500,7 +494,7 @@ export const OrganosPage: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {bodies.length === 0 && (
-                        <div className="col-span-full text-center py-16 text-slate-500">
+                        <div className="col-span-full text-center py-16 text-slate-500 dark:text-slate-400">
                             No hay órganos registrados para esta organización.
                         </div>
                     )}
@@ -513,8 +507,8 @@ export const OrganosPage: React.FC = () => {
                                 </div>
                                 {!o.isActive && <Badge variant="default">Inactivo</Badge>}
                             </div>
-                            {o.description && <p className="text-sm text-slate-500 mt-2 line-clamp-2">{o.description}</p>}
-                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-[#233948] text-xs text-slate-500">
+                            {o.description && <p className="text-sm text-slate-500 mt-2 line-clamp-2 dark:text-slate-400">{o.description}</p>}
+                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-[#233948] text-xs text-slate-500 dark:text-slate-400">
                                 <span className="flex items-center gap-1"><Users size={13} /> {o.membersCount} miembros</span>
                                 <span className="flex items-center gap-1"><FileText size={13} /> {o.minutesCount} actas</span>
                             </div>
@@ -786,7 +780,7 @@ export const OrganosPage: React.FC = () => {
                     </div>
                 )}
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

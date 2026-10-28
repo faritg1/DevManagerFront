@@ -1,5 +1,5 @@
 export { useModal } from './useModal';
-export { useTheme } from './useTheme';
-export { useConfirm } from './useConfirm';
+export { useTheme, type Theme } from './useTheme';
+export { useConfirm } from '../context/ConfirmContext';
 export { usePermission } from './usePermission';
 export { useIsAdmin } from './useIsAdmin';

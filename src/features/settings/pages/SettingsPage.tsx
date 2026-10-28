@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Settings,
   Moon,
@@ -18,52 +18,27 @@ import { Card, Badge, Button, Avatar, PageContainer, PageHeader } from "../../..
 import { useAuth, useNotification } from "../../../shared/context";
 import { STORAGE_KEYS, ROUTES } from "../../../shared/config/constants";
 import { useNavigate } from "react-router-dom";
-
-type ThemeMode = "light" | "dark" | "system";
-
-const getStoredTheme = (): ThemeMode => {
-  const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-  if (stored === "light" || stored === "dark" || stored === "system") return stored;
-  return "system";
-};
-
-const applyTheme = (mode: ThemeMode) => {
-  const root = document.documentElement;
-  if (mode === "system") {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.classList.toggle("dark", prefersDark);
-  } else {
-    root.classList.toggle("dark", mode === "dark");
-  }
-};
+import { useTheme, type Theme } from "../../../shared/hooks";
 
 export const SettingsPage: React.FC = () => {
   const { user, logout } = useAuth();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
 
-  const [theme, setTheme] = useState<ThemeMode>(getStoredTheme);
+  const { theme, setTheme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true"
   );
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
-
-  const handleThemeChange = (mode: ThemeMode) => {
+  const handleThemeChange = (mode: Theme) => {
     setTheme(mode);
-    localStorage.setItem(STORAGE_KEYS.THEME, mode);
-    applyTheme(mode);
     showNotification({ type: "success", message: `Tema cambiado a ${mode === "light" ? "Claro" : mode === "dark" ? "Oscuro" : "Sistema"}` });
   };
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setSidebarCollapsed(collapsed);
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(collapsed));
-    // Dispatch storage event so Sidebar picks it up
-    window.dispatchEvent(new Event("storage"));
   };
 
   const handleLogout = () => {
@@ -71,7 +46,7 @@ export const SettingsPage: React.FC = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const themeOptions: { mode: ThemeMode; label: string; icon: React.FC<{ size?: number; className?: string }> }[] = [
+  const themeOptions: { mode: Theme; label: string; icon: React.FC<{ size?: number; className?: string }> }[] = [
     { mode: "light", label: "Claro", icon: Sun },
     { mode: "dark", label: "Oscuro", icon: Moon },
     { mode: "system", label: "Sistema", icon: Monitor },

@@ -70,7 +70,7 @@ export const PermissionList: React.FC<PermissionListProps> = ({
                 </button>
                 <button
                   onClick={() => onDelete(permission.id)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium text-xs border border-red-200 dark:border-red-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded transition-colors"
+                  className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs border border-rose-200 dark:border-rose-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-1 rounded transition-colors"
                 >
                   Eliminar
                 </button>

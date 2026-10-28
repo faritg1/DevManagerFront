@@ -175,13 +175,12 @@ export const API_ENDPOINTS = {
         `/bienestar/auxilios/${asociadoId}`,
     },
 
-    // Gestion Humana — Competencias
+    // Gestión Humana — Competencias
     GESTION_HUMANA: {
-      COMPETENCIAS_BY_ASOCIADO: (asociadoId: string) =>
-        `/gestion-humana/competencias/${asociadoId}`,
-      COMPETENCIAS_CREATE: "/gestion-humana/competencias",
-      COMPETENCIA_DISPONIBILIDAD: (competenciaId: string) =>
-        `/gestion-humana/competencias/${competenciaId}/disponibilidad`,
+      COMPETENCIAS: "/gestion-humana/competencias",
+      COMPETENCIAS_BY_USER: (userId: string) => `/gestion-humana/competencias/${userId}`,
+      COMPETENCIAS_BUSCAR: "/gestion-humana/competencias/buscar",
+      COMPETENCIA_DISPONIBILIDAD: (id: string) => `/gestion-humana/competencias/${id}/disponibilidad`,
     },
 
     // Balance Social
@@ -219,13 +218,10 @@ export const API_ENDPOINTS = {
 
     // Excedentes
     EXCEDENTES: {
+      BASE: "/excedentes",
+      BY_PERIODO: (period: string) => `/excedentes/${period}`,
       CALCULAR: "/excedentes/calcular",
-      BY_PERIODO: (organizationId: string, periodo: string) =>
-        `/excedentes/${organizationId}/${periodo}`,
-      BY_ORGANIZACION: (organizationId: string) =>
-        `/excedentes/${organizationId}`,
-      APROBAR: (excedenteId: string) =>
-        `/excedentes/${excedenteId}/aprobar`,
+      APROBAR: (id: string) => `/excedentes/${id}/aprobar`,
     },
 
     // Habeas Data — ARCO (consent lives in DATA_POLICIES / USERS.CONSENTS)
@@ -237,34 +233,25 @@ export const API_ENDPOINTS = {
       ARCO_PENDIENTES: "/habeas-data/arco/pendientes",
     },
 
-    // Órganos (NO usa envelope ApiResponse — retorna DTOs crudos)
+    // Órganos de administración y control
     ORGANOS: {
       BASE: "/organos",
       BY_ID: (id: string) => `/organos/${id}`,
-      BY_ORGANIZATION: (organizationId: string) =>
-        `/organos/organization/${organizationId}`,
-      BY_TYPE: (organizationId: string, tipo: string | number) =>
-        `/organos/organization/${organizationId}/tipo/${tipo}`,
-      UPDATE: (id: string) => `/organos/${id}`,
-      DELETE: (id: string) => `/organos/${id}`,
-      MIEMBROS_CREATE: "/organos/miembros",
+      BY_TYPE: (tipo: number) => `/organos/tipo/${tipo}`,
+      MIEMBROS: "/organos/miembros",
       MIEMBROS_BY_ORGANO: (organoId: string) => `/organos/${organoId}/miembros`,
-      MIEMBRO_UPDATE: (id: string) => `/organos/miembros/${id}`,
-      MIEMBRO_DELETE: (id: string) => `/organos/miembros/${id}`,
-      ACTAS_CREATE: "/organos/actas",
+      MIEMBRO_BY_ID: (id: string) => `/organos/miembros/${id}`,
+      ACTAS: "/organos/actas",
       ACTA_BY_ID: (id: string) => `/organos/actas/${id}`,
       ACTAS_BY_ORGANO: (organoId: string) => `/organos/${organoId}/actas`,
-      ASAMBLEAS_CREATE: "/organos/asambleas",
+      ASAMBLEAS: "/organos/asambleas",
       ASAMBLEA_BY_ID: (id: string) => `/organos/asambleas/${id}`,
-      ASAMBLEAS_BY_ORGANIZATION: (organizationId: string) =>
-        `/organos/asambleas/organization/${organizationId}`,
       ASAMBLEA_ASISTENCIA: (id: string) => `/organos/asambleas/${id}/asistencia`,
       ASAMBLEA_CERRAR: (id: string) => `/organos/asambleas/${id}/cerrar`,
-      VOTOS_CREATE: "/organos/votos",
-      VOTOS_RESULTADOS: (asambleaId: string) =>
-        `/organos/votos/resultados/${asambleaId}`,
-      VOTOS_HA_VOTADO: (asambleaId: string, asociadoId: string) =>
-        `/organos/votos/ha-votado/${asambleaId}/${asociadoId}`,
+      VOTOS: "/organos/votos",
+      VOTOS_RESULTADOS: (asambleaId: string) => `/organos/votos/resultados/${asambleaId}`,
+      VOTOS_HA_VOTADO: (asambleaId: string, userId: string) =>
+        `/organos/votos/ha-votado/${asambleaId}/${userId}`,
     },
 
     // Reportes Supersolidaria

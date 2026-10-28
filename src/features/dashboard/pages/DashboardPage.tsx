@@ -118,13 +118,13 @@ export const DashboardPage: React.FC = () => {
         const fetchSolidaridad = async () => {
             try {
                 const [excedentesRes, arcoRes, bienestarRes] = await Promise.all([
-                    excedentesService.getByOrganizacion(orgId).catch(() => null),
+                    excedentesService.getAll().catch(() => null),
                     habeasDataService.getPendingArco().catch(() => null),
                     bienestarService.getProgramas(orgId).catch(() => null),
                 ]);
 
                 const latestExcedente = excedentesRes?.success && excedentesRes.data && excedentesRes.data.length > 0
-                    ? excedentesRes.data[0].totalExcedentes
+                    ? excedentesRes.data[0].totalSurplus
                     : 0;
 
                 setSolidaridad({

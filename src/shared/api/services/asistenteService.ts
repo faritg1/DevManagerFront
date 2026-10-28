@@ -1,74 +1,37 @@
 /**
  * Asistente Cooperativo Service
- * Consultas normativas, reportes de Balance Social y verificación de cumplimiento
- * Rutas: api/asistente
+ * Consultas normativas, dudas de asociados, Balance Social y verificación de cumplimiento.
+ * Rutas: api/asistente — la organización sale del JWT.
  */
 
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
   ApiResponse,
-  BalanceSocialReportDto,
-  CooperativaQueryRequest,
-  CooperativaQueryResponse,
-  CumplimientoDto,
-  GenerarBalanceSocialRequest,
-  ResponderDudaRequest,
-  VerificarCumplimientoRequest,
+  ComplianceDto,
+  CooperativeQueryResponse,
+  SocialBalanceReportDto,
+  VerifyComplianceRequest,
 } from "../types";
 
+const E = API_ENDPOINTS.ASISTENTE;
+
 export const asistenteService = {
-  /**
-   * Consulta normativa al Asistente Cooperativo
-   * POST /api/asistente/consultar
-   */
-  async consultar(
-    data: CooperativaQueryRequest,
-  ): Promise<ApiResponse<CooperativaQueryResponse>> {
-    return apiClient.post<CooperativaQueryResponse>(
-      API_ENDPOINTS.ASISTENTE.CONSULTAR,
-      data,
-    );
-  },
+  /** POST /api/asistente/consultar */
+  query: (query: string, context?: string): Promise<ApiResponse<CooperativeQueryResponse>> =>
+    apiClient.post(E.CONSULTAR, context ? { query, context } : { query }),
 
-  /**
-   * Genera un reporte de Balance Social
-   * POST /api/asistente/generar-reporte
-   */
-  async generarReporte(
-    data: GenerarBalanceSocialRequest,
-  ): Promise<ApiResponse<BalanceSocialReportDto>> {
-    return apiClient.post<BalanceSocialReportDto>(
-      API_ENDPOINTS.ASISTENTE.GENERAR_REPORTE,
-      data,
-    );
-  },
+  /** POST /api/asistente/responder */
+  answer: (question: string, associateType?: string): Promise<ApiResponse<CooperativeQueryResponse>> =>
+    apiClient.post(E.RESPONDER, associateType ? { question, associateType } : { question }),
 
-  /**
-   * Verifica cumplimiento normativo cooperativo
-   * POST /api/asistente/verificar-cumplimiento
-   */
-  async verificarCumplimiento(
-    data: VerificarCumplimientoRequest,
-  ): Promise<ApiResponse<CumplimientoDto>> {
-    return apiClient.post<CumplimientoDto>(
-      API_ENDPOINTS.ASISTENTE.VERIFICAR_CUMPLIMIENTO,
-      data,
-    );
-  },
+  /** POST /api/asistente/generar-reporte (Admin) */
+  generateReport: (year: number, includeRecommendations: boolean): Promise<ApiResponse<SocialBalanceReportDto>> =>
+    apiClient.post(E.GENERAR_REPORTE, { year, includeRecommendations }),
 
-  /**
-   * Responde una duda de asociado
-   * POST /api/asistente/responder
-   */
-  async responder(
-    data: ResponderDudaRequest,
-  ): Promise<ApiResponse<CooperativaQueryResponse>> {
-    return apiClient.post<CooperativaQueryResponse>(
-      API_ENDPOINTS.ASISTENTE.RESPONDER,
-      data,
-    );
-  },
+  /** POST /api/asistente/verificar-cumplimiento (Admin) */
+  verifyCompliance: (data: VerifyComplianceRequest): Promise<ApiResponse<ComplianceDto>> =>
+    apiClient.post(E.VERIFICAR_CUMPLIMIENTO, data),
 };
 
 export default asistenteService;

@@ -1,63 +1,32 @@
 /**
  * Reportes Supersolidaria Service
- * Reportes integrales para la Superintendencia de la Economía Solidaria
- * Rutas: api/reportes/supersolidaria
+ * Reportes trimestrales/anuales para la Superintendencia de la Economía Solidaria.
+ * Rutas: api/reportes/supersolidaria — la organización sale del JWT.
  */
 
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
-import type { ApiResponse, CreateReporteDto, ReporteSupersolidariaDto } from "../types";
+import type {
+  ApiResponse,
+  GenerateSupersolidariaReportRequest,
+  SupersolidariaReportDto,
+} from "../types";
+
+const E = API_ENDPOINTS.REPORTES_SUPERSOLIDARIA;
 
 export const reportesSupersolidariaService = {
-  /**
-   * Genera un reporte integral para Supersolidaria
-   * POST /api/reportes/supersolidaria/generar
-   */
-  async generarReporte(
-    data: CreateReporteDto,
-  ): Promise<ApiResponse<ReporteSupersolidariaDto>> {
-    return apiClient.post<ReporteSupersolidariaDto>(
-      API_ENDPOINTS.REPORTES_SUPERSOLIDARIA.GENERAR,
-      data,
-    );
-  },
+  /** GET /api/reportes/supersolidaria */
+  getAll: (): Promise<ApiResponse<SupersolidariaReportDto[]>> => apiClient.get(E.BASE),
 
-  /**
-   * Obtiene un reporte por período (periodo = 'yyyy-MM-dd')
-   * GET /api/reportes/supersolidaria/{organizationId}/{periodo}
-   */
-  async getReporteByPeriodo(
-    organizationId: string,
-    periodo: string,
-  ): Promise<ApiResponse<ReporteSupersolidariaDto | null>> {
-    return apiClient.get<ReporteSupersolidariaDto | null>(
-      API_ENDPOINTS.REPORTES_SUPERSOLIDARIA.BY_PERIODO(organizationId, periodo),
-    );
-  },
+  /** GET /api/reportes/supersolidaria/{yyyy-MM-dd} — 404 si no hay reporte para el período */
+  getByPeriod: (period: string): Promise<ApiResponse<SupersolidariaReportDto>> => apiClient.get(E.BY_PERIODO(period)),
 
-  /**
-   * Obtiene todos los reportes de una organización
-   * GET /api/reportes/supersolidaria/{organizationId}
-   */
-  async getReportesByOrganizacion(
-    organizationId: string,
-  ): Promise<ApiResponse<ReporteSupersolidariaDto[]>> {
-    return apiClient.get<ReporteSupersolidariaDto[]>(
-      API_ENDPOINTS.REPORTES_SUPERSOLIDARIA.BY_ORGANIZACION(organizationId),
-    );
-  },
+  /** POST /api/reportes/supersolidaria/generar (Admin) — regenera mientras no se haya enviado */
+  generate: (data: GenerateSupersolidariaReportRequest): Promise<ApiResponse<SupersolidariaReportDto>> =>
+    apiClient.post(E.GENERAR, data),
 
-  /**
-   * Marca un reporte como enviado a Supersolidaria
-   * POST /api/reportes/supersolidaria/{reporteId}/enviar
-   */
-  async marcarEnviado(
-    reporteId: string,
-  ): Promise<ApiResponse<ReporteSupersolidariaDto>> {
-    return apiClient.post<ReporteSupersolidariaDto>(
-      API_ENDPOINTS.REPORTES_SUPERSOLIDARIA.ENVIAR(reporteId),
-    );
-  },
+  /** POST /api/reportes/supersolidaria/{id}/enviar (Admin) */
+  markSent: (id: string): Promise<ApiResponse<SupersolidariaReportDto>> => apiClient.post(E.ENVIAR(id)),
 };
 
 export default reportesSupersolidariaService;

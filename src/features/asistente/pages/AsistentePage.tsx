@@ -3,28 +3,29 @@ import {
     Bot, Loader2, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
     Scale, CheckCircle2,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Card, Badge, Button, Input, StatCard } from '../../../shared/ui';
-import { useNotification, useAuth } from '../../../shared/context';
+import { useNotification } from '../../../shared/context';
+import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
 import type {
-    CooperativaQueryResponse,
-    BalanceSocialReportDto,
-    CumplimientoDto,
+    CooperativeQueryResponse,
+    SocialBalanceReportDto,
+    ComplianceDto,
 } from '../../../shared/api/types';
 
 type Tab = 'consultar' | 'reporte' | 'cumplimiento' | 'responder';
 
-const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
+const TABS: { id: Tab; label: string; adminOnly?: boolean; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
     { id: 'consultar', label: 'Consultar Normatividad', icon: BookOpen },
-    { id: 'reporte', label: 'Generar Balance Social', icon: FileBarChart2 },
-    { id: 'cumplimiento', label: 'Verificar Cumplimiento', icon: ShieldCheck },
+    { id: 'reporte', label: 'Generar Balance Social', icon: FileBarChart2, adminOnly: true },
+    { id: 'cumplimiento', label: 'Verificar Cumplimiento', icon: ShieldCheck, adminOnly: true },
     { id: 'responder', label: 'Responder Duda', icon: MessageSquare },
 ];
 
 export const AsistentePage: React.FC = () => {
     const { showNotification } = useNotification();
-    const { user } = useAuth();
-    const orgId = user?.organizationId ?? '';
+    const isAdmin = useIsAdmin();
     const anioActual = new Date().getFullYear();
 
     const [tab, setTab] = useState<Tab>('consultar');
@@ -34,24 +35,23 @@ export const AsistentePage: React.FC = () => {
     // Consultar
     const [consulta, setConsulta] = useState('');
     const [contexto, setContexto] = useState('');
-    const [consultaRes, setConsultaRes] = useState<CooperativaQueryResponse | null>(null);
+    const [consultaRes, setConsultaRes] = useState<CooperativeQueryResponse | null>(null);
 
     // Reporte
     const [reporteAnio, setReporteAnio] = useState(anioActual);
     const [incluirRec, setIncluirRec] = useState(true);
-    const [reporteRes, setReporteRes] = useState<BalanceSocialReportDto | null>(null);
+    const [reporteRes, setReporteRes] = useState<SocialBalanceReportDto | null>(null);
 
     // Cumplimiento
     const [verificarEducacion, setVerificarEducacion] = useState(true);
     const [verificarSST, setVerificarSST] = useState(true);
     const [verificarHabeas, setVerificarHabeas] = useState(true);
-    const [verificarAportes, setVerificarAportes] = useState(true);
-    const [cumplimientoRes, setCumplimientoRes] = useState<CumplimientoDto | null>(null);
+    const [cumplimientoRes, setCumplimientoRes] = useState<ComplianceDto | null>(null);
 
     // Responder
     const [pregunta, setPregunta] = useState('');
     const [tipoAsociado, setTipoAsociado] = useState('');
-    const [responderRes, setResponderRes] = useState<CooperativaQueryResponse | null>(null);
+    const [responderRes, setResponderRes] = useState<CooperativeQueryResponse | null>(null);
 
     const run = async (fn: () => Promise<boolean>) => {
         setLoading(true);
@@ -59,8 +59,8 @@ export const AsistentePage: React.FC = () => {
         try {
             const ok = await fn();
             if (!ok) showNotification({ type: 'error', message: 'No se pudo completar la operación' });
-        } catch {
-            setError('Error de conexión con el Asistente');
+        } catch (err) {
+            setError((err as { message?: string })?.message || 'Error de conexión con el Asistente');
         } finally {
             setLoading(false);
         }
@@ -69,7 +69,7 @@ export const AsistentePage: React.FC = () => {
     const handleConsultar = () => {
         if (!consulta.trim()) return;
         run(async () => {
-            const res = await asistenteService.consultar({ consulta, contexto: contexto || null, requerirAprobacion: false });
+            const res = await asistenteService.query(consulta.trim(), contexto.trim() || undefined);
             if (res.success && res.data) { setConsultaRes(res.data); return true; }
             return false;
         });
@@ -77,7 +77,7 @@ export const AsistentePage: React.FC = () => {
 
     const handleGenerarReporte = () => {
         run(async () => {
-            const res = await asistenteService.generarReporte({ organizationId: orgId, anio: reporteAnio, incluirRecomendaciones: incluirRec });
+            const res = await asistenteService.generateReport(reporteAnio, incluirRec);
             if (res.success && res.data) { setReporteRes(res.data); return true; }
             return false;
         });
@@ -85,12 +85,10 @@ export const AsistentePage: React.FC = () => {
 
     const handleVerificar = () => {
         run(async () => {
-            const res = await asistenteService.verificarCumplimiento({
-                organizationId: orgId,
-                verificarEducacion,
-                verificarSST,
-                verificarHabeasData: verificarHabeas,
-                verificarAportes,
+            const res = await asistenteService.verifyCompliance({
+                verifyEducation: verificarEducacion,
+                verifyOccupationalHealth: verificarSST,
+                verifyHabeasData: verificarHabeas,
             });
             if (res.success && res.data) { setCumplimientoRes(res.data); return true; }
             return false;
@@ -100,13 +98,13 @@ export const AsistentePage: React.FC = () => {
     const handleResponder = () => {
         if (!pregunta.trim()) return;
         run(async () => {
-            const res = await asistenteService.responder({ organizationId: orgId, pregunta, tipoAsociado: tipoAsociado || null });
+            const res = await asistenteService.answer(pregunta.trim(), tipoAsociado.trim() || undefined);
             if (res.success && res.data) { setResponderRes(res.data); return true; }
             return false;
         });
     };
 
-    const renderCitations = (r: CooperativaQueryResponse) => (
+    const renderCitations = (r: CooperativeQueryResponse) => (
         r.citations.length > 0 && (
             <div className="mt-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Citaciones normativas</p>
@@ -115,14 +113,9 @@ export const AsistentePage: React.FC = () => {
                         <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                             <p className="font-bold text-slate-900 dark:text-white text-sm">
                                 <Scale size={14} className="inline mr-1 text-primary" />
-                                {c.norma} — {c.articulo}
+                                {c.rule} — {c.article}
                             </p>
-                            {c.descripcion && <p className="text-xs text-slate-500 mt-1">{c.descripcion}</p>}
-                            {c.urlReferencia && (
-                                <a href={c.urlReferencia} target="_blank" rel="noreferrer" className="text-xs text-primary font-bold mt-1 inline-block">
-                                    Ver referencia →
-                                </a>
-                            )}
+                            {c.description && <p className="text-xs text-slate-500 mt-1">{c.description}</p>}
                         </div>
                     ))}
                 </div>
@@ -130,12 +123,12 @@ export const AsistentePage: React.FC = () => {
         )
     );
 
-    const renderAcciones = (r: CooperativaQueryResponse) => (
-        r.accionesSugeridas.length > 0 && (
+    const renderAcciones = (r: CooperativeQueryResponse) => (
+        r.suggestedActions.length > 0 && (
             <div className="mt-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Acciones sugeridas</p>
                 <ul className="space-y-1.5">
-                    {r.accionesSugeridas.map((a, i) => (
+                    {r.suggestedActions.map((a, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
                             <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 shrink-0" />
                             {a}
@@ -146,10 +139,12 @@ export const AsistentePage: React.FC = () => {
         )
     );
 
-    const renderRespuesta = (r: CooperativaQueryResponse) => (
+    const renderRespuesta = (r: CooperativeQueryResponse) => (
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
-            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.respuesta}</p>
-            {r.requiereAprobacion && <Badge variant="warning" className="mt-2">Requiere aprobación</Badge>}
+            <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
+                <ReactMarkdown>{r.answer}</ReactMarkdown>
+            </div>
+            <Badge variant={r.generatedByAi ? 'purple' : 'default'} className="mt-2">{r.generatedByAi ? 'Generado con IA' : 'Respuesta normativa base'}</Badge>
             {renderCitations(r)}
             {renderAcciones(r)}
         </div>
@@ -169,13 +164,13 @@ export const AsistentePage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard title="Modo" value="Consultar" icon={BookOpen} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 <StatCard title="Reporte" value={reporteAnio} icon={FileBarChart2} iconColor="text-purple-500" iconBgColor="bg-purple-100 dark:bg-purple-500/10" />
-                <StatCard title="Áreas verificadas" value="4" icon={ShieldCheck} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Áreas verificadas" value="3" icon={ShieldCheck} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
                 <StatCard title="Asistente IA" value="Activo" icon={Bot} iconColor="text-primary" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
             </div>
 
             {/* Tabs */}
             <div className="flex flex-wrap gap-2 mb-6">
-                {TABS.map(t => (
+                {TABS.filter(t => isAdmin || !t.adminOnly).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
@@ -232,7 +227,7 @@ export const AsistentePage: React.FC = () => {
             )}
 
             {/* Reporte */}
-            {tab === 'reporte' && !loading && (
+            {isAdmin && tab === 'reporte' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <div className="flex items-center gap-2 mb-4">
@@ -252,7 +247,7 @@ export const AsistentePage: React.FC = () => {
                                     </label>
                                 </div>
                             </div>
-                            <Button icon={FileBarChart2} onClick={handleGenerarReporte} disabled={!orgId} className="self-start">
+                            <Button icon={FileBarChart2} onClick={handleGenerarReporte} className="self-start">
                                 Generar Reporte
                             </Button>
                         </div>
@@ -262,29 +257,30 @@ export const AsistentePage: React.FC = () => {
                         {reporteRes ? (
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <p className="font-bold text-slate-900 dark:text-white">{reporteRes.organizationName}</p>
-                                    <Badge variant="purple">{reporteRes.anio}</Badge>
+                                    <p className="font-bold text-slate-900 dark:text-white">{reporteRes.activeAssociates} asociados activos</p>
+                                    <Badge variant="purple">{reporteRes.year}</Badge>
                                 </div>
-                                {reporteRes.resumenEjecutivo && <p className="text-sm text-slate-600 dark:text-slate-400">{reporteRes.resumenEjecutivo}</p>}
+                                {reporteRes.executiveSummary && <p className="text-sm text-slate-600 dark:text-slate-400">{reporteRes.executiveSummary}</p>}
+                                {reporteRes.narrative && <div className="text-sm text-slate-600 dark:text-slate-400 break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
                                 <div className="space-y-2">
-                                    {reporteRes.dimensiones.map(d => (
-                                        <div key={d.nombre} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                    {reporteRes.dimensions.map(d => (
+                                        <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                             <div className="flex items-center justify-between">
-                                                <p className="font-bold text-slate-900 dark:text-white text-sm">{d.nombre}</p>
-                                                <Badge variant={d.cobertura >= d.meta ? 'success' : 'warning'}>
-                                                    {Math.round(d.cobertura)}% cobertura
+                                                <p className="font-bold text-slate-900 dark:text-white text-sm">{d.name}</p>
+                                                <Badge variant={d.coverage >= d.target ? 'success' : 'warning'}>
+                                                    {d.status} · {Math.round(d.coverage)}%
                                                 </Badge>
                                             </div>
-                                            {d.indicadores.length > 0 && (
-                                                <p className="text-xs text-slate-500 mt-1">{d.indicadores.map(i => i.nombre).join(', ')}</p>
+                                            {d.indicators.length > 0 && (
+                                                <p className="text-xs text-slate-500 mt-1">{d.indicators.map(i => i.name + ': ' + i.currentValue + (i.unit ? ' ' + i.unit : '')).join(' · ')}</p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-                                {reporteRes.fortalezas.length > 0 && (
+                                {reporteRes.strengths.length > 0 && (
                                     <div>
                                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Fortalezas</p>
-                                        {reporteRes.fortalezas.map((f, i) => (
+                                        {reporteRes.strengths.map((f, i) => (
                                             <p key={i} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-start gap-1.5">
                                                 <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> {f}
                                             </p>
@@ -300,7 +296,7 @@ export const AsistentePage: React.FC = () => {
             )}
 
             {/* Cumplimiento */}
-            {tab === 'cumplimiento' && !loading && (
+            {isAdmin && tab === 'cumplimiento' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <div className="flex items-center gap-2 mb-4">
@@ -312,14 +308,13 @@ export const AsistentePage: React.FC = () => {
                                 { label: 'Educación cooperativa (Ley 79 art. 88-91)', value: verificarEducacion, set: setVerificarEducacion },
                                 { label: 'SST (Decreto 1072/2015)', value: verificarSST, set: setVerificarSST },
                                 { label: 'Habeas Data (Ley 1581/2012)', value: verificarHabeas, set: setVerificarHabeas },
-                                { label: 'Aportes sociales (Ley 79 art. 46-52)', value: verificarAportes, set: setVerificarAportes },
                             ].map(opt => (
                                 <label key={opt.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] cursor-pointer">
                                     <input type="checkbox" checked={opt.value} onChange={(e) => opt.set(e.target.checked)} className="h-4 w-4 accent-primary" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{opt.label}</span>
                                 </label>
                             ))}
-                            <Button icon={ShieldCheck} onClick={handleVerificar} disabled={!orgId} className="self-start mt-2">
+                            <Button icon={ShieldCheck} onClick={handleVerificar} className="self-start mt-2">
                                 Verificar
                             </Button>
                         </div>
@@ -328,26 +323,33 @@ export const AsistentePage: React.FC = () => {
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Resultado</h2>
                         {cumplimientoRes ? (
                             <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-bold text-slate-900 dark:text-white text-sm">{cumplimientoRes.overallStatus} · {cumplimientoRes.year}</p>
+                                    <Badge variant={cumplimientoRes.nonCompliantAreas === 0 ? 'success' : 'warning'}>
+                                        {cumplimientoRes.compliantAreas}/{cumplimientoRes.areas.length} áreas · {cumplimientoRes.overallCoverage}%
+                                    </Badge>
+                                </div>
                                 {cumplimientoRes.areas.map(a => (
-                                    <div key={a.nombre} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                    <div key={a.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-slate-900 dark:text-white text-sm">{a.nombre}</p>
-                                            <Badge variant={a.cumple ? 'success' : 'danger'} dot>{a.cumple ? 'Cumple' : 'No cumple'}</Badge>
+                                            <p className="font-bold text-slate-900 dark:text-white text-sm">{a.name}</p>
+                                            <Badge variant={a.compliant ? 'success' : 'danger'} dot>{a.compliant ? 'Cumple' : 'No cumple'}</Badge>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-1">{a.normaAplicable} · {Math.round(a.cobertura)}% cobertura</p>
-                                        {a.hallazgos.length > 0 && (
+                                        <p className="text-xs text-slate-500 mt-1">{a.applicableRule} · {Math.round(a.coverage)}% cobertura</p>
+                                        {a.detail && <p className="text-xs text-slate-500 mt-1">{a.detail}</p>}
+                                        {a.findings.length > 0 && (
                                             <ul className="mt-1 space-y-0.5">
-                                                {a.hallazgos.map((h, i) => (
+                                                {a.findings.map((h, i) => (
                                                     <li key={i} className="text-xs text-rose-600 dark:text-rose-400">• {h}</li>
                                                 ))}
                                             </ul>
                                         )}
                                     </div>
                                 ))}
-                                {cumplimientoRes.alertas.length > 0 && (
+                                {cumplimientoRes.alerts.length > 0 && (
                                     <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
                                         <p className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Alertas</p>
-                                        {cumplimientoRes.alertas.map((a, i) => (
+                                        {cumplimientoRes.alerts.map((a, i) => (
                                             <p key={i} className="text-sm text-amber-700 dark:text-amber-300 flex items-start gap-1.5">
                                                 <AlertCircle size={14} className="mt-0.5 shrink-0" /> {a}
                                             </p>

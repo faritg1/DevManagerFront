@@ -1,108 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Scale, Loader2, AlertCircle, Calculator, TrendingUp, TrendingDown, Users,
-} from 'lucide-react';
+import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
 import { Card, Badge, Button, Input, StatCard } from '../../../shared/ui';
-import { useNotification, useAuth } from '../../../shared/context';
-import { balanceSocialService, usersService } from '../../../shared/api';
-import type { IndicadorBalanceSocialDto, UserResponse } from '../../../shared/api/types';
+import { useAuth } from '../../../shared/context';
+import { useIsAdmin } from '../../../shared/hooks';
+import { balanceSocialService, associatesService } from '../../../shared/api';
+import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
 
 const currency = (n: number) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
 
+const dimensionVariant = (status: string): 'success' | 'warning' | 'danger' =>
+    status === 'Cumple' ? 'success' : status === 'En Progreso' ? 'warning' : 'danger';
+
 export const BalanceSocialPage: React.FC = () => {
-    const { showNotification } = useNotification();
     const { user } = useAuth();
-    const orgId = user?.organizationId ?? '';
-    const anioActual = new Date().getFullYear();
+    const isAdmin = useIsAdmin();
 
-    const [anio, setAnio] = useState(anioActual);
-    const [indicadores, setIndicadores] = useState<IndicadorBalanceSocialDto[]>([]);
-    const [noCumplen, setNoCumplen] = useState<IndicadorBalanceSocialDto[]>([]);
+    const [year, setYear] = useState(new Date().getFullYear());
+    const [indicators, setIndicators] = useState<SocialBalanceIndicatorDto[]>([]);
+    const [nonCompliant, setNonCompliant] = useState<SocialBalanceIndicatorDto[]>([]);
+    const [report, setReport] = useState<SocialBalanceReportDto | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    const [asociados, setAsociados] = useState<UserResponse[]>([]);
-    const [calcAsociadoId, setCalcAsociadoId] = useState('');
-    const [calcResultado, setCalcResultado] = useState<IndicadorBalanceSocialDto | null>(null);
-    const [calcLoading, setCalcLoading] = useState(false);
+    const [associates, setAssociates] = useState<AssociateDto[]>([]);
+    const [lookupUserId, setLookupUserId] = useState('');
+    const [indicator, setIndicator] = useState<SocialBalanceIndicatorDto | null>(null);
+    const [lookupLoading, setLookupLoading] = useState(false);
+
+    const loadIndicator = async (userId: string) => {
+        if (!userId) return;
+        setLookupLoading(true);
+        try {
+            const res = await balanceSocialService.getIndicator(userId, year);
+            setIndicator(res.success ? res.data : null);
+        } catch {
+            setIndicator(null);
+        } finally {
+            setLookupLoading(false);
+        }
+    };
 
     const loadData = async () => {
-        if (!orgId) return;
         setIsLoading(true);
-        setError(null);
         try {
-            const [indRes, noCumplenRes] = await Promise.all([
-                balanceSocialService.getIndicadoresByOrganizacion(orgId, anio),
-                balanceSocialService.getNoCumplenEducacion(orgId, anio),
-            ]);
-            setIndicadores(indRes.success && indRes.data ? indRes.data : []);
-            setNoCumplen(noCumplenRes.success && noCumplenRes.data ? noCumplenRes.data : []);
+            if (isAdmin) {
+                const [indRes, ncRes, repRes] = await Promise.all([
+                    balanceSocialService.getOrganizationIndicators(year),
+                    balanceSocialService.getNonCompliant(year),
+                    balanceSocialService.getReport(year).catch(() => null),
+                ]);
+                setIndicators(indRes.success && indRes.data ? indRes.data : []);
+                setNonCompliant(ncRes.success && ncRes.data ? ncRes.data : []);
+                setReport(repRes?.success ? repRes.data : null);
+            } else if (user?.id) {
+                await loadIndicator(user.id);
+            }
         } catch {
-            setIndicadores([]);
-            setNoCumplen([]);
-            setError('Error de conexión al cargar balance social');
+            setIndicators([]);
+            setNonCompliant([]);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        usersService.getAll().then(res => {
-            if (res.success && res.data && res.data[0]) {
-                setAsociados(res.data);
-                setCalcAsociadoId(res.data[0].id);
-            }
-        }).catch(() => showNotification({ type: 'error', message: 'Error al cargar asociados' }));
-    }, []);
+        if (isAdmin) {
+            associatesService.getAll().then(res => {
+                const list = res.success && res.data ? res.data : [];
+                setAssociates(list);
+                if (list[0]) setLookupUserId(list[0].userId);
+            }).catch(() => {});
+        }
+    }, [isAdmin]);
 
     useEffect(() => {
         loadData();
-    }, [orgId, anio]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [year, isAdmin, user?.id]);
 
-    const handleCalcular = async () => {
-        if (!calcAsociadoId) return;
-        setCalcLoading(true);
-        setError(null);
-        try {
-            const res = await balanceSocialService.calcularIndicador(calcAsociadoId, orgId, anio);
-            if (res.success && res.data) {
-                setCalcResultado(res.data);
-                showNotification({ type: 'success', message: 'Indicador calculado' });
-                loadData();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'No se pudo calcular el indicador' });
-            }
-        } catch {
-            showNotification({ type: 'error', message: 'Error de conexión al calcular indicador' });
-        } finally {
-            setCalcLoading(false);
-        }
-    };
-
-    const cumplen = indicadores.filter(i => i.cumpleEducacion).length;
-    const noCumplenCount = noCumplen.length;
-    const promedioIndice = indicadores.length
-        ? Math.round((indicadores.reduce((s, i) => s + i.indiceBalanceSocial, 0) / indicadores.length) * 100) / 100
+    const compliantCount = indicators.filter(i => i.meetsEducation).length;
+    const averageIndex = indicators.length
+        ? Math.round((indicators.reduce((s, i) => s + i.index, 0) / indicators.length) * 100) / 100
         : 0;
 
-    const renderIndicador = (i: IndicadorBalanceSocialDto) => (
-        <div key={i.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+    const renderIndicator = (i: SocialBalanceIndicatorDto) => (
+        <div key={i.userId} className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
             <div className="flex items-center justify-between mb-2">
-                <p className="font-bold text-slate-900 dark:text-white">
-                    {asociados.find(a => a.id === i.asociadoId)?.fullName || i.asociadoId}
-                </p>
-                <Badge variant={i.cumpleEducacion ? 'success' : 'danger'} dot>
-                    {i.cumpleEducacion ? 'Cumple' : 'No cumple'}
+                <p className="font-bold text-slate-900 dark:text-white">{i.fullName || i.userId}</p>
+                <Badge variant={i.meetsEducation ? 'success' : 'danger'} dot>
+                    {i.meetsEducation ? 'Cumple' : 'No cumple'}
                 </Badge>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                <div><p className="text-slate-500">Horas educación</p><p className="font-bold">{i.horasEducacion}h</p></div>
-                <div><p className="text-slate-500">Asambleas</p><p className="font-bold">{i.participacionAsambleas}</p></div>
-                <div><p className="text-slate-500">Comités</p><p className="font-bold">{i.participacionComites}</p></div>
-                <div><p className="text-slate-500">Aportes</p><p className="font-bold">{currency(i.aportesSociales)}</p></div>
-                <div><p className="text-slate-500">Beneficios</p><p className="font-bold">{currency(i.beneficiosRecibidos)}</p></div>
-                <div><p className="text-slate-500">Índice</p><p className="font-bold text-primary">{i.indiceBalanceSocial}</p></div>
+                <div><p className="text-slate-500">Horas educación (año)</p><p className="font-bold">{i.educationHours}h</p></div>
+                <div><p className="text-slate-500">Educación básica</p><p className="font-bold">{i.basicEducationHours}h</p></div>
+                <div><p className="text-slate-500">Asambleas</p><p className="font-bold">{i.assemblyParticipations}</p></div>
+                <div><p className="text-slate-500">Órganos / comités</p><p className="font-bold">{i.committeeParticipations}</p></div>
+                <div><p className="text-slate-500">Beneficios</p><p className="font-bold">{currency(i.benefitsReceived)}</p></div>
+                <div><p className="text-slate-500">Índice</p><p className="font-bold text-primary">{i.index}</p></div>
             </div>
         </div>
     );
@@ -115,92 +110,123 @@ export const BalanceSocialPage: React.FC = () => {
                         Balance Social
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Indicadores de balance social por organización y asociado.
+                        Indicadores de balance social calculados con la educación, participación y beneficios reales.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Input type="number" value={anio} onChange={(e) => setAnio(Number(e.target.value))} placeholder="Año" className="w-32" />
-                    <Button variant="outline" onClick={loadData} disabled={!orgId || isLoading}>
+                    <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" className="w-32" />
+                    <Button variant="outline" onClick={loadData} disabled={isLoading}>
                         {isLoading ? 'Cargando...' : 'Consultar'}
                     </Button>
                 </div>
             </div>
 
-            {error && (
-                <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-sm text-rose-700 dark:text-rose-300">
-                    {error}
+            {isAdmin && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <StatCard title="Cumplen educación" value={compliantCount} icon={TrendingUp} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                    <StatCard title="No cumplen" value={nonCompliant.length} icon={TrendingDown} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
+                    <StatCard title="Índice promedio" value={averageIndex} icon={Scale} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <StatCard title="Cumplen educación" value={cumplen} icon={TrendingUp} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
-                <StatCard title="No cumplen" value={noCumplenCount} icon={TrendingDown} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
-                <StatCard title="Índice promedio" value={promedioIndice} icon={Scale} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
-            </div>
-
-            {/* Calcular indicador */}
             <Card className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
-                    <Calculator className="text-primary" size={20} />
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Calcular Indicador por Asociado</h2>
+                    <Search className="text-primary" size={20} />
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">{isAdmin ? 'Indicador por Asociado' : `Mi indicador ${year}`}</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <select
-                        value={calcAsociadoId}
-                        onChange={(e) => setCalcAsociadoId(e.target.value)}
-                        className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none"
-                    >
-                        <option value="">Seleccionar asociado</option>
-                        {asociados.map(a => <option key={a.id} value={a.id}>{a.fullName}</option>)}
-                    </select>
-                    <Input type="number" value={anio} onChange={(e) => setAnio(Number(e.target.value))} placeholder="Año" />
-                    <div className="flex items-end">
-                        <Button icon={Calculator} onClick={handleCalcular} disabled={!calcAsociadoId || calcLoading}>
-                            {calcLoading ? 'Calculando...' : 'Calcular'}
+                {isAdmin && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <select
+                            value={lookupUserId}
+                            onChange={(e) => setLookupUserId(e.target.value)}
+                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none"
+                        >
+                            <option value="">Seleccionar asociado</option>
+                            {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                        </select>
+                        <Button icon={Search} onClick={() => loadIndicator(lookupUserId)} disabled={!lookupUserId || lookupLoading}>
+                            {lookupLoading ? 'Consultando...' : 'Consultar'}
                         </Button>
                     </div>
-                </div>
-                {calcResultado && (
-                    <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div><p className="text-xs text-slate-500">Horas educación</p><p className="font-bold">{calcResultado.horasEducacion}h</p></div>
-                        <div><p className="text-xs text-slate-500">Asambleas</p><p className="font-bold">{calcResultado.participacionAsambleas}</p></div>
-                        <div><p className="text-xs text-slate-500">Comités</p><p className="font-bold">{calcResultado.participacionComites}</p></div>
-                        <div><p className="text-xs text-slate-500">Índice</p><p className="font-bold text-primary">{calcResultado.indiceBalanceSocial}</p></div>
-                    </div>
+                )}
+                {lookupLoading ? (
+                    <div className="flex items-center justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                ) : indicator ? renderIndicator(indicator) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicador consultado.</p>
                 )}
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Todos los indicadores */}
-                <Card>
+            {isAdmin && report && (
+                <Card className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <Users className="text-blue-500" size={20} />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Indicadores de la Organización</h2>
+                        <FileBarChart2 className="text-primary" size={20} />
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Reporte {report.year} · {report.activeAssociates} asociados activos</h2>
                     </div>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                    ) : indicadores.length === 0 ? (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicadores para la organización y año seleccionados.</p>
-                    ) : (
-                        <div className="space-y-3">{indicadores.map(renderIndicador)}</div>
+                    {report.executiveSummary && <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{report.executiveSummary}</p>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {report.dimensions.map(d => (
+                            <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-bold text-slate-900 dark:text-white">{d.name}</p>
+                                    <Badge variant={dimensionVariant(d.status)}>{d.status} · {d.coverage}%</Badge>
+                                </div>
+                                <ul className="mt-2 space-y-1 text-xs text-slate-500">
+                                    {d.indicators.map(ind => (
+                                        <li key={ind.name}>
+                                            {ind.name}: <span className="font-bold">{ind.currentValue}{ind.unit ? ` ${ind.unit}` : ''}</span>
+                                            {ind.targetValue > 0 && <> / meta {ind.targetValue}{ind.coverage != null ? ` (${ind.coverage}%)` : ''}</>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                    {(report.strengths.length > 0 || report.improvementAreas.length > 0) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                            <div>
+                                <p className="font-bold text-emerald-600 dark:text-emerald-400 mb-1">Fortalezas</p>
+                                <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300">{report.strengths.map(s => <li key={s}>{s}</li>)}</ul>
+                            </div>
+                            <div>
+                                <p className="font-bold text-amber-600 dark:text-amber-400 mb-1">Oportunidades de mejora</p>
+                                <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300">{report.improvementAreas.map(s => <li key={s}>{s}</li>)}</ul>
+                            </div>
+                        </div>
                     )}
                 </Card>
+            )}
 
-                {/* No cumplen */}
-                <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <AlertCircle className="text-rose-500" size={20} />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Asociados que No Cumplen Educación</h2>
-                    </div>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                    ) : noCumplen.length === 0 ? (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Todos cumplen con las horas mínimas de educación.</p>
-                    ) : (
-                        <div className="space-y-3">{noCumplen.map(renderIndicador)}</div>
-                    )}
-                </Card>
-            </div>
+            {isAdmin && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Users className="text-blue-500" size={20} />
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Indicadores de la Organización</h2>
+                        </div>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        ) : indicators.length === 0 ? (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicadores para el año seleccionado.</p>
+                        ) : (
+                            <div className="space-y-3">{indicators.map(renderIndicator)}</div>
+                        )}
+                    </Card>
+
+                    <Card>
+                        <div className="flex items-center gap-2 mb-4">
+                            <AlertCircle className="text-rose-500" size={20} />
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Asociados que No Cumplen Educación</h2>
+                        </div>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        ) : nonCompliant.length === 0 ? (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Todos cumplen con las horas mínimas de educación.</p>
+                        ) : (
+                            <div className="space-y-3">{nonCompliant.map(renderIndicator)}</div>
+                        )}
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };

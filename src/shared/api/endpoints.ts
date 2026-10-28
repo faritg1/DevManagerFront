@@ -176,15 +176,12 @@ export const API_ENDPOINTS = {
       COMPETENCIA_DISPONIBILIDAD: (id: string) => `/gestion-humana/competencias/${id}/disponibilidad`,
     },
 
-    // Balance Social
+    // Balance Social (derivado de datos reales)
     BALANCE_SOCIAL: {
-      INDICADOR: (asociadoId: string, anio: number) =>
-        `/balance-social/indicador/${asociadoId}/${anio}`,
-      INDICADOR_CALCULAR: "/balance-social/indicador/calcular",
-      ORGANIZACION: (organizationId: string, anio: number) =>
-        `/balance-social/organizacion/${organizationId}/${anio}`,
-      NO_CUMPLEN: (organizationId: string, anio: number) =>
-        `/balance-social/no-cumplen/${organizationId}/${anio}`,
+      INDICADOR: (userId: string, anio: number) => `/balance-social/indicador/${userId}/${anio}`,
+      ORGANIZACION: (anio: number) => `/balance-social/organizacion/${anio}`,
+      NO_CUMPLEN: (anio: number) => `/balance-social/no-cumplen/${anio}`,
+      REPORTE: (anio: number) => `/balance-social/reporte/${anio}`,
     },
 
     // SST — exámenes médicos, accidentes de trabajo y matriz de riesgos
@@ -239,13 +236,10 @@ export const API_ENDPOINTS = {
 
     // Reportes Supersolidaria
     REPORTES_SUPERSOLIDARIA: {
+      BASE: "/reportes/supersolidaria",
+      BY_PERIODO: (period: string) => `/reportes/supersolidaria/${period}`,
       GENERAR: "/reportes/supersolidaria/generar",
-      BY_PERIODO: (organizationId: string, periodo: string) =>
-        `/reportes/supersolidaria/${organizationId}/${periodo}`,
-      BY_ORGANIZACION: (organizationId: string) =>
-        `/reportes/supersolidaria/${organizationId}`,
-      ENVIAR: (reporteId: string) =>
-        `/reportes/supersolidaria/${reporteId}/enviar`,
+      ENVIAR: (id: string) => `/reportes/supersolidaria/${id}/enviar`,
     },
 
     // Asistente Cooperativo

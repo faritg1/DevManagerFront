@@ -667,7 +667,7 @@ export const UsersPage: React.FC = () => {
                                     editForm.isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
                                 }`}
                             >
-                                <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                                <span className={`absolute left-0 top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
                                     editForm.isActive ? 'translate-x-7' : 'translate-x-1'
                                 }`} />
                             </button>

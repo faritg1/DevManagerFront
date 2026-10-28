@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { useParams } from 'react-router-dom';
+import { BackButton, Button, Card, Badge, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService } from '../../../shared/api';
 import type { AssociateDetailDto, AssociateStatus } from '../../../shared/api/types';
@@ -22,7 +21,6 @@ const ACTION_LABELS: Record<AssociateStatus, string> = {
 
 export const AssociateDetailPage: React.FC = () => {
     const { userId = '' } = useParams<{ userId: string }>();
-    const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [data, setData] = useState<AssociateDetailDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -60,9 +58,6 @@ export const AssociateDetailPage: React.FC = () => {
         }
     };
 
-    const backButton = (
-        <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.ASSOCIATES)}>Volver</Button>
-    );
 
     if (isLoading) {
         return (
@@ -75,7 +70,7 @@ export const AssociateDetailPage: React.FC = () => {
         return (
             <PageContainer className="space-y-4">
                 <EmptyState title="No encontramos este asociado" description="Puede que se haya eliminado o que el enlace no sea correcto." />
-                {backButton}
+                <BackButton to={ROUTES.ASSOCIATES} />
             </PageContainer>
         );
     }
@@ -83,7 +78,7 @@ export const AssociateDetailPage: React.FC = () => {
     return (
         <PageContainer className="space-y-6">
             <PageHeader
-                before={backButton}
+                backTo={ROUTES.ASSOCIATES}
                 title={data.fullName}
                 description={`${data.email} · ${ROLE_LABELS[data.role]}`}
                 actions={<>

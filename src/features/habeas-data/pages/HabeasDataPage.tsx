@@ -188,16 +188,16 @@ export const HabeasDataPage: React.FC = () => {
                 <div className="grid grid-cols-1 gap-4">
                     {isAdmin && (
                         <div>
-                            <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado</label>
-                            <select value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))} className={selectClass}>
+                            <label htmlFor="habeas-data-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado</label>
+                            <select id="habeas-data-asociado" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))} className={selectClass}>
                                 <option value="">Yo mismo</option>
                                 {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                             </select>
                         </div>
                     )}
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
-                        <select value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))} className={selectClass}>
+                        <label htmlFor="habeas-data-tipo" className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
+                        <select id="habeas-data-tipo" value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))} className={selectClass}>
                             {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
                         </select>
                     </div>

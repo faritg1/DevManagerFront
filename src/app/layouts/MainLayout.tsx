@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../../widgets/Sidebar';
 import { Header } from '../../widgets/Header';
 
-import { ConfigProvider } from '../../shared/context';
+import { ConfigProvider, PermissionsProvider, UserNotificationsProvider } from '../../shared/context';
 
 export const MainLayout: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,6 +13,8 @@ export const MainLayout: React.FC = () => {
 
     return (
         <ConfigProvider>
+        <PermissionsProvider>
+        <UserNotificationsProvider>
             <div className="flex min-h-screen w-full bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
                 <Sidebar isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
                 
@@ -24,6 +26,8 @@ export const MainLayout: React.FC = () => {
                     </main>
                 </div>
             </div>
+        </UserNotificationsProvider>
+        </PermissionsProvider>
         </ConfigProvider>
     );
 };

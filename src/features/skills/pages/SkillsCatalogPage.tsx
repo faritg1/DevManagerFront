@@ -15,7 +15,7 @@ import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, EmptyState } from "../../../shared/ui";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -289,9 +289,9 @@ export const SkillsCatalogPage: React.FC = () => {
       ) : (
         <Card padding="none" className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className={TABLE_CLASS}>
               <thead className={THEAD_CLASS}>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
+                <tr>
                   <th className={TH_CLASS}>
                     Nombre
                   </th>
@@ -301,7 +301,7 @@ export const SkillsCatalogPage: React.FC = () => {
                   <th className={TH_CLASS}>
                     Tipo
                   </th>
-                  <th className={`${TH_CLASS} text-right`}>
+                  <th className={TH_ACTIONS_CLASS}>
                     Acciones
                   </th>
                 </tr>
@@ -310,12 +310,12 @@ export const SkillsCatalogPage: React.FC = () => {
                 {filteredSkills.map((skill) => (
                   <tr
                     key={skill.id}
-                    className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                    className={TR_CLASS}
                   >
                     <td className={TD_CLASS}>
                       <div className="flex items-center gap-2">
                         {renderSkillTypeIcon(skill.skillType)}
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        <span className={`${TD_TRUNCATE_CLASS} text-sm font-medium text-slate-900 dark:text-white`} title={skill.name}>
                           {skill.name}
                         </span>
                       </div>
@@ -334,28 +334,16 @@ export const SkillsCatalogPage: React.FC = () => {
                     <td className={TD_CLASS}>
                       {renderSkillTypeBadge(skill.skillType)}
                     </td>
-                    <td className={TD_CLASS}>
-                      <div className="flex items-center gap-2 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          icon={Pencil}
-                          onClick={() => handleEdit(skill)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          icon={Trash2}
-                          className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
-                          isLoading={deletingId === skill.id}
-                          onClick={() => handleDelete(skill)}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </td>
+                    <TableActions>
+                      <IconButton icon={Pencil} label={`Editar ${skill.name}`} onClick={() => handleEdit(skill)} />
+                      <IconButton
+                        icon={Trash2}
+                        label={`Eliminar ${skill.name}`}
+                        variant="danger"
+                        isLoading={deletingId === skill.id}
+                        onClick={() => handleDelete(skill)}
+                      />
+                    </TableActions>
                   </tr>
                 ))}
               </tbody>

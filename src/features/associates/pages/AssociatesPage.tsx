@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -83,7 +83,7 @@ export const AssociatesPage: React.FC = () => {
                 </>}
             />
 
-            <Card padding="md">
+            <Card padding="none" className="overflow-hidden">
                 {isLoading ? (
                     <LoadingBlock />
                 ) : items.length === 0 ? (
@@ -105,9 +105,9 @@ export const AssociatesPage: React.FC = () => {
                                     <tr
                                         key={a.userId}
                                         onClick={() => navigate(associateDetailPath(a.userId))}
-                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#233948]/50"
+                                        className={`cursor-pointer ${TR_CLASS}`}
                                     >
-                                        <td className={`${TD} font-semibold`}>{a.fullName}</td>
+                                        <td className={`${TD} font-semibold`}><span className={TD_TRUNCATE_CLASS} title={a.fullName}>{a.fullName}</span></td>
                                         <td className={TD}>
                                             {a.documentNumber ? `${DOCUMENT_TYPES[a.documentType ?? 0] ?? ''} ${a.documentNumber}` : '—'}
                                         </td>
@@ -136,8 +136,8 @@ export const AssociatesPage: React.FC = () => {
             >
                 <div className="space-y-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Usuario existente *</label>
-                        <select
+                        <label htmlFor="associates-usuario-existente" className="text-slate-700 dark:text-white text-sm font-bold">Usuario existente *</label>
+                        <select id="associates-usuario-existente"
                             value={userId}
                             onChange={(e) => setUserId(e.target.value)}
                             className={SELECT_CLASS}

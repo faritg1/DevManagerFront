@@ -22,11 +22,11 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
 
         <div className="space-y-4">
             <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label htmlFor="professional-info-card-anos-de-experiencia" className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     Años de Experiencia
                 </label>
                 {isEditing ? (
-                    <Input
+                    <Input id="professional-info-card-anos-de-experiencia"
                         type="number"
                         min={0}
                         max={50}
@@ -43,9 +43,9 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Seniority</label>
+                    <label htmlFor="professional-info-seniority" className="text-sm font-bold text-slate-700 dark:text-slate-300">Seniority</label>
                     {isEditing ? (
-                        <select
+                        <select id="professional-info-seniority"
                             value={form.seniorityLevelId ?? profile?.seniorityLevelId ?? ''}
                             onChange={(e) => onChange({ seniorityLevelId: e.target.value ? parseInt(e.target.value) : undefined })}
                             className={SELECT_CLASS}
@@ -63,9 +63,9 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Ubicación</label>
+                    <label htmlFor="professional-info-ubicacion" className="text-sm font-bold text-slate-700 dark:text-slate-300">Ubicación</label>
                     {isEditing ? (
-                        <Input value={form.location ?? profile?.location ?? ''} onChange={(e) => onChange({ location: e.target.value })} placeholder="Ciudad, País" />
+                        <Input id="professional-info-ubicacion" value={form.location ?? profile?.location ?? ''} onChange={(e) => onChange({ location: e.target.value })} placeholder="Ciudad, País" />
                     ) : (
                         <p className="text-slate-900 dark:text-white">{profile?.location || 'No especificado'}</p>
                     )}
@@ -74,18 +74,18 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Zona horaria</label>
+                    <label htmlFor="professional-info-zona-horaria" className="text-sm font-bold text-slate-700 dark:text-slate-300">Zona horaria</label>
                     {isEditing ? (
-                        <Input value={form.timezone ?? profile?.timezone ?? ''} onChange={(e) => onChange({ timezone: e.target.value })} placeholder="Ej: America/Bogota" />
+                        <Input id="professional-info-zona-horaria" value={form.timezone ?? profile?.timezone ?? ''} onChange={(e) => onChange({ timezone: e.target.value })} placeholder="Ej: America/Bogota" />
                     ) : (
                         <p className="text-slate-900 dark:text-white">{profile?.timezone || 'No especificado'}</p>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Disponibilidad</label>
+                    <label htmlFor="professional-info-disponibilidad" className="text-sm font-bold text-slate-700 dark:text-slate-300">Disponibilidad</label>
                     {isEditing ? (
-                        <select
+                        <select id="professional-info-disponibilidad"
                             value={form.availability ?? profile?.availability ?? ''}
                             onChange={(e) => onChange({ availability: (e.target.value as AvailabilityStatus) || null })}
                             className={SELECT_CLASS}
@@ -103,18 +103,18 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Título preferido</label>
+                    <label htmlFor="professional-info-titulo-preferido" className="text-sm font-bold text-slate-700 dark:text-slate-300">Título preferido</label>
                     {isEditing ? (
-                        <Input value={form.preferredTitle ?? profile?.preferredTitle ?? ''} onChange={(e) => onChange({ preferredTitle: e.target.value })} placeholder="Ej: Senior Frontend Developer" />
+                        <Input id="professional-info-titulo-preferido" value={form.preferredTitle ?? profile?.preferredTitle ?? ''} onChange={(e) => onChange({ preferredTitle: e.target.value })} placeholder="Ej: Senior Frontend Developer" />
                     ) : (
                         <p className="text-slate-900 dark:text-white">{profile?.preferredTitle || 'No especificado'}</p>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tarifa estimada (USD/h)</label>
+                    <label htmlFor="professional-info-tarifa-estimada-usd" className="text-sm font-bold text-slate-700 dark:text-slate-300">Tarifa estimada (USD/h)</label>
                     {isEditing ? (
-                        <Input type="number" min={0} value={form.hourlyRate ?? profile?.hourlyRate ?? ''} onChange={(e) => onChange({ hourlyRate: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ej: 40" />
+                        <Input id="professional-info-tarifa-estimada-usd" type="number" min={0} value={form.hourlyRate ?? profile?.hourlyRate ?? ''} onChange={(e) => onChange({ hourlyRate: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ej: 40" />
                     ) : (
                         <p className="text-slate-900 dark:text-white">{profile?.hourlyRate ? `$${profile.hourlyRate}/h` : 'No especificado'}</p>
                     )}

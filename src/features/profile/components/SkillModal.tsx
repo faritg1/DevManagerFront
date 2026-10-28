@@ -64,11 +64,11 @@ export const SkillModal: React.FC<Props> = ({
         >
             <div className="space-y-5">
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="skill-modal-habilidad" className="text-slate-700 dark:text-white text-sm font-bold">
                         Habilidad *
                     </label>
                     {editing ? (
-                        <Input value={editing.skillName} disabled />
+                        <Input id="skill-modal-habilidad" value={editing.skillName} disabled />
                     ) : loadingSkills ? (
                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <Loader2 className="animate-spin" size={16} />
@@ -90,10 +90,10 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                <div className="flex flex-col gap-2" role="group" aria-labelledby="skill-modal-nivel">
+                    <p id="skill-modal-nivel" className="text-slate-700 dark:text-white text-sm font-bold">
                         Nivel de Dominio *
-                    </label>
+                    </p>
                     <LevelSelector
                         levels={catalogs?.skillLevels || []}
                         selectedId={form.level}
@@ -108,10 +108,10 @@ export const SkillModal: React.FC<Props> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="skill-modal-evidencia" className="text-slate-700 dark:text-white text-sm font-bold">
                         Evidencia {requiresEvidence && '*'}
                     </label>
-                    <Input
+                    <Input id="skill-modal-evidencia"
                         value={form.evidenceUrl || ''}
                         onChange={(e) => setForm(prev => ({ ...prev, evidenceUrl: e.target.value }))}
                         placeholder="https://github.com/tu-proyecto o certificación"
@@ -125,10 +125,10 @@ export const SkillModal: React.FC<Props> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="skill-modal-descripcion-de-experiencia" className="text-slate-700 dark:text-white text-sm font-bold">
                         Descripción de Experiencia {requiresEvidence && '*'}
                     </label>
-                    <textarea
+                    <textarea id="skill-modal-descripcion-de-experiencia"
                         value={form.experienceDescription || ''}
                         onChange={(e) => setForm(prev => ({ ...prev, experienceDescription: e.target.value }))}
                         placeholder="Describe tu experiencia con esta habilidad, proyectos en los que has trabajado, tecnologías que dominas..."

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
+import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -339,15 +339,15 @@ export const BienestarPage: React.FC = () => {
                         </thead>
                         <tbody className={TBODY_CLASS}>
                             {progLoading ? (
-                                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={5}><LoadingBlock /></td></tr>
                             ) : programs.length === 0 ? (
                                 <tr><td colSpan={5}><EmptyState title="No hay programas de bienestar" /></td></tr>
                             ) : (
                                 programs.map(p => (
-                                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                    <tr key={p.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
-                                            <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
-                                            {p.description && <p className="text-xs text-slate-500 dark:text-slate-400">{p.description}</p>}
+                                            <p className={`${TD_TRUNCATE_CLASS} font-bold text-slate-900 dark:text-white`} title={p.name}>{p.name}</p>
+                                            {p.description && <p className={`${TD_TRUNCATE_CLASS} text-xs text-slate-500 dark:text-slate-400`} title={p.description}>{p.description}</p>}
                                         </td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.budget)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(p.startDate)}</td>
@@ -441,8 +441,8 @@ export const BienestarPage: React.FC = () => {
                         <Input label="Nombre *" value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
                     <div className="sm:col-span-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Descripción</label>
-                        <textarea
+                        <label htmlFor="bienestar-descripcion" className="text-slate-700 dark:text-white text-sm font-bold">Descripción</label>
+                        <textarea id="bienestar-descripcion"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
                             className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"

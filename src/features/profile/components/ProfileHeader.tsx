@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit, Save, X, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
-import { Avatar, Button, Badge } from '../../../shared/ui';
+import { Avatar, Button, Badge, PageHeader } from '../../../shared/ui';
 import type { ProfileResponse, UpdateProfileRequest, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
@@ -34,86 +34,48 @@ export const ProfileHeader: React.FC<Props> = ({
     onSave,
     onDelete,
 }) => {
+    const seniority = catalogs?.seniorityLevels?.find(s => s.id === (profileForm.seniorityLevelId ?? profile?.seniorityLevelId))?.name;
     return (
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="relative">
-                <Avatar 
-                    name={userName || 'Usuario'} 
-                    size="xl"
-                    className="h-28 w-28 text-3xl"
-                />
-                <div className="absolute -bottom-2 -right-2 p-2 bg-emerald-500 rounded-full text-white">
-                    <CheckCircle2 size={16} />
-                </div>
-            </div>
-
-            <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                            {userName || 'Mi Perfil'}
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">
-                            {userEmail}
-                        </p>
-                        <div className="flex items-center gap-3 mt-3 flex-wrap">
-                            <Badge variant="purple">{userRole || 'Usuario'}</Badge>
-
-                            { (profile?.seniorityLevelId || profileForm.seniorityLevelId) && (
-                                <Badge variant="default">
-                                    {catalogs?.seniorityLevels?.find(s => s.id === (profileForm.seniorityLevelId ?? profile?.seniorityLevelId))?.name}
-                                </Badge>
-                            )}
-
-                            {profile?.yearsExperience && (
-                                <Badge variant="info">
-                                    {profile.yearsExperience} años de experiencia
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-                    
-                    {!isEditing ? (
-                        <div className="flex gap-2 items-center">
-                            {onDelete && profile && (
-                                <Button
-                                    variant="danger"
-                                    size="sm"
-                                    icon={Trash2}
-                                    onClick={onDelete}
-                                    disabled={isDeleting}
-                                >
-                                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                                </Button>
-                            )}
-                            <Button 
-                                variant="outline" 
-                                icon={Edit}
-                                onClick={onStartEdit}
-                            >
-                                Editar Perfil
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="flex gap-2">
-                            <Button 
-                                variant="outline"
-                                icon={X}
-                                onClick={onCancelEdit}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button 
-                                icon={isSaving ? Loader2 : Save}
-                                onClick={onSave}
-                                disabled={isSaving}
-                            >
-                                {isSaving ? 'Guardando...' : 'Guardar'}
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+        <PageHeader
+            className="!mb-0"
+            icon={
+                <span className="relative mr-2 shrink-0" aria-hidden="true">
+                    <Avatar name={userName || 'Usuario'} size="xl" />
+                    <span className="absolute -bottom-1 -right-1 rounded-full bg-emerald-500 p-1 text-white">
+                        <CheckCircle2 size={12} />
+                    </span>
+                </span>
+            }
+            title={userName || 'Mi Perfil'}
+            description={
+                <span className="flex flex-col gap-3">
+                    <span>{userEmail}</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                        <Badge variant="purple">{userRole || 'Usuario'}</Badge>
+                        {seniority && <Badge variant="default">{seniority}</Badge>}
+                        {profile?.yearsExperience && (
+                            <Badge variant="info">{profile.yearsExperience} años de experiencia</Badge>
+                        )}
+                    </span>
+                </span>
+            }
+            actions={!isEditing ? (<>
+                {onDelete && profile && (
+                    <Button variant="danger" size="sm" icon={Trash2} onClick={onDelete} disabled={isDeleting}>
+                        {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                    </Button>
+                )}
+                <Button variant="outline" icon={Edit} onClick={onStartEdit}>
+                    Editar Perfil
+                </Button>
+            </>) : (<>
+                <Button variant="outline" icon={X} onClick={onCancelEdit}>
+                    Cancelar
+                </Button>
+                <Button icon={isSaving ? Loader2 : Save} onClick={onSave} disabled={isSaving}>
+                    {isSaving ? 'Guardando...' : 'Guardar'}
+                </Button>
+            </>)}
+        />
     );
 };

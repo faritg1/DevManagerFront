@@ -523,24 +523,29 @@ export interface UpdateRoleRequest {
 
 export interface PermissionDto {
   id: string;
-  code: string; // e.g., "users.read"
+  code: string; // e.g., "menu.platform.dashboard"
   name: string;
   module: string;
   description?: string | null;
+  sortOrder?: number;
 }
 
-export interface CreatePermissionRequest {
-  code: string;
-  name: string;
-  module: string;
-  description?: string | null;
+/** Node of GET /permissions/tree: roots are menu sections, children their options. */
+export interface PermissionTreeNode extends PermissionDto {
+  parentCode?: string;
+  /** Only present when the tree is requested for a role. */
+  isGranted?: boolean;
+  children: PermissionTreeNode[];
 }
 
-export interface UpdatePermissionRequest {
-  code?: string;
-  name?: string;
-  module?: string;
-  description?: string | null;
+/** GET /permissions/me: ancestor pruning and admin-all already applied server-side. */
+export interface MyPermissionsResponse {
+  userId: string;
+  userName: string;
+  isAdmin: boolean;
+  roles: RoleDto[];
+  effectivePermissions: PermissionDto[];
+  directOverrides: { permissionId: string; permissionCode: string; permissionName: string; isGranted: boolean }[];
 }
 
 export interface PermissionGroupDto {
@@ -581,13 +586,19 @@ export interface EffectivePermissionsResponse {
   directOverrides: { permissionCode: string; isGranted: boolean }[];
 }
 
-export interface ValidatePermissionRequest {
-  userId: string;
-  permissionCode: string;
-}
+// ============ NOTIFICATIONS ============
+/** 1 Info, 2 Success, 3 Warning, 4 Error. */
+export type NotificationKind = 1 | 2 | 3 | 4;
 
-export interface ValidatePermissionResponse {
-  hasPermission: boolean;
+export interface UserNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationKind;
+  link?: string | null;
+  isRead: boolean;
+  createdAt: string;
+  readAt?: string | null;
 }
 
 // ============ REPORTS ============

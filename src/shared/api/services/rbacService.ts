@@ -13,10 +13,8 @@ import type {
   RevokeRoleRequest,
   AssignPermissionOverrideRequest,
   EffectivePermissionsResponse,
-  ValidatePermissionRequest,
-  ValidatePermissionResponse,
-  CreatePermissionRequest,
-  UpdatePermissionRequest,
+  PermissionTreeNode,
+  MyPermissionsResponse,
 } from "../types";
 
 export const rbacService = {
@@ -67,24 +65,12 @@ export const rbacService = {
     return apiClient.get<PermissionDto[]>(API_ENDPOINTS.PERMISSIONS.BASE);
   },
 
-  async createPermission(
-    data: CreatePermissionRequest,
-  ): Promise<ApiResponse<PermissionDto>> {
-    return apiClient.post<PermissionDto>(API_ENDPOINTS.PERMISSIONS.BASE, data);
+  async getPermissionTree(roleId?: string): Promise<ApiResponse<PermissionTreeNode[]>> {
+    return apiClient.get<PermissionTreeNode[]>(API_ENDPOINTS.PERMISSIONS.TREE, { roleId });
   },
 
-  async updatePermission(
-    id: string,
-    data: UpdatePermissionRequest,
-  ): Promise<ApiResponse<PermissionDto>> {
-    return apiClient.put<PermissionDto>(
-      API_ENDPOINTS.PERMISSIONS.BY_ID(id),
-      data,
-    );
-  },
-
-  async deletePermission(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(API_ENDPOINTS.PERMISSIONS.BY_ID(id));
+  async getMyPermissions(): Promise<ApiResponse<MyPermissionsResponse>> {
+    return apiClient.get<MyPermissionsResponse>(API_ENDPOINTS.PERMISSIONS.ME);
   },
 
   async getGroupedPermissions(): Promise<ApiResponse<PermissionGroupDto[]>> {
@@ -117,13 +103,5 @@ export const rbacService = {
     );
   },
 
-  async validatePermission(
-    data: ValidatePermissionRequest,
-  ): Promise<ApiResponse<ValidatePermissionResponse>> {
-    return apiClient.post<ValidatePermissionResponse>(
-      API_ENDPOINTS.PERMISSIONS.VALIDATE,
-      data,
-    );
-  },
 };
 

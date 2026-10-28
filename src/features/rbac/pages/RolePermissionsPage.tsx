@@ -4,5 +4,5 @@ import { RoleEditor } from "../components/RoleEditor";
 
 export const RolePermissionsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  return <RoleEditor roleId={id} />;
+  return <RoleEditor key={id} roleId={id!} />;
 };

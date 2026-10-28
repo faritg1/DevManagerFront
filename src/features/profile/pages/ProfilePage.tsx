@@ -480,7 +480,7 @@ export const ProfilePage: React.FC = () => {
                         ? "bg-emerald-500"
                         : aiValidationResult.result.confidence >= 40
                           ? "bg-amber-500"
-                          : "bg-red-500"
+                          : "bg-rose-500"
                     }`}
                     style={{
                       width: `${aiValidationResult.result.confidence}%`,

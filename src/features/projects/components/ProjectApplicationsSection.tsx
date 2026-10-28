@@ -239,9 +239,9 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
 
             {selectedApplication.message && (
               <div>
-                <label className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
+                <p className="text-slate-700 dark:text-white text-sm font-bold mb-2">
                   Mensaje del postulante
-                </label>
+                </p>
                 <p className="p-3 rounded-xl bg-slate-100 dark:bg-[#0d1419] text-slate-700 dark:text-slate-300 text-sm italic">
                   "{selectedApplication.message}"
                 </p>
@@ -269,11 +269,11 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
             </div>
 
             <div>
-              <label className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
+              <label htmlFor="project-applications-section-notas-de-revision" className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
                 Notas de revisión{" "}
                 {reviewAction === "reject" && <span className="text-rose-500">*</span>}
               </label>
-              <textarea
+              <textarea id="project-applications-section-notas-de-revision"
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}
                 placeholder={

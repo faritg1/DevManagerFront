@@ -157,10 +157,10 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
         />
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <label htmlFor="skill-form-modal-categoria" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Categoría
           </label>
-          <select
+          <select id="skill-form-modal-categoria"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className={`${SELECT_SM_CLASS} w-full`}
@@ -183,10 +183,10 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div className="space-y-2" role="group" aria-labelledby="skill-form-tipo">
+          <p id="skill-form-tipo" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Tipo de habilidad
-          </label>
+          </p>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"

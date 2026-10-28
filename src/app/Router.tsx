@@ -6,7 +6,7 @@ import {
   ConfirmProvider,
 } from "../shared/context";
 import { MainLayout, AuthLayout } from "./layouts";
-import { ProtectedRoute, PublicRoute, AdminGuard } from "./guards";
+import { ProtectedRoute, PublicRoute, AdminGuard, PermissionGuard } from "./guards";
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
 
@@ -63,39 +63,41 @@ export const AppRouter: React.FC = () => {
 
               <Route element={<ProtectedRoute />}>
                 <Route element={<MainLayout />}>
-                  <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
-                  <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
-                  <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
-                  <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
-                  <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />
-                  <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-                  <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
-                  <Route path={ROUTES.NOMINA} element={<NominaPage />} />
-                  <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
-                  <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
-                  <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
-                  <Route path={ROUTES.SST} element={<SstPage />} />
-                  <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
-                  <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
-                  <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
-                  <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
-                  <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
-
-                  <Route element={<AdminGuard />}>
-                    <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
-                    <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
+                  <Route element={<PermissionGuard />}>
+                    <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+                    <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
+                    <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
+                    <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
+                    <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />
+                    <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                    <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+                    <Route path={ROUTES.NOMINA} element={<NominaPage />} />
+                    <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
+                    <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
+                    <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
+                    <Route path={ROUTES.SST} element={<SstPage />} />
+                    <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
+                    <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
+                    <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
+                    <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
+                    <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                     <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
-                    <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
-                    <Route path={ROUTES.USERS} element={<UsersPage />} />
-                    <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
-                    <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
-                    <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
-                    <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
-                    <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
-                    <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
-                    <Route path={ROUTES.ROLES} element={<RolesPage />} />
-                    <Route path={`${ROUTES.ROLES}/:id/permissions`} element={<RolePermissionsPage />} />
-                    <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+  
+                    <Route element={<AdminGuard />}>
+                      <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
+                      <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
+                      <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
+                      <Route path={ROUTES.USERS} element={<UsersPage />} />
+                      <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                      <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                      <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                      <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                      <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                      <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
+                      <Route path={ROUTES.ROLES} element={<RolesPage />} />
+                      <Route path={`${ROUTES.ROLES}/:id/permissions`} element={<RolePermissionsPage />} />
+                      <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+                    </Route>
                   </Route>
                 </Route>
               </Route>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { useParams } from 'react-router-dom';
+import { Pencil, UserPlus } from 'lucide-react';
+import { BackButton, Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -12,7 +12,6 @@ import { EnrollmentHoursForm, type EnrollmentFormValue } from '../components/Enr
 
 export const ProgramDetailPage: React.FC = () => {
     const { programId = '' } = useParams<{ programId: string }>();
-    const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [program, setProgram] = useState<EducationProgramDto | null>(null);
     const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
@@ -82,7 +81,8 @@ export const ProgramDetailPage: React.FC = () => {
     if (!program) {
         return (
             <PageContainer>
-                <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Programa no encontrado.</p>
+                <BackButton to={ROUTES.EDUCATION} />
+                <EmptyState title="Programa no encontrado" description="Puede que se haya eliminado o que el enlace no sea correcto." />
             </PageContainer>
         );
     }
@@ -90,7 +90,7 @@ export const ProgramDetailPage: React.FC = () => {
     return (
         <PageContainer>
             <PageHeader
-                before={<Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.EDUCATION)}>Volver</Button>}
+                backTo={ROUTES.EDUCATION}
                 title={program.name}
                 description={<>
                     <Badge variant="info">{PROGRAM_TYPE_LABELS[program.type]}</Badge>{' '}
@@ -99,7 +99,7 @@ export const ProgramDetailPage: React.FC = () => {
                 actions={<Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>}
             />
 
-            <Card padding="md">
+            <Card padding="none" className="overflow-hidden">
                 {enrollments.length === 0 ? (
                     <EmptyState title="Aún no hay inscripciones" />
                 ) : (
@@ -111,19 +111,19 @@ export const ProgramDetailPage: React.FC = () => {
                                     <th className={TH}>Estado</th>
                                     <th className={TH}>Horas</th>
                                     <th className={TH}>Finalización</th>
-                                    <th className={TH} />
+                                    <th className={TH_ACTIONS_CLASS}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                                 {enrollments.map((en) => (
-                                    <tr key={en.id}>
+                                    <tr key={en.id} className={TR_CLASS}>
                                         <td className={`${TD} font-semibold`}>{en.fullName}</td>
                                         <td className={TD}><Badge variant={ENROLLMENT_STATUS_VARIANTS[en.status]}>{ENROLLMENT_STATUS_LABELS[en.status]}</Badge></td>
                                         <td className={TD}>{en.hoursCompleted} / {program.requiredHours} h</td>
                                         <td className={TD}>{formatDate(en.completionDate)}</td>
-                                        <td className={`${TD} text-right`}>
-                                            <Button variant="outline" size="sm" icon={Pencil} onClick={() => openForm(en)}>Actualizar</Button>
-                                        </td>
+                                        <TableActions>
+                                            <IconButton icon={Pencil} label={`Actualizar inscripción de ${en.fullName}`} onClick={() => openForm(en)} />
+                                        </TableActions>
                                     </tr>
                                 ))}
                             </tbody>

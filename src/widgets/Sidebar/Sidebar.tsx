@@ -1,38 +1,11 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-    LayoutDashboard, 
-    Building2, 
-    Briefcase, 
-    Users, 
-    ShieldCheck, 
-    BarChart2, 
-    User, 
-    LogOut,
-    Hexagon,
-    Bot,
-    X,
-    ChevronDown,
-    Key,
-    Code2,
-    HeartHandshake,
-    FileText,
-    Wallet,
-    GraduationCap,
-    Scale,
-    HardHat,
-    PiggyBank,
-    Shield,
-    Landmark,
-    FileBarChart2,
-    Sparkles,
-    Award,
-    LucideIcon
-} from 'lucide-react';
-import { ROUTES, NAV_SECTIONS, STORAGE_KEYS } from '../../shared/config/constants';
+import { User, LogOut, Hexagon, X, ChevronDown, type LucideIcon } from 'lucide-react';
+import { ROUTES, STORAGE_KEYS } from '../../shared/config/constants';
 import { useAuth, useNotification } from '../../shared/context';
-import { useConfirm, useIsAdmin } from '../../shared/hooks';
+import { useConfirm, usePermission } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
+import { NAV_CONFIG, visibleNav, type NavItemConfig } from './navConfig';
 
 const CollapsedContext = createContext(false);
 
@@ -62,24 +35,64 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, isActive }) =>
     );
 };
 
+const readCollapsedSections = (): Set<string> => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SIDEBAR_SECTIONS);
+        return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+        return new Set();
+    }
+};
+
+const saveCollapsedSections = (keys: Set<string>) => {
+    try {
+        localStorage.setItem(STORAGE_KEYS.SIDEBAR_SECTIONS, JSON.stringify([...keys]));
+    } catch {
+        // Sin almacenamiento (modo privado, bloqueado): la preferencia dura sólo esta sesión.
+    }
+};
+
 interface NavSectionProps {
     title: string;
+    /** id del contenedor de ítems (aria-controls). */
+    id: string;
+    open: boolean;
+    onToggle: () => void;
     children: React.ReactNode;
 }
 
-const NavSection: React.FC<NavSectionProps> = ({ title, children }) => {
+/** Sección del menú con encabezado desplegable; en modo compacto muestra sólo un separador y nunca se colapsa. */
+const NavSection: React.FC<NavSectionProps> = ({ title, id, open, onToggle, children }) => {
     const collapsed = useContext(CollapsedContext);
-    return (
-    <div className="space-y-1">
-        {collapsed ? (
-            <div className="mx-3 my-2 border-t border-slate-200 dark:border-[#233948]" role="separator" aria-label={title} />
-        ) : (
-            <div className="px-3 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
-                {title}
+    if (collapsed) {
+        return (
+            <div className="space-y-1">
+                <div className="mx-3 my-2 border-t border-slate-200 dark:border-[#233948]" role="separator" aria-label={title} />
+                {children}
             </div>
-        )}
-        {children}
-    </div>
+        );
+    }
+    return (
+        <div>
+            <button
+                type="button"
+                onClick={onToggle}
+                aria-expanded={open}
+                aria-controls={id}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:text-white"
+            >
+                {title}
+                <ChevronDown size={14} aria-hidden="true" className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+            </button>
+            {/* grid-rows 0fr↔1fr anima la altura sin medirla; inert saca del tabulado los ítems ocultos. */}
+            <div
+                id={id}
+                inert={!open}
+                className={`grid transition-[grid-template-rows] duration-200 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+            >
+                <div className="min-h-0 space-y-1 overflow-hidden">{children}</div>
+            </div>
+        </div>
     );
 };
 
@@ -129,23 +142,65 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
-    const [securityOpen, setSecurityOpen] = useState<boolean>(
-        () => isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS),
+    const itemActive = (item: NavItemConfig): boolean =>
+        item.children ? item.children.some(itemActive) : !!item.to && isActive(item.to);
+
+    // Menú filtrado por permisos de menú (GET /permissions/me); mientras cargan se muestra un esqueleto.
+    const access = usePermission();
+    const sections = access.isLoading ? [] : visibleNav(access);
+
+    // Secciones plegadas (persistidas). La que contiene la ruta activa se despliega al navegar.
+    const [collapsedSections, setCollapsedSections] = useState(readCollapsedSections);
+    const activeSectionKey = sections.find((section) => section.items.some(itemActive))?.key;
+    useEffect(() => {
+        if (!activeSectionKey) return;
+        setCollapsedSections((prev) => {
+            if (!prev.has(activeSectionKey)) return prev;
+            const next = new Set(prev);
+            next.delete(activeSectionKey);
+            saveCollapsedSections(next);
+            return next;
+        });
+    }, [activeSectionKey]);
+    const toggleSection = (key: string) => {
+        setCollapsedSections((prev) => {
+            const next = new Set(prev);
+            if (!next.delete(key)) next.add(key);
+            saveCollapsedSections(next);
+            return next;
+        });
+    };
+
+    // Grupos anidados (p. ej. Seguridad): abiertos de inicio si contienen la ruta activa.
+    const [openGroups, setOpenGroups] = useState<Set<string>>(
+        () => new Set(NAV_CONFIG.flatMap((section) => section.items).filter((item) => item.children && itemActive(item)).map((item) => item.key)),
     );
+    const toggleGroup = (key: string) => {
+        setOpenGroups((prev) => {
+            const next = new Set(prev);
+            if (!next.delete(key)) next.add(key);
+            return next;
+        });
+    };
 
-    // Sólo roles con acceso administrativo ven la sección de Seguridad
-    const isAdmin = useIsAdmin();
-
-    const [collapsed, setCollapsed] = useState(() => localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true');
+    const readCompact = () => {
+        try {
+            return localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true';
+        } catch {
+            return false;
+        }
+    };
+    const [collapsed, setCollapsed] = useState(readCompact);
     // Configuración emite un StorageEvent al cambiar la preferencia (también llega desde otras pestañas).
     useEffect(() => {
-        const sync = () => setCollapsed(localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true');
+        const sync = () => setCollapsed(readCompact());
         window.addEventListener('storage', sync);
         return () => window.removeEventListener('storage', sync);
     }, []);
 
     // Sidebar content shared by desktop & mobile views
-    const renderContent = (compact = false) => (
+    // idPrefix evita ids duplicados: el menú se pinta dos veces (escritorio y cajón móvil).
+    const renderContent = (compact: boolean, idPrefix: string) => (
         <CollapsedContext.Provider value={compact}>
             <div className={`p-6 flex items-center ${compact ? 'justify-center' : 'justify-between'}`}>
                 <div className="flex items-center gap-3">
@@ -183,76 +238,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 flex flex-col gap-4 overflow-y-auto">
-                <NavSection title={NAV_SECTIONS.PLATFORM}>
-                    <NavItem to={ROUTES.DASHBOARD} icon={LayoutDashboard} label="Dashboard" isActive={isActive(ROUTES.DASHBOARD)} />
-                    <NavItem to={ROUTES.PROJECTS} icon={Briefcase} label="Proyectos" isActive={isActive(ROUTES.PROJECTS)} />
-                    <NavItem to={ROUTES.SKILLS_CATALOG} icon={Code2} label="Habilidades" isActive={isActive(ROUTES.SKILLS_CATALOG)} />
-                    <NavItem to={ROUTES.REPORTS} icon={BarChart2} label="Reportes IA" isActive={isActive(ROUTES.REPORTS)} />
-                </NavSection>
-
-                <NavSection title={NAV_SECTIONS.AGENTS}>
-                    <NavItem to={ROUTES.AGENTS} icon={Bot} label="Mis Agentes" isActive={isActive(ROUTES.AGENTS)} />
-                </NavSection>
-
-                <NavSection title={NAV_SECTIONS.SOLIDARIO}>
-                    {isAdmin && (
-                        <>
-                            <NavItem to={ROUTES.ASSOCIATES} icon={HeartHandshake} label="Asociados" isActive={isActive(ROUTES.ASSOCIATES)} />
-                            <NavItem to={ROUTES.DATA_POLICIES} icon={FileText} label="Políticas de datos" isActive={isActive(ROUTES.DATA_POLICIES)} />
-                        </>
-                    )}
-                    <NavItem to={ROUTES.HABEAS_DATA} icon={Shield} label="Habeas Data (ARCO)" isActive={isActive(ROUTES.HABEAS_DATA)} />
-                    {isAdmin && (
-                        <NavItem to={ROUTES.EDUCATION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCATION)} />
-                    )}
-                    <NavItem to={ROUTES.ORGANOS} icon={Landmark} label="Órganos" isActive={isActive(ROUTES.ORGANOS)} />
-                    <NavItem to={ROUTES.COMPETENCIAS} icon={Award} label="Competencias" isActive={isActive(ROUTES.COMPETENCIAS)} />
-                    <NavItem to={ROUTES.EXCEDENTES} icon={PiggyBank} label="Excedentes" isActive={isActive(ROUTES.EXCEDENTES)} />
-                    <NavItem to={ROUTES.NOMINA} icon={Wallet} label="Nómina" isActive={isActive(ROUTES.NOMINA)} />
-                    <NavItem to={ROUTES.BIENESTAR} icon={HeartHandshake} label="Bienestar" isActive={isActive(ROUTES.BIENESTAR)} />
-                    <NavItem to={ROUTES.SST} icon={HardHat} label="SST" isActive={isActive(ROUTES.SST)} />
-                    <NavItem to={ROUTES.BALANCE_SOCIAL} icon={Scale} label="Balance Social" isActive={isActive(ROUTES.BALANCE_SOCIAL)} />
-                    <NavItem to={ROUTES.REPORTES_SUPERSOLIDARIA} icon={FileBarChart2} label="Reportes Supersolidaria" isActive={isActive(ROUTES.REPORTES_SUPERSOLIDARIA)} />
-                    <NavItem to={ROUTES.ASISTENTE} icon={Sparkles} label="Asistente" isActive={isActive(ROUTES.ASISTENTE)} />
-                </NavSection>
-
-                <NavSection title={NAV_SECTIONS.ADMIN}>
-                    {isAdmin && (
-                        <>
-                            <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
-                            <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
-                        </>
-                    )}
-
-                    {/* Seguridad (Roles & Permisos) - solo admins */}
-                    {isAdmin && (
-                    <div>
-                        <button
-                            type="button"
-                            onClick={() => setSecurityOpen((s) => !s)}
-                            aria-expanded={securityOpen}
-                            title={compact ? 'Seguridad' : undefined}
-                            className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : 'justify-between'} ${
-                                isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS)
-                                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <ShieldCheck size={20} className="shrink-0" />
-                                <span className={compact ? 'sr-only' : 'text-sm font-medium'}>Seguridad</span>
+            <nav className="flex-1 px-4 flex flex-col gap-3 overflow-y-auto" aria-label="Menú principal" aria-busy={access.isLoading}>
+                {access.isLoading && [0, 1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-9 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" aria-hidden="true" />
+                ))}
+                {sections.map((section) => (
+                    <NavSection
+                        key={section.key}
+                        id={`${idPrefix}-nav-${section.key}`}
+                        title={section.title}
+                        open={!collapsedSections.has(section.key)}
+                        onToggle={() => toggleSection(section.key)}
+                    >
+                        {section.items.map((item) => item.children ? (
+                            <div key={item.key}>
+                                <button
+                                    type="button"
+                                    onClick={() => toggleGroup(item.key)}
+                                    aria-expanded={openGroups.has(item.key)}
+                                    aria-controls={`${idPrefix}-nav-group-${item.key}`}
+                                    title={compact ? item.label : undefined}
+                                    className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : 'justify-between'} ${
+                                        itemActive(item)
+                                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-3">
+                                        <item.icon size={20} className="shrink-0" aria-hidden="true" />
+                                        <span className={compact ? 'sr-only' : 'text-sm font-medium'}>{item.label}</span>
+                                    </span>
+                                    {!compact && <ChevronDown size={18} aria-hidden="true" className={`transition-transform ${openGroups.has(item.key) ? 'rotate-180' : ''}`} />}
+                                </button>
+                                <div
+                                    id={`${idPrefix}-nav-group-${item.key}`}
+                                    className={`mt-1 space-y-1 ${compact ? '' : 'pl-6'} ${openGroups.has(item.key) ? 'block' : 'hidden'}`}
+                                >
+                                    {item.children.map((child) => (
+                                        <NavItem key={child.key} to={child.to!} icon={child.icon} label={child.label} isActive={itemActive(child)} />
+                                    ))}
+                                </div>
                             </div>
-                            {!compact && <ChevronDown size={18} className={`transition-transform ${securityOpen ? 'rotate-180' : ''}`} />}
-                        </button>
-
-                        <div className={`mt-2 space-y-2 ${compact ? '' : 'pl-10'} ${securityOpen ? 'block' : 'hidden'}`}>
-                            <NavItem to={ROUTES.ROLES} icon={ShieldCheck} label="Roles" isActive={isActive(ROUTES.ROLES)} />
-                            <NavItem to={ROUTES.PERMISSIONS} icon={Key} label="Permisos" isActive={isActive(ROUTES.PERMISSIONS)} />
-                        </div>
-                    </div>
-                    )}
-                </NavSection>
+                        ) : (
+                            <NavItem key={item.key} to={item.to!} icon={item.icon} label={item.label} isActive={itemActive(item)} />
+                        ))}
+                    </NavSection>
+                ))}
             </nav>
 
             <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
@@ -273,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         <>
             {/* ── Desktop Sidebar ── visible md+ ── */}
             <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
-                {renderContent(collapsed)}
+                {renderContent(collapsed, 'sidebar')}
             </aside>
 
             <div
@@ -289,7 +320,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
-                {renderContent()}
+                {renderContent(false, 'drawer')}
             </aside>
         </>
     );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
+import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -255,7 +255,7 @@ export const NominaPage: React.FC = () => {
                             </thead>
                             <tbody className={TBODY_CLASS}>
                                 {sheet.map(p => (
-                                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                    <tr key={p.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{nameOf(p.userId)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.contributionBase)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.healthContribution)}</td>
@@ -290,8 +290,8 @@ export const NominaPage: React.FC = () => {
                     </select>
                     <Input type="date" label="Período *" value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Modelo *</label>
-                        <select
+                        <label htmlFor="nomina-modelo" className="text-slate-700 dark:text-white text-sm font-bold">Modelo *</label>
+                        <select id="nomina-modelo"
                             value={createForm.model}
                             onChange={(e) => setCreateForm(f => ({ ...f, model: Number(e.target.value) as CompensationModel }))}
                             className={`w-full mt-2 ${selectClass}`}

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { MembershipPeriodDto } from '../../../shared/api/types';
 import { formatDate } from '../labels';
-import { TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
+import { TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS } from '../../../shared/ui';
 
 export const MembershipPeriodsTable: React.FC<{ periods: MembershipPeriodDto[] }> = ({ periods }) => {
     if (periods.length === 0) {
@@ -21,12 +21,12 @@ export const MembershipPeriodsTable: React.FC<{ periods: MembershipPeriodDto[] }
                 </thead>
                 <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                     {periods.map((p, i) => (
-                        <tr key={p.id}>
+                        <tr key={p.id} className={TR_CLASS}>
                             <td className={TD}>{i + 1}</td>
                             <td className={TD}>{formatDate(p.applicationDate)}</td>
                             <td className={TD}>{formatDate(p.admissionDate)}</td>
                             <td className={TD}>{p.withdrawalDate ? formatDate(p.withdrawalDate) : 'Vigente'}</td>
-                            <td className={TD}>{p.withdrawalReason ?? '—'}</td>
+                            <td className={TD}><span className={TD_TRUNCATE_CLASS} title={p.withdrawalReason ?? undefined}>{p.withdrawalReason ?? '—'}</span></td>
                         </tr>
                     ))}
                 </tbody>

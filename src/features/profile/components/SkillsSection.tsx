@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, Button, Badge, IconButton } from '../../../shared/ui';
 import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import type { EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
@@ -128,24 +128,8 @@ export const SkillsSection: React.FC<Props> = ({
                                             )}
                                         </button>
                                     )}
-                                    <button
-                                        type="button"
-                                        disabled={opLoading}
-                                        onClick={() => onEdit(skill)}
-                                        title="Editar"
-                                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-[#233948]"
-                                    >
-                                        <Edit size={16} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        disabled={opLoading}
-                                        onClick={() => onDelete(skill)}
-                                        title="Eliminar"
-                                        className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    <IconButton icon={Edit} label="Editar habilidad" disabled={opLoading} onClick={() => onEdit(skill)} />
+                                    <IconButton icon={Trash2} label="Eliminar habilidad" variant="danger" disabled={opLoading} onClick={() => onDelete(skill)} />
                                 </div>
                             </div>
                             

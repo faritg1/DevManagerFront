@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, IconButton, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -411,9 +411,7 @@ export const OrganosPage: React.FC = () => {
                                                 <Badge variant={m.isActive ? 'success' : 'default'}>{m.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                             </div>
                                             {isAdmin && (
-                                                <button onClick={() => handleRemoveMember(m)} className="p-1 text-slate-400 hover:text-rose-500" aria-label="Retirar miembro">
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                <IconButton icon={Trash2} label={`Retirar a ${m.fullName}`} variant="danger" onClick={() => handleRemoveMember(m)} />
                                             )}
                                         </div>
                                     ))}
@@ -519,8 +517,8 @@ export const OrganosPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Nombre *" value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
                     <div>
-                        <label className={labelClass}>Tipo *</label>
-                        <select
+                        <label htmlFor="organos-tipo" className={labelClass}>Tipo *</label>
+                        <select id="organos-tipo"
                             value={createForm.type}
                             onChange={(e) => setCreateForm(f => ({ ...f, type: Number(e.target.value) as GoverningBodyType }))}
                             className={`${selectClass} mt-2`}
@@ -578,28 +576,28 @@ export const OrganosPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input type="date" label="Fecha de sesión *" value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
                     <div>
-                        <label className={labelClass}>Tipo de sesión *</label>
-                        <select value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
+                        <label htmlFor="organos-tipo-de-sesion" className={labelClass}>Tipo de sesión *</label>
+                        <select id="organos-tipo-de-sesion" value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
                             {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                     </div>
                     <Input type="number" min={0} label="Quórum *" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
                     <div>
-                        <label className={labelClass}>Asamblea relacionada</label>
-                        <select value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))} className={`${selectClass} mt-2`}>
+                        <label htmlFor="organos-asamblea-relacionada" className={labelClass}>Asamblea relacionada</label>
+                        <select id="organos-asamblea-relacionada" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))} className={`${selectClass} mt-2`}>
                             <option value="">Ninguna</option>
                             {assemblies.map(as => <option key={as.id} value={as.id}>{SESSION_TYPE_LABEL[as.type]} · {formatDate(as.scheduledAt)}</option>)}
                         </select>
                     </div>
                     <div className="sm:col-span-2">
-                        <label className={labelClass}>Decisiones *</label>
-                        <textarea value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} className={textareaClass} rows={4} />
+                        <label htmlFor="organos-decisiones" className={labelClass}>Decisiones *</label>
+                        <textarea id="organos-decisiones" value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} className={textareaClass} rows={4} />
                     </div>
                     <Input label="URL de la convocatoria" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
                     <Input label="URL del acta" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <label className={labelClass}>Notas</label>
-                        <textarea value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
+                        <label htmlFor="organos-notas" className={labelClass}>Notas</label>
+                        <textarea id="organos-notas" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
                     </div>
                 </div>
             </Modal>
@@ -653,15 +651,15 @@ export const OrganosPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input type="datetime-local" label="Fecha y hora *" value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
                     <div>
-                        <label className={labelClass}>Tipo *</label>
-                        <select value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
+                        <label htmlFor="organos-tipo-2" className={labelClass}>Tipo *</label>
+                        <select id="organos-tipo-2" value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
                             {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                     </div>
                     <Input type="number" min={1} label="Quórum mínimo *" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
                     <div className="sm:col-span-2">
-                        <label className={labelClass}>Convocatoria *</label>
-                        <textarea value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} className={textareaClass} rows={4} />
+                        <label htmlFor="organos-convocatoria" className={labelClass}>Convocatoria *</label>
+                        <textarea id="organos-convocatoria" value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} className={textareaClass} rows={4} />
                     </div>
                 </div>
             </Modal>
@@ -717,8 +715,8 @@ export const OrganosPage: React.FC = () => {
                                 <h4 className="font-bold text-slate-900 dark:text-white">Votar</h4>
                                 {isAdmin && (
                                     <div>
-                                        <label className={labelClass}>Votante</label>
-                                        <select value={voterId} onChange={(e) => handleVoterChange(e.target.value)} className={`${selectClass} mt-2`}>
+                                        <label htmlFor="organos-votante" className={labelClass}>Votante</label>
+                                        <select id="organos-votante" value={voterId} onChange={(e) => handleVoterChange(e.target.value)} className={`${selectClass} mt-2`}>
                                             <option value="">Yo ({user?.name})</option>
                                             {associates.filter(a => a.userId !== user?.id).map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                                         </select>
@@ -756,8 +754,8 @@ export const OrganosPage: React.FC = () => {
                                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] space-y-3">
                                     <h4 className="font-bold text-slate-900 dark:text-white">Cierre</h4>
                                     <div>
-                                        <label className={labelClass}>Resultados</label>
-                                        <textarea value={closeResults} onChange={(e) => setCloseResults(e.target.value)} className={textareaClass} rows={2} />
+                                        <label htmlFor="organos-resultados" className={labelClass}>Resultados</label>
+                                        <textarea id="organos-resultados" value={closeResults} onChange={(e) => setCloseResults(e.target.value)} className={textareaClass} rows={2} />
                                     </div>
                                     <Button size="sm" variant="danger" icon={Lock} onClick={handleClose}>Cerrar asamblea</Button>
                                 </div>

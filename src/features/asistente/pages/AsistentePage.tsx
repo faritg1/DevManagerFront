@@ -194,8 +194,8 @@ export const AsistentePage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Consulta Normativa</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            <label className="text-slate-700 dark:text-white text-sm font-bold">Consulta *</label>
-                            <textarea
+                            <label htmlFor="asistente-consulta" className="text-slate-700 dark:text-white text-sm font-bold">Consulta *</label>
+                            <textarea id="asistente-consulta"
                                 value={consulta}
                                 onChange={(e) => setConsulta(e.target.value)}
                                 className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
@@ -224,8 +224,8 @@ export const AsistentePage: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-1 gap-4">
                             <Input type="number" label="Año *" value={reporteAnio} onChange={(e) => setReporteAnio(Number(e.target.value))} />
-                            <div>
-                                <label className="text-slate-700 dark:text-white text-sm font-bold">Incluir recomendaciones</label>
+                            <div role="radiogroup" aria-labelledby="asistente-incluir-rec">
+                                <p id="asistente-incluir-rec" className="text-slate-700 dark:text-white text-sm font-bold">Incluir recomendaciones</p>
                                 <div className="flex gap-4 mt-3">
                                     <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                                         <input type="radio" checked={incluirRec} onChange={() => setIncluirRec(true)} /> Sí
@@ -359,8 +359,8 @@ export const AsistentePage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Responder Duda de Asociado</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            <label className="text-slate-700 dark:text-white text-sm font-bold">Pregunta *</label>
-                            <textarea
+                            <label htmlFor="asistente-pregunta" className="text-slate-700 dark:text-white text-sm font-bold">Pregunta *</label>
+                            <textarea id="asistente-pregunta"
                                 value={pregunta}
                                 onChange={(e) => setPregunta(e.target.value)}
                                 className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"

@@ -6,7 +6,6 @@ import {
   X,
   Calendar,
   Loader2,
-  ArrowLeft,
   Target,
   Plus,
   Trash2,
@@ -23,6 +22,7 @@ import {
   PageContainer,
   PageHeader,
   SELECT_CLASS,
+  useGoBack,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
@@ -53,6 +53,7 @@ const formatDateForInput = (dateString: string | null): string => {
 export const EditProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack(`/projects/${id}`);
   const { showNotification } = useNotification();
   const { catalogs } = useConfig();
   const addSkillModal = useModal();
@@ -126,7 +127,7 @@ export const EditProjectPage: React.FC = () => {
             type: "error",
             message: "Proyecto no encontrado",
           });
-          navigate(ROUTES.PROJECTS);
+          navigate(ROUTES.PROJECTS, { replace: true });
           return;
         }
 
@@ -183,7 +184,8 @@ export const EditProjectPage: React.FC = () => {
           type: "success",
           message: "Proyecto actualizado exitosamente",
         });
-        navigate(`/projects/${id}`);
+        // Regresa a la página anterior (normalmente el detalle) en vez de apilar otra entrada en el historial.
+        goBack();
       } else {
         showNotification({
           type: "error",
@@ -265,22 +267,15 @@ export const EditProjectPage: React.FC = () => {
   return (
     <PageContainer narrow>
         <PageHeader
-          before={
-            <button
-              onClick={() => navigate(`/projects/${id}`)}
-              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit"
-            >
-              <ArrowLeft size={20} />
-              <span className="font-medium">Volver al Proyecto</span>
-            </button>
-          }
+          backTo={`/projects/${id}`}
+          backLabel="Volver al proyecto"
           title="Editar Proyecto"
           description={project.code || project.name}
           actions={<>
             <Button
               variant="outline"
               icon={X}
-              onClick={() => navigate(`/projects/${id}`)}
+              onClick={goBack}
               disabled={isSubmitting}
             >
               Cancelar

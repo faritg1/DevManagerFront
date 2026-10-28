@@ -50,8 +50,8 @@ export const TransitionDialog: React.FC<Props> = ({ isOpen, toStatus, isSaving, 
                 />
                 {isWithdraw && (
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Motivo del retiro *</label>
-                        <textarea
+                        <label htmlFor="transition-motivo-del-retiro" className="text-slate-700 dark:text-white text-sm font-bold">Motivo del retiro *</label>
+                        <textarea id="transition-motivo-del-retiro"
                             value={reason}
                             maxLength={400}
                             rows={3}

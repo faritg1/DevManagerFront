@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -131,7 +131,7 @@ export const CompetenciasPage: React.FC = () => {
                 </thead>
                 <tbody className={TBODY_CLASS}>
                     {rows.map(c => (
-                        <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                        <tr key={c.id} className={TR_CLASS}>
                             {showOwner && <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{c.fullName}</td>}
                             <td className={`${TD_CLASS} text-slate-700 dark:text-slate-300`}>
                                 <p className="font-bold">{c.name}</p>
@@ -221,20 +221,20 @@ export const CompetenciasPage: React.FC = () => {
             >
                 <div className="grid grid-cols-1 gap-4">
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
+                        <label htmlFor="competencias-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
+                        <select id="competencias-asociado" value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
                             <option value="">Seleccione un asociado</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </select>
                     </div>
                     <Input label="Competencia *" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
-                    <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</label>
+                    <div role="group" aria-labelledby="competencias-nivel">
+                        <p id="competencias-nivel" className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</p>
                         <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>
-                        <textarea value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
+                        <label htmlFor="competencias-notas" className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>
+                        <textarea id="competencias-notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
                     </div>
                 </div>
             </Modal>

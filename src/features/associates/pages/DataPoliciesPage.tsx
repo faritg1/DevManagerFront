@@ -99,8 +99,8 @@ export const DataPoliciesPage: React.FC = () => {
                     <Input label="Finalidad *" value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
                     <Input label="Vigente desde (opcional)" type="date" value={form.effectiveFrom} onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))} />
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Texto *</label>
-                        <textarea
+                        <label htmlFor="data-policies-texto" className="text-slate-700 dark:text-white text-sm font-bold">Texto *</label>
+                        <textarea id="data-policies-texto"
                             rows={6}
                             value={form.text}
                             onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}

@@ -3,7 +3,8 @@ import { Eye, EyeOff, LucideIcon } from 'lucide-react';
 import { SELECT_CLASS, TEXTAREA_CLASS } from '../formStyles';
 
 const LABEL_CLASS = 'text-slate-700 dark:text-white text-sm font-bold';
-const ERROR_BORDER = 'border-rose-500 dark:border-rose-500 focus:ring-rose-500 focus:border-rose-500';
+// Important so it beats the base border color of the shared select/textarea classes.
+const ERROR_BORDER = '!border-rose-500 focus:ring-rose-500';
 
 interface FieldProps {
     label?: string;
@@ -17,10 +18,16 @@ type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 const validationText = (el: Control): string => {
     const v = el.validity;
     if (v.valueMissing) return 'Este campo es obligatorio';
-    if (v.rangeUnderflow && 'min' in el) return `El valor mínimo es ${el.min}`;
+    if (v.rangeUnderflow && 'min' in el) {
+        // A fractional min such as 0.01 encodes a "greater than zero" rule.
+        const min = Number(el.min);
+        return min > 0 && min < 1 ? 'Debe ser mayor que 0' : `El valor mínimo es ${el.min}`;
+    }
     if (v.rangeOverflow && 'max' in el) return `El valor máximo es ${el.max}`;
+    if (v.stepMismatch) return 'Ingresa un número entero';
     if (v.tooShort && 'minLength' in el) return `Debe tener al menos ${el.minLength} caracteres`;
     if (v.typeMismatch) return el.type === 'email' ? 'Ingresa un correo válido' : 'El formato no es válido';
+    if (v.badInput) return 'Ingresa un número válido';
     return el.validationMessage;
 };
 

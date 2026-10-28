@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
     UserPlus,
-    Eye, 
-    MoreVertical, 
-    Mail, 
-    Loader2, 
+    Eye,
+    Mail,
     AlertCircle,
     Edit,
     Trash2,
@@ -23,8 +21,8 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
-import { useModal, useIsAdmin } from '../../../shared/hooks';
+import { Button, Card, Badge, Avatar, Modal, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, type ActionMenuItem } from '../../../shared/ui';
+import { useModal, useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
@@ -39,17 +37,7 @@ export const UsersPage: React.FC = () => {
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const query = searchQuery.trim().toLowerCase();
-    const filteredUsers = query
-        ? users.filter(user =>
-            user.fullName.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            user.roleName.toLowerCase().includes(query))
-        : users;
-    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-    // Posición fija del menú de acciones: así no lo recorta el contenedor con scroll horizontal de la tabla.
-    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+    const pager = usePagedFilter(users, { searchFields: u => [u.fullName, u.email, u.roleName] });
 
     const createModal = useModal();
     const editModal = useModal();
@@ -92,22 +80,6 @@ export const UsersPage: React.FC = () => {
         fetchUsers();
     }, []);
 
-    useEffect(() => {
-        const handleClickOutside = () => setActiveDropdown(null);
-        const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setActiveDropdown(null); };
-        document.addEventListener('click', handleClickOutside);
-        document.addEventListener('keydown', handleKey);
-        // El menú es "fixed": se cierra si la página se desplaza o cambia de tamaño.
-        window.addEventListener('scroll', handleClickOutside, true);
-        window.addEventListener('resize', handleClickOutside);
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-            document.removeEventListener('keydown', handleKey);
-            window.removeEventListener('scroll', handleClickOutside, true);
-            window.removeEventListener('resize', handleClickOutside);
-        };
-    }, []);
-
     const fetchUsers = async () => {
         setIsLoading(true);
         setError(null);
@@ -139,6 +111,7 @@ export const UsersPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
+        if (isSaving) return;
         if (!createForm.email || !createForm.password || !createForm.fullName) {
             showNotification({
                 type: 'error',
@@ -183,7 +156,6 @@ export const UsersPage: React.FC = () => {
             isEmployee: user.isEmployee ?? true
         });
         editModal.open();
-        setActiveDropdown(null);
     };
 
     useEffect(() => {
@@ -236,7 +208,7 @@ export const UsersPage: React.FC = () => {
     }, [permissionsModal.isOpen, selectedUser]);
 
     const handleAddOverride = async () => {
-        if (!selectedUser || !overridePermId) return;
+        if (!selectedUser || !overridePermId || overrideSaving) return;
         setOverrideSaving(true);
         try {
             const res = await rbacService.assignPermissionToUser({
@@ -313,7 +285,7 @@ export const UsersPage: React.FC = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!selectedUser) return;
+        if (!selectedUser || isSaving) return;
 
         setIsSaving(true);
         try {
@@ -364,13 +336,11 @@ export const UsersPage: React.FC = () => {
                 message: 'Error de conexión'
             });
         }
-        setActiveDropdown(null);
     };
 
     const handleOpenDelete = (user: UserResponse) => {
         setSelectedUser(user);
         deleteModal.open();
-        setActiveDropdown(null);
     };
 
     const handleConfirmDelete = async () => {
@@ -402,15 +372,36 @@ export const UsersPage: React.FC = () => {
         }
     };
 
+    const userActions = (user: UserResponse): ActionMenuItem[] => {
+        const open = (modal: { open: () => void }) => () => { setSelectedUser(user); modal.open(); };
+        const items: ActionMenuItem[] = [
+            { label: 'Ver perfil', icon: Eye, onSelect: () => navigate(ROUTES.USER_DETAIL.replace(':id', user.id)) },
+        ];
+        if (isAdmin) {
+            items.push(
+                { label: 'Editar', icon: Edit, onSelect: () => handleOpenEdit(user) },
+                { label: 'Gestionar roles', icon: ShieldCheck, onSelect: open(rolesModal) },
+                { label: 'Permisos efectivos', icon: Key, onSelect: open(permissionsModal) },
+            );
+        }
+        items.push({ label: 'Skills / Validar', icon: Award, onSelect: open(skillsModal) });
+        if (isAdmin) {
+            items.push(
+                user.isActive
+                    ? { label: 'Desactivar', icon: UserX, onSelect: () => handleToggleStatus(user) }
+                    : { label: 'Activar', icon: UserCheck, onSelect: () => handleToggleStatus(user) },
+                { label: 'Eliminar', icon: Trash2, onSelect: () => handleOpenDelete(user), danger: true, separated: true },
+            );
+        }
+        return items;
+    };
+
     const activeUsers = users.filter(u => u.isActive).length;
     const inactiveUsers = users.filter(u => !u.isActive).length;
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando usuarios...</p>
-            </div>
+            <LoadingBlock label="Cargando usuarios..." className="h-full py-20" />
         );
     }
 
@@ -474,8 +465,8 @@ export const UsersPage: React.FC = () => {
                 <Input
                     placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
                     icon={Search}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={pager.query}
+                    onChange={(e) => pager.setQuery(e.target.value)}
                     className="max-w-md"
                 />
             </div>
@@ -494,17 +485,17 @@ export const UsersPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className={TBODY_CLASS}>
-                            {filteredUsers.length === 0 ? (
+                            {pager.total === 0 ? (
                                 <tr>
                                     <td colSpan={6}>
                                         <EmptyState
-                                            title={searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
-                                            description={searchQuery ? 'Prueba con otro nombre o correo.' : undefined}
+                                            title={pager.query ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                                            description={pager.query ? 'Prueba con otro nombre o correo.' : undefined}
                                         />
                                     </td>
                                 </tr>
                             ) : (
-                                filteredUsers.map((user) => (
+                                pager.pageItems.map((user) => (
                                     <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-border-dark/50 transition-colors group">
                                         <td className={TD_CLASS}>
                                             <div className="flex items-center gap-3">
@@ -544,110 +535,7 @@ export const UsersPage: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className={`${TD_CLASS} w-px text-right`}>
-                                            <button aria-label={`Acciones de ${user.fullName}`} title="Acciones"
-                                                aria-haspopup="true"
-                                                aria-expanded={activeDropdown === user.id}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const r = e.currentTarget.getBoundingClientRect();
-                                                    const right = window.innerWidth - r.right;
-                                                    // Abre hacia arriba si no cabe debajo.
-                                                    setDropdownStyle(window.innerHeight - r.bottom < 340
-                                                        ? { bottom: window.innerHeight - r.top + 4, right }
-                                                        : { top: r.bottom + 4, right });
-                                                    setActiveDropdown(activeDropdown === user.id ? null : user.id);
-                                                }}
-                                                className="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
-                                            >
-                                                <MoreVertical size={18} />
-                                            </button>
-
-                                            {activeDropdown === user.id && (
-                                                <div
-                                                    style={dropdownStyle}
-                                                    className="fixed w-52 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-slate-200 dark:border-border-dark py-2 z-50 text-left whitespace-nowrap"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <button
-                                                        onClick={() => {
-                                                            navigate(ROUTES.USER_DETAIL.replace(':id', user.id));
-                                                            setActiveDropdown(null);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        <Eye size={16} /> Ver perfil
-                                                    </button>
-                                                    {isAdmin && (
-                                                    <button
-                                                        onClick={() => handleOpenEdit(user)}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        <Edit size={16} /> Editar
-                                                    </button>
-                                                    )}
-
-                                                    {isAdmin && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedUser(user);
-                                                            rolesModal.open();
-                                                            setActiveDropdown(null);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        <ShieldCheck size={16} /> Gestionar roles
-                                                    </button>
-                                                    )}
-
-                                                    {isAdmin && (
-                                                    <button
-                                                        onClick={async () => {
-                                                            setSelectedUser(user);
-                                                            permissionsModal.open();
-                                                            setActiveDropdown(null);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        <Key size={16} /> Permisos efectivos
-                                                    </button>
-                                                    )}
-
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedUser(user);
-                                                            skillsModal.open();
-                                                            setActiveDropdown(null);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        <Award size={16} /> Skills / Validar
-                                                    </button>
-
-                                                    {isAdmin && (
-                                                    <button
-                                                        onClick={() => handleToggleStatus(user)}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
-                                                    >
-                                                        {user.isActive ? (
-                                                            <><UserX size={16} /> Desactivar</>
-                                                        ) : (
-                                                            <><UserCheck size={16} /> Activar</>
-                                                        )}
-                                                    </button>
-                                                    )}
-                                                    {isAdmin && (
-                                                    <>
-                                                    <hr className="my-2 border-slate-200 dark:border-border-dark" />
-                                                    <button
-                                                        onClick={() => handleOpenDelete(user)}
-                                                        className="w-full px-4 py-2 text-left text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2"
-                                                    >
-                                                        <Trash2 size={16} /> Eliminar
-                                                    </button>
-                                                    </>
-                                                    )}
-                                                </div>
-                                            )}
+                                            <ActionMenu label={`Acciones de ${user.fullName}`} items={userActions(user)} />
                                         </td>
                                     </tr>
                                 ))
@@ -655,22 +543,20 @@ export const UsersPage: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                <Pager pager={pager} />
             </Card>
 
             <Modal
                 isOpen={createModal.isOpen}
                 onClose={createModal.close}
+                onSubmit={handleCreate}
                 title="Invitar Usuario"
                 icon={<UserPlus className="text-primary" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button 
-                            onClick={handleCreate}
-                            disabled={isSaving}
-                            icon={isSaving ? Loader2 : UserPlus}
-                        >
-                            {isSaving ? 'Creando...' : 'Crear Usuario'}
+                        <Button type="submit" icon={UserPlus} isLoading={isSaving}>
+                            Crear Usuario
                         </Button>
                         <Button variant="outline" onClick={createModal.close}>
                             Cancelar
@@ -681,6 +567,7 @@ export const UsersPage: React.FC = () => {
                 <div className="space-y-4">
                     <Input
                         label="Nombre Completo *"
+                        required
                         placeholder="Ej: Juan Pérez"
                         value={createForm.fullName}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, fullName: e.target.value }))}
@@ -688,6 +575,8 @@ export const UsersPage: React.FC = () => {
                     <Input
                         label="Email *"
                         type="email"
+                        required
+                        autoComplete="off"
                         placeholder="juan@empresa.com"
                         value={createForm.email}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
@@ -695,6 +584,8 @@ export const UsersPage: React.FC = () => {
                     <Input
                         label="Contraseña *"
                         type="password"
+                        required
+                        autoComplete="new-password"
                         placeholder="Mínimo 8 caracteres"
                         value={createForm.password}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
@@ -718,17 +609,14 @@ export const UsersPage: React.FC = () => {
             <Modal
                 isOpen={editModal.isOpen}
                 onClose={editModal.close}
+                onSubmit={handleSaveEdit}
                 title="Editar Usuario"
                 icon={<Edit className="text-primary" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button 
-                            onClick={handleSaveEdit}
-                            disabled={isSaving}
-                            icon={isSaving ? Loader2 : Edit}
-                        >
-                            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                        <Button type="submit" icon={Edit} isLoading={isSaving}>
+                            Guardar Cambios
                         </Button>
                         <Button variant="outline" onClick={editModal.close}>
                             Cancelar
@@ -763,14 +651,19 @@ export const UsersPage: React.FC = () => {
                         
                         <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark rounded-xl">
                             <div>
-                                <p className="font-semibold text-slate-900 dark:text-white">Estado del Usuario</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                <p id="user-status-label" className="font-semibold text-slate-900 dark:text-white">Estado del Usuario</p>
+                                <p id="user-status-desc" className="text-sm text-slate-500 dark:text-slate-400">
                                     {editForm.isActive ? 'El usuario puede acceder al sistema' : 'El acceso está deshabilitado'}
                                 </p>
                             </div>
                             <button
+                                type="button"
+                                role="switch"
+                                aria-checked={!!editForm.isActive}
+                                aria-labelledby="user-status-label"
+                                aria-describedby="user-status-desc"
                                 onClick={() => setEditForm(prev => ({ ...prev, isActive: !prev.isActive }))}
-                                className={`relative w-14 h-8 rounded-full transition-colors ${
+                                className={`relative w-14 h-8 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-background-dark ${
                                     editForm.isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
                                 }`}
                             >
@@ -791,13 +684,8 @@ export const UsersPage: React.FC = () => {
                 size="sm"
                 footer={
                     <>
-                        <Button 
-                            variant="danger"
-                            onClick={handleConfirmDelete}
-                            disabled={isSaving}
-                            icon={isSaving ? Loader2 : Trash2}
-                        >
-                            {isSaving ? 'Eliminando...' : 'Eliminar'}
+                        <Button variant="danger" onClick={handleConfirmDelete} icon={Trash2} isLoading={isSaving}>
+                            Eliminar
                         </Button>
                         <Button variant="outline" onClick={deleteModal.close}>
                             Cancelar
@@ -837,14 +725,12 @@ export const UsersPage: React.FC = () => {
             >
                 <div className="space-y-4">
                     {rolesLoading ? (
-                        <div className="text-center py-8">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                        </div>
+                        <LoadingBlock className="py-8" />
                     ) : (
                         roles.map((role) => {
                             const checked = userAssignedRoleIds.has(role.id);
                             return (
-                                <div key={role.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-background-dark">
+                                <label key={role.id} className="flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-background-dark">
                                     <div>
                                         <p className="font-semibold text-slate-900 dark:text-white">{role.name}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">{role.description || `${role.permissionCount} permisos`}</p>
@@ -877,9 +763,10 @@ export const UsersPage: React.FC = () => {
                                                     setRolesSaving(false);
                                                 }
                                             }}
+                                            className="size-4"
                                         />
                                     </div>
-                                </div>
+                                </label>
                             );
                         })
                     )}
@@ -889,6 +776,7 @@ export const UsersPage: React.FC = () => {
             <Modal
                 isOpen={permissionsModal.isOpen}
                 onClose={() => { permissionsModal.close(); setEffectivePerms(null); setOverridePermId(''); setOverrideIsGrant(true); }}
+                onSubmit={handleAddOverride}
                 title={selectedUser ? `Permisos — ${selectedUser.fullName}` : 'Permisos'}
                 size="lg"
                 icon={<ShieldCheck size={20} className="text-primary" />}
@@ -899,9 +787,7 @@ export const UsersPage: React.FC = () => {
                 }
             >
                 {permsLoading ? (
-                    <div className="text-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                    </div>
+                    <LoadingBlock className="py-8" />
                 ) : effectivePerms ? (
                     <div className="space-y-5">
                         <div>
@@ -961,13 +847,12 @@ export const UsersPage: React.FC = () => {
                         <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Agregar / modificar override</p>
                             <div className="flex flex-col gap-3">
-                                <div>
-                                    <label htmlFor="users-permiso" className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
-                                    <select id="users-permiso"
-                                        value={overridePermId}
-                                        onChange={(e) => setOverridePermId(e.target.value)}
-                                        className={`${SELECT_SM_CLASS} w-full`}
-                                    >
+                                <Select
+                                    label="Permiso *"
+                                    required
+                                    value={overridePermId}
+                                    onChange={(e) => setOverridePermId(e.target.value)}
+                                >
                                         <option value="">— Selecciona un permiso —</option>
                                         {groupedPerms.map((group) => (
                                             <optgroup key={group.module} label={group.module}>
@@ -976,12 +861,12 @@ export const UsersPage: React.FC = () => {
                                                 ))}
                                             </optgroup>
                                         ))}
-                                    </select>
-                                </div>
+                                </Select>
 
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
+                                        aria-pressed={overrideIsGrant}
                                         onClick={() => setOverrideIsGrant(true)}
                                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
                                             overrideIsGrant
@@ -994,6 +879,7 @@ export const UsersPage: React.FC = () => {
                                     </button>
                                     <button
                                         type="button"
+                                        aria-pressed={!overrideIsGrant}
                                         onClick={() => setOverrideIsGrant(false)}
                                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
                                             !overrideIsGrant
@@ -1006,13 +892,8 @@ export const UsersPage: React.FC = () => {
                                     </button>
                                 </div>
 
-                                <Button
-                                    onClick={handleAddOverride}
-                                    disabled={!overridePermId || overrideSaving}
-                                    icon={overrideSaving ? Loader2 : Plus}
-                                    className={overrideSaving ? 'animate-spin' : ''}
-                                >
-                                    {overrideSaving ? 'Guardando...' : 'Aplicar override'}
+                                <Button type="submit" icon={Plus} isLoading={overrideSaving}>
+                                    Aplicar override
                                 </Button>
                             </div>
                         </div>
@@ -1035,15 +916,9 @@ export const UsersPage: React.FC = () => {
                 }
             >
                 {skillsLoading ? (
-                    <div className="text-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Cargando habilidades...</p>
-                    </div>
+                    <LoadingBlock label="Cargando habilidades..." className="py-8" />
                 ) : userSkills.length === 0 ? (
-                    <div className="text-center py-8">
-                        <Award size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Este usuario no tiene habilidades declaradas</p>
-                    </div>
+                    <EmptyState title="Este usuario no tiene habilidades declaradas" icon={Award} className="py-8" />
                 ) : (
                     <div className="space-y-3">
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">

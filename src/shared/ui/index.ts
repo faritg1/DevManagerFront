@@ -13,3 +13,4 @@ export * from './Page';
 export * from './tableStyles';
 export * from './formStyles';
 export * from './Pager/Pager';
+export * from './Menu/ActionMenu';

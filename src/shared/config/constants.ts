@@ -50,6 +50,7 @@ export const ROUTES = {
     EXCEDENTES: '/excedentes',
     HABEAS_DATA: '/habeas-data',
     ORGANOS: '/organos',
+    COMPETENCIAS: '/competencias',
     REPORTES_SUPERSOLIDARIA: '/reportes-supersolidaria',
     ASISTENTE: '/asistente',
 } as const;

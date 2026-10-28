@@ -42,6 +42,7 @@ import {
   SstPage,
   ExcedentesPage,
   HabeasDataPage,
+  CompetenciasPage,
   ReportesSupersolidariaPage,
   AsistentePage,
 } from "../features";
@@ -138,6 +139,7 @@ export const AppRouter: React.FC = () => {
                 <Route path={ROUTES.SST} element={<SstPage />} />
                 <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
                 <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
+                <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
                 <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
                 <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                 </Route>

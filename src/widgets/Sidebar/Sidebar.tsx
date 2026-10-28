@@ -26,6 +26,7 @@ import {
     Landmark,
     FileBarChart2,
     Sparkles,
+    Award,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -191,6 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                         <NavItem to={ROUTES.EDUCATION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCATION)} />
                     )}
                     <NavItem to={ROUTES.ORGANOS} icon={Landmark} label="Órganos" isActive={isActive(ROUTES.ORGANOS)} />
+                    <NavItem to={ROUTES.COMPETENCIAS} icon={Award} label="Competencias" isActive={isActive(ROUTES.COMPETENCIAS)} />
                     <NavItem to={ROUTES.EXCEDENTES} icon={PiggyBank} label="Excedentes" isActive={isActive(ROUTES.EXCEDENTES)} />
                     <NavItem to={ROUTES.NOMINA} icon={Wallet} label="Nómina" isActive={isActive(ROUTES.NOMINA)} />
                     <NavItem to={ROUTES.BIENESTAR} icon={HeartHandshake} label="Bienestar" isActive={isActive(ROUTES.BIENESTAR)} />

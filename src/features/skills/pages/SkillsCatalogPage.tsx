@@ -16,7 +16,7 @@ import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal } from "../../../shared/ui";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -176,7 +176,7 @@ export const SkillsCatalogPage: React.FC = () => {
   // ─── Loading skeleton ──────────────────────────────────
   if (isLoading) {
     return (
-      <div className="p-6 md:p-10 space-y-6 animate-pulse">
+      <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -192,22 +192,18 @@ export const SkillsCatalogPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-10 space-y-6">
+    <PageContainer className="space-y-6">
       {/* ─── Header ─────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Code2 size={24} className="text-primary" />
-            Catálogo de Habilidades
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Gestiona las habilidades globales y organizacionales
-          </p>
-        </div>
+      <PageHeader
+        icon={<Code2 size={28} className="text-primary" />}
+        title="Catálogo de Habilidades"
+        description="Gestiona las habilidades globales y organizacionales"
+        actions={
         <Button icon={Plus} onClick={handleCreate}>
           Nueva Habilidad
         </Button>
-      </div>
+        }
+      />
 
       {/* ─── Stat Cards ─────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -405,7 +401,7 @@ export const SkillsCatalogPage: React.FC = () => {
         categories={categories}
         catalogCategories={catalogs?.skillCategories ?? []}
       />
-    </div>
+    </PageContainer>
   );
 };
 

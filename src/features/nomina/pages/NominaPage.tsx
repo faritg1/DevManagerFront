@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal } from '../../../shared/ui';
+import { Card, Button, Input, Modal, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -146,22 +146,16 @@ export const NominaPage: React.FC = () => {
     const isDaysByRate = createForm.model === 1;
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Nómina Solidaria
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Compensación de asociados (CTAs) y aportes PILA.
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Nómina Solidaria"
+                description="Compensación de asociados (CTAs) y aportes PILA."
+                actions={isAdmin && (
                     <Button icon={Plus} onClick={() => { setCreateForm(emptyForm(compUserId)); setCreateOpen(true); }}>
                         Nueva Compensación
                     </Button>
                 )}
-            </div>
+            />
 
             <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-2' : ''} gap-6`}>
                 <Card>
@@ -187,11 +181,11 @@ export const NominaPage: React.FC = () => {
                                 <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{MODEL_LABEL[c.model] ?? 'Modelo'}</p>
-                                        <p className="text-xs text-slate-500">{new Date(c.period).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(c.period).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(c.calculatedValue)}</p>
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
                                             {c.model === 1 ? `${c.baseValue} días × ${currency(c.dailyRate ?? 0)}` : `Base: ${currency(c.baseValue)}`}
                                         </p>
                                     </div>
@@ -239,11 +233,11 @@ export const NominaPage: React.FC = () => {
 
                             {pilaResult && (
                                 <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    <div><p className="text-xs text-slate-500">IBC</p><p className="font-bold">{currency(pilaResult.contributionBase)}</p></div>
-                                    <div><p className="text-xs text-slate-500">Salud</p><p className="font-bold">{currency(pilaResult.healthContribution)}</p></div>
-                                    <div><p className="text-xs text-slate-500">Pensión</p><p className="font-bold">{currency(pilaResult.pensionContribution)}</p></div>
-                                    <div><p className="text-xs text-slate-500">ARL</p><p className="font-bold">{currency(pilaResult.arlContribution)}</p></div>
-                                    <div className="col-span-2 sm:col-span-4"><p className="text-xs text-slate-500">Total</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(pilaResult.total)}</p></div>
+                                    <div><p className="text-xs text-slate-500 dark:text-slate-400">IBC</p><p className="font-bold">{currency(pilaResult.contributionBase)}</p></div>
+                                    <div><p className="text-xs text-slate-500 dark:text-slate-400">Salud</p><p className="font-bold">{currency(pilaResult.healthContribution)}</p></div>
+                                    <div><p className="text-xs text-slate-500 dark:text-slate-400">Pensión</p><p className="font-bold">{currency(pilaResult.pensionContribution)}</p></div>
+                                    <div><p className="text-xs text-slate-500 dark:text-slate-400">ARL</p><p className="font-bold">{currency(pilaResult.arlContribution)}</p></div>
+                                    <div className="col-span-2 sm:col-span-4"><p className="text-xs text-slate-500 dark:text-slate-400">Total</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(pilaResult.total)}</p></div>
                                 </div>
                             )}
                         </div>
@@ -269,10 +263,10 @@ export const NominaPage: React.FC = () => {
                                 {sheet.map(p => (
                                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
                                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{nameOf(p.userId)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(p.contributionBase)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(p.healthContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(p.pensionContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{currency(p.arlContribution)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.contributionBase)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.healthContribution)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.pensionContribution)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.arlContribution)}</td>
                                         <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">{currency(p.total)}</td>
                                     </tr>
                                 ))}
@@ -328,7 +322,7 @@ export const NominaPage: React.FC = () => {
                     <Input label="Observaciones" value={createForm.notes ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, notes: e.target.value }))} />
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

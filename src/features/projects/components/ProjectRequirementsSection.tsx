@@ -194,7 +194,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
           <div className="flex flex-col gap-2">
             <label className="text-slate-700 dark:text-white text-sm font-bold">Habilidad *</label>
             {loadingSkills ? (
-              <div className="flex items-center gap-2 text-slate-500">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                 <Loader2 className="animate-spin" size={16} />
                 Cargando habilidades...
               </div>

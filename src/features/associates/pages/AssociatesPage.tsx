@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, Loader2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -66,13 +66,11 @@ export const AssociatesPage: React.FC = () => {
     const associateIds = new Set(items.map((i) => i.userId));
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Asociados</h1>
-                    <p className="text-sm text-slate-500">Ciclo de vida de membresía y consentimiento de datos.</p>
-                </div>
-                <div className="flex items-center gap-3">
+        <PageContainer>
+            <PageHeader
+                title="Asociados"
+                description="Ciclo de vida de membresía y consentimiento de datos."
+                actions={<>
                     <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : '')}
@@ -82,40 +80,40 @@ export const AssociatesPage: React.FC = () => {
                         {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
                     <Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>
-                </div>
-            </div>
+                </>}
+            />
 
             <Card padding="md">
                 {isLoading ? (
-                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
                 ) : items.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">No hay asociados para este filtro.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-6">No hay asociados para este filtro.</p>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="text-left text-slate-500 border-b border-slate-200 dark:border-[#233948]">
-                                    <th className="py-2 pr-4">Nombre</th>
-                                    <th className="py-2 pr-4">Documento</th>
-                                    <th className="py-2 pr-4">Estado</th>
-                                    <th className="py-2 pr-4">Rol</th>
-                                    <th className="py-2">Ingreso vigente</th>
+                        <table className={TABLE_CLASS}>
+                            <thead className={THEAD_CLASS}>
+                                <tr>
+                                    <th className={TH}>Nombre</th>
+                                    <th className={TH}>Documento</th>
+                                    <th className={TH}>Estado</th>
+                                    <th className={TH}>Rol</th>
+                                    <th className={TH}>Ingreso vigente</th>
                                 </tr>
                             </thead>
-                            <tbody className="text-slate-900 dark:text-white">
+                            <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                                 {items.map((a) => (
                                     <tr
                                         key={a.userId}
                                         onClick={() => navigate(associateDetailPath(a.userId))}
-                                        className="border-b border-slate-100 dark:border-[#233948]/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"
+                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#233948]/50"
                                     >
-                                        <td className="py-3 pr-4 font-semibold">{a.fullName}</td>
-                                        <td className="py-3 pr-4">
+                                        <td className={`${TD} font-semibold`}>{a.fullName}</td>
+                                        <td className={TD}>
                                             {a.documentNumber ? `${DOCUMENT_TYPES[a.documentType ?? 0] ?? ''} ${a.documentNumber}` : '—'}
                                         </td>
-                                        <td className="py-3 pr-4"><Badge variant={STATUS_VARIANTS[a.status]}>{STATUS_LABELS[a.status]}</Badge></td>
-                                        <td className="py-3 pr-4">{ROLE_LABELS[a.role]}</td>
-                                        <td className="py-3">{formatDate(a.currentAdmissionDate)}</td>
+                                        <td className={TD}><Badge variant={STATUS_VARIANTS[a.status]}>{STATUS_LABELS[a.status]}</Badge></td>
+                                        <td className={TD}>{ROLE_LABELS[a.role]}</td>
+                                        <td className={TD}>{formatDate(a.currentAdmissionDate)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -158,6 +156,6 @@ export const AssociatesPage: React.FC = () => {
                     />
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FileLock2, Loader2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -111,20 +111,16 @@ export const HabeasDataPage: React.FC = () => {
     const pendingCount = requests.filter(r => r.status === 1).length;
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Habeas Data (ARCO)
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Solicitudes de acceso, rectificación, cancelación y oposición (Ley 1581/2012).
-                    </p>
-                </div>
+        <PageContainer>
+            <PageHeader
+                title="Habeas Data (ARCO)"
+                description="Solicitudes de acceso, rectificación, cancelación y oposición (Ley 1581/2012)."
+                actions={<>
                 <Button icon={FileText} onClick={() => { setArcoForm({ type: 1, description: '' }); setArcoOpen(true); }}>
                     Crear Solicitud ARCO
                 </Button>
-            </div>
+                </>}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <StatCard title={isAdmin ? 'ARCO pendientes' : 'Mis solicitudes pendientes'} value={pendingCount} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
@@ -156,14 +152,14 @@ export const HabeasDataPage: React.FC = () => {
                             <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                 <div className="flex items-center justify-between gap-2">
                                     <p className="font-bold text-slate-900 dark:text-white">
-                                        {ARCO_TYPE_LABEL[r.type]} · <span className="text-xs font-mono text-slate-500">{r.filingNumber}</span>
+                                        {ARCO_TYPE_LABEL[r.type]} · <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{r.filingNumber}</span>
                                     </p>
                                     <Badge variant={ARCO_STATUS[r.status]?.variant ?? 'default'}>{ARCO_STATUS[r.status]?.label ?? r.status}</Badge>
                                 </div>
-                                <p className="text-xs text-slate-500 mt-1">{nameOf(r.userId)} · {formatDate(r.requestedAt)}</p>
+                                <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{nameOf(r.userId)} · {formatDate(r.requestedAt)}</p>
                                 <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{r.description}</p>
                                 {r.response && (
-                                    <p className="text-sm text-slate-500 mt-1"><span className="font-bold">Respuesta:</span> {r.response} ({formatDate(r.respondedAt)})</p>
+                                    <p className="text-sm text-slate-500 mt-1 dark:text-slate-400"><span className="font-bold">Respuesta:</span> {r.response} ({formatDate(r.respondedAt)})</p>
                                 )}
                                 {isAdmin && r.status === 1 && (
                                     <div className="flex gap-2 mt-2">
@@ -231,7 +227,7 @@ export const HabeasDataPage: React.FC = () => {
             >
                 <Input label={answerAction === 'atender' ? 'Respuesta *' : 'Motivo de rechazo *'} value={answer} onChange={(e) => setAnswer(e.target.value)} />
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

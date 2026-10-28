@@ -21,7 +21,7 @@ import type {
   EmployeeUtilizationResponse,
   DepartmentMetricsResponse,
 } from "../../../shared/api/types";
-import { Card, Badge, Button, StatCard } from "../../../shared/ui";
+import { Card, Badge, Button, StatCard, PageContainer, PageHeader } from "../../../shared/ui";
 import { EducationCoverageCard } from "../components/EducationCoverageCard";
 
 // ─── Component ────────────────────────────────────────────
@@ -135,7 +135,7 @@ export const ReportsPage: React.FC = () => {
   // ─── Loading ────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="p-6 md:p-10 space-y-6">
+      <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6">
         <div className="h-10 w-64 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -182,22 +182,18 @@ export const ReportsPage: React.FC = () => {
   const utilizationRate = Math.round(utilization.utilizationRate);
 
   return (
-    <div className="p-6 md:p-10 space-y-6 max-w-7xl mx-auto">
+    <PageContainer className="space-y-6">
       {/* ─── Header ─────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BarChart2 size={24} className="text-primary" />
-            Reportes y Analítica
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Análisis de habilidades, proyectos y métricas de equipo
-          </p>
-        </div>
+      <PageHeader
+        icon={<BarChart2 size={28} className="text-primary" />}
+        title="Reportes y Analítica"
+        description="Análisis de habilidades, proyectos y métricas de equipo"
+        actions={
         <Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
           Actualizar datos
         </Button>
-      </div>
+        }
+      />
 
       <EducationCoverageCard />
 
@@ -218,7 +214,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
           {aiSummaryLoading && (
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Loader2 size={14} className="animate-spin" />
               Cargando...
             </div>
@@ -250,9 +246,9 @@ export const ReportsPage: React.FC = () => {
       {/* ─── Summary Stats ──────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          title="Miembros"
+        title="Miembros"
           value={department.totalEmployees}
-          icon={Users}
+        icon={Users}
           iconColor="text-indigo-500"
           iconBgColor="bg-indigo-50 dark:bg-indigo-500/10"
           trend={{
@@ -261,9 +257,9 @@ export const ReportsPage: React.FC = () => {
           }}
         />
         <StatCard
-          title="Skills Únicas"
+        title="Skills Únicas"
           value={department.totalUniqueSkills}
-          icon={Award}
+        icon={Award}
           iconColor="text-purple-500"
           iconBgColor="bg-purple-50 dark:bg-purple-500/10"
           trend={{
@@ -272,9 +268,9 @@ export const ReportsPage: React.FC = () => {
           }}
         />
         <StatCard
-          title="Proyectos en Riesgo"
+        title="Proyectos en Riesgo"
           value={projectMetrics.projectsAtRisk}
-          icon={AlertTriangle}
+        icon={AlertTriangle}
           iconColor="text-amber-500"
           iconBgColor="bg-amber-50 dark:bg-amber-500/10"
           trend={
@@ -284,12 +280,12 @@ export const ReportsPage: React.FC = () => {
                   isPositive: false,
                 }
               : { value: "Sin proyectos en riesgo", isPositive: true }
-          }
+        }
         />
         <StatCard
-          title="Utilización"
+        title="Utilización"
           value={`${utilizationRate}%`}
-          icon={Target}
+        icon={Target}
           iconColor="text-emerald-500"
           iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
           trend={{
@@ -302,8 +298,8 @@ export const ReportsPage: React.FC = () => {
       {/* ─── Skill Distribution ─────────────────────── */}
       <Card>
         <SectionHeader
-          title="Distribución de Habilidades"
-          icon={<TrendingUp size={20} className="text-primary" />}
+        title="Distribución de Habilidades"
+        icon={<TrendingUp size={20} className="text-primary" />}
           section="distribution"
           badge={`${skillDistribution.length} skills`}
         />
@@ -371,8 +367,8 @@ export const ReportsPage: React.FC = () => {
       {/* ─── Project Demand ─────────────────────────── */}
       <Card>
         <SectionHeader
-          title="Demanda de Habilidades en Proyectos"
-          icon={<Briefcase size={20} className="text-amber-500" />}
+        title="Demanda de Habilidades en Proyectos"
+        icon={<Briefcase size={20} className="text-amber-500" />}
           section="projects"
           badge={`${projectMetrics.totalActiveProjects} proyectos activos`}
         />
@@ -526,7 +522,7 @@ export const ReportsPage: React.FC = () => {
           )}
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

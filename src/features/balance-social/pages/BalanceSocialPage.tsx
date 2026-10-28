@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
@@ -92,34 +92,30 @@ export const BalanceSocialPage: React.FC = () => {
                 </Badge>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                <div><p className="text-slate-500">Horas educación (año)</p><p className="font-bold">{i.educationHours}h</p></div>
-                <div><p className="text-slate-500">Educación básica</p><p className="font-bold">{i.basicEducationHours}h</p></div>
-                <div><p className="text-slate-500">Asambleas</p><p className="font-bold">{i.assemblyParticipations}</p></div>
-                <div><p className="text-slate-500">Órganos / comités</p><p className="font-bold">{i.committeeParticipations}</p></div>
-                <div><p className="text-slate-500">Beneficios</p><p className="font-bold">{currency(i.benefitsReceived)}</p></div>
-                <div><p className="text-slate-500">Índice</p><p className="font-bold text-primary">{i.index}</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Horas educación (año)</p><p className="font-bold">{i.educationHours}h</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Educación básica</p><p className="font-bold">{i.basicEducationHours}h</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Asambleas</p><p className="font-bold">{i.assemblyParticipations}</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Órganos / comités</p><p className="font-bold">{i.committeeParticipations}</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Beneficios</p><p className="font-bold">{currency(i.benefitsReceived)}</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Índice</p><p className="font-bold text-primary">{i.index}</p></div>
             </div>
         </div>
     );
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Balance Social
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Indicadores de balance social calculados con la educación, participación y beneficios reales.
-                    </p>
-                </div>
+        <PageContainer>
+            <PageHeader
+                title="Balance Social"
+                description="Indicadores de balance social calculados con la educación, participación y beneficios reales."
+                actions={<>
                 <div className="flex items-center gap-3">
                     <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" className="w-32" />
                     <Button variant="outline" onClick={loadData} disabled={isLoading}>
                         {isLoading ? 'Cargando...' : 'Consultar'}
                     </Button>
                 </div>
-            </div>
+                </>}
+            />
 
             {isAdmin && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -170,7 +166,7 @@ export const BalanceSocialPage: React.FC = () => {
                                     <p className="font-bold text-slate-900 dark:text-white">{d.name}</p>
                                     <Badge variant={dimensionVariant(d.status)}>{d.status} · {d.coverage}%</Badge>
                                 </div>
-                                <ul className="mt-2 space-y-1 text-xs text-slate-500">
+                                <ul className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                                     {d.indicators.map(ind => (
                                         <li key={ind.name}>
                                             {ind.name}: <span className="font-bold">{ind.currentValue}{ind.unit ? ` ${ind.unit}` : ''}</span>
@@ -227,7 +223,7 @@ export const BalanceSocialPage: React.FC = () => {
                     </Card>
                 </div>
             )}
-        </div>
+        </PageContainer>
     );
 };
 

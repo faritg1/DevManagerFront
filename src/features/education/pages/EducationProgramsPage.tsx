@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Loader2, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -92,46 +92,44 @@ export const EducationProgramsPage: React.FC = () => {
     const valid = name.trim().length > 0 && Number(hours) > 0;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Educación cooperativa</h1>
-                    <p className="text-sm text-slate-500">Programas de formación e inscripción de asociados.</p>
-                </div>
-                <Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button>
-            </div>
+        <PageContainer>
+            <PageHeader
+                title="Educación cooperativa"
+                description="Programas de formación e inscripción de asociados."
+                actions={<Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button>}
+            />
 
             <Card padding="md">
                 {isLoading ? (
-                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
                 ) : items.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">Aún no hay programas.</p>
+                    <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Aún no hay programas.</p>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="text-left text-slate-500 border-b border-slate-200 dark:border-[#233948]">
-                                    <th className="py-2 pr-4">Nombre</th>
-                                    <th className="py-2 pr-4">Tipo</th>
-                                    <th className="py-2 pr-4">Horas requeridas</th>
-                                    <th className="py-2 pr-4">Inicio</th>
-                                    <th className="py-2 pr-4">Fin</th>
-                                    <th className="py-2" />
+                        <table className={TABLE_CLASS}>
+                            <thead className={THEAD_CLASS}>
+                                <tr>
+                                    <th className={TH}>Nombre</th>
+                                    <th className={TH}>Tipo</th>
+                                    <th className={TH}>Horas requeridas</th>
+                                    <th className={TH}>Inicio</th>
+                                    <th className={TH}>Fin</th>
+                                    <th className={TH} />
                                 </tr>
                             </thead>
-                            <tbody className="text-slate-900 dark:text-white">
+                            <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                                 {items.map((p) => (
                                     <tr
                                         key={p.id}
                                         onClick={() => navigate(educationProgramPath(p.id))}
-                                        className="border-b border-slate-100 dark:border-[#233948]/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"
+                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#233948]/50"
                                     >
-                                        <td className="py-3 pr-4 font-semibold">{p.name}</td>
-                                        <td className="py-3 pr-4"><Badge variant="info">{PROGRAM_TYPE_LABELS[p.type]}</Badge></td>
-                                        <td className="py-3 pr-4">{p.requiredHours} h</td>
-                                        <td className="py-3 pr-4">{formatDate(p.startDate)}</td>
-                                        <td className="py-3 pr-4">{formatDate(p.endDate)}</td>
-                                        <td className="py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                        <td className={`${TD} font-semibold`}>{p.name}</td>
+                                        <td className={TD}><Badge variant="info">{PROGRAM_TYPE_LABELS[p.type]}</Badge></td>
+                                        <td className={TD}>{p.requiredHours} h</td>
+                                        <td className={TD}>{formatDate(p.startDate)}</td>
+                                        <td className={TD}>{formatDate(p.endDate)}</td>
+                                        <td className={`${TD} text-right whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
                                             <Button variant="outline" size="sm" icon={Pencil} onClick={() => openForm(p)}>Editar</Button>{' '}
                                             <Button variant="outline" size="sm" icon={Trash2} onClick={() => remove(p)}>Eliminar</Button>
                                         </td>
@@ -167,6 +165,6 @@ export const EducationProgramsPage: React.FC = () => {
                     <Input label="Fecha de fin" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge } from '../../../shared/ui';
+import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -72,46 +72,56 @@ export const ProgramDetailPage: React.FC = () => {
         }
     };
 
-    if (isLoading) return <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>;
-    if (!program) return <p className="text-sm text-slate-500 text-center py-6">Programa no encontrado.</p>;
+    if (isLoading) {
+        return (
+            <PageContainer>
+                <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            </PageContainer>
+        );
+    }
+    if (!program) {
+        return (
+            <PageContainer>
+                <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Programa no encontrado.</p>
+            </PageContainer>
+        );
+    }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.EDUCATION)}>Volver</Button>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-3">{program.name}</h1>
-                    <p className="text-sm text-slate-500">
-                        <Badge variant="info">{PROGRAM_TYPE_LABELS[program.type]}</Badge>{' '}
-                        {program.requiredHours} h requeridas · {formatDate(program.startDate)} – {formatDate(program.endDate)}
-                    </p>
-                </div>
-                <Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>
-            </div>
+        <PageContainer>
+            <PageHeader
+                before={<Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.EDUCATION)}>Volver</Button>}
+                title={program.name}
+                description={<>
+                    <Badge variant="info">{PROGRAM_TYPE_LABELS[program.type]}</Badge>{' '}
+                    {program.requiredHours} h requeridas · {formatDate(program.startDate)} – {formatDate(program.endDate)}
+                </>}
+                actions={<Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>}
+            />
 
             <Card padding="md">
                 {enrollments.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">Aún no hay inscripciones.</p>
+                    <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Aún no hay inscripciones.</p>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="text-left text-slate-500 border-b border-slate-200 dark:border-[#233948]">
-                                    <th className="py-2 pr-4">Asociado</th>
-                                    <th className="py-2 pr-4">Estado</th>
-                                    <th className="py-2 pr-4">Horas</th>
-                                    <th className="py-2 pr-4">Finalización</th>
-                                    <th className="py-2" />
+                        <table className={TABLE_CLASS}>
+                            <thead className={THEAD_CLASS}>
+                                <tr>
+                                    <th className={TH}>Asociado</th>
+                                    <th className={TH}>Estado</th>
+                                    <th className={TH}>Horas</th>
+                                    <th className={TH}>Finalización</th>
+                                    <th className={TH} />
                                 </tr>
                             </thead>
-                            <tbody className="text-slate-900 dark:text-white">
+                            <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                                 {enrollments.map((en) => (
-                                    <tr key={en.id} className="border-b border-slate-100 dark:border-[#233948]/50">
-                                        <td className="py-3 pr-4 font-semibold">{en.fullName}</td>
-                                        <td className="py-3 pr-4"><Badge variant={ENROLLMENT_STATUS_VARIANTS[en.status]}>{ENROLLMENT_STATUS_LABELS[en.status]}</Badge></td>
-                                        <td className="py-3 pr-4">{en.hoursCompleted} / {program.requiredHours} h</td>
-                                        <td className="py-3 pr-4">{formatDate(en.completionDate)}</td>
-                                        <td className="py-3 text-right">
+                                    <tr key={en.id}>
+                                        <td className={`${TD} font-semibold`}>{en.fullName}</td>
+                                        <td className={TD}><Badge variant={ENROLLMENT_STATUS_VARIANTS[en.status]}>{ENROLLMENT_STATUS_LABELS[en.status]}</Badge></td>
+                                        <td className={TD}>{en.hoursCompleted} / {program.requiredHours} h</td>
+                                        <td className={TD}>{formatDate(en.completionDate)}</td>
+                                        <td className={`${TD} text-right`}>
                                             <Button variant="outline" size="sm" icon={Pencil} onClick={() => openForm(en)}>Actualizar</Button>
                                         </td>
                                     </tr>
@@ -131,6 +141,6 @@ export const ProgramDetailPage: React.FC = () => {
                     onSubmit={submit}
                 />
             )}
-        </div>
+        </PageContainer>
     );
 };

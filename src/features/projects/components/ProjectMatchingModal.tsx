@@ -152,7 +152,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
         {!isMatching && matchingError && (
           <div className="flex flex-col items-center justify-center py-14 text-center">
             <div className="p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-              <AlertCircle className="w-8 h-8 text-slate-500" />
+              <AlertCircle className="w-8 h-8 text-slate-500 dark:text-slate-400" />
             </div>
             <p className="text-slate-700 dark:text-slate-300 font-semibold mb-1">No se pudo completar el análisis</p>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mb-5">{matchingError}</p>
@@ -170,7 +170,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
               {/* Summary row */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500" /> },
+                  { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500 dark:text-slate-400" /> },
                   { label: "Excelentes (≥90%)", value: stats.above90, icon: <CheckCircle2 size={16} className="text-emerald-500" /> },
                   { label: "Score promedio", value: `${stats.avgScore.toFixed(0)}%`, icon: <TrendingUp size={16} className="text-indigo-500" /> },
                 ].map((item) => (

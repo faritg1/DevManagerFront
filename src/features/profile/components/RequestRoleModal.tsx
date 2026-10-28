@@ -51,7 +51,7 @@ export const RequestRoleModal: React.FC<Props> = ({
                     ))}
                 </select>
             )}
-            <p className="text-sm text-slate-500">Nota: El cambio de rol puede requerir aprobación por un administrador.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Nota: El cambio de rol puede requerir aprobación por un administrador.</p>
         </div>
     </Modal>
 );

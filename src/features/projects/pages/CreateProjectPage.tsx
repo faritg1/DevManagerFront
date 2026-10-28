@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, Users, Save, X, Calendar, DollarSign, Loader2 } from 'lucide-react';
-import { Button, Input, Card, CardHeader, CardTitle } from '../../../shared/ui';
+import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader } from '../../../shared/ui';
 import { useForm } from '../../../shared/hooks';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
@@ -70,19 +70,12 @@ export const CreateProjectPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto">
-            <div className="flex flex-col max-w-[1024px] w-full px-4 md:px-6 py-6 mx-auto">
-                {/* Header */}
-                <div className="flex flex-wrap justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[#233948] mb-8">
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-slate-900 dark:text-white text-2xl md:text-3xl font-black leading-tight">
-                            Crear Nuevo Proyecto
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-normal">
-                            Define los detalles del proyecto, alcance y asigna el equipo.
-                        </p>
-                    </div>
-                    <div className="flex gap-3 items-center">
+        <PageContainer narrow>
+            {/* Header */}
+            <PageHeader
+                title="Crear Nuevo Proyecto"
+                description="Define los detalles del proyecto, alcance y asigna el equipo."
+                actions={<>
                         <Button 
                             variant="outline" 
                             icon={X}
@@ -98,8 +91,8 @@ export const CreateProjectPage: React.FC = () => {
                         >
                             {isSubmitting ? 'Guardando...' : 'Guardar Proyecto'}
                         </Button>
-                    </div>
-                </div>
+                </>}
+            />
                 
                 <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
                     {/* Basic Information */}
@@ -198,8 +191,7 @@ export const CreateProjectPage: React.FC = () => {
                         </div>
                     </Card>
                 </form>
-            </div>
-        </div>
+        </PageContainer>
     );
 };
 

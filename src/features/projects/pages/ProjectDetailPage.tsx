@@ -12,7 +12,7 @@ import {
     Sparkles,
     DollarSign,
 } from 'lucide-react';
-import { Card, Badge, Button } from '../../../shared/ui';
+import { Card, Badge, Button, PageContainer } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -236,8 +236,8 @@ export const ProjectDetailPage: React.FC = () => {
     const hasAlreadyApplied = user ? applications.some(app => app.userId === user.id) : false;
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto">
-            <div className="max-w-6xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8 pb-20">
+        <PageContainer>
+            <div className="flex flex-col gap-8">
                 
                 {/* Back Button */}
                 <button 
@@ -257,8 +257,8 @@ export const ProjectDetailPage: React.FC = () => {
                     <div className="flex-1">
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h1 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight">
+                                <div className="flex flex-wrap items-center gap-3 mb-2">
+                                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                                         {project.name}
                                     </h1>
                                     <Badge variant={statusConfig.variant} dot>
@@ -419,7 +419,7 @@ export const ProjectDetailPage: React.FC = () => {
                 assignment={editingAssignment}
                 onSaved={loadAssignments}
             />
-        </div>
+        </PageContainer>
     );
 };
 

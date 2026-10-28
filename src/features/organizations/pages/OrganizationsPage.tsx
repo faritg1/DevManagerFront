@@ -20,6 +20,7 @@ import {
   Button,
   Avatar,
   StatCard,
+  PageContainer,
 } from "../../../shared/ui";
 import { useAuth, useNotification } from "../../../shared/context";
 import {
@@ -106,7 +107,7 @@ export const OrganizationsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex flex-col gap-8">
+    <PageContainer className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -114,7 +115,7 @@ export const OrganizationsPage: React.FC = () => {
             {(user?.organizationName || "O")[0].toUpperCase()}
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
               {user?.organizationName || "Mi Organización"}
             </h1>
             <div className="flex items-center gap-2 mt-1">
@@ -350,7 +351,7 @@ export const OrganizationsPage: React.FC = () => {
           </div>
         )}
       </Card>
-    </div>
+    </PageContainer>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -106,22 +106,16 @@ export const ReportesSupersolidariaPage: React.FC = () => {
     const compliance = parse<ComplianceSection>(viewing?.complianceJson);
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Reportes Supersolidaria
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Reportes integrales para la Superintendencia de la Economía Solidaria.
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer>
+            <PageHeader
+                title="Reportes Supersolidaria"
+                description="Reportes integrales para la Superintendencia de la Economía Solidaria."
+                actions={isAdmin && (
                     <Button icon={Plus} onClick={() => { setGenForm(emptyForm()); setGenOpen(true); }}>
                         Generar Reporte
                     </Button>
                 )}
-            </div>
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <StatCard title="Reportes" value={reports.length} icon={FileBarChart2} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
@@ -143,7 +137,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
                             {isLoading ? (
-                                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : reports.length === 0 ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay reportes generados</td></tr>
                             ) : (
@@ -151,11 +145,11 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                     <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
                                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
                                         <td className="px-6 py-4"><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
-                                        <td className="px-6 py-4 text-slate-500">{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
                                         <td className="px-6 py-4">
                                             <Badge variant={r.isSent ? 'success' : 'warning'} dot>{r.isSent ? 'Enviado' : 'Pendiente'}</Badge>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500">{formatDate(r.sentAt)}</td>
+                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(r.sentAt)}</td>
                                         <td className="px-6 py-4 flex items-center gap-2">
                                             <Button size="sm" variant="outline" icon={Eye} onClick={() => setViewing(r)}>Ver</Button>
                                             {isAdmin && !r.isSent && (
@@ -186,7 +180,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
             >
                 <div className="grid grid-cols-1 gap-4">
                     <Input type="date" label="Inicio del período *" value={genForm.period} onChange={(e) => setGenForm(f => ({ ...f, period: e.target.value }))} />
-                    <p className="text-xs text-slate-500 -mt-2">Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero.</p>
+                    <p className="text-xs text-slate-500 -mt-2 dark:text-slate-400">Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero.</p>
                     <div>
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de reporte</label>
                         <select
@@ -214,10 +208,10 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         <div>
                             <p className="font-bold text-slate-900 dark:text-white mb-2">Asociados</p>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                                <div><p className="text-slate-500">Total</p><p className="font-bold">{associates.total}</p></div>
-                                <div><p className="text-slate-500">Activos</p><p className="font-bold">{associates.active}</p></div>
-                                <div><p className="text-slate-500">Admitidos en el período</p><p className="font-bold">{associates.admittedInPeriod}</p></div>
-                                <div><p className="text-slate-500">Retirados en el período</p><p className="font-bold">{associates.withdrawnInPeriod}</p></div>
+                                <div><p className="text-slate-500 dark:text-slate-400">Total</p><p className="font-bold">{associates.total}</p></div>
+                                <div><p className="text-slate-500 dark:text-slate-400">Activos</p><p className="font-bold">{associates.active}</p></div>
+                                <div><p className="text-slate-500 dark:text-slate-400">Admitidos en el período</p><p className="font-bold">{associates.admittedInPeriod}</p></div>
+                                <div><p className="text-slate-500 dark:text-slate-400">Retirados en el período</p><p className="font-bold">{associates.withdrawnInPeriod}</p></div>
                             </div>
                         </div>
                     )}
@@ -232,7 +226,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                     </li>
                                 ))}
                             </ul>
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-slate-500 mt-2 dark:text-slate-400">
                                 Exámenes pendientes: {compliance.pendingMedicalExams} · Accidentes: {compliance.accidentsInPeriod} · Riesgos activos: {compliance.activeRisks} · Órganos activos: {compliance.activeGoverningBodies}
                             </p>
                         </div>
@@ -248,10 +242,10 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                             {balance.executiveSummary && <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">{balance.executiveSummary}</p>}
                         </div>
                     )}
-                    {viewing?.notes && <p className="text-xs text-slate-500">Observaciones: {viewing.notes}</p>}
+                    {viewing?.notes && <p className="text-xs text-slate-500 dark:text-slate-400">Observaciones: {viewing.notes}</p>}
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

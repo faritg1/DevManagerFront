@@ -42,15 +42,15 @@ export const EducationCoverageCard: React.FC = () => {
       {loading ? (
         <div className="flex justify-center py-6"><Loader2 className="animate-spin text-primary" /></div>
       ) : !data ? (
-        <p className="text-sm text-slate-500">No se pudo cargar la cobertura.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">No se pudo cargar la cobertura.</p>
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-900 dark:text-white">
-            <div><p className="text-xs text-slate-500">Cobertura</p><p className="text-2xl font-bold">{Math.round(data.coverageRatio * 100)}%</p></div>
-            <div><p className="text-xs text-slate-500">Asociados cubiertos</p><p className="text-2xl font-bold">{data.coveredAssociates} / {data.eligibleAssociates}</p></div>
-            <div><p className="text-xs text-slate-500">Promedio de horas</p><p className="text-2xl font-bold">{data.avgHours.toFixed(1)} h</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">Cobertura</p><p className="text-2xl font-bold">{Math.round(data.coverageRatio * 100)}%</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">Asociados cubiertos</p><p className="text-2xl font-bold">{data.coveredAssociates} / {data.eligibleAssociates}</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">Promedio de horas</p><p className="text-2xl font-bold">{data.avgHours.toFixed(1)} h</p></div>
             <div>
-              <p className="text-xs text-slate-500">Educación básica</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Educación básica</p>
               <Badge variant={data.basicCompliant ? "success" : "warning"}>{data.basicCompliant ? "Cumple" : "No cumple"}</Badge>
             </div>
           </div>

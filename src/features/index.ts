@@ -24,5 +24,6 @@ export { BalanceSocialPage } from "./balance-social";
 export { SstPage } from "./sst";
 export { ExcedentesPage } from "./excedentes";
 export { HabeasDataPage } from "./habeas-data";
+export { CompetenciasPage } from "./competencias";
 export { ReportesSupersolidariaPage } from "./reportes-supersolidaria";
 export { AsistentePage } from "./asistente";

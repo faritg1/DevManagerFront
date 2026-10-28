@@ -13,7 +13,7 @@ import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
 import { useCertifications } from "../hooks/useCertifications";
 import { agentService } from "../../../shared/api";
-import { Card, Badge, Button, Modal } from "../../../shared/ui";
+import { Card, Badge, Button, Modal, PageContainer } from "../../../shared/ui";
 import {
   ProfileHeader,
   BioCard,
@@ -254,8 +254,8 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="max-w-full w-full mx-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 flex flex-col gap-8 pb-20">
+    <PageContainer>
+      <div className="flex flex-col gap-8">
         <ProfileHeader
           userName={user?.name}
           userEmail={user?.email}
@@ -539,7 +539,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         )}
       </Modal>
-    </div>
+    </PageContainer>
   );
 };
 

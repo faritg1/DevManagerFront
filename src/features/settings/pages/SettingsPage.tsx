@@ -14,7 +14,7 @@ import {
   HardDrive,
   Loader2,
 } from "lucide-react";
-import { Card, Badge, Button, Avatar } from "../../../shared/ui";
+import { Card, Badge, Button, Avatar, PageContainer, PageHeader } from "../../../shared/ui";
 import { useAuth, useNotification } from "../../../shared/context";
 import { STORAGE_KEYS, ROUTES } from "../../../shared/config/constants";
 import { useNavigate } from "react-router-dom";
@@ -79,17 +79,13 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 md:p-10 max-w-3xl mx-auto space-y-6">
+    <PageContainer narrow className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Settings size={24} className="text-primary" />
-          Configuración
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Personaliza tu experiencia en DevManager
-        </p>
-      </div>
+      <PageHeader
+        icon={<Settings size={28} className="text-primary" />}
+        title="Configuración"
+        description="Personaliza tu experiencia en DevManager"
+      />
 
       {/* ─── Account Info ────────────────────── */}
       <Card>
@@ -105,7 +101,7 @@ export const SettingsPage: React.FC = () => {
               <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 {user.name}
               </p>
-              <p className="text-sm text-slate-500">{user.email}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="purple" icon={Shield}>
                   {user.role}
@@ -139,7 +135,7 @@ export const SettingsPage: React.FC = () => {
           Apariencia
         </h2>
 
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-slate-500 mb-4 dark:text-slate-400">
           Selecciona el tema de la interfaz
         </p>
 
@@ -197,7 +193,7 @@ export const SettingsPage: React.FC = () => {
               <p className="text-sm font-medium text-slate-900 dark:text-white">
                 Barra lateral compacta
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Colapsa la barra de navegación por defecto
               </p>
             </div>
@@ -226,7 +222,7 @@ export const SettingsPage: React.FC = () => {
           Sesión
         </h2>
 
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-slate-500 mb-4 dark:text-slate-400">
           Cierra tu sesión actual en todos los dispositivos.
         </p>
 
@@ -238,7 +234,7 @@ export const SettingsPage: React.FC = () => {
           Cerrar sesión
         </Button>
       </Card>
-    </div>
+    </PageContainer>
   );
 };
 

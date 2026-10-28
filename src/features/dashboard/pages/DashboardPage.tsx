@@ -1,456 +1,207 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { Link } from 'react-router-dom';
+import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
+import { StatCard, Badge, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
-import { useNotification, useConfig, useAuth } from '../../../shared/context';
+import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
-import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
-import { getComplexityConfig } from '../../projects/utils/complexityConfig';
+import { ApplicationStatus, ProjectStatus, type ApiResponse, type ProjectResponse } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
+import { ProjectCard, NewProjectTile } from '../../projects/components/ProjectCard';
 
-const getProjectGradient = (name: string): string => {
-    const gradients = [
-        'from-blue-500 to-cyan-400',
-        'from-purple-500 to-pink-500',
-        'from-emerald-500 to-teal-400',
-        'from-orange-500 to-yellow-400',
-        'from-rose-500 to-red-400',
-        'from-indigo-500 to-blue-400',
-    ];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return gradients[hash % gradients.length];
-};
+/** undefined = loading, null = request failed. */
+type Kpi<T> = T | null | undefined;
 
-const getProjectInitials = (name: string): string => {
-    return name
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word[0])
-        .join('')
-        .toUpperCase();
-};
+/** Each dashboard module loads on its own: a failed request yields null instead of breaking the page or faking a 0. */
+const settle = <T,>(request: Promise<ApiResponse<T>>): Promise<T | null> =>
+    request.then(r => (r.success && r.data != null ? r.data : null)).catch(() => null);
+
+const FAILED = 'No disponible';
+
+/** Props for StatCard from a KPI: "…" while loading, "—" plus a hint when it failed. */
+const kpi = <T,>(value: Kpi<T>, render: (v: T) => string | number) => ({
+    value: value === undefined ? '…' : value === null ? '—' : render(value),
+    error: value === null ? FAILED : undefined,
+});
+
+const QuickLink: React.FC<{ to: string; icon: typeof Bot; iconClass: string; title: string; description: string }> = ({ to, icon: Icon, iconClass, title, description }) => (
+    <Link to={to} className="group flex min-w-0 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:border-primary/50 hover:shadow-md dark:border-border-dark dark:bg-card-dark dark:hover:border-primary">
+        <div className={`shrink-0 rounded-xl p-3 ${iconClass}`}>
+            <Icon size={24} aria-hidden="true" />
+        </div>
+        <div className="min-w-0 flex-1">
+            <p className="truncate font-bold text-slate-900 transition-colors group-hover:text-primary dark:text-white">{title}</p>
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">{description}</p>
+        </div>
+        <ArrowRight aria-hidden="true" size={18} className="shrink-0 text-slate-400 transition-colors group-hover:text-primary" />
+    </Link>
+);
 
 export const DashboardPage: React.FC = () => {
-    const navigate = useNavigate();
-    const { showNotification } = useNotification();
-    const { catalogs } = useConfig();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
 
-    const [projects, setProjects] = useState<ProjectResponse[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [totalUsers, setTotalUsers] = useState<number>(0);
-    const [activeUsers, setActiveUsers] = useState<number>(0);
-    const [totalSkills, setTotalSkills] = useState<number>(0);
-    const [pendingApplications, setPendingApplications] = useState<number>(0);
-
-    // Solidarity KPIs (loaded best-effort; skipped gracefully if unavailable)
-    const [solidaridad, setSolidaridad] = useState({
-        excedentesPeriodo: 0,
-        pendientesARCO: 0,
-        programasBienestar: 0,
-        loaded: false,
-    });
+    const [projects, setProjects] = useState<Kpi<ProjectResponse[]>>(undefined);
+    const [members, setMembers] = useState<Kpi<{ active: number; total: number }>>(undefined);
+    const [totalSkills, setTotalSkills] = useState<Kpi<number>>(undefined);
+    const [pendingApplications, setPendingApplications] = useState<Kpi<number>>(undefined);
+    const [latestSurplus, setLatestSurplus] = useState<Kpi<number | 'none'>>(undefined);
+    const [pendingArco, setPendingArco] = useState<Kpi<number>>(undefined);
+    const [welfarePrograms, setWelfarePrograms] = useState<Kpi<number>>(undefined);
 
     useEffect(() => {
-        const fetchDashboard = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                // Cargar proyectos, usuarios y skills en paralelo
-                const [projectsRes, usersRes, skillsRes] = await Promise.all([
-                    projectsService.getAll(),
-                    usersService.getAll(),
-                    skillsService.getAll(),
-                ]);
-
-                if (projectsRes.success && projectsRes.data) {
-                    setProjects(projectsRes.data);
-
-                    const activeProjects = projectsRes.data.filter(
-                        p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress
-                    );
-                    let pending = 0;
-                    // Cargar apps solo de los primeros 10 activos para no sobrecargar
-                    const appPromises = activeProjects.slice(0, 10).map(p =>
-                        projectsService.getApplications(p.id).catch(() => null)
-                    );
-                    const appResults = await Promise.all(appPromises);
-                    for (const res of appResults) {
-                        if (res?.success && res.data) {
-                            pending += res.data.filter((a: ApplicationResponse) => a.status === 0).length;
-                        }
-                    }
-                    setPendingApplications(pending);
-                } else {
-                    setError(projectsRes.message || 'Error al cargar proyectos');
-                }
-
-                if (usersRes.success && usersRes.data) {
-                    setTotalUsers(usersRes.data.length);
-                    setActiveUsers(usersRes.data.filter((u: UserResponse) => u.isActive).length);
-                }
-
-                if (skillsRes.success && skillsRes.data) {
-                    setTotalSkills(skillsRes.data.length);
-                }
-            } catch (err) {
-                console.error('Error fetching dashboard:', err);
-                setError('Error de conexión al cargar datos');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDashboard();
+        settle(projectsService.getAll()).then(async list => {
+            setProjects(list);
+            if (!list) return setPendingApplications(null);
+            // ponytail: only the first 10 active projects are scanned (one request each); needs a backend count to be exact.
+            const active = list.filter(p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress).slice(0, 10);
+            const apps = await Promise.all(active.map(p => settle(projectsService.getApplications(p.id))));
+            const loaded = apps.filter(a => a !== null);
+            setPendingApplications(active.length > 0 && loaded.length === 0
+                ? null
+                : loaded.flat().filter(a => a.status === ApplicationStatus.Pending).length);
+        });
+        settle(usersService.getAll()).then(list => setMembers(list && { active: list.filter(u => u.isActive).length, total: list.length }));
+        settle(skillsService.getAll()).then(list => setTotalSkills(list && list.length));
     }, []);
 
-    // Cargar KPIs de gestión solidaria (best-effort: si un endpoint falla o no
-    // aplica a la organización, se omite sin romper el dashboard).
-    // La organización sale del JWT; ARCO pendientes es solo Admin (se omite para el resto).
+    // Gestión solidaria: the organization comes from the JWT; pending ARCO is admin-only.
     useEffect(() => {
         if (!user?.id) return;
-
-        const fetchSolidaridad = async () => {
-            try {
-                const [excedentesRes, arcoRes, bienestarRes] = await Promise.all([
-                    excedentesService.getAll().catch(() => null),
-                    isAdmin ? habeasDataService.getPendingArco().catch(() => null) : Promise.resolve(null),
-                    bienestarService.getPrograms().catch(() => null),
-                ]);
-
-                const surplus = excedentesRes?.success && excedentesRes.data ? excedentesRes.data : [];
-                const latestExcedente = [...surplus].sort((x, y) => y.period.localeCompare(x.period))[0]?.totalSurplus ?? 0;
-
-                setSolidaridad({
-                    excedentesPeriodo: latestExcedente,
-                    pendientesARCO: arcoRes?.success && arcoRes.data ? arcoRes.data.length : 0,
-                    programasBienestar: bienestarRes?.success && bienestarRes.data ? bienestarRes.data.length : 0,
-                    loaded: true,
-                });
-            } catch {
-                setSolidaridad(prev => ({ ...prev, loaded: true }));
-            }
-        };
-
-        fetchSolidaridad();
+        settle(excedentesService.getAll()).then(list => setLatestSurplus(
+            !list ? null : list.length ? [...list].sort((x, y) => y.period.localeCompare(x.period))[0].totalSurplus : 'none'));
+        settle(bienestarService.getPrograms()).then(list => setWelfarePrograms(list && list.length));
+        if (isAdmin) settle(habeasDataService.getPendingArco()).then(list => setPendingArco(list && list.length));
     }, [user?.id, isAdmin]);
 
-    const stats = {
-        open: projects.filter(p => p.status === ProjectStatus.Open).length,
-        inProgress: projects.filter(p => p.status === ProjectStatus.InProgress).length,
-        closed: projects.filter(p => p.status === ProjectStatus.Closed).length,
-        draft: projects.filter(p => p.status === ProjectStatus.Draft).length,
-        total: projects.length
-    };
-
-    const getStatusConfig = (status: ProjectStatus) => {
-        const label = catalogs?.projectStatuses.find(s => s.id === status)?.name ?? PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
-        let variant: 'success' | 'warning' | 'danger' | 'info' | 'default' = 'default';
-        let icon = null;
-
-        switch (status) {
-            case ProjectStatus.Open:
-                variant = 'success';
-                icon = <CheckCircle2 size={14} />;
-                break;
-            case ProjectStatus.Draft:
-                variant = 'default';
-                icon = <FileText size={14} />;
-                break;
-            case ProjectStatus.InProgress:
-                variant = 'warning';
-                icon = <Clock size={14} />;
-                break;
-            case ProjectStatus.Closed:
-                variant = 'info';
-                icon = <CheckCircle2 size={14} />;
-                break;
-            case ProjectStatus.Cancelled:
-                variant = 'danger';
-                icon = <XCircle size={14} />;
-                break;
-        }
-        return { variant, label, icon };
-    };
-
-    const getProgressFromStatus = (status: ProjectStatus): number => {
-        switch (status) {
-            case ProjectStatus.Draft: return 10;
-            case ProjectStatus.Open: return 30;
-            case ProjectStatus.InProgress: return 60;
-            case ProjectStatus.Closed: return 100;
-            case ProjectStatus.Cancelled: return 0;
-            default: return 0;
-        }
-    };
+    const count = (status: ProjectStatus) => kpi(projects, list => list.filter(p => p.status === status).length);
+    const activeProjects = kpi(projects, list => list.filter(p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress).length);
 
     return (
         <PageContainer>
             <PageHeader
                 title={user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
                 description="Resumen general de tu organización y proyectos."
-                actions={
+                actions={isAdmin && (
                     <Link to={ROUTES.CREATE_PROJECT}>
-                        <Button icon={Plus}>
-                            Nuevo Proyecto
-                        </Button>
+                        <Button icon={Plus}>Nuevo Proyecto</Button>
                     </Link>
-                }
+                )}
             />
             <div className="flex flex-col gap-8">
+                <section aria-label="Indicadores principales" className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <StatCard
+                            title="Proyectos activos"
+                            {...activeProjects}
+                            subtitle={projects ? `de ${projects.length} en total` : undefined}
+                            icon={FolderOpen}
+                        />
+                        <StatCard
+                            title="Postulaciones pendientes"
+                            {...kpi(pendingApplications, n => n)}
+                            subtitle="por revisar"
+                            icon={UserPlus}
+                            iconColor="text-amber-500"
+                            iconBgColor="bg-amber-50 dark:bg-amber-500/10"
+                        />
+                        <StatCard
+                            title="Miembros activos"
+                            {...kpi(members, m => m.active)}
+                            subtitle={members ? `de ${members.total} registrados` : undefined}
+                            icon={Users}
+                            iconColor="text-indigo-500"
+                            iconBgColor="bg-indigo-50 dark:bg-indigo-500/10"
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
+                        <StatCard compact title="Borradores" {...count(ProjectStatus.Draft)} icon={FileText} iconColor="text-slate-500" iconBgColor="bg-slate-100 dark:bg-slate-500/10" />
+                        <StatCard compact title="Abiertos" {...count(ProjectStatus.Open)} icon={CheckCircle2} iconColor="text-emerald-500" iconBgColor="bg-emerald-50 dark:bg-emerald-500/10" />
+                        <StatCard compact title="En progreso" {...count(ProjectStatus.InProgress)} icon={Clock} iconColor="text-amber-500" iconBgColor="bg-amber-50 dark:bg-amber-500/10" />
+                        <StatCard compact title="Cerrados" {...count(ProjectStatus.Closed)} icon={TrendingUp} iconColor="text-blue-500" iconBgColor="bg-blue-50 dark:bg-blue-500/10" />
+                        <StatCard compact title="Skills" {...kpi(totalSkills, n => n)} icon={Award} iconColor="text-purple-500" iconBgColor="bg-purple-50 dark:bg-purple-500/10" />
+                    </div>
+                </section>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <StatCard
-                        title="Proyectos"
-                        value={isLoading ? '-' : stats.total}
-                        icon={FolderOpen}
-                        iconColor="text-primary"
-                        iconBgColor="bg-blue-50 dark:bg-blue-500/10"
-                    />
-                    <StatCard
-                        title="Abiertos"
-                        value={isLoading ? '-' : stats.open}
-                        icon={CheckCircle2}
-                        iconColor="text-emerald-500"
-                        iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
-                        trend={stats.open > 0 ? { value: 'Postulaciones', isPositive: true } : undefined}
-                    />
-                    <StatCard
-                        title="En progreso"
-                        value={isLoading ? '-' : stats.inProgress}
-                        icon={Clock}
-                        iconColor="text-amber-500"
-                        iconBgColor="bg-amber-50 dark:bg-amber-500/10"
-                        trend={stats.inProgress > 0 ? { value: 'En ejecución', isPositive: true } : undefined}
-                    />
-                    <StatCard
-                        title="Cerrados"
-                        value={isLoading ? '-' : stats.closed}
-                        icon={TrendingUp}
-                        iconColor="text-blue-500"
-                        iconBgColor="bg-blue-50 dark:bg-blue-500/10"
-                    />
-                    <StatCard
-                        title="Miembros"
-                        value={isLoading ? '-' : `${activeUsers}/${totalUsers}`}
-                        icon={Users}
-                        iconColor="text-indigo-500"
-                        iconBgColor="bg-indigo-50 dark:bg-indigo-500/10"
-                    />
-                    <StatCard
-                        title="Skills"
-                        value={isLoading ? '-' : totalSkills}
-                        icon={Award}
-                        iconColor="text-purple-500"
-                        iconBgColor="bg-purple-50 dark:bg-purple-500/10"
-                    />
-                </div>
-
-                {!isLoading && solidaridad.loaded && (
-                    <div>
-                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400 mb-3">
-                            Gestión Solidaria
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <section aria-labelledby="dash-solidaria">
+                    <h2 id="dash-solidaria" className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Gestión Solidaria
+                    </h2>
+                    <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                        <StatCard
+                            compact
+                            title="Excedentes del último período"
+                            {...kpi(latestSurplus, v => (v === 'none' ? '—' : currency(v)))}
+                            subtitle={latestSurplus === 'none' ? 'Sin distribuciones' : undefined}
+                            icon={PiggyBank}
+                            iconColor="text-emerald-500"
+                            iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
+                        />
+                        {isAdmin && (
                             <StatCard
-                                title="Excedentes del período"
-                                value={currency(solidaridad.excedentesPeriodo)}
-                                icon={PiggyBank}
-                                iconColor="text-emerald-500"
-                                iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
-                            />
-                            <StatCard
+                                compact
                                 title="Solicitudes ARCO pendientes"
-                                value={solidaridad.pendientesARCO}
+                                {...kpi(pendingArco, n => n)}
                                 icon={Shield}
                                 iconColor="text-amber-500"
                                 iconBgColor="bg-amber-50 dark:bg-amber-500/10"
                             />
-                            <StatCard
-                                title="Programas de bienestar"
-                                value={solidaridad.programasBienestar}
-                                icon={HeartHandshake}
-                                iconColor="text-rose-500"
-                                iconBgColor="bg-rose-50 dark:bg-rose-500/10"
-                            />
-                        </div>
+                        )}
+                        <StatCard
+                            compact
+                            title="Programas de bienestar"
+                            {...kpi(welfarePrograms, n => n)}
+                            icon={HeartHandshake}
+                            iconColor="text-rose-500"
+                            iconBgColor="bg-rose-50 dark:bg-rose-500/10"
+                        />
                     </div>
-                )}
+                </section>
 
-                {!isLoading && !error && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card className="flex items-center gap-4 p-4">
-                            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10">
-                                <UserPlus className="text-amber-500" size={24} />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <QuickLink to={ROUTES.AGENTS} icon={Bot} iconClass="bg-purple-50 text-purple-500 dark:bg-purple-500/10" title="Asistente IA" description="Consulta en lenguaje natural" />
+                    <QuickLink to={ROUTES.PROFILE} icon={Briefcase} iconClass="bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10" title="Mi Perfil" description="Skills y configuración" />
+                </div>
+
+                <section aria-labelledby="dash-projects" className="flex flex-col gap-4 pb-12">
+                    <div className="flex items-center justify-between gap-3">
+                        <h2 id="dash-projects" className="text-lg font-bold text-slate-900 dark:text-white">Proyectos</h2>
+                        {projects && projects.length > 0 && <Badge variant="default">{projects.length} total</Badge>}
+                    </div>
+
+                    {projects === undefined ? (
+                        <LoadingBlock label="Cargando proyectos…" className="py-20" />
+                    ) : projects === null ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
+                                <AlertTriangle className="w-10 h-10 text-rose-500" />
                             </div>
-                            <div className="flex-1">
-                                <p className="text-2xl font-black text-slate-900 dark:text-white">{pendingApplications}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Postulaciones pendientes</p>
-                            </div>
-                            {pendingApplications > 0 && (
-                                <Badge variant="warning" className="text-xs">Revisar</Badge>
+                            <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">Error al cargar proyectos</p>
+                            <Button variant="outline" onClick={() => window.location.reload()}>
+                                Reintentar
+                            </Button>
+                        </div>
+                    ) : projects.length === 0 ? (
+                        <EmptyState
+                            icon={FolderOpen}
+                            className="py-20"
+                            title="No hay proyectos"
+                            description={isAdmin ? 'Comienza creando tu primer proyecto.' : undefined}
+                            action={isAdmin && (
+                                <Link to={ROUTES.CREATE_PROJECT}>
+                                    <Button icon={Plus}>Crear Proyecto</Button>
+                                </Link>
                             )}
-                        </Card>
-
-                        <Card
-                            hoverable
-                            onClick={() => navigate(ROUTES.AGENTS)}
-                            className="flex items-center gap-4 p-4 cursor-pointer group"
-                        >
-                            <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-500/10">
-                                <Bot className="text-purple-500" size={24} />
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Asistente IA</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Consulta en lenguaje natural</p>
-                            </div>
-                            <ArrowRight className="text-slate-400 group-hover:text-primary transition-colors" size={18} />
-                        </Card>
-
-                        <Card
-                            hoverable
-                            onClick={() => navigate(ROUTES.PROFILE)}
-                            className="flex items-center gap-4 p-4 cursor-pointer group"
-                        >
-                            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10">
-                                <Briefcase className="text-emerald-500" size={24} />
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Mi Perfil</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Skills y configuración</p>
-                            </div>
-                            <ArrowRight className="text-slate-400 group-hover:text-primary transition-colors" size={18} />
-                        </Card>
-                    </div>
-                )}
-
-                {isLoading && (
-                    <LoadingBlock label="Cargando proyectos…" className="py-20" />
-                )}
-
-                {error && !isLoading && (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                            <AlertTriangle className="w-10 h-10 text-rose-500" />
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                            {projects.map(project => <ProjectCard key={project.id} project={project} />)}
+                            {isAdmin && <NewProjectTile />}
                         </div>
-                        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">{error}</p>
-                        <Button variant="outline" onClick={() => window.location.reload()}>
-                            Reintentar
-                        </Button>
-                    </div>
-                )}
-
-                {!isLoading && !error && projects.length === 0 && (
-                    <EmptyState
-                        icon={FolderOpen}
-                        className="py-20"
-                        title="No hay proyectos"
-                        description="Comienza creando tu primer proyecto."
-                        action={
-                            <Link to={ROUTES.CREATE_PROJECT}>
-                                <Button icon={Plus}>Crear Proyecto</Button>
-                            </Link>
-                        }
-                    />
-                )}
-
-                {!isLoading && !error && projects.length > 0 && (
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Proyectos</h3>
-                        <Badge variant="default">{projects.length} total</Badge>
-                    </div>
-                )}
-
-                {!isLoading && !error && projects.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-                        {projects.map((project) => {
-                            const statusConfig = getStatusConfig(project.status);
-                            const complexityConfig = getComplexityConfig(project.complexityLevel);
-                            const progress = getProgressFromStatus(project.status);
-                            
-                            return (
-                                <Card 
-                                    key={project.id} 
-                                    hoverable
-                                    onClick={() => navigate(`/projects/${project.id}`)}
-                                    className="group relative overflow-hidden"
-                                >
-                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <ArrowRight className="text-primary transform -translate-x-2 group-hover:translate-x-0 transition-transform" />
-                                    </div>
-
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex gap-4">
-                                            <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                                                {getProjectInitials(project.name)}
-                                            </div>
-                                            <div>
-                                                <h3 className="text-slate-900 dark:text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors">
-                                                    {project.name}
-                                                </h3>
-                                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                                                    {project.code || 'Sin código'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {project.description && (
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-3 line-clamp-2">
-                                            {project.description}
-                                        </p>
-                                    )}
-
-                                    <div className="flex items-center justify-between mt-5">
-                                        <Badge variant={statusConfig.variant} dot>
-                                            {statusConfig.label}
-                                        </Badge>
-                                        <Badge variant={complexityConfig.variant}>
-                                            Complejidad: {complexityConfig.label}
-                                        </Badge>
-                                    </div>
-
-                                    <div className="mt-5">
-                                        <ProgressBar 
-                                            value={progress} 
-                                            showLabel 
-                                            variant={project.status === ProjectStatus.Cancelled ? 'danger' : 'primary'}
-                                        />
-                                    </div>
-
-                                    {(project.startDate || project.endDate) && (
-                                        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-[#233948] text-xs text-slate-500 dark:text-slate-400">
-                                            {project.startDate && (
-                                                <span>Inicio: {new Date(project.startDate).toLocaleDateString('es-ES')}</span>
-                                            )}
-                                            {project.endDate && (
-                                                <span>Fin: {new Date(project.endDate).toLocaleDateString('es-ES')}</span>
-                                            )}
-                                        </div>
-                                    )}
-                                </Card>
-                            );
-                        })}
-
-                        <Link 
-                            to={ROUTES.CREATE_PROJECT} 
-                            className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[240px]"
-                        >
-                            <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-[#16222b] flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-                                <Plus size={28} />
-                            </div>
-                            <p className="text-slate-500 dark:text-slate-400 font-semibold group-hover:text-primary transition-colors">
-                                Crear Nuevo Proyecto
-                            </p>
-                        </Link>
-                    </div>
-                )}
+                    )}
+                </section>
             </div>
         </PageContainer>
     );
 };
-

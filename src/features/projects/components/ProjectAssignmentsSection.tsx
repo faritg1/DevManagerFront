@@ -74,7 +74,7 @@ export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps>
             return (
               <div
                 key={assignment.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] gap-3"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-background-dark gap-3"
               >
                 <div className="flex items-center gap-3">
                   <Avatar name={assignment.userName} size="sm" />

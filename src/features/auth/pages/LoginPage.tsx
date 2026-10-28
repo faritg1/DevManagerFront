@@ -38,7 +38,7 @@ export const LoginPage: React.FC = () => {
     <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#325167] blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-input-border blur-[100px]" />
       </div>
 
       <div className="w-full max-w-[460px] relative z-10">
@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#192833] rounded-2xl shadow-xl border border-slate-200 dark:border-[#233948] p-6 sm:p-8 backdrop-blur-sm">
+        <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-slate-200 dark:border-border-dark p-6 sm:p-8 backdrop-blur-sm">
           <form className="flex flex-col gap-5" onSubmit={handleLogin}>
             {error && (
               <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
@@ -87,7 +87,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#325167] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary dark:focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary dark:focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                   placeholder="••••••••"
                   type={showPassword ? "text" : "password"}
                   required

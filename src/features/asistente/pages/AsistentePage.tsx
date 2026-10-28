@@ -106,7 +106,7 @@ export const AsistentePage: React.FC = () => {
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 dark:text-slate-400">Citaciones normativas</p>
                 <div className="space-y-2">
                     {r.citations.map((c, i) => (
-                        <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                        <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                             <p className="font-bold text-slate-900 dark:text-white text-sm">
                                 <Scale size={14} className="inline mr-1 text-primary" />
                                 {c.rule} — {c.article}
@@ -136,8 +136,8 @@ export const AsistentePage: React.FC = () => {
     );
 
     const renderRespuesta = (r: CooperativeQueryResponse) => (
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
-            <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark">
+            <div className="prose prose-sm dark:prose-invert max-w-none break-words">
                 <ReactMarkdown>{r.answer}</ReactMarkdown>
             </div>
             <Badge variant={r.generatedByAi ? 'purple' : 'default'} className="mt-2">{r.generatedByAi ? 'Generado con IA' : 'Respuesta normativa base'}</Badge>
@@ -168,7 +168,7 @@ export const AsistentePage: React.FC = () => {
                         aria-pressed={tab === t.id}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${tab === t.id
                             ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                            : 'bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22]'}`}
+                            : 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark'}`}
                     >
                         <t.icon size={16} />
                         {t.label}
@@ -198,7 +198,7 @@ export const AsistentePage: React.FC = () => {
                             <textarea id="asistente-consulta"
                                 value={consulta}
                                 onChange={(e) => setConsulta(e.target.value)}
-                                className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
                                 rows={4}
                                 placeholder="Ej: ¿Cómo se distribuyen los excedentes?"
                             />
@@ -249,10 +249,10 @@ export const AsistentePage: React.FC = () => {
                                     <Badge variant="purple">{reporteRes.year}</Badge>
                                 </div>
                                 {reporteRes.executiveSummary && <p className="text-sm text-slate-600 dark:text-slate-400">{reporteRes.executiveSummary}</p>}
-                                {reporteRes.narrative && <div className="text-sm text-slate-600 dark:text-slate-400 break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
+                                {reporteRes.narrative && <div className="prose prose-sm dark:prose-invert max-w-none break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
                                 <div className="space-y-2">
                                     {reporteRes.dimensions.map(d => (
-                                        <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                        <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                             <div className="flex items-center justify-between">
                                                 <p className="font-bold text-slate-900 dark:text-white text-sm">{d.name}</p>
                                                 <Badge variant={d.coverage >= d.target ? 'success' : 'warning'}>
@@ -296,7 +296,7 @@ export const AsistentePage: React.FC = () => {
                                 { label: 'SST (Decreto 1072/2015)', value: verificarSST, set: setVerificarSST },
                                 { label: 'Habeas Data (Ley 1581/2012)', value: verificarHabeas, set: setVerificarHabeas },
                             ].map(opt => (
-                                <label key={opt.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] cursor-pointer">
+                                <label key={opt.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-background-dark cursor-pointer">
                                     <input type="checkbox" checked={opt.value} onChange={(e) => opt.set(e.target.checked)} className="h-4 w-4 accent-primary" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{opt.label}</span>
                                 </label>
@@ -317,7 +317,7 @@ export const AsistentePage: React.FC = () => {
                                     </Badge>
                                 </div>
                                 {cumplimientoRes.areas.map(a => (
-                                    <div key={a.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                    <div key={a.name} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                         <div className="flex items-center justify-between">
                                             <p className="font-bold text-slate-900 dark:text-white text-sm">{a.name}</p>
                                             <Badge variant={a.compliant ? 'success' : 'danger'} dot>{a.compliant ? 'Cumple' : 'No cumple'}</Badge>
@@ -363,7 +363,7 @@ export const AsistentePage: React.FC = () => {
                             <textarea id="asistente-pregunta"
                                 value={pregunta}
                                 onChange={(e) => setPregunta(e.target.value)}
-                                className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
                                 rows={4}
                                 placeholder="Ej: ¿Cómo me afilio a la cooperativa?"
                             />

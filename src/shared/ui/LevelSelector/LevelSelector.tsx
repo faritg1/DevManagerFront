@@ -30,7 +30,7 @@ export const LevelSelector: React.FC<LevelSelectorProps> = ({
                         flex flex-col items-center p-3 rounded-xl border transition-all min-w-[60px] max-w-[80px]
                         ${selectedId === level.id
                             ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-slate-200 dark:border-[#233948] hover:border-primary/50'
+                            : 'border-slate-200 dark:border-border-dark hover:border-primary/50'
                         }
                     `}
                 >

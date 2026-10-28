@@ -244,7 +244,7 @@ export const BienestarPage: React.FC = () => {
     };
 
     const renderRequest = (s: WelfareRequestDto, showName: boolean) => (
-        <div key={s.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+        <div key={s.id} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
             <div className="flex items-center justify-between">
                 <p className="font-bold text-slate-900 dark:text-white">{AID_TYPE_LABEL[s.aidType] ?? s.aidType}</p>
                 {statusBadge(s.status)}
@@ -307,7 +307,7 @@ export const BienestarPage: React.FC = () => {
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Sin fondo registrado para esta organización.</p>
                 )}
                 {isAdmin && (
-                    <div className="border-t border-slate-200 dark:border-[#233948] pt-4">
+                    <div className="border-t border-slate-200 dark:border-border-dark pt-4">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Calcular aporte desde la distribución de excedentes del período</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <Input type="date" value={fundPeriod} onChange={(e) => setFundPeriod(e.target.value)} label="Período de excedentes" />
@@ -322,7 +322,7 @@ export const BienestarPage: React.FC = () => {
             </Card>
 
             <Card padding="none" className="overflow-hidden mb-6">
-                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-[#233948] flex items-center gap-2`}>
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex items-center gap-2`}>
                     <Heart className="text-rose-500" size={20} />
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
                 </div>
@@ -407,7 +407,7 @@ export const BienestarPage: React.FC = () => {
                     ) : (
                         <div className="space-y-3">
                             {aids.map(a => (
-                                <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{AID_TYPE_LABEL[a.aidType] ?? a.aidType}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -445,7 +445,7 @@ export const BienestarPage: React.FC = () => {
                         <textarea id="bienestar-descripcion"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"
+                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"
                             rows={3}
                         />
                     </div>

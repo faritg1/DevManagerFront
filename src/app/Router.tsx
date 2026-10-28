@@ -1,5 +1,5 @@
-import React from "react";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { lazy } from "react";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import {
   AuthProvider,
   NotificationProvider,
@@ -9,42 +9,52 @@ import { MainLayout, AuthLayout } from "./layouts";
 import { ProtectedRoute, PublicRoute, AdminGuard, PermissionGuard } from "./guards";
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
+import { NotFoundPage } from "../shared/components/RouteBoundary";
 
-import {
-  LoginPage,
-  RegisterPage,
-  DashboardPage,
-  CreateProjectPage,
-  ProjectsPage,
-  ProjectDetailPage,
-  EditProjectPage,
-  OrganizationsPage,
-  UsersPage,
-  UserDetailPage,
-  AgentsPage,
-  ProfilePage,
-  RolesPage,
-  RolePermissionsPage,
-  PermissionsPage,
-  SkillsCatalogPage,
-  ReportsPage,
-  SettingsPage,
-  AssociatesPage,
-  AssociateDetailPage,
-  EducationProgramsPage,
-  ProgramDetailPage,
-  DataPoliciesPage,
-  NominaPage,
-  OrganosPage,
-  BienestarPage,
-  BalanceSocialPage,
-  SstPage,
-  ExcedentesPage,
-  HabeasDataPage,
-  CompetenciasPage,
-  ReportesSupersolidariaPage,
-  AsistentePage,
-} from "../features";
+/** Route-level code splitting: each feature module loads on first visit (Suspense lives in the layouts). */
+const page = <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M) =>
+  lazy(() => load().then((m) => ({ default: m[name] as React.ComponentType })));
+
+const auth = () => import("../features/auth");
+const projects = () => import("../features/projects");
+const users = () => import("../features/users");
+const rbac = () => import("../features/rbac");
+const associates = () => import("../features/associates");
+const education = () => import("../features/education");
+
+const LoginPage = page(auth, "LoginPage");
+const RegisterPage = page(auth, "RegisterPage");
+const DashboardPage = page(() => import("../features/dashboard"), "DashboardPage");
+const CreateProjectPage = page(projects, "CreateProjectPage");
+const ProjectsPage = page(projects, "ProjectsPage");
+const ProjectDetailPage = page(projects, "ProjectDetailPage");
+const EditProjectPage = page(projects, "EditProjectPage");
+const OrganizationsPage = page(() => import("../features/organizations"), "OrganizationsPage");
+const UsersPage = page(users, "UsersPage");
+const UserDetailPage = page(users, "UserDetailPage");
+const AgentsPage = page(() => import("../features/agents"), "AgentsPage");
+const ProfilePage = page(() => import("../features/profile"), "ProfilePage");
+const RolesPage = page(rbac, "RolesPage");
+const RolePermissionsPage = page(rbac, "RolePermissionsPage");
+const PermissionsPage = page(rbac, "PermissionsPage");
+const SkillsCatalogPage = page(() => import("../features/skills"), "SkillsCatalogPage");
+const ReportsPage = page(() => import("../features/reports"), "ReportsPage");
+const SettingsPage = page(() => import("../features/settings"), "SettingsPage");
+const AssociatesPage = page(associates, "AssociatesPage");
+const AssociateDetailPage = page(associates, "AssociateDetailPage");
+const DataPoliciesPage = page(associates, "DataPoliciesPage");
+const EducationProgramsPage = page(education, "EducationProgramsPage");
+const ProgramDetailPage = page(education, "ProgramDetailPage");
+const NominaPage = page(() => import("../features/nomina"), "NominaPage");
+const OrganosPage = page(() => import("../features/organos"), "OrganosPage");
+const BienestarPage = page(() => import("../features/bienestar"), "BienestarPage");
+const BalanceSocialPage = page(() => import("../features/balance-social"), "BalanceSocialPage");
+const SstPage = page(() => import("../features/sst"), "SstPage");
+const ExcedentesPage = page(() => import("../features/excedentes"), "ExcedentesPage");
+const HabeasDataPage = page(() => import("../features/habeas-data"), "HabeasDataPage");
+const CompetenciasPage = page(() => import("../features/competencias"), "CompetenciasPage");
+const ReportesSupersolidariaPage = page(() => import("../features/reportes-supersolidaria"), "ReportesSupersolidariaPage");
+const AsistentePage = page(() => import("../features/asistente"), "AsistentePage");
 
 export const AppRouter: React.FC = () => {
   return (
@@ -99,10 +109,10 @@ export const AppRouter: React.FC = () => {
                       <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
                     </Route>
                   </Route>
+                  <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Route>
 
-              <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
             </Routes>
           </NotificationProvider>
         </ConfirmProvider>

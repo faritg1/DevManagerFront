@@ -75,7 +75,7 @@ export const NotificationBell: React.FC = () => {
             >
                 <Bell size={20} aria-hidden="true" />
                 {unreadCount > 0 && (
-                    <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-[18px] text-center border-2 border-white dark:border-[#111b22] box-content">
+                    <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-[18px] text-center border-2 border-white dark:border-background-dark box-content">
                         {badge}
                     </span>
                 )}
@@ -88,9 +88,9 @@ export const NotificationBell: React.FC = () => {
                     role="dialog"
                     aria-label="Notificaciones"
                     tabIndex={-1}
-                    className="absolute inset-x-0 top-full z-50 flex max-h-[calc(100dvh-4rem)] flex-col border-b border-slate-200 bg-white shadow-2xl outline-none dark:border-[#233948] dark:bg-[#16222b] sm:inset-x-auto sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[70vh] sm:rounded-2xl sm:border"
+                    className="absolute inset-x-0 top-full z-50 flex max-h-[calc(100dvh-4rem)] flex-col border-b border-slate-200 bg-white shadow-2xl outline-none dark:border-border-dark dark:bg-card-dark sm:inset-x-auto sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[70vh] sm:rounded-2xl sm:border"
                 >
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 dark:border-[#233948]">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 dark:border-border-dark">
                         <h2 className="text-sm font-bold text-slate-900 dark:text-white">Notificaciones</h2>
                         <Button size="sm" variant="ghost" onClick={markAllRead} disabled={unreadCount === 0}>
                             Marcar todas como leídas
@@ -103,7 +103,7 @@ export const NotificationBell: React.FC = () => {
                         ) : items.length === 0 ? (
                             <EmptyState icon={BellOff} title="No tienes notificaciones" className="py-10" />
                         ) : (
-                            <ul className="divide-y divide-slate-100 dark:divide-[#233948]">
+                            <ul className="divide-y divide-slate-100 dark:divide-border-dark">
                                 {items.map((n) => {
                                     const { icon: Icon, className } = KIND_STYLES[n.type] ?? KIND_STYLES[1];
                                     return (

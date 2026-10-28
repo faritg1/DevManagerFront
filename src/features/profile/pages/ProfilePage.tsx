@@ -495,7 +495,7 @@ export const ProfilePage: React.FC = () => {
                 <TrendingUp size={16} className="text-primary" />
                 Análisis
               </h5>
-              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed bg-slate-50 dark:bg-[#0d1419] p-3 rounded-xl border border-slate-200 dark:border-[#233948]">
+              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed bg-slate-50 dark:bg-background-dark p-3 rounded-xl border border-slate-200 dark:border-border-dark">
                 {aiValidationResult.result.reasoning}
               </p>
             </div>
@@ -510,7 +510,7 @@ export const ProfilePage: React.FC = () => {
                   {aiValidationResult.result.recommendations.map((rec, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0d1419] p-3 rounded-lg border border-slate-200 dark:border-[#233948]"
+                      className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-background-dark p-3 rounded-lg border border-slate-200 dark:border-border-dark"
                     >
                       <Badge variant="default" className="shrink-0 mt-0.5">
                         {i + 1}

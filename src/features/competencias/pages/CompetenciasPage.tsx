@@ -8,7 +8,7 @@ import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../..
 import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
 
 const selectClass = `${SELECT_CLASS} w-full mt-2`;
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
+const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
 const thClass = TH_CLASS;
 
 const emptyForm = (): CreateCompetencyRequest => ({ userId: '', name: '', level: 1 });

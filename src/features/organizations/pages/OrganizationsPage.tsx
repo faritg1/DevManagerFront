@@ -47,7 +47,7 @@ interface StatLinkProps {
 const StatLink: React.FC<StatLinkProps> = ({ to, title, value, hint, icon: Icon, tone }) => (
     <Link
         to={to}
-        className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-[#233948] dark:bg-[#16222b]"
+        className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-border-dark dark:bg-card-dark"
     >
         <div className="flex items-center justify-between">
             <p className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</p>
@@ -192,7 +192,7 @@ export const OrganizationsPage: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3 md:border-l md:border-slate-200 md:pl-6 md:dark:border-[#233948]">
+                    <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3 md:border-l md:border-slate-200 md:pl-6 md:dark:border-border-dark">
                         <Field label="Razón social">{org.legalName || <Undefined />}</Field>
                         <Field label="NIT">{org.nit ? <span className="font-mono">{org.nit}</span> : <Undefined />}</Field>
                         <Field label="Registrada">

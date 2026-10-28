@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     }, [location.pathname]);
 
     return (
-        <header className="h-16 border-b border-slate-200 dark:border-[#233948] bg-white/80 dark:bg-[#111b22]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+        <header className="h-16 border-b border-slate-200 dark:border-border-dark bg-white/80 dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
             {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
             <div className="flex items-center gap-2 min-w-0">
                 <button aria-label="Abrir menú" 
@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     <input 
                         type="text"
                         placeholder="Buscar proyectos, agentes..." aria-label="Buscar"
-                        className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-[#233948] bg-slate-50 dark:bg-[#16222b] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                        className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-card-dark text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
                     />
                 </div>
             </div>

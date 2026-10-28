@@ -30,7 +30,7 @@ const EXAM_RESULT_LABEL: Record<number, string> = { 1: 'Apto', 2: 'Apto con rest
 const SEVERITY_LABEL: Record<number, string> = { 1: 'Leve', 2: 'Grave', 3: 'Mortal' };
 const RISK_LEVEL_LABEL: Record<number, string> = { 1: 'Bajo', 2: 'Medio', 3: 'Alto', 4: 'Muy alto', 5: 'Crítico' };
 
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
+const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
 const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 const emptyRisk = (): CreateRiskRequest => ({ level: 1, factor: '', description: '' });
@@ -257,7 +257,7 @@ export const SstPage: React.FC = () => {
                     ) : (
                         <div className="space-y-3">
                             {exams.map(e => (
-                                <div key={e.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-center justify-between gap-2">
+                                <div key={e.id} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark flex items-center justify-between gap-2">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">Examen de {EXAM_TYPE_LABEL[e.examType] ?? e.examType}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -294,7 +294,7 @@ export const SstPage: React.FC = () => {
                     ) : (
                         <div className="space-y-3">
                             {risks.map(r => (
-                                <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                     <div className="flex items-center justify-between">
                                         <p className="font-bold text-slate-900 dark:text-white">{r.factor}</p>
                                         <Badge variant={r.level >= 3 ? 'danger' : r.level === 2 ? 'warning' : 'success'}>

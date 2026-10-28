@@ -91,7 +91,7 @@ export const SkillsSection: React.FC<Props> = ({
                     {skills.map((skill) => (
                         <div 
                             key={skill.id}
-                            className={`p-3 rounded-xl ${getLevelBg(skill.level)} border border-transparent hover:border-slate-200 dark:hover:border-[#233948] transition-all relative`}
+                            className={`p-3 rounded-xl ${getLevelBg(skill.level)} border border-transparent hover:border-slate-200 dark:hover:border-border-dark transition-all relative`}
                         >
                             {opLoading && (
                                 <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center z-10">

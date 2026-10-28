@@ -67,7 +67,7 @@ const NavSection: React.FC<NavSectionProps> = ({ title, id, open, onToggle, chil
     if (collapsed) {
         return (
             <div className="space-y-1">
-                <div className="mx-3 my-2 border-t border-slate-200 dark:border-[#233948]" role="separator" aria-label={title} />
+                <div className="mx-3 my-2 border-t border-slate-200 dark:border-border-dark" role="separator" aria-label={title} />
                 {children}
             </div>
         );
@@ -221,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </div>
 
             <div className={compact ? 'px-3 pb-6 flex justify-center' : 'px-6 pb-6'} title={compact ? user?.name : undefined}>
-                <div className={`flex items-center gap-3 ${compact ? 'p-1.5' : 'p-3'} bg-slate-50 dark:bg-[#16222b] rounded-xl border border-slate-100 dark:border-[#233948]`}>
+                <div className={`flex items-center gap-3 ${compact ? 'p-1.5' : 'p-3'} bg-slate-50 dark:bg-card-dark rounded-xl border border-slate-100 dark:border-border-dark`}>
                     <Avatar 
                         src={user?.avatar} 
                         name={user?.name || 'Usuario'} 
@@ -286,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
+            <div className="p-4 border-t border-slate-200 dark:border-border-dark mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
                 <button
                     onClick={handleLogout}
@@ -303,7 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     return (
         <>
             {/* ── Desktop Sidebar ── visible md+ ── */}
-            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
+            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
                 {renderContent(collapsed, 'sidebar')}
             </aside>
 
@@ -316,7 +316,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             />
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
+                className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >

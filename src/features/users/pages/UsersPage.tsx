@@ -505,7 +505,7 @@ export const UsersPage: React.FC = () => {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50 transition-colors group">
+                                    <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-border-dark/50 transition-colors group">
                                         <td className={TD_CLASS}>
                                             <div className="flex items-center gap-3">
                                                 <Avatar name={user.fullName} size="sm" />
@@ -565,7 +565,7 @@ export const UsersPage: React.FC = () => {
                                             {activeDropdown === user.id && (
                                                 <div
                                                     style={dropdownStyle}
-                                                    className="fixed w-52 bg-white dark:bg-[#16222b] rounded-xl shadow-xl border border-slate-200 dark:border-[#233948] py-2 z-50 text-left whitespace-nowrap"
+                                                    className="fixed w-52 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-slate-200 dark:border-border-dark py-2 z-50 text-left whitespace-nowrap"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <button
@@ -573,14 +573,14 @@ export const UsersPage: React.FC = () => {
                                                             navigate(ROUTES.USER_DETAIL.replace(':id', user.id));
                                                             setActiveDropdown(null);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         <Eye size={16} /> Ver perfil
                                                     </button>
                                                     {isAdmin && (
                                                     <button
                                                         onClick={() => handleOpenEdit(user)}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         <Edit size={16} /> Editar
                                                     </button>
@@ -593,7 +593,7 @@ export const UsersPage: React.FC = () => {
                                                             rolesModal.open();
                                                             setActiveDropdown(null);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         <ShieldCheck size={16} /> Gestionar roles
                                                     </button>
@@ -606,7 +606,7 @@ export const UsersPage: React.FC = () => {
                                                             permissionsModal.open();
                                                             setActiveDropdown(null);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         <Key size={16} /> Permisos efectivos
                                                     </button>
@@ -618,7 +618,7 @@ export const UsersPage: React.FC = () => {
                                                             skillsModal.open();
                                                             setActiveDropdown(null);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         <Award size={16} /> Skills / Validar
                                                     </button>
@@ -626,7 +626,7 @@ export const UsersPage: React.FC = () => {
                                                     {isAdmin && (
                                                     <button
                                                         onClick={() => handleToggleStatus(user)}
-                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark flex items-center gap-2"
                                                     >
                                                         {user.isActive ? (
                                                             <><UserX size={16} /> Desactivar</>
@@ -637,7 +637,7 @@ export const UsersPage: React.FC = () => {
                                                     )}
                                                     {isAdmin && (
                                                     <>
-                                                    <hr className="my-2 border-slate-200 dark:border-[#233948]" />
+                                                    <hr className="my-2 border-slate-200 dark:border-border-dark" />
                                                     <button
                                                         onClick={() => handleOpenDelete(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2"
@@ -738,7 +738,7 @@ export const UsersPage: React.FC = () => {
             >
                 {selectedUser && (
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-[#111b22] rounded-xl mb-4">
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-background-dark rounded-xl mb-4">
                             <Avatar name={selectedUser.fullName} size="md" />
                             <div>
                                 <p className="font-bold text-slate-900 dark:text-white">{selectedUser.fullName}</p>
@@ -761,7 +761,7 @@ export const UsersPage: React.FC = () => {
                             Es empleado (vinculación laboral)
                         </label>
                         
-                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#111b22] rounded-xl">
+                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark rounded-xl">
                             <div>
                                 <p className="font-semibold text-slate-900 dark:text-white">Estado del Usuario</p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -844,7 +844,7 @@ export const UsersPage: React.FC = () => {
                         roles.map((role) => {
                             const checked = userAssignedRoleIds.has(role.id);
                             return (
-                                <div key={role.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#111b22]">
+                                <div key={role.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-background-dark">
                                     <div>
                                         <p className="font-semibold text-slate-900 dark:text-white">{role.name}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">{role.description || `${role.permissionCount} permisos`}</p>

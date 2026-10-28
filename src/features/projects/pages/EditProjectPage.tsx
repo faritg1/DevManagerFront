@@ -333,7 +333,7 @@ export const EditProjectPage: React.FC = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                    className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
                     placeholder="Describe los objetivos y alcance del proyecto..."
                   />
                 </label>
@@ -429,7 +429,7 @@ export const EditProjectPage: React.FC = () => {
                       {mandatoryReqs.map((req) => (
                         <div
                           key={req.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]"
+                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark"
                         >
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-rose-500" />
@@ -457,7 +457,7 @@ export const EditProjectPage: React.FC = () => {
                       {optionalReqs.map((req) => (
                         <div
                           key={req.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]"
+                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark"
                         >
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-slate-400" />
@@ -527,14 +527,14 @@ export const EditProjectPage: React.FC = () => {
               type="checkbox"
               checked={newSkillMandatory}
               onChange={(e) => setNewSkillMandatory(e.target.checked)}
-              className="w-5 h-5 rounded border-slate-300 dark:border-[#233948] text-primary focus:ring-primary"
+              className="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary"
             />
             <span className="text-slate-700 dark:text-white text-sm font-medium">
               ¿Es obligatorio?
             </span>
           </label>
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-[#233948]">
+          <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-border-dark">
             <Button
               variant="outline"
               onClick={addSkillModal.close}

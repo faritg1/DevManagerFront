@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { AlertTriangle, LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
     title: string;
@@ -12,7 +12,10 @@ interface StatCardProps {
         value: string;
         isPositive: boolean;
     };
-    variant?: 'default' | 'gradient';
+    /** Secondary KPI: smaller value and icon, for dense rows. */
+    compact?: boolean;
+    /** The value could not be loaded: shows "—" and this hint instead of a misleading number. */
+    error?: string;
     className?: string;
 }
 
@@ -24,47 +27,36 @@ export const StatCard: React.FC<StatCardProps> = ({
     iconColor = 'text-primary',
     iconBgColor = 'bg-blue-50 dark:bg-blue-500/10',
     trend,
-    variant = 'default',
+    compact = false,
+    error,
     className = '',
-}) => {
-    if (variant === 'gradient') {
-        return (
-            <div className={`rounded-2xl p-6 bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg ${className}`}>
-                <p className="text-white/80 text-sm font-bold uppercase tracking-wide">{title}</p>
-                <p className="text-white text-3xl sm:text-4xl font-bold mt-4 break-words tabular-nums">{value}</p>
-                {subtitle && (
-                    <span className="text-white/80 text-sm font-semibold">{subtitle}</span>
-                )}
-            </div>
-        );
-    }
-
-    return (
-        <div className={`flex min-w-0 flex-col gap-4 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-[#325167] transition-all ${className}`}>
-            <div className="flex items-start justify-between gap-3">
-                <p className="min-w-0 text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-wider">
-                    {title}
-                </p>
-                {Icon && (
-                    <div className={`shrink-0 p-2 ${iconBgColor} rounded-lg ${iconColor}`}>
-                        <Icon size={24} />
-                    </div>
-                )}
-            </div>
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <p className="min-w-0 break-words text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold leading-none tabular-nums">
-                    {value}
-                </p>
-                {trend && (
-                    <span className={`text-sm font-semibold ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        {trend.value}
-                    </span>
-                )}
-                {subtitle && !trend && (
-                    <span className="text-slate-500 text-sm font-semibold">{subtitle}</span>
-                )}
-            </div>
+}) => (
+    <div className={`flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300 hover:shadow-md dark:border-border-dark dark:bg-card-dark dark:hover:border-input-border ${compact ? 'gap-2 p-4' : 'gap-4 p-5 sm:p-6'} ${className}`}>
+        <div className="flex items-start justify-between gap-2">
+            <p title={title} className={`min-w-0 flex-1 break-words font-bold uppercase leading-snug text-slate-500 dark:text-slate-400 ${compact ? 'text-[11px] tracking-wide' : 'text-xs tracking-wider sm:text-sm'}`}>
+                {title}
+            </p>
+            {Icon && (
+                <div className={`shrink-0 rounded-lg ${iconBgColor} ${iconColor} ${compact ? 'p-1.5' : 'p-2'}`}>
+                    <Icon size={compact ? 16 : 24} aria-hidden="true" />
+                </div>
+            )}
         </div>
-    );
-};
-
+        <div className="mt-auto flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+            <p className={`min-w-0 break-words font-bold leading-none tabular-nums text-slate-900 dark:text-white ${compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}`}>
+                {error ? '—' : value}
+            </p>
+            {error ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                    <AlertTriangle size={12} aria-hidden="true" /> {error}
+                </span>
+            ) : trend ? (
+                <span className={`text-sm font-semibold ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {trend.value}
+                </span>
+            ) : subtitle && (
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{subtitle}</span>
+            )}
+        </div>
+    </div>
+);

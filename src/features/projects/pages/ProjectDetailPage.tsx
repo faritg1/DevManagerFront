@@ -26,6 +26,7 @@ import {
 } from '../../../shared/api/types';
 
 import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
+import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
 
 import { ProjectRequirementsSection } from '../components/ProjectRequirementsSection';
 import { ProjectApplicationsSection } from '../components/ProjectApplicationsSection';
@@ -40,28 +41,6 @@ const formatDate = (dateString: string | null): string => {
         month: 'long',
         year: 'numeric'
     });
-};
-
-const getProjectGradient = (name: string): string => {
-    const gradients = [
-        'from-blue-500 to-cyan-400',
-        'from-purple-500 to-pink-500',
-        'from-emerald-500 to-teal-400',
-        'from-orange-500 to-yellow-400',
-        'from-rose-500 to-red-400',
-        'from-indigo-500 to-blue-400',
-    ];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return gradients[hash % gradients.length];
-};
-
-const getProjectInitials = (name: string): string => {
-    return name
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word[0])
-        .join('')
-        .toUpperCase();
 };
 
 export const ProjectDetailPage: React.FC = () => {

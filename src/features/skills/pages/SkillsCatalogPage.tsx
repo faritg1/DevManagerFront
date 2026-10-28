@@ -350,7 +350,7 @@ export const SkillsCatalogPage: React.FC = () => {
             </table>
           </div>
 
-          <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#16222b]">
+          <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-card-dark">
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Mostrando {filteredSkills.length} de {skills.length} habilidades
             </p>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Outlet } from 'react-router-dom';
+import { RouteBoundary } from '../../shared/components/RouteBoundary';
 import { Sidebar } from '../../widgets/Sidebar';
 import { Header } from '../../widgets/Header';
 
@@ -22,7 +22,7 @@ export const MainLayout: React.FC = () => {
                     <Header onMenuClick={openMobileMenu} />
 
                     <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth">
-                        <Outlet />
+                        <RouteBoundary />
                     </main>
                 </div>
             </div>

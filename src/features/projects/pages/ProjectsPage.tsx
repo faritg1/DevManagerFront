@@ -1,62 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-    Plus, 
-    Search, 
-    FolderOpen, 
-    Calendar,
-    ArrowRight,
-    MoreHorizontal,
-    Loader2,
-    AlertCircle,
-    Briefcase
-} from 'lucide-react';
-import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader, EmptyState } from '../../../shared/ui';
+import { Link } from 'react-router-dom';
+import { Plus, Search, FolderOpen, AlertCircle } from 'lucide-react';
+import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
-import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
-import { getComplexityConfig } from '../utils/complexityConfig';
-
-const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string } => {
-    const label = PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
-    switch (status) {
-        case ProjectStatus.Open: return { variant: 'success', label };
-        case ProjectStatus.InProgress: return { variant: 'warning', label };
-        case ProjectStatus.Closed: return { variant: 'info', label };
-        case ProjectStatus.Cancelled: return { variant: 'danger', label };
-        default: return { variant: 'default', label };
-    }
-};
-
-const getProjectGradient = (index: number): string => {
-    const gradients = [
-        'from-blue-500 to-cyan-400',
-        'from-purple-500 to-pink-500',
-        'from-emerald-500 to-teal-400',
-        'from-orange-500 to-yellow-400',
-        'from-rose-500 to-red-400',
-        'from-indigo-500 to-blue-400',
-    ];
-    return gradients[index % gradients.length];
-};
-
-const getProjectInitials = (name: string): string => {
-    return name
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word[0])
-        .join('')
-        .toUpperCase();
-};
-
-const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Sin fecha';
-    return new Date(dateString).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-    });
-};
+import { ProjectStatus, type ProjectResponse } from '../../../shared/api/types';
+import { useIsAdmin } from '../../../shared/hooks';
+import { ProjectCard, NewProjectTile } from '../components/ProjectCard';
 
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
@@ -68,7 +18,7 @@ const STATUS_TABS = [
 ];
 
 export const ProjectsPage: React.FC = () => {
-    const navigate = useNavigate();
+    const isAdmin = useIsAdmin();
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -119,11 +69,13 @@ export const ProjectsPage: React.FC = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <Link to={ROUTES.CREATE_PROJECT}>
-                            <Button icon={Plus}>
-                                Nuevo Proyecto
-                            </Button>
-                        </Link>
+                        {isAdmin && (
+                            <Link to={ROUTES.CREATE_PROJECT}>
+                                <Button icon={Plus}>
+                                    Nuevo Proyecto
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 }
             />
@@ -146,10 +98,7 @@ export const ProjectsPage: React.FC = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                        <p className="text-slate-500 dark:text-slate-400">Cargando proyectos...</p>
-                    </div>
+                    <LoadingBlock label="Cargando proyectos…" className="py-20" />
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
@@ -165,8 +114,8 @@ export const ProjectsPage: React.FC = () => {
                         icon={FolderOpen}
                         className="py-20"
                         title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
-                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : 'Crea tu primer proyecto para comenzar.'}
-                        action={!searchQuery && (
+                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : isAdmin ? 'Crea tu primer proyecto para comenzar.' : undefined}
+                        action={!searchQuery && isAdmin && (
                             <Link to={ROUTES.CREATE_PROJECT}>
                                 <Button icon={Plus}>Crear Proyecto</Button>
                             </Link>
@@ -178,82 +127,9 @@ export const ProjectsPage: React.FC = () => {
                             Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
                         </p>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-                            {filteredProjects.map((project, index) => {
-                                const statusConfig = getStatusConfig(project.status);
-                                const complexityConfig = getComplexityConfig(project.complexityLevel);
-                                
-                                return (
-                                    <Card 
-                                        key={project.id} 
-                                        hoverable
-                                        onClick={() => navigate(`/projects/${project.id}`)}
-                                        className="group relative overflow-hidden"
-                                    >
-                                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ArrowRight className="text-primary transform -translate-x-2 group-hover:translate-x-0 transition-transform" />
-                                        </div>
-
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex gap-4">
-                                                <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getProjectGradient(index)} flex items-center justify-center text-white font-bold text-lg shadow-lg flex-shrink-0`}>
-                                                    {getProjectInitials(project.name)}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h3 className="text-slate-900 dark:text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors truncate">
-                                                        {project.name}
-                                                    </h3>
-                                                    {project.code && (
-                                                        <p className="text-slate-500 dark:text-slate-400 text-xs font-mono mt-0.5">
-                                                            {project.code}
-                                                        </p>
-                                                    )}
-                                                    {project.description && (
-                                                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">
-                                                            {project.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-wrap items-center gap-2 mt-4">
-                                            <Badge variant={statusConfig.variant} dot>
-                                                {statusConfig.label}
-                                            </Badge>
-                                            <Badge variant={complexityConfig.variant}>
-                                                Complejidad: {complexityConfig.label}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar size={14} />
-                                                {formatDate(project.startDate)}
-                                            </span>
-                                            {project.endDate && (
-                                                <>
-                                                    <span>→</span>
-                                                    <span>{formatDate(project.endDate)}</span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                    </Card>
-                                );
-                            })}
-
-                            <Link 
-                                to={ROUTES.CREATE_PROJECT} 
-                                className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[280px]"
-                            >
-                                <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-[#16222b] flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-                                    <Plus size={28} />
-                                </div>
-                                <p className="text-slate-500 dark:text-slate-400 font-semibold group-hover:text-primary transition-colors">
-                                    Crear Nuevo Proyecto
-                                </p>
-                            </Link>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                            {filteredProjects.map(project => <ProjectCard key={project.id} project={project} />)}
+                            {isAdmin && <NewProjectTile />}
                         </div>
                     </>
                 )}
@@ -261,4 +137,3 @@ export const ProjectsPage: React.FC = () => {
         </PageContainer>
     );
 };
-

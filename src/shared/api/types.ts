@@ -1,9 +1,3 @@
-/**
- * API Types
- * Tipos para el API DevManager
- * Basado en: API_GUIDE.md
- */
-
 // ============ BASE API RESPONSE ============
 export interface ApiResponse<T> {
   success: boolean;
@@ -276,10 +270,6 @@ export interface CreateProjectRequest {
   complexityLevel: ProjectComplexity;
 }
 
-/**
- * Partial update - Solo se actualizan los campos enviados
- * Los campos omitidos mantienen su valor actual
- */
 export interface UpdateProjectRequest {
   code?: string | null;
   name?: string;

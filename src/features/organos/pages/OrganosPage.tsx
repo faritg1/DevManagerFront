@@ -82,12 +82,10 @@ export const OrganosPage: React.FC = () => {
     const [memberOpen, setMemberOpen] = useState(false);
     const [memberForm, setMemberForm] = useState({ userId: '', position: '', startDate: today() });
 
-    // Actas
     const [minutesOpen, setMinutesOpen] = useState(false);
     const [minutesForm, setMinutesForm] = useState<CreateMinutesRequest>(emptyMinutes(''));
     const [minutesDetail, setMinutesDetail] = useState<MinutesDto | null>(null);
 
-    // Asambleas
     const [conveneOpen, setConveneOpen] = useState(false);
     const [conveneForm, setConveneForm] = useState<ConveneAssemblyRequest>(emptyAssembly());
     const [assembly, setAssembly] = useState<AssemblyDto | null>(null);
@@ -95,7 +93,6 @@ export const OrganosPage: React.FC = () => {
     const [attendees, setAttendees] = useState('');
     const [closeResults, setCloseResults] = useState('');
 
-    // Voto
     const [voterId, setVoterId] = useState('');
     const [hasVoted, setHasVoted] = useState(false);
     const [voteOption, setVoteOption] = useState<VoteOption>(1);
@@ -201,7 +198,6 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    // ===== Actas =====
     const openMinutesDetail = async (id: string) => {
         try {
             const res = await organosService.getMinutesById(id);
@@ -236,7 +232,6 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    // ===== Asambleas =====
     const voterOf = (id: string) => id || user?.id || '';
 
     const loadVoteState = async (asambleaId: string, voter: string) => {

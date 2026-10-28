@@ -21,7 +21,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
         </CardHeader>
 
         <div className="space-y-4">
-            {/* Años de experiencia */}
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     Años de Experiencia
@@ -42,7 +41,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 )}
             </div>
 
-            {/* Seniority & Location (new) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Seniority</label>
@@ -74,7 +72,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 </div>
             </div>
 
-            {/* Timezone & Availability */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Zona horaria</label>
@@ -104,7 +101,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 </div>
             </div>
 
-            {/* Preferred title & Rate */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Título preferido</label>

@@ -139,7 +139,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
     >
       <div className="space-y-5">
 
-        {/* Loading */}
         {isMatching && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
@@ -148,7 +147,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
           </div>
         )}
 
-        {/* Error */}
         {!isMatching && matchingError && (
           <div className="flex flex-col items-center justify-center py-14 text-center">
             <div className="p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
@@ -162,12 +160,10 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
           </div>
         )}
 
-        {/* Results */}
         {!isMatching && !matchingError && matchingResults && (() => {
           const stats = getCandidateStats();
           return (
             <>
-              {/* Summary row */}
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500 dark:text-slate-400" /> },
@@ -186,7 +182,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                 ))}
               </div>
 
-              {/* Analysis narrative */}
               {matchingResults.analysisNarrative && (
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-2 mb-2">
@@ -199,7 +194,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                 </div>
               )}
 
-              {/* Empty state */}
               {matchingResults.candidates.length === 0 ? (
                 <div className="text-center py-10">
                   <div className="p-3 rounded-full bg-slate-100 dark:bg-slate-800 inline-block mb-3">
@@ -231,7 +225,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                               : "border-slate-200 dark:border-slate-700"
                           }`}
                         >
-                          {/* Card header */}
                           <div className="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-700">
                             <div className="relative shrink-0">
                               <Avatar name={candidate.fullName} size="md" />
@@ -254,7 +247,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                               <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{candidate.email}</p>
                             </div>
 
-                            {/* Score badge */}
                             <div className={`px-3 py-2 rounded-lg shrink-0 text-center ${getScoreBadgeClass(candidate.matchScore)}`}>
                               <p className={`text-2xl font-black leading-none ${getScoreColor(candidate.matchScore)}`}>
                                 {candidate.matchScore}%
@@ -263,7 +255,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             </div>
                           </div>
 
-                          {/* Skill stats */}
                           <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-700 border-b border-slate-100 dark:border-slate-700 text-center">
                             <div className="py-3 px-4">
                               <p className={`text-lg font-black ${mandatoryMet === mandatoryTotal ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
@@ -279,7 +270,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             </div>
                           </div>
 
-                          {/* Skills breakdown */}
                           <div className="p-4 space-y-3">
                             {strengths.length > 0 && (
                               <div>
@@ -327,7 +317,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                               </div>
                             )}
 
-                            {/* Recommendation reason */}
                             {candidate.recommendationReason && (
                               <details className="group">
                                 <summary className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 select-none">
@@ -340,7 +329,6 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                               </details>
                             )}
 
-                            {/* Apply button — best candidate only */}
                             {isBest && (
                               <Button
                                 variant="primary"

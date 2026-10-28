@@ -167,7 +167,6 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         )}
       </Card>
 
-      {/* Modal Agregar Requisito */}
       <Modal
         isOpen={requirementModal.isOpen}
         onClose={requirementModal.close}
@@ -190,7 +189,6 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         }
       >
         <div className="space-y-5">
-          {/* Selector de Skill */}
           <div className="flex flex-col gap-2">
             <label className="text-slate-700 dark:text-white text-sm font-bold">Habilidad *</label>
             {loadingSkills ? (
@@ -219,7 +217,6 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             )}
           </div>
 
-          {/* Nivel Requerido */}
           <div className="flex flex-col gap-2">
             <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel Requerido *</label>
             <LevelSelector
@@ -229,7 +226,6 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             />
           </div>
 
-          {/* Es Obligatorio */}
           <div className="flex flex-col gap-2">
             <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de Requisito</label>
             <div className="flex gap-3">

@@ -105,7 +105,6 @@ export const ProfilePage: React.FC = () => {
   const addSkill = async () => {
     setEditingSkill(null);
     setSkillForm({ skillId: "", level: 3, evidenceUrl: "", experienceDescription: "" });
-    // always refresh list when opening
     await fetchAvailableSkills();
     skillModal.open();
   };
@@ -431,7 +430,6 @@ export const ProfilePage: React.FC = () => {
       >
         {aiValidationResult && (
           <div className="space-y-5">
-            {/* Header con resultado */}
             <div
               className={`p-4 rounded-xl border ${
                 aiValidationResult.result.isValid
@@ -470,7 +468,6 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Barra de confianza */}
               <div className="mt-3">
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-slate-500 dark:text-slate-400">
@@ -497,7 +494,6 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Razonamiento */}
             <div>
               <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                 <TrendingUp size={16} className="text-primary" />
@@ -508,7 +504,6 @@ export const ProfilePage: React.FC = () => {
               </p>
             </div>
 
-            {/* Recomendaciones */}
             {aiValidationResult.result.recommendations.length > 0 && (
               <div>
                 <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">

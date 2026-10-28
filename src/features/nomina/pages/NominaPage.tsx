@@ -34,7 +34,6 @@ export const NominaPage: React.FC = () => {
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
 
-    // Compensación
     const [compUserId, setCompUserId] = useState('');
     const [compYear, setCompYear] = useState(new Date().getFullYear());
     const [compensations, setCompensations] = useState<CompensationDto[]>([]);
@@ -42,7 +41,6 @@ export const NominaPage: React.FC = () => {
     const [createOpen, setCreateOpen] = useState(false);
     const [createForm, setCreateForm] = useState<CreateCompensationRequest>(emptyForm());
 
-    // PILA (Admin)
     const [pilaYear, setPilaYear] = useState(new Date().getFullYear());
     const [pilaMonth, setPilaMonth] = useState(new Date().getMonth() + 1);
     const [sheet, setSheet] = useState<PilaContributionDto[]>([]);

@@ -59,7 +59,6 @@ export const ProfileHeader: React.FC<Props> = ({
                         <div className="flex items-center gap-3 mt-3 flex-wrap">
                             <Badge variant="purple">{userRole || 'Usuario'}</Badge>
 
-                            {/* Seniority */}
                             { (profile?.seniorityLevelId || profileForm.seniorityLevelId) && (
                                 <Badge variant="default">
                                     {catalogs?.seniorityLevels?.find(s => s.id === (profileForm.seniorityLevelId ?? profile?.seniorityLevelId))?.name}

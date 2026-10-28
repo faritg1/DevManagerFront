@@ -1,9 +1,3 @@
-/**
- * API Endpoints Configuration
- * Centralized endpoint definitions for the DevManager .NET Backend
- * Basado en: API_GUIDE.md
- */
-
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {

@@ -48,7 +48,6 @@ export const SettingsPage: React.FC = () => {
   );
   const [saved, setSaved] = useState(false);
 
-  // Apply theme on change
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
@@ -80,14 +79,12 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <PageContainer narrow className="space-y-6">
-      {/* Header */}
       <PageHeader
         icon={<Settings size={28} className="text-primary" />}
         title="Configuración"
         description="Personaliza tu experiencia en DevManager"
       />
 
-      {/* ─── Account Info ────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <User size={20} className="text-primary" />
@@ -132,7 +129,6 @@ export const SettingsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* ─── Appearance ──────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <Moon size={20} className="text-indigo-500" />
@@ -183,7 +179,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* ─── Interface ───────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <HardDrive size={20} className="text-emerald-500" />
@@ -191,7 +186,6 @@ export const SettingsPage: React.FC = () => {
         </h2>
 
         <div className="space-y-4">
-          {/* Sidebar */}
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-white">
@@ -219,7 +213,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* ─── Danger Zone ─────────────────────── */}
       <Card className="border-rose-200 dark:border-rose-500/20">
         <h2 className="text-lg font-bold text-rose-500 flex items-center gap-2 mb-4">
           <LogOut size={20} />

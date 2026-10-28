@@ -80,7 +80,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     const { showNotification } = useNotification();
     const { confirm } = useConfirm();
 
-    // Auto-close mobile drawer on route change
     const onCloseRef = useRef(onClose);
     useEffect(() => { onCloseRef.current = onClose; });
     useEffect(() => {
@@ -109,7 +108,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
     // Función que verifica si una ruta está activa (incluyendo rutas hijas)
     const isActive = (path: string) => {
-        // Caso especial: Dashboard solo match exacto
         if (path === ROUTES.DASHBOARD) {
             return location.pathname === path;
         }
@@ -117,7 +115,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
-    // Estado local para desplegable 'Seguridad'
     const [securityOpen, setSecurityOpen] = useState<boolean>(
         () => isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS),
     );
@@ -128,7 +125,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     // Sidebar content shared by desktop & mobile views
     const renderContent = () => (
         <>
-            {/* Logo Area */}
             <div className="p-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="size-8 text-primary">
@@ -147,7 +143,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 )}
             </div>
 
-            {/* User Mini Profile */}
             <div className="px-6 pb-6">
                 <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#16222b] rounded-xl border border-slate-100 dark:border-[#233948]">
                     <Avatar 
@@ -166,7 +161,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </div>
             </div>
 
-            {/* Navigation */}
             <nav className="flex-1 px-4 flex flex-col gap-4 overflow-y-auto">
                 <NavSection title={NAV_SECTIONS.PLATFORM}>
                     <NavItem to={ROUTES.DASHBOARD} icon={LayoutDashboard} label="Dashboard" isActive={isActive(ROUTES.DASHBOARD)} />
@@ -236,7 +230,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </NavSection>
             </nav>
 
-            {/* Footer */}
             <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
                 <button 
@@ -257,7 +250,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 {renderContent()}
             </aside>
 
-            {/* ── Mobile Overlay ── */}
             <div
                 className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -266,7 +258,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 aria-hidden="true"
             />
 
-            {/* ── Mobile Drawer ── */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'

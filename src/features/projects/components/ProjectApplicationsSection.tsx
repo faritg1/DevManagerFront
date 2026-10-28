@@ -186,7 +186,6 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
         )}
       </Card>
 
-      {/* Modal Revisar Postulación */}
       <Modal
         isOpen={reviewModal.isOpen}
         onClose={reviewModal.close}

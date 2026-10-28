@@ -36,7 +36,6 @@ export const Modal: React.FC<ModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                {/* Backdrop */}
                 <div 
                     className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-0" 
                     onClick={onClose}
@@ -48,7 +47,6 @@ export const Modal: React.FC<ModalProps> = ({
                     &#8203;
                 </span>
                 
-                {/* Modal Panel */}
                 <div 
                     className={`
                         inline-block align-bottom bg-white dark:bg-[#16222b] 
@@ -60,7 +58,6 @@ export const Modal: React.FC<ModalProps> = ({
                     `}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Header */}
                     {title && (
                         <div className="px-6 py-5 border-b border-slate-200 dark:border-[#233948] flex items-center justify-between">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -76,12 +73,10 @@ export const Modal: React.FC<ModalProps> = ({
                         </div>
                     )}
                     
-                    {/* Body */}
                     <div className="px-6 py-6">
                         {children}
                     </div>
                     
-                    {/* Footer */}
                     {footer && (
                         <div className="bg-slate-50 dark:bg-[#111b22]/50 px-6 py-4 flex flex-row-reverse gap-3 border-t border-slate-200 dark:border-[#233948]">
                             {footer}

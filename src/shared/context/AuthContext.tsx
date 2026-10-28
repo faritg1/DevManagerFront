@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { authService, organizationsService, rbacService } from '../api';
 import { STORAGE_KEYS } from '../config/constants';
 
-// Types
 export interface User {
     id: string;
     name: string;
@@ -35,7 +34,6 @@ interface RegisterData {
     entityType?: number;
 }
 
-// Initial state
 const initialState: AuthState = {
     user: null,
     token: null,
@@ -43,14 +41,11 @@ const initialState: AuthState = {
     isLoading: true,
 };
 
-// Context
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Provider
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, setState] = useState<AuthState>(initialState);
 
-    // Initialize auth state from storage
     useEffect(() => {
         const initAuth = async () => {
             // Solo leer las keys propias del app (auth_token / auth_user).
@@ -219,7 +214,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
-// Hook
 export const useAuth = (): AuthContextValue => {
     const context = useContext(AuthContext);
     if (!context) {

@@ -47,7 +47,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   const [isAssigning, setIsAssigning] = useState(false);
   const [userSearch, setUserSearch] = useState("");
 
-  // Load users when modal opens
   React.useEffect(() => {
     if (!isOpen) return;
     setSelectedUserId("");

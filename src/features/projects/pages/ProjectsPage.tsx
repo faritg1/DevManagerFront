@@ -17,7 +17,6 @@ import { projectsService } from '../../../shared/api';
 import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../utils/complexityConfig';
 
-// Helpers para mapear estados a badges
 const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string } => {
     const label = PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
     switch (status) {
@@ -59,7 +58,6 @@ const formatDate = (dateString: string | null): string => {
     });
 };
 
-// Tabs de filtro por estado
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
     { label: 'Borradores', value: ProjectStatus.Draft },
@@ -78,7 +76,6 @@ export const ProjectsPage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<ProjectStatus | undefined>(undefined);
 
-    // Cargar proyectos
     useEffect(() => {
         const fetchProjects = async () => {
             setIsLoading(true);
@@ -102,7 +99,6 @@ export const ProjectsPage: React.FC = () => {
         fetchProjects();
     }, [activeTab]);
 
-    // Filtrar por búsqueda
     useEffect(() => {
         if (!searchQuery.trim()) {
             setFilteredProjects(projects);
@@ -120,7 +116,6 @@ export const ProjectsPage: React.FC = () => {
 
     return (
         <PageContainer>
-            {/* Header + actions */}
             <PageHeader
                 title="Proyectos"
                 description="Gestiona y monitorea todos los proyectos de la organización."
@@ -143,7 +138,6 @@ export const ProjectsPage: React.FC = () => {
                 }
             />
             <div className="flex flex-col gap-8">
-                {/* Status Tabs Row */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
                     {STATUS_TABS.map((tab) => (
                         <button
@@ -160,7 +154,6 @@ export const ProjectsPage: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Content */}
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -195,12 +188,10 @@ export const ProjectsPage: React.FC = () => {
                     </div>
                 ) : (
                     <>
-                        {/* Projects Count */}
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                             Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
                         </p>
 
-                        {/* Projects Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                             {filteredProjects.map((project, index) => {
                                 const statusConfig = getStatusConfig(project.status);
@@ -213,12 +204,10 @@ export const ProjectsPage: React.FC = () => {
                                         onClick={() => navigate(`/projects/${project.id}`)}
                                         className="group relative overflow-hidden"
                                     >
-                                        {/* Hover Arrow */}
                                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <ArrowRight className="text-primary transform -translate-x-2 group-hover:translate-x-0 transition-transform" />
                                         </div>
 
-                                        {/* Project Header */}
                                         <div className="flex justify-between items-start">
                                             <div className="flex gap-4">
                                                 <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getProjectGradient(index)} flex items-center justify-center text-white font-bold text-lg shadow-lg flex-shrink-0`}>
@@ -242,7 +231,6 @@ export const ProjectsPage: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Badges Row */}
                                         <div className="flex flex-wrap items-center gap-2 mt-4">
                                             <Badge variant={statusConfig.variant} dot>
                                                 {statusConfig.label}
@@ -252,7 +240,6 @@ export const ProjectsPage: React.FC = () => {
                                             </Badge>
                                         </div>
 
-                                        {/* Dates */}
                                         <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
                                             <span className="flex items-center gap-1">
                                                 <Calendar size={14} />
@@ -270,7 +257,6 @@ export const ProjectsPage: React.FC = () => {
                                 );
                             })}
 
-                            {/* Create New Card */}
                             <Link 
                                 to={ROUTES.CREATE_PROJECT} 
                                 className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[280px]"

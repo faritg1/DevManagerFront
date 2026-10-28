@@ -26,21 +26,17 @@ export const SkillsCatalogPage: React.FC = () => {
   const { confirm } = useConfirm();
   const { catalogs } = useConfig();
 
-  // ─── State ──────────────────────────────────────────────
   const [skills, setSkills] = useState<SkillDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillDto | null>(null);
 
-  // Deleting state
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // ─── Data fetching ──────────────────────────────────────
   const loadSkills = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -63,7 +59,6 @@ export const SkillsCatalogPage: React.FC = () => {
     loadSkills();
   }, [loadSkills]);
 
-  // ─── Derived data ───────────────────────────────────────
   const categories = useMemo(() => {
     const cats = new Set<string>();
     skills.forEach((s) => {
@@ -75,7 +70,6 @@ export const SkillsCatalogPage: React.FC = () => {
   const filteredSkills = useMemo(() => {
     let result = skills;
 
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -85,14 +79,12 @@ export const SkillsCatalogPage: React.FC = () => {
       );
     }
 
-    // Type filter
     if (filterType === "global") {
       result = result.filter((s) => s.skillType === 0);
     } else if (filterType === "organizational") {
       result = result.filter((s) => s.skillType === 1);
     }
 
-    // Category filter
     if (filterCategory !== "all") {
       result = result.filter((s) => s.category === filterCategory);
     }
@@ -110,7 +102,6 @@ export const SkillsCatalogPage: React.FC = () => {
     [skills, categories]
   );
 
-  // ─── Handlers ───────────────────────────────────────────
   const handleCreate = () => {
     setEditingSkill(null);
     setIsModalOpen(true);
@@ -154,7 +145,6 @@ export const SkillsCatalogPage: React.FC = () => {
     loadSkills();
   };
 
-  // ─── Render helpers ─────────────────────────────────────
   const renderSkillTypeIcon = (type: number) =>
     type === 0 ? (
       <Globe size={14} className="text-blue-500" />
@@ -173,7 +163,6 @@ export const SkillsCatalogPage: React.FC = () => {
       </Badge>
     );
 
-  // ─── Loading skeleton ──────────────────────────────────
   if (isLoading) {
     return (
       <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6 animate-pulse">
@@ -193,7 +182,6 @@ export const SkillsCatalogPage: React.FC = () => {
 
   return (
     <PageContainer className="space-y-6">
-      {/* ─── Header ─────────────────────────────────── */}
       <PageHeader
         icon={<Code2 size={28} className="text-primary" />}
         title="Catálogo de Habilidades"
@@ -205,7 +193,6 @@ export const SkillsCatalogPage: React.FC = () => {
         }
       />
 
-      {/* ─── Stat Cards ─────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="flex items-center gap-4 p-4">
           <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -245,7 +232,6 @@ export const SkillsCatalogPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* ─── Filters ────────────────────────────────── */}
       <Card padding="sm">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center p-2">
           <div className="flex-1">
@@ -257,7 +243,6 @@ export const SkillsCatalogPage: React.FC = () => {
             />
           </div>
 
-          {/* Type filter */}
           <div className="flex items-center gap-2">
             <Filter size={16} className="text-slate-400 shrink-0" />
             <select
@@ -271,7 +256,6 @@ export const SkillsCatalogPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Category filter */}
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
@@ -287,7 +271,6 @@ export const SkillsCatalogPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* ─── Skills Table ───────────────────────────── */}
       {filteredSkills.length === 0 ? (
         <Card className="p-10 text-center">
           <AlertCircle size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
@@ -383,7 +366,6 @@ export const SkillsCatalogPage: React.FC = () => {
             </table>
           </div>
 
-          {/* Footer count */}
           <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#16222b]">
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Mostrando {filteredSkills.length} de {skills.length} habilidades
@@ -392,7 +374,6 @@ export const SkillsCatalogPage: React.FC = () => {
         </Card>
       )}
 
-      {/* ─── Skill Form Modal ───────────────────────── */}
       <SkillFormModal
         isOpen={isModalOpen}
         onClose={handleModalClose}

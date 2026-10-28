@@ -60,7 +60,6 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
     load();
   }, [roleId]);
 
-  // Filtrado por búsqueda
   const visibleGroups = useMemo(() => {
     if (!search.trim()) return groups;
     const q = search.toLowerCase();
@@ -123,7 +122,6 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
           onSaved?.(roleId);
         }
       } else {
-        // Crear rol nuevo y asignar permisos
         const created = await rbacService.createRole({
           name: roleName,
           description: roleDescription,

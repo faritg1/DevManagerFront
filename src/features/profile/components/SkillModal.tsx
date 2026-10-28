@@ -63,7 +63,6 @@ export const SkillModal: React.FC<Props> = ({
             }
         >
             <div className="space-y-5">
-                {/* Selector de Skill */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Habilidad *
@@ -91,7 +90,6 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                {/* Nivel de dominio */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Nivel de Dominio *
@@ -109,7 +107,6 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                {/* URL de evidencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Evidencia {requiresEvidence && '*'}
@@ -127,7 +124,6 @@ export const SkillModal: React.FC<Props> = ({
                     </p>
                 </div>
 
-                {/* Descripción de experiencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Descripción de Experiencia {requiresEvidence && '*'}

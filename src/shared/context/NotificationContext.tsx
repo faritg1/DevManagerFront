@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 
-// Types for notifications/toast
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 export interface Notification {
@@ -28,10 +27,8 @@ interface NotificationContextValue {
     showNotification: (input: ShowNotificationInput) => void;
 }
 
-// Context
 const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
 
-// Provider
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -45,7 +42,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         
         setNotifications(prev => [...prev, newNotification]);
 
-        // Auto remove after duration
         const duration = notification.duration || 5000;
         if (duration > 0) {
             setTimeout(() => {
@@ -75,7 +71,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     );
 };
 
-// Hook
 export const useNotification = (): NotificationContextValue => {
     const context = useContext(NotificationContext);
     if (!context) {
@@ -84,7 +79,6 @@ export const useNotification = (): NotificationContextValue => {
     return context;
 };
 
-// Convenience hooks
 export const useToast = () => {
     const { addNotification } = useNotification();
 

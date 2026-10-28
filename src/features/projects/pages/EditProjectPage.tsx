@@ -65,7 +65,6 @@ export const EditProjectPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingSkill, setIsAddingSkill] = useState(false);
 
-  // Form para agregar skill
   const [newSkillId, setNewSkillId] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("3");
   const [newSkillMandatory, setNewSkillMandatory] = useState(true);
@@ -88,7 +87,6 @@ export const EditProjectPage: React.FC = () => {
     status: String(ProjectStatus.Draft),
   });
 
-  // Handlers del formulario
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -98,7 +96,6 @@ export const EditProjectPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Cargar datos del proyecto
   useEffect(() => {
     if (!id) return;
 
@@ -220,7 +217,6 @@ export const EditProjectPage: React.FC = () => {
           type: "success",
           message: "Requisito agregado exitosamente",
         });
-        // Recargar requisitos
         const reqsRes = await projectsService.getRequirements(id);
         if (reqsRes.success && reqsRes.data) {
           setRequirements(reqsRes.data);
@@ -267,7 +263,6 @@ export const EditProjectPage: React.FC = () => {
 
   return (
     <PageContainer narrow>
-        {/* Header */}
         <PageHeader
           before={
             <button
@@ -300,7 +295,6 @@ export const EditProjectPage: React.FC = () => {
         />
 
         <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-          {/* Basic Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -351,7 +345,6 @@ export const EditProjectPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Timeline & Budget */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -394,7 +387,6 @@ export const EditProjectPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Skill Requirements */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between w-full">
@@ -492,7 +484,6 @@ export const EditProjectPage: React.FC = () => {
           </Card>
         </form>
 
-      {/* Modal para agregar skill */}
       <Modal
         isOpen={addSkillModal.isOpen}
         onClose={addSkillModal.close}

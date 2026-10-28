@@ -32,23 +32,19 @@ export const AsistentePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Consultar
     const [consulta, setConsulta] = useState('');
     const [contexto, setContexto] = useState('');
     const [consultaRes, setConsultaRes] = useState<CooperativeQueryResponse | null>(null);
 
-    // Reporte
     const [reporteAnio, setReporteAnio] = useState(anioActual);
     const [incluirRec, setIncluirRec] = useState(true);
     const [reporteRes, setReporteRes] = useState<SocialBalanceReportDto | null>(null);
 
-    // Cumplimiento
     const [verificarEducacion, setVerificarEducacion] = useState(true);
     const [verificarSST, setVerificarSST] = useState(true);
     const [verificarHabeas, setVerificarHabeas] = useState(true);
     const [cumplimientoRes, setCumplimientoRes] = useState<ComplianceDto | null>(null);
 
-    // Responder
     const [pregunta, setPregunta] = useState('');
     const [tipoAsociado, setTipoAsociado] = useState('');
     const [responderRes, setResponderRes] = useState<CooperativeQueryResponse | null>(null);
@@ -164,7 +160,6 @@ export const AsistentePage: React.FC = () => {
                 <StatCard title="Asistente IA" value="Activo" icon={Bot} iconColor="text-primary" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
             </div>
 
-            {/* Tabs */}
             <div className="flex flex-wrap gap-2 mb-6">
                 {TABS.filter(t => isAdmin || !t.adminOnly).map(t => (
                     <button
@@ -192,7 +187,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Consultar */}
             {tab === 'consultar' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -222,7 +216,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Reporte */}
             {isAdmin && tab === 'reporte' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -291,7 +284,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Cumplimiento */}
             {isAdmin && tab === 'cumplimiento' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -360,7 +352,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Responder */}
             {tab === 'responder' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>

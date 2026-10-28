@@ -8,7 +8,6 @@ interface HeaderProps {
     onMenuClick?: () => void;
 }
 
-// Mapeo de rutas a nombres legibles
 const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.DASHBOARD]: 'Dashboard',
     [ROUTES.PROJECTS]: 'Proyectos',
@@ -26,28 +25,23 @@ const ROUTE_NAMES: Record<string, string> = {
 
 // Obtener nombre de la ruta o generar uno a partir del path
 const getRouteName = (path: string): string => {
-    // Buscar coincidencia exacta primero
     if (ROUTE_NAMES[path]) {
         return ROUTE_NAMES[path];
     }
     
     // Manejar rutas con parámetros dinámicos (e.g., /projects/:id)
     if (path.startsWith('/projects/')) {
-        // /projects/:id/edit
         if (path.endsWith('/edit')) {
             return 'Editar';
         }
-        // /projects/:id
         return 'Detalle';
     }
     
-    // Fallback: capitalizar el último segmento
     const segments = path.split('/').filter(Boolean);
     const lastSegment = segments[segments.length - 1] || 'Inicio';
     return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1).replace(/-/g, ' ');
 };
 
-// Generar breadcrumbs a partir del pathname
 const generateBreadcrumbs = (pathname: string): Array<{ path: string; name: string }> => {
     const segments = pathname.split('/').filter(Boolean);
     const breadcrumbs: Array<{ path: string; name: string }> = [];
@@ -76,7 +70,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <header className="h-16 border-b border-slate-200 dark:border-[#233948] bg-white/80 dark:bg-[#111b22]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
             {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
             <div className="flex items-center gap-2 min-w-0">
-                {/* Mobile Menu Button */}
                 <button 
                     onClick={onMenuClick}
                     className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg"
@@ -84,12 +77,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     <Menu size={24} />
                 </button>
 
-                {/* Mobile Page Title */}
                 <h1 className="md:hidden text-base font-semibold text-slate-900 dark:text-white truncate">
                     {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : 'DevManager'}
                 </h1>
             
-                {/* Breadcrumbs Dinámicos (desktop) */}
                 <nav className="hidden md:flex text-sm text-slate-500 dark:text-slate-400 font-medium items-center gap-1">
                     <Link 
                         to={ROUTES.DASHBOARD} 
@@ -121,7 +112,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 </nav>
             </div>
 
-            {/* Search (optional) */}
             <div className="hidden lg:flex flex-1 max-w-md mx-8">
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -133,9 +123,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 </div>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-2">
-                {/* Theme Toggle */}
                 <button 
                     onClick={toggleTheme}
                     className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
@@ -144,7 +132,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
-                {/* Notifications */}
                 <button className="relative p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
                     <Bell size={20} />
                     <span className="absolute top-1.5 right-1.5 size-2 bg-rose-500 rounded-full border-2 border-white dark:border-[#111b22]" />

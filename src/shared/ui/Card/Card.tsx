@@ -49,7 +49,6 @@ export const Card: React.FC<CardProps> = ({
     );
 };
 
-// Subcomponents for better composition
 export const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
     children, 
     className = '' 

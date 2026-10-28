@@ -99,9 +99,7 @@ export const SkillsSection: React.FC<Props> = ({
                                 </div>
                             )}
                             
-                            {/* Header: Nombre + Badge + Botones */}
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                                {/* Nombre y Badge */}
                                 <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
                                     <span className="font-semibold text-slate-900 dark:text-white truncate">
                                         {skill.skillName}
@@ -114,7 +112,6 @@ export const SkillsSection: React.FC<Props> = ({
                                     </Badge>
                                 </div>
                                 
-                                {/* Botones de acción */}
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                     {onValidateAI && (
                                         <button
@@ -152,7 +149,6 @@ export const SkillsSection: React.FC<Props> = ({
                                 </div>
                             </div>
                             
-                            {/* Barra de nivel */}
                             <div className="flex gap-1 mb-2">
                                 {catalogs?.skillLevels.map((lvl) => (
                                     <div 
@@ -166,7 +162,6 @@ export const SkillsSection: React.FC<Props> = ({
                                 ))}
                             </div>
 
-                            {/* Descripción de experiencia */}
                             {skill.experienceDescription && (
                                 <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-700/30 rounded-lg">
                                     <div className="flex items-start gap-2">
@@ -178,7 +173,6 @@ export const SkillsSection: React.FC<Props> = ({
                                 </div>
                             )}
 
-                            {/* Evidencia URL */}
                             {skill.evidenceUrl && (
                                 <div className="mt-2 flex items-center gap-1.5 text-xs">
                                     <ExternalLink size={12} className="text-primary" />

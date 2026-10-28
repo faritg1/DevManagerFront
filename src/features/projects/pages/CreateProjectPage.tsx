@@ -68,7 +68,6 @@ export const CreateProjectPage: React.FC = () => {
 
     return (
         <PageContainer narrow>
-            {/* Header */}
             <PageHeader
                 title="Crear Nuevo Proyecto"
                 description="Define los detalles del proyecto, alcance y asigna el equipo."
@@ -92,7 +91,6 @@ export const CreateProjectPage: React.FC = () => {
             />
                 
                 <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-                    {/* Basic Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -134,7 +132,6 @@ export const CreateProjectPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    {/* Timeline & Budget */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">

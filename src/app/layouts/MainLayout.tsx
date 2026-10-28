@@ -19,7 +19,6 @@ export const MainLayout: React.FC = () => {
                 <div className="flex-1 flex flex-col h-screen overflow-hidden">
                     <Header onMenuClick={openMobileMenu} />
 
-                    {/* Content Area */}
                     <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth">
                         <Outlet />
                     </main>

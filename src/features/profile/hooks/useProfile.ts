@@ -205,7 +205,8 @@ export function useProfile(): UseProfileResult {
     setIsDeleting(true);
     try {
       await profileService.deleteMyProfile();
-    } catch (err) {
+    } catch {
+      // Local state is cleared even if the backend delete fails.
     } finally {
       setProfile(null);
       setProfileForm({});

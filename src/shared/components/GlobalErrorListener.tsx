@@ -22,7 +22,6 @@ export const GlobalErrorListener: React.FC = () => {
         message = errorMessages;
       }
 
-      // Mostrar la notificación global de error
       showNotification({
         type: "error",
         title: `Error en Servidor (${error.status})`,

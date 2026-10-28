@@ -9,7 +9,6 @@ import { useIsAdmin } from '../../../shared/hooks';
 import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../../projects/utils/complexityConfig';
 
-// Helpers
 const getProjectGradient = (name: string): string => {
     const gradients = [
         'from-blue-500 to-cyan-400',
@@ -39,7 +38,6 @@ export const DashboardPage: React.FC = () => {
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
 
-    // State
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -56,7 +54,6 @@ export const DashboardPage: React.FC = () => {
         loaded: false,
     });
 
-    // Cargar datos del dashboard
     useEffect(() => {
         const fetchDashboard = async () => {
             setIsLoading(true);
@@ -72,7 +69,6 @@ export const DashboardPage: React.FC = () => {
                 if (projectsRes.success && projectsRes.data) {
                     setProjects(projectsRes.data);
 
-                    // Contar postulaciones pendientes de proyectos activos
                     const activeProjects = projectsRes.data.filter(
                         p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress
                     );
@@ -142,7 +138,6 @@ export const DashboardPage: React.FC = () => {
         fetchSolidaridad();
     }, [user?.id, isAdmin]);
 
-    // Calcular estadísticas
     const stats = {
         open: projects.filter(p => p.status === ProjectStatus.Open).length,
         inProgress: projects.filter(p => p.status === ProjectStatus.InProgress).length,
@@ -151,7 +146,6 @@ export const DashboardPage: React.FC = () => {
         total: projects.length
     };
 
-    // Obtener configuración de estado
     const getStatusConfig = (status: ProjectStatus) => {
         const label = catalogs?.projectStatuses.find(s => s.id === status)?.name ?? PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
         let variant: 'success' | 'warning' | 'danger' | 'info' | 'default' = 'default';
@@ -182,7 +176,6 @@ export const DashboardPage: React.FC = () => {
         return { variant, label, icon };
     };
 
-    // Calcular "progreso" basado en estado (simulado)
     const getProgressFromStatus = (status: ProjectStatus): number => {
         switch (status) {
             case ProjectStatus.Draft: return 10;
@@ -196,7 +189,6 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <PageContainer>
-            {/* Hero / Header */}
             <PageHeader
                 title={user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
                 description="Resumen general de tu organización y proyectos."
@@ -210,7 +202,6 @@ export const DashboardPage: React.FC = () => {
             />
             <div className="flex flex-col gap-8">
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     <StatCard
                         title="Proyectos"
@@ -258,7 +249,6 @@ export const DashboardPage: React.FC = () => {
                     />
                 </div>
 
-                {/* Gestión Solidaria KPIs */}
                 {!isLoading && solidaridad.loaded && (
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400 mb-3">
@@ -290,10 +280,8 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Postulaciones pendientes + Quick Actions */}
                 {!isLoading && !error && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Postulaciones pendientes */}
                         <Card className="flex items-center gap-4 p-4">
                             <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10">
                                 <UserPlus className="text-amber-500" size={24} />
@@ -307,7 +295,6 @@ export const DashboardPage: React.FC = () => {
                             )}
                         </Card>
 
-                        {/* Acceso rápido: Agente IA */}
                         <Card
                             hoverable
                             onClick={() => navigate(ROUTES.AGENTS)}
@@ -323,7 +310,6 @@ export const DashboardPage: React.FC = () => {
                             <ArrowRight className="text-slate-400 group-hover:text-primary transition-colors" size={18} />
                         </Card>
 
-                        {/* Acceso rápido: Mi Perfil */}
                         <Card
                             hoverable
                             onClick={() => navigate(ROUTES.PROFILE)}
@@ -341,7 +327,6 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Loading State */}
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -349,7 +334,6 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Error State */}
                 {error && !isLoading && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
@@ -362,7 +346,6 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Empty State */}
                 {!isLoading && !error && projects.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-500/10 mb-4">
@@ -376,7 +359,6 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Section title */}
                 {!isLoading && !error && projects.length > 0 && (
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Proyectos</h3>
@@ -384,7 +366,6 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Projects Grid */}
                 {!isLoading && !error && projects.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                         {projects.map((project) => {
@@ -399,12 +380,10 @@ export const DashboardPage: React.FC = () => {
                                     onClick={() => navigate(`/projects/${project.id}`)}
                                     className="group relative overflow-hidden"
                                 >
-                                    {/* Hover Arrow */}
                                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <ArrowRight className="text-primary transform -translate-x-2 group-hover:translate-x-0 transition-transform" />
                                     </div>
 
-                                    {/* Project Header */}
                                     <div className="flex justify-between items-start">
                                         <div className="flex gap-4">
                                             <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
@@ -421,14 +400,12 @@ export const DashboardPage: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Description */}
                                     {project.description && (
                                         <p className="text-slate-500 dark:text-slate-400 text-sm mt-3 line-clamp-2">
                                             {project.description}
                                         </p>
                                     )}
 
-                                    {/* Status & Complexity */}
                                     <div className="flex items-center justify-between mt-5">
                                         <Badge variant={statusConfig.variant} dot>
                                             {statusConfig.label}
@@ -438,7 +415,6 @@ export const DashboardPage: React.FC = () => {
                                         </Badge>
                                     </div>
 
-                                    {/* Progress */}
                                     <div className="mt-5">
                                         <ProgressBar 
                                             value={progress} 
@@ -447,7 +423,6 @@ export const DashboardPage: React.FC = () => {
                                         />
                                     </div>
 
-                                    {/* Dates */}
                                     {(project.startDate || project.endDate) && (
                                         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-[#233948] text-xs text-slate-500 dark:text-slate-400">
                                             {project.startDate && (
@@ -462,7 +437,6 @@ export const DashboardPage: React.FC = () => {
                             );
                         })}
 
-                        {/* Create New Card */}
                         <Link 
                             to={ROUTES.CREATE_PROJECT} 
                             className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[240px]"

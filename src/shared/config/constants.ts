@@ -1,22 +1,16 @@
-// Route paths
 export const ROUTES = {
-    // Public
     LOGIN: '/',
     REGISTER: '/register',
     
-    // Dashboard
     DASHBOARD: '/dashboard',
     
-    // Projects
     PROJECTS: '/projects',
     PROJECT_DETAIL: '/projects/:id',
     CREATE_PROJECT: '/create-project',
     EDIT_PROJECT: '/projects/:id/edit',
 
-    // Reports
     REPORTS: '/reports',
     
-    // Administration
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
     USER_DETAIL: '/users/:id',
@@ -28,17 +22,13 @@ export const ROUTES = {
     EDUCATION: '/education',
     EDUCATION_PROGRAM: '/education/:programId',
     
-    // Agents (AI Agents)
     AGENTS: '/agents',
     
-    // Skills Catalog
     SKILLS_CATALOG: '/skills',
     
-    // User
     PROFILE: '/profile',
     SETTINGS: '/settings',
 
-    // ===== Gestión Humana Solidaria =====
     NOMINA: '/nomina',
     BIENESTAR: '/bienestar',
     BALANCE_SOCIAL: '/balance-social',
@@ -51,7 +41,6 @@ export const ROUTES = {
     ASISTENTE: '/asistente',
 } as const;
 
-// Navigation sections for sidebar
 export const NAV_SECTIONS = {
     PLATFORM: 'Plataforma',
     AGENTS: 'Agentes IA',
@@ -59,7 +48,6 @@ export const NAV_SECTIONS = {
     SOLIDARIO: 'Gestión Solidaria',
 } as const;
 
-// Local storage keys
 export const STORAGE_KEYS = {
     AUTH_TOKEN: 'auth_token',
     AUTH_USER: 'auth_user',

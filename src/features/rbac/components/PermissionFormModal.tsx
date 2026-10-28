@@ -23,7 +23,6 @@ interface PermissionFormData {
   description: string;
 }
 
-// Acciones comunes para facilitar creación
 const COMMON_ACTIONS = [
   "read",
   "write",
@@ -95,7 +94,6 @@ const normalizeCode = (value: string) => {
 const humanizeNameFromCode = (code: string) => {
   const parts = code.split('.');
   const last = parts[parts.length - 1] || '';
-  // Capitalize and replace underscores
   return last.replace(/[_-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
 

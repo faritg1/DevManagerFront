@@ -31,7 +31,6 @@ export const useTheme = (): UseThemeReturn => {
         localStorage.setItem('theme', theme);
     }, [theme, resolvedTheme]);
 
-    // Listen for system theme changes
     useEffect(() => {
         if (theme !== 'system') return;
 

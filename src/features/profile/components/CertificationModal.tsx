@@ -99,7 +99,6 @@ export const CertificationModal: React.FC<Props> = ({
             }
         >
             <div className="space-y-5">
-                {/* Nombre de la certificación */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Nombre de la certificación *
@@ -111,7 +110,6 @@ export const CertificationModal: React.FC<Props> = ({
                     />
                 </div>
 
-                {/* Emisor */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Emisor *
@@ -123,7 +121,6 @@ export const CertificationModal: React.FC<Props> = ({
                     />
                 </div>
 
-                {/* Fechas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="text-slate-700 dark:text-white text-sm font-bold">
@@ -147,7 +144,6 @@ export const CertificationModal: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {/* URL de evidencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         URL de evidencia (opcional)

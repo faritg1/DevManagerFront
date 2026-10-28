@@ -24,9 +24,7 @@ import type {
 import { Card, Badge, Button, StatCard, PageContainer, PageHeader } from "../../../shared/ui";
 import { EducationCoverageCard } from "../components/EducationCoverageCard";
 
-// ─── Component ────────────────────────────────────────────
 export const ReportsPage: React.FC = () => {
-  // Loading + data states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +35,6 @@ export const ReportsPage: React.FC = () => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
-  // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     distribution: true,
     projects: true,
@@ -48,7 +45,6 @@ export const ReportsPage: React.FC = () => {
   const toggleSection = (section: string) =>
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
 
-  // ─── Data fetching ──────────────────────────────────────
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -103,7 +99,6 @@ export const ReportsPage: React.FC = () => {
     loadAiSummary();
   }, [loadData, loadAiSummary]);
 
-  // ─── Section Header component ───────────────────────────
   const SectionHeader: React.FC<{
     title: string;
     icon: React.ReactNode;
@@ -132,7 +127,6 @@ export const ReportsPage: React.FC = () => {
     </button>
   );
 
-  // ─── Loading ────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6">
@@ -183,7 +177,6 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <PageContainer className="space-y-6">
-      {/* ─── Header ─────────────────────────────────── */}
       <PageHeader
         icon={<BarChart2 size={28} className="text-primary" />}
         title="Reportes y Analítica"
@@ -197,7 +190,6 @@ export const ReportsPage: React.FC = () => {
 
       <EducationCoverageCard />
 
-      {/* ─── AI Insights Section ────────────────────── */}
       <Card className="border-l-4 border-l-primary bg-gradient-to-br from-primary/5 to-blue-500/5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -243,7 +235,6 @@ export const ReportsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* ─── Summary Stats ──────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
         title="Miembros"
@@ -295,7 +286,6 @@ export const ReportsPage: React.FC = () => {
         />
       </div>
 
-      {/* ─── Skill Distribution ─────────────────────── */}
       <Card>
         <SectionHeader
         title="Distribución de Habilidades"
@@ -364,7 +354,6 @@ export const ReportsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* ─── Project Demand ─────────────────────────── */}
       <Card>
         <SectionHeader
         title="Demanda de Habilidades en Proyectos"
@@ -403,7 +392,6 @@ export const ReportsPage: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ─── Experience Distribution ────────────────── */}
         <Card>
           <SectionHeader
             title="Distribución por Experiencia"
@@ -437,7 +425,6 @@ export const ReportsPage: React.FC = () => {
           )}
         </Card>
 
-        {/* ─── Team Overview ──────────────────────────── */}
         <Card>
           <SectionHeader
             title="Métricas de Equipo"

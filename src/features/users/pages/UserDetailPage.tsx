@@ -115,7 +115,6 @@ export const UserDetailPage: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  // ─── Loading ────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="p-6 md:p-10 flex items-center justify-center min-h-[400px]">
@@ -147,7 +146,6 @@ export const UserDetailPage: React.FC = () => {
 
   return (
     <PageContainer className="space-y-6">
-      {/* Back button */}
       <button
         onClick={() => navigate(ROUTES.USERS)}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
@@ -156,9 +154,7 @@ export const UserDetailPage: React.FC = () => {
         Volver a Usuarios
       </button>
 
-      {/* ─── Header Card ───────────────────────── */}
       <Card className="relative overflow-hidden">
-        {/* Gradient top band */}
         <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-primary/20 to-blue-400/20" />
 
         <div className="relative pt-12 flex flex-col sm:flex-row items-start sm:items-end gap-4">
@@ -178,7 +174,6 @@ export const UserDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Contact info */}
         <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Mail size={14} />
@@ -198,7 +193,6 @@ export const UserDetailPage: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ─── Skills ──────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <div className="flex items-center justify-between mb-4">
@@ -272,9 +266,7 @@ export const UserDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* ─── Sidebar: Roles & Permissions ─── */}
         <div className="space-y-6">
-          {/* Roles */}
           {perms && (
             <Card>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
@@ -319,7 +311,6 @@ export const UserDetailPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Quick stats */}
           <Card>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
               <Star size={20} className="text-amber-500" />

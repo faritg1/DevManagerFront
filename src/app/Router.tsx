@@ -35,6 +35,15 @@ import {
   EducationProgramsPage,
   ProgramDetailPage,
   DataPoliciesPage,
+  NominaPage,
+  OrganosPage,
+  BienestarPage,
+  BalanceSocialPage,
+  SstPage,
+  ExcedentesPage,
+  HabeasDataPage,
+  ReportesSupersolidariaPage,
+  AsistentePage,
 } from "../features";
 
 export const AppRouter: React.FC = () => {
@@ -120,6 +129,17 @@ export const AppRouter: React.FC = () => {
                   path={ROUTES.SETTINGS}
                   element={<SettingsPage />}
                 />
+
+                {/* ===== Gestión Humana Solidaria ===== */}
+                <Route path={ROUTES.NOMINA} element={<NominaPage />} />
+                <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
+                <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
+                <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
+                <Route path={ROUTES.SST} element={<SstPage />} />
+                <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
+                <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
+                <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
+                <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                 </Route>
               </Route>
 

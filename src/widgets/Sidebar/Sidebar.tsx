@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
+import {
     LayoutDashboard, 
     Building2, 
     Briefcase, 
@@ -17,7 +17,15 @@ import {
     Code2,
     HeartHandshake,
     FileText,
+    Wallet,
     GraduationCap,
+    Scale,
+    HardHat,
+    PiggyBank,
+    Shield,
+    Landmark,
+    FileBarChart2,
+    Sparkles,
     LucideIcon
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -171,14 +179,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                     <NavItem to={ROUTES.AGENTS} icon={Bot} label="Mis Agentes" isActive={isActive(ROUTES.AGENTS)} />
                 </NavSection>
 
+                <NavSection title={NAV_SECTIONS.SOLIDARIO}>
+                    {isAdmin && (
+                        <>
+                            <NavItem to={ROUTES.ASSOCIATES} icon={HeartHandshake} label="Asociados" isActive={isActive(ROUTES.ASSOCIATES)} />
+                            <NavItem to={ROUTES.DATA_POLICIES} icon={FileText} label="Políticas de datos" isActive={isActive(ROUTES.DATA_POLICIES)} />
+                        </>
+                    )}
+                    <NavItem to={ROUTES.HABEAS_DATA} icon={Shield} label="Habeas Data (ARCO)" isActive={isActive(ROUTES.HABEAS_DATA)} />
+                    {isAdmin && (
+                        <NavItem to={ROUTES.EDUCATION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCATION)} />
+                    )}
+                    <NavItem to={ROUTES.ORGANOS} icon={Landmark} label="Órganos" isActive={isActive(ROUTES.ORGANOS)} />
+                    <NavItem to={ROUTES.EXCEDENTES} icon={PiggyBank} label="Excedentes" isActive={isActive(ROUTES.EXCEDENTES)} />
+                    <NavItem to={ROUTES.NOMINA} icon={Wallet} label="Nómina" isActive={isActive(ROUTES.NOMINA)} />
+                    <NavItem to={ROUTES.BIENESTAR} icon={HeartHandshake} label="Bienestar" isActive={isActive(ROUTES.BIENESTAR)} />
+                    <NavItem to={ROUTES.SST} icon={HardHat} label="SST" isActive={isActive(ROUTES.SST)} />
+                    <NavItem to={ROUTES.BALANCE_SOCIAL} icon={Scale} label="Balance Social" isActive={isActive(ROUTES.BALANCE_SOCIAL)} />
+                    <NavItem to={ROUTES.REPORTES_SUPERSOLIDARIA} icon={FileBarChart2} label="Reportes Supersolidaria" isActive={isActive(ROUTES.REPORTES_SUPERSOLIDARIA)} />
+                    <NavItem to={ROUTES.ASISTENTE} icon={Sparkles} label="Asistente" isActive={isActive(ROUTES.ASISTENTE)} />
+                </NavSection>
+
                 <NavSection title={NAV_SECTIONS.ADMIN}>
                     {isAdmin && (
                         <>
                             <NavItem to={ROUTES.ORGANIZATIONS} icon={Building2} label="Organizaciones" isActive={isActive(ROUTES.ORGANIZATIONS)} />
                             <NavItem to={ROUTES.USERS} icon={Users} label="Usuarios" isActive={isActive(ROUTES.USERS)} />
-                            <NavItem to={ROUTES.ASSOCIATES} icon={HeartHandshake} label="Asociados" isActive={isActive(ROUTES.ASSOCIATES)} />
-                            <NavItem to={ROUTES.DATA_POLICIES} icon={FileText} label="Políticas de datos" isActive={isActive(ROUTES.DATA_POLICIES)} />
-                            <NavItem to={ROUTES.EDUCATION} icon={GraduationCap} label="Educación" isActive={isActive(ROUTES.EDUCATION)} />
                         </>
                     )}
 

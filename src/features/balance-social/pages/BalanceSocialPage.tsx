@@ -107,7 +107,7 @@ export const BalanceSocialPage: React.FC = () => {
                 description="Indicadores de balance social calculados con la educación, participación y beneficios reales."
                 actions={<>
                 <div className="flex items-center gap-3">
-                    <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" className="w-32" />
+                    <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" aria-label="Año" className="w-32" />
                     <Button variant="outline" onClick={loadData} disabled={isLoading}>
                         {isLoading ? 'Cargando...' : 'Consultar'}
                     </Button>

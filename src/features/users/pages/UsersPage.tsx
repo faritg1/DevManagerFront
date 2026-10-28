@@ -461,7 +461,7 @@ export const UsersPage: React.FC = () => {
 
             <div className="mb-6">
                 <Input
-                    placeholder="Buscar por nombre, email o rol..."
+                    placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
                     icon={Search}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

@@ -113,7 +113,7 @@ export const ProjectsPage: React.FC = () => {
                     <div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <Input
-                                placeholder="Buscar proyectos..."
+                                placeholder="Buscar proyectos..." aria-label="Buscar proyectos"
                                 icon={Search}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}

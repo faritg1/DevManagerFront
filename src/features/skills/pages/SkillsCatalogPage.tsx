@@ -235,7 +235,7 @@ export const SkillsCatalogPage: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center p-2">
           <div className="flex-1">
             <Input
-              placeholder="Buscar por nombre o categoría..."
+              placeholder="Buscar por nombre o categoría..." aria-label="Buscar habilidades"
               icon={Search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

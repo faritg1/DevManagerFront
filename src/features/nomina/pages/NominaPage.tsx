@@ -164,7 +164,7 @@ export const NominaPage: React.FC = () => {
                                 {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                             </select>
                         )}
-                        <Input type="number" value={compYear} onChange={(e) => setCompYear(Number(e.target.value))} placeholder="Año" />
+                        <Input type="number" value={compYear} onChange={(e) => setCompYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
                         <Button variant="outline" onClick={loadCompensations} disabled={!compUserId || compLoading}>
                             {compLoading ? 'Cargando...' : 'Consultar'}
                         </Button>
@@ -198,8 +198,8 @@ export const NominaPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Planilla PILA</h2>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                            <Input type="number" value={pilaYear} onChange={(e) => setPilaYear(Number(e.target.value))} placeholder="Año" />
-                            <Input type="number" value={pilaMonth} onChange={(e) => setPilaMonth(Number(e.target.value))} min={1} max={12} placeholder="Mes" />
+                            <Input type="number" value={pilaYear} onChange={(e) => setPilaYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
+                            <Input type="number" value={pilaMonth} onChange={(e) => setPilaMonth(Number(e.target.value))} min={1} max={12} placeholder="Mes" aria-label="Mes" />
                             <Button variant="outline" onClick={loadSheet} disabled={pilaLoading}>
                                 {pilaLoading ? 'Cargando...' : 'Planilla'}
                             </Button>
@@ -212,10 +212,10 @@ export const NominaPage: React.FC = () => {
                                     <option value="">Asociado</option>
                                     {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                                 </select>
-                                <Input type="number" value={pilaIncome} onChange={(e) => setPilaIncome(Number(e.target.value))} placeholder="Ingreso del mes" />
+                                <Input type="number" value={pilaIncome} onChange={(e) => setPilaIncome(Number(e.target.value))} placeholder="Ingreso del mes" aria-label="Ingreso del mes" />
                             </div>
                             <div className="flex items-end gap-3">
-                                <Input type="number" value={pilaRisk} onChange={(e) => setPilaRisk(Number(e.target.value))} min={1} max={5} placeholder="Nivel riesgo ARL" />
+                                <Input type="number" value={pilaRisk} onChange={(e) => setPilaRisk(Number(e.target.value))} min={1} max={5} placeholder="Nivel riesgo ARL" aria-label="Nivel riesgo ARL" />
                                 <Button onClick={handleCalculatePila} disabled={!pilaUserId || pilaIncome <= 0}>Calcular</Button>
                             </div>
 

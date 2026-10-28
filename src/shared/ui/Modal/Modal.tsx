@@ -1,4 +1,4 @@
-import React, { useEffect, useId } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -22,6 +22,9 @@ const sizeStyles = {
     full: 'w-[90%] max-w-7xl',
 };
 
+// Pila de modales abiertos (orden de apertura), compartida por todas las instancias.
+const openModals: object[] = [];
+
 export const Modal: React.FC<ModalProps> = ({
     isOpen,
     onClose,
@@ -32,13 +35,24 @@ export const Modal: React.FC<ModalProps> = ({
     size = 'md',
 }) => {
     const titleId = useId();
+    // Ref para que un onClose nuevo en cada render no reordene la pila.
+    const onCloseRef = useRef(onClose);
+    useEffect(() => { onCloseRef.current = onClose; });
 
     useEffect(() => {
         if (!isOpen) return;
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        const entry = {};
+        openModals.push(entry);
+        // Con modales apilados, Escape cierra sólo el último abierto.
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && openModals[openModals.length - 1] === entry) onCloseRef.current();
+        };
         document.addEventListener('keydown', onKey);
-        return () => document.removeEventListener('keydown', onKey);
-    }, [isOpen, onClose]);
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            openModals.splice(openModals.indexOf(entry), 1);
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 

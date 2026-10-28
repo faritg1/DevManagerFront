@@ -79,7 +79,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
             ) : (
                 <ul className="space-y-3">
                     {consents.map((c) => (
-                        <li key={c.id} className="p-4 rounded-xl border border-slate-200 dark:border-[#233948]">
+                        <li key={c.id} className="p-4 rounded-xl border border-slate-200 dark:border-border-dark">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="text-sm text-slate-900 dark:text-white">
                                     <span className="font-bold">v{c.policyVersion}</span> — {c.purpose}
@@ -98,7 +98,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
                                         placeholder="Motivo de la revocación *" aria-label="Motivo de la revocación"
-                                        className="flex-1 h-10 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3 text-sm"
+                                        className="flex-1 h-10 rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-3 text-sm"
                                     />
                                     <Button
                                         size="sm"

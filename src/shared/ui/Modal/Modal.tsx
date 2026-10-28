@@ -75,24 +75,24 @@ export const Modal: React.FC<ModalProps> = ({
                     aria-modal="true"
                     aria-labelledby={title ? titleId : undefined}
                     className={`
-                        inline-block align-bottom bg-white dark:bg-[#16222b] 
+                        inline-block align-bottom bg-white dark:bg-card-dark 
                         rounded-2xl text-left overflow-hidden 
                         shadow-2xl transform transition-all 
                         sm:my-8 sm:align-middle ${sizeStyles[size]} w-full 
-                        border border-slate-200 dark:border-[#233948] 
+                        border border-slate-200 dark:border-border-dark 
                         relative z-20
                     `}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {title && (
-                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-[#233948] flex items-center justify-between gap-3">
+                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-border-dark flex items-center justify-between gap-3">
                             <h3 id={titleId} className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 min-w-0">
                                 {icon}
                                 {title}
                             </h3>
                             <button aria-label="Cerrar" 
                                 onClick={onClose}
-                                className="shrink-0 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-[#111b22] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="shrink-0 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-background-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                                 <X size={20} />
                             </button>
@@ -104,7 +104,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </div>
                     
                     {footer && (
-                        <div className="bg-slate-50 dark:bg-[#111b22]/50 px-4 sm:px-6 py-4 flex flex-row-reverse flex-wrap gap-3 border-t border-slate-200 dark:border-[#233948]">
+                        <div className="bg-slate-50 dark:bg-background-dark/50 px-4 sm:px-6 py-4 flex flex-row-reverse flex-wrap gap-3 border-t border-slate-200 dark:border-border-dark">
                             {footer}
                         </div>
                     )}

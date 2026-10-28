@@ -271,7 +271,7 @@ export const AgentsPage: React.FC = () => {
                 </Card>
             </div>
 
-            <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-[#16222b] rounded-2xl border border-slate-200 dark:border-[#233948] overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-border-dark overflow-hidden">
                 
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
                     {messages.map((message) => (
@@ -295,7 +295,7 @@ export const AgentsPage: React.FC = () => {
                                         ? 'bg-primary text-white px-3 py-2.5 sm:px-4 sm:py-3' 
                                         : message.markdown 
                                             ? 'bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 p-3 sm:p-6 shadow-lg overflow-x-auto'
-                                            : 'bg-slate-100 dark:bg-[#111b22] text-slate-900 dark:text-white px-3 py-2.5 sm:px-4 sm:py-3'
+                                            : 'bg-slate-100 dark:bg-background-dark text-slate-900 dark:text-white px-3 py-2.5 sm:px-4 sm:py-3'
                                 }`}>
                                     {message.role === 'agent' && message.markdown ? (
                                         <div className="text-sm prose prose-sm dark:prose-invert max-w-none space-y-4
@@ -473,7 +473,7 @@ export const AgentsPage: React.FC = () => {
                                 <Bot className="text-white" size={14} />
                             </div>
                             <div className="flex-1 max-w-2xl">
-                                <div className="rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-[#111b22] dark:to-[#0d1419] border border-slate-200 dark:border-[#233948] inline-flex items-center gap-2 sm:gap-3 shadow-sm">
+                                <div className="rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-background-dark dark:to-background-dark border border-slate-200 dark:border-border-dark inline-flex items-center gap-2 sm:gap-3 shadow-sm">
                                     <Loader2 className="animate-spin text-primary shrink-0" size={16} />
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-slate-900 dark:text-white">Pensando...</span>
@@ -498,7 +498,7 @@ export const AgentsPage: React.FC = () => {
                                 <button
                                     key={idx}
                                     onClick={() => handleExampleClick(query)}
-                                    className="text-left px-4 py-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#111b22] dark:to-[#0d1419] hover:from-primary/10 hover:to-primary/5 dark:hover:from-primary/10 dark:hover:to-primary/5 border border-slate-200 dark:border-[#233948] hover:border-primary/30 transition-all text-sm text-slate-700 dark:text-slate-300 font-medium group shadow-sm hover:shadow"
+                                    className="text-left px-4 py-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-background-dark dark:to-background-dark hover:from-primary/10 hover:to-primary/5 dark:hover:from-primary/10 dark:hover:to-primary/5 border border-slate-200 dark:border-border-dark hover:border-primary/30 transition-all text-sm text-slate-700 dark:text-slate-300 font-medium group shadow-sm hover:shadow"
                                 >
                                     <span className="group-hover:text-primary transition-colors">💬 {query}</span>
                                 </button>
@@ -507,7 +507,7 @@ export const AgentsPage: React.FC = () => {
                     </div>
                 )}
 
-                <div className="border-t border-slate-200 dark:border-[#233948] p-3 sm:p-4">
+                <div className="border-t border-slate-200 dark:border-border-dark p-3 sm:p-4">
                     <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                         <button
                             type="button"
@@ -515,7 +515,7 @@ export const AgentsPage: React.FC = () => {
                             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border shrink-0 ${
                                 requireApproval
                                     ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-400'
-                                    : 'bg-slate-50 dark:bg-[#111b22] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400'
+                                    : 'bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-border-dark text-slate-500 dark:text-slate-400'
                             }`}
                         >
                             {requireApproval ? (
@@ -541,7 +541,7 @@ export const AgentsPage: React.FC = () => {
                             aria-label="Consulta para el asistente"
                             rows={1}
                             disabled={isLoading}
-                            className="flex-1 resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-3 py-2.5 sm:px-4 sm:py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            className="flex-1 resize-none rounded-xl border border-slate-300 dark:border-border-dark bg-white dark:bg-background-dark px-3 py-2.5 sm:px-4 sm:py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                             style={{ minHeight: '44px', maxHeight: '120px' }}
                             onInput={(e) => {
                                 const target = e.target as HTMLTextAreaElement;
@@ -580,7 +580,7 @@ export const AgentsPage: React.FC = () => {
                         onChange={(e) => setRejectReason(e.target.value)}
                         placeholder="Ej: El candidato ya está asignado a otro proyecto de alta prioridad..."
                         rows={3}
-                        className="w-full resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                        className="w-full resize-none rounded-xl border border-slate-300 dark:border-border-dark bg-white dark:bg-background-dark px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                     <div className="flex justify-end gap-3">
                         <Button variant="outline" onClick={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}>

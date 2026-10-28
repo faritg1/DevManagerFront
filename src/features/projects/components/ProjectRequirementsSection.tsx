@@ -125,7 +125,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
                   {mandatoryReqs.map((req) => (
                     <div
                       key={req.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]"
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-rose-500" />
@@ -149,7 +149,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
                   {optionalReqs.map((req) => (
                     <div
                       key={req.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]"
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-slate-400" />
@@ -236,7 +236,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
                 className={`flex-1 p-4 rounded-xl border text-center transition-all ${
                   requirementForm.isMandatory
                     ? "border-rose-500 bg-rose-50 dark:bg-rose-500/10"
-                    : "border-slate-200 dark:border-[#233948] hover:border-rose-500/50"
+                    : "border-slate-200 dark:border-border-dark hover:border-rose-500/50"
                 }`}
               >
                 <div className="flex items-center justify-center gap-2 mb-1">
@@ -253,7 +253,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
                 className={`flex-1 p-4 rounded-xl border text-center transition-all ${
                   !requirementForm.isMandatory
                     ? "border-slate-500 bg-slate-50 dark:bg-slate-500/10"
-                    : "border-slate-200 dark:border-[#233948] hover:border-slate-500/50"
+                    : "border-slate-200 dark:border-border-dark hover:border-slate-500/50"
                 }`}
               >
                 <div className="flex items-center justify-center gap-2 mb-1">

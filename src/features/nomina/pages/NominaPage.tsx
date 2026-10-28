@@ -172,7 +172,7 @@ export const NominaPage: React.FC = () => {
                     {compensations.length > 0 ? (
                         <div className="space-y-3">
                             {compensations.map(c => (
-                                <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{MODEL_LABEL[c.model] ?? 'Modelo'}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(c.period).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
@@ -205,7 +205,7 @@ export const NominaPage: React.FC = () => {
                             </Button>
                         </div>
 
-                        <div className="border-t border-slate-200 dark:border-[#233948] pt-4 mt-2">
+                        <div className="border-t border-slate-200 dark:border-border-dark pt-4 mt-2">
                             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Calcular aporte individual ({pilaMonth}/{pilaYear})</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                                 <select value={pilaUserId} onChange={(e) => setPilaUserId(e.target.value)} className={selectClass}>
@@ -226,7 +226,7 @@ export const NominaPage: React.FC = () => {
                             )}
 
                             {pilaResult && (
-                                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-background-dark grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">IBC</p><p className="font-bold">{currency(pilaResult.contributionBase)}</p></div>
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">Salud</p><p className="font-bold">{currency(pilaResult.healthContribution)}</p></div>
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">Pensión</p><p className="font-bold">{currency(pilaResult.pensionContribution)}</p></div>

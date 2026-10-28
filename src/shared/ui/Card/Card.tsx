@@ -8,9 +8,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles = {
-    default: 'bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948]',
-    elevated: 'bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] shadow-lg',
-    bordered: 'bg-transparent border-2 border-slate-200 dark:border-[#233948]',
+    default: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark',
+    elevated: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark shadow-lg',
+    bordered: 'bg-transparent border-2 border-slate-200 dark:border-border-dark',
     gradient: 'bg-gradient-to-br from-primary to-primary-dark text-white border-0',
 };
 
@@ -53,7 +53,7 @@ export const CardHeader: React.FC<{ children: React.ReactNode; className?: strin
     children, 
     className = '' 
 }) => (
-    <div className={`pb-4 border-b border-slate-100 dark:border-[#233948] mb-4 ${className}`}>
+    <div className={`pb-4 border-b border-slate-100 dark:border-border-dark mb-4 ${className}`}>
         {children}
     </div>
 );

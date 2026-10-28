@@ -51,7 +51,7 @@ const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: str
                 <div
                     key={n.id}
                     role={n.type === 'error' ? 'alert' : 'status'}
-                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-4 border-slate-200 dark:border-[#233948] ${accent} bg-white dark:bg-[#16222b] p-4 shadow-lg`}
+                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-4 border-slate-200 dark:border-border-dark ${accent} bg-white dark:bg-card-dark p-4 shadow-lg`}
                 >
                     <Icon size={20} className="shrink-0 mt-0.5" aria-hidden="true" />
                     <div className="flex-1 min-w-0">

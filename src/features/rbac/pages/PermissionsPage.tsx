@@ -27,15 +27,15 @@ export const PermissionsPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {tree.map((section) => (
-            <section key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
-              <header className="border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-[#233948] dark:bg-[#111b22]">
+            <section key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark">
+              <header className="border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-border-dark dark:bg-background-dark">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{section.name}</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   <code>{section.code}</code>
                   {section.description && ` · ${section.description}`}
                 </p>
               </header>
-              <ul className="divide-y divide-slate-100 dark:divide-[#233948]">
+              <ul className="divide-y divide-slate-100 dark:divide-border-dark">
                 {section.children.map((option) => (
                   <li key={option.id} className="grid gap-1 px-4 py-2.5 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)] sm:gap-4">
                     <span className="font-medium text-slate-800 dark:text-slate-100">{option.name}</span>

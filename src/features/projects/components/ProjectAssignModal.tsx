@@ -188,7 +188,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
                 className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                   selectedUserId === user.id
                     ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20"
-                    : "bg-slate-50 dark:bg-[#111b22] border-transparent hover:border-slate-200 dark:hover:border-[#233948]"
+                    : "bg-slate-50 dark:bg-background-dark border-transparent hover:border-slate-200 dark:hover:border-border-dark"
                 }`}
               >
                 <Avatar name={user.fullName} size="sm" />

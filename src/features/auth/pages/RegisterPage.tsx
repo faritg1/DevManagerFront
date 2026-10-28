@@ -78,7 +78,7 @@ export const RegisterPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#192833] rounded-2xl shadow-xl border border-slate-200 dark:border-[#233948] p-6 sm:p-8 backdrop-blur-sm">
+                <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-slate-200 dark:border-border-dark p-6 sm:p-8 backdrop-blur-sm">
                     <form className="flex flex-col gap-5" onSubmit={handleRegister}>
                         {error && (
                             <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
@@ -137,7 +137,7 @@ export const RegisterPage: React.FC = () => {
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full rounded-xl border border-slate-300 dark:border-[#325167] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                        className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         placeholder="••••••••" 
                                         type={showPassword ? "text" : "password"}
                                         required
@@ -157,7 +157,7 @@ export const RegisterPage: React.FC = () => {
                                     name="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    className="w-full rounded-xl border border-slate-300 dark:border-[#325167] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                    className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 px-4 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                     placeholder="••••••••" 
                                     type="password"
                                     required

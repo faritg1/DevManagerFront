@@ -139,7 +139,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
               return (
                 <div
                   key={app.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] gap-3"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-background-dark gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <Avatar name={app.userFullName} size="sm" />
@@ -220,7 +220,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
       >
         {selectedApplication && (
           <div className="space-y-5">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-background-dark">
               <Avatar name={selectedApplication.userFullName} size="lg" />
               <div>
                 <p className="font-bold text-slate-900 dark:text-white text-lg">
@@ -242,7 +242,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                 <p className="text-slate-700 dark:text-white text-sm font-bold mb-2">
                   Mensaje del postulante
                 </p>
-                <p className="p-3 rounded-xl bg-slate-100 dark:bg-[#0d1419] text-slate-700 dark:text-slate-300 text-sm italic">
+                <p className="p-3 rounded-xl bg-slate-100 dark:bg-background-dark text-slate-700 dark:text-slate-300 text-sm italic">
                   "{selectedApplication.message}"
                 </p>
               </div>
@@ -282,7 +282,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                     : "Obligatorio: Indica el motivo del rechazo..."
                 }
                 rows={3}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
+                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-white dark:bg-background-dark px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
               />
               {reviewAction === "reject" && !reviewNotes.trim() && (
                 <p className="text-xs text-rose-500 mt-1">

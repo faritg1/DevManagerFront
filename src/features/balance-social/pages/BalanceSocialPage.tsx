@@ -82,7 +82,7 @@ export const BalanceSocialPage: React.FC = () => {
         : 0;
 
     const renderIndicator = (i: SocialBalanceIndicatorDto) => (
-        <div key={i.userId} className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+        <div key={i.userId} className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark">
             <div className="flex items-center justify-between mb-2">
                 <p className="font-bold text-slate-900 dark:text-white">{i.fullName || i.userId}</p>
                 <Badge variant={i.meetsEducation ? 'success' : 'danger'} dot>
@@ -159,7 +159,7 @@ export const BalanceSocialPage: React.FC = () => {
                     {report.executiveSummary && <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{report.executiveSummary}</p>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {report.dimensions.map(d => (
-                            <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                            <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                 <div className="flex items-center justify-between">
                                     <p className="font-bold text-slate-900 dark:text-white">{d.name}</p>
                                     <Badge variant={dimensionVariant(d.status)}>{d.status} · {d.coverage}%</Badge>

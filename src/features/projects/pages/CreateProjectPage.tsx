@@ -126,7 +126,7 @@ export const CreateProjectPage: React.FC = () => {
                                         name="description"
                                         value={values.description}
                                         onChange={handleChange}
-                                        className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                                        className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
                                         placeholder="Describe los objetivos y alcance del proyecto..."
                                     />
                                 </label>

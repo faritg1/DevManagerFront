@@ -42,7 +42,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     <span className="text-slate-900 dark:text-white">{Math.round(percentage)}%</span>
                 </div>
             )}
-            <div className={`w-full bg-slate-100 dark:bg-[#111b22] ${sizeStyles[size]} rounded-full overflow-hidden`}>
+            <div className={`w-full bg-slate-100 dark:bg-background-dark ${sizeStyles[size]} rounded-full overflow-hidden`}>
                 <div
                     className={`
                         h-full rounded-full shadow-lg

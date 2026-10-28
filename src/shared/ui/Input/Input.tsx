@@ -49,9 +49,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                         w-full rounded-xl border 
                         ${error 
                             ? 'border-rose-500 focus:ring-rose-500' 
-                            : 'border-slate-300 dark:border-[#233948] focus:ring-primary focus:border-primary dark:focus:border-primary'
+                            : 'border-slate-300 dark:border-border-dark focus:ring-primary focus:border-primary dark:focus:border-primary'
                         }
-                        bg-slate-50 dark:bg-[#111b22] 
+                        bg-slate-50 dark:bg-background-dark 
                         text-slate-900 dark:text-white 
                         placeholder:text-slate-400 dark:placeholder:text-slate-500
                         ${paddingLeft} ${paddingRight}

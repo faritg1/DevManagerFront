@@ -144,7 +144,7 @@ export const HabeasDataPage: React.FC = () => {
                 ) : (
                     <div className="space-y-3">
                         {requests.map(r => (
-                            <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                            <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                 <div className="flex items-center justify-between gap-2">
                                     <p className="font-bold text-slate-900 dark:text-white">
                                         {ARCO_TYPE_LABEL[r.type]} · <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{r.filingNumber}</span>

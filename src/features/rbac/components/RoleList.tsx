@@ -24,14 +24,14 @@ export const RoleList: React.FC<RoleListProps> = ({
 
   if (roles.length === 0) {
     return (
-      <div className="border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948]">
+      <div className="border rounded-lg bg-slate-50 dark:bg-card-dark border-slate-200 dark:border-border-dark">
         <EmptyState title="No hay roles definidos" />
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark">
       <table className={TABLE_CLASS}>
         <thead className={THEAD_CLASS}>
           <tr>

@@ -144,9 +144,9 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
             const count = leaves.filter((id) => selected.has(id)).length;
             const sectionOn = readOnly || count === leaves.length;
             return (
-              <fieldset key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
+              <fieldset key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark">
                 <legend className="sr-only">{section.name}</legend>
-                <label className="flex cursor-pointer items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-[#233948] dark:bg-[#111b22]">
+                <label className="flex cursor-pointer items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-border-dark dark:bg-background-dark">
                   <TriCheckbox
                     checked={sectionOn}
                     indeterminate={!readOnly && count > 0 && count < leaves.length}
@@ -158,7 +158,7 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
                     {readOnly ? leaves.length : count}/{leaves.length}
                   </span>
                 </label>
-                <ul className="divide-y divide-slate-100 dark:divide-[#233948]">
+                <ul className="divide-y divide-slate-100 dark:divide-border-dark">
                   {section.children.map((option) => (
                     <li key={option.id}>
                       <label className={`flex items-start gap-3 px-4 py-2.5 ${readOnly ? "" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"}`}>

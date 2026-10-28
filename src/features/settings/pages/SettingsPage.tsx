@@ -177,7 +177,7 @@ export const SettingsPage: React.FC = () => {
               aria-checked={sidebarCollapsed}
               aria-label="Barra lateral compacta"
               onClick={() => handleSidebarToggle(!sidebarCollapsed)}
-              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#16222b] ${
+              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-card-dark ${
                 sidebarCollapsed
                   ? "bg-primary"
                   : "bg-slate-300 dark:bg-slate-600"

@@ -104,7 +104,7 @@ export const DataPoliciesPage: React.FC = () => {
                             rows={6}
                             value={form.text}
                             onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
+                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
                 </div>

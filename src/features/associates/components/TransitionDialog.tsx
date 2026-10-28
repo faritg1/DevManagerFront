@@ -56,7 +56,7 @@ export const TransitionDialog: React.FC<Props> = ({ isOpen, toStatus, isSaving, 
                             maxLength={400}
                             rows={3}
                             onChange={(e) => setReason(e.target.value)}
-                            className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
+                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
                         />
                         <span className="text-xs text-slate-500 dark:text-slate-400">{reason.length}/400</span>
                     </div>

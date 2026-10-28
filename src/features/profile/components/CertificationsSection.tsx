@@ -150,7 +150,7 @@ export const CertificationsSection: React.FC<Props> = ({
             {certifications.map((cert) => (
               <div
                 key={cert.id}
-                className="p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0d1419] border border-slate-200 dark:border-[#233948] hover:border-primary/30 transition-all relative"
+                className="p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark hover:border-primary/30 transition-all relative"
               >
                 {opLoading && (
                   <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center rounded-xl z-10">

@@ -71,9 +71,9 @@ export const ProjectCard: React.FC<{ project: ProjectResponse }> = ({ project })
 export const NewProjectTile: React.FC = () => (
     <Link
         to={ROUTES.CREATE_PROJECT}
-        className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[240px]"
+        className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-border-dark bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[240px]"
     >
-        <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-[#16222b] flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
+        <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-card-dark flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
             <Plus size={28} />
         </div>
         <p className="text-slate-500 dark:text-slate-400 font-semibold group-hover:text-primary transition-colors">

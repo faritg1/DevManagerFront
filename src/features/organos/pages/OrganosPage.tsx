@@ -40,7 +40,7 @@ const nowLocal = () => {
 };
 
 const selectClass = `${SELECT_CLASS} w-full`;
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
+const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
 const labelClass = 'text-slate-700 dark:text-white text-sm font-bold';
 
 const emptyMinutes = (governingBodyId: string): CreateMinutesRequest => ({
@@ -404,7 +404,7 @@ export const OrganosPage: React.FC = () => {
                                 <div className="space-y-2">
                                     {members.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Sin miembros.</p>}
                                     {members.map(m => (
-                                        <div key={m.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-start justify-between gap-2">
+                                        <div key={m.id} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark flex items-start justify-between gap-2">
                                             <div>
                                                 <p className="font-bold text-sm text-slate-900 dark:text-white">{m.fullName}</p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400">{m.position} · {formatDate(m.startDate)}{m.endDate ? ` – ${formatDate(m.endDate)}` : ''}</p>
@@ -433,7 +433,7 @@ export const OrganosPage: React.FC = () => {
                                         <button
                                             key={ac.id}
                                             onClick={() => openMinutesDetail(ac.id)}
-                                            className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:ring-1 hover:ring-primary"
+                                            className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-background-dark hover:ring-1 hover:ring-primary"
                                         >
                                             <p className="font-bold text-sm text-slate-900 dark:text-white">Sesión {SESSION_TYPE_LABEL[ac.sessionType] ?? ac.sessionType}</p>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(ac.sessionDate)} · Quórum {ac.quorum}</p>
@@ -458,7 +458,7 @@ export const OrganosPage: React.FC = () => {
                                         <button
                                             key={as.id}
                                             onClick={() => openAssembly(as.id)}
-                                            className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:ring-1 hover:ring-primary"
+                                            className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-background-dark hover:ring-1 hover:ring-primary"
                                         >
                                             <div className="flex items-center justify-between gap-2">
                                                 <p className="font-bold text-sm text-slate-900 dark:text-white">{SESSION_TYPE_LABEL[as.type] ?? as.type}</p>
@@ -492,7 +492,7 @@ export const OrganosPage: React.FC = () => {
                                 {!o.isActive && <Badge variant="default">Inactivo</Badge>}
                             </div>
                             {o.description && <p className="text-sm text-slate-500 mt-2 line-clamp-2 dark:text-slate-400">{o.description}</p>}
-                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-[#233948] text-xs text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-border-dark text-xs text-slate-500 dark:text-slate-400">
                                 <span className="flex items-center gap-1"><Users size={13} /> {o.membersCount} miembros</span>
                                 <span className="flex items-center gap-1"><FileText size={13} /> {o.minutesCount} actas</span>
                             </div>
@@ -711,7 +711,7 @@ export const OrganosPage: React.FC = () => {
                         </div>
 
                         {!assembly.isClosed && (
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] space-y-3">
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                 <h4 className="font-bold text-slate-900 dark:text-white">Votar</h4>
                                 {isAdmin && (
                                     <div>
@@ -744,14 +744,14 @@ export const OrganosPage: React.FC = () => {
 
                         {isAdmin && !assembly.isClosed && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] space-y-3">
+                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                     <h4 className="font-bold text-slate-900 dark:text-white">Asistencia</h4>
                                     <Input type="number" min={0} label="Asistentes" value={attendees} onChange={(e) => setAttendees(e.target.value)} />
                                     <Button size="sm" variant="outline" onClick={handleAttendance} disabled={attendees === '' || Number(attendees) < 0}>
                                         Registrar asistencia
                                     </Button>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] space-y-3">
+                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                     <h4 className="font-bold text-slate-900 dark:text-white">Cierre</h4>
                                     <div>
                                         <label htmlFor="organos-resultados" className={labelClass}>Resultados</label>

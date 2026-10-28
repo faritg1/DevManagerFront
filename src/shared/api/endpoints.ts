@@ -228,24 +228,13 @@ export const API_ENDPOINTS = {
         `/excedentes/${excedenteId}/aprobar`,
     },
 
-    // Habeas Data
+    // Habeas Data — ARCO (consent lives in DATA_POLICIES / USERS.CONSENTS)
     HABEAS_DATA: {
-      AUTORIZACIONES_CREATE: "/habeas-data/autorizaciones",
-      AUTORIZACION_REVOCAR: (autorizacionId: string) =>
-        `/habeas-data/autorizaciones/${autorizacionId}/revocar`,
-      AUTORIZACION_VIGENTE: (asociadoId: string) =>
-        `/habeas-data/autorizaciones/${asociadoId}/vigente`,
-      AUTORIZACION_TIENE_VIGENTE: (asociadoId: string) =>
-        `/habeas-data/autorizaciones/${asociadoId}/tiene-vigente`,
-      ARCO_CREATE: "/habeas-data/arco",
-      ARCO_ATENDER: (solicitudId: string) =>
-        `/habeas-data/arco/${solicitudId}/atender`,
-      ARCO_RECHAZAR: (solicitudId: string) =>
-        `/habeas-data/arco/${solicitudId}/rechazar`,
-      ARCO_BY_ASOCIADO: (asociadoId: string) =>
-        `/habeas-data/arco/asociado/${asociadoId}`,
-      ARCO_PENDIENTES: (organizationId: string) =>
-        `/habeas-data/arco/pendientes/${organizationId}`,
+      ARCO: "/habeas-data/arco",
+      ARCO_ATENDER: (id: string) => `/habeas-data/arco/${id}/atender`,
+      ARCO_RECHAZAR: (id: string) => `/habeas-data/arco/${id}/rechazar`,
+      ARCO_BY_USER: (userId: string) => `/habeas-data/arco/asociado/${userId}`,
+      ARCO_PENDIENTES: "/habeas-data/arco/pendientes",
     },
 
     // Órganos (NO usa envelope ApiResponse — retorna DTOs crudos)

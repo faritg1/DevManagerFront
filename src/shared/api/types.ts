@@ -1431,3 +1431,490 @@ export interface ResponderDudaRequest {
   pregunta: string;
   tipoAsociado?: string | null;
 }
+
+// ============================================================================
+// SOLIDARITY (consolidated contracts) — org comes from the JWT; enums are numbers
+// ============================================================================
+
+// ============ HABEAS DATA: ARCO ============
+export type ArcoType = 1 | 2 | 3 | 4; // Access, Rectification, Cancellation, Opposition
+export type ArcoStatus = 1 | 2 | 3; // Pending, Attended, Rejected
+
+export interface ArcoRequestDto {
+  id: string;
+  userId: string;
+  type: ArcoType;
+  status: ArcoStatus;
+  filingNumber: string;
+  requestedAt: string;
+  description: string;
+  response?: string;
+  respondedAt?: string;
+}
+
+export interface CreateArcoRequest {
+  userId?: string;
+  type: ArcoType;
+  description: string;
+}
+
+// ============ COMPETENCIES ============
+export interface CompetencyDto {
+  id: string;
+  userId: string;
+  fullName: string;
+  name: string;
+  level: number; // 1-5
+  isAvailable: boolean;
+  notes?: string;
+  updatedAt: string;
+}
+
+export interface CreateCompetencyRequest {
+  userId: string;
+  name: string;
+  level: number;
+  notes?: string;
+}
+
+// ============ GOVERNING BODIES ============
+export type GoverningBodyType = 1 | 2 | 3 | 4 | 5 | 99;
+export type SessionType = 1 | 2; // Ordinary, Extraordinary
+export type VoteOption = 1 | 2 | 3 | 4; // Approve, Reject, Abstain, Blank
+
+export interface GoverningBodyDto {
+  id: string;
+  type: GoverningBodyType;
+  name: string;
+  constitutionDate: string;
+  description?: string;
+  isActive: boolean;
+  membersCount: number;
+  minutesCount: number;
+}
+
+export interface CreateGoverningBodyRequest {
+  type: GoverningBodyType;
+  name: string;
+  constitutionDate: string;
+  description?: string;
+}
+
+export interface UpdateGoverningBodyRequest {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface GoverningBodyMemberDto {
+  id: string;
+  governingBodyId: string;
+  userId: string;
+  fullName: string;
+  position: string;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+}
+
+export interface AssignMemberRequest {
+  governingBodyId: string;
+  userId: string;
+  position: string;
+  startDate: string;
+}
+
+export interface UpdateMemberRequest {
+  position?: string;
+  endDate?: string;
+  isActive?: boolean;
+}
+
+export interface MinutesDto {
+  id: string;
+  governingBodyId: string;
+  assemblyId?: string;
+  sessionDate: string;
+  sessionType: SessionType;
+  quorum: number;
+  decisions: string;
+  noticeUrl?: string;
+  minutesUrl?: string;
+  notes?: string;
+}
+
+export interface CreateMinutesRequest {
+  governingBodyId: string;
+  assemblyId?: string;
+  sessionDate: string;
+  sessionType: SessionType;
+  quorum: number;
+  decisions: string;
+  noticeUrl?: string;
+  minutesUrl?: string;
+  notes?: string;
+}
+
+export interface AssemblyDto {
+  id: string;
+  governingBodyId?: string;
+  scheduledAt: string;
+  type: SessionType;
+  notice: string;
+  minimumQuorum: number;
+  attendees?: number;
+  hasQuorum: boolean;
+  isClosed: boolean;
+  closedAt?: string;
+  results?: string;
+  votesCount: number;
+}
+
+export interface ConveneAssemblyRequest {
+  governingBodyId?: string;
+  scheduledAt: string;
+  type: SessionType;
+  notice: string;
+  minimumQuorum: number;
+}
+
+export interface CastVoteRequest {
+  assemblyId: string;
+  userId?: string;
+  option: VoteOption;
+  notes?: string;
+}
+
+export interface VoteResultsDto {
+  assemblyId: string;
+  totalVotes: number;
+  approve: number;
+  reject: number;
+  abstain: number;
+  blank: number;
+}
+
+// ============ SURPLUS ============
+export interface SurplusDistributionDto {
+  id: string;
+  period: string;
+  totalSurplus: number;
+  protectionReserve: number;
+  educationFund: number;
+  solidarityFund: number;
+  remainder: number;
+  revaluation?: number;
+  cooperativeReturn?: number;
+  approvedByAssembly: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CalculateSurplusRequest {
+  period: string;
+  totalSurplus: number;
+  notes?: string;
+}
+
+export interface ApproveSurplusRequest {
+  revaluation?: number;
+  cooperativeReturn?: number;
+}
+
+// ============ PAYROLL ============
+export type CompensationModel = 1 | 2 | 3; // DaysByRate, FixedMonthly, PerProject
+
+export interface CompensationDto {
+  id: string;
+  userId: string;
+  period: string;
+  model: CompensationModel;
+  baseValue: number;
+  dailyRate?: number;
+  calculatedValue: number;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CreateCompensationRequest {
+  userId: string;
+  period: string;
+  model: CompensationModel;
+  baseValue: number;
+  dailyRate?: number;
+  notes?: string;
+}
+
+export interface PilaContributionDto {
+  id: string;
+  userId: string;
+  period: string;
+  contributorType: number;
+  arlRiskLevel: number;
+  contributionBase: number;
+  healthContribution: number;
+  pensionContribution: number;
+  arlContribution: number;
+  total: number;
+  createdAt: string;
+}
+
+export interface CalculatePilaRequest {
+  userId: string;
+  period: string;
+  income: number;
+  arlRiskLevel?: number;
+}
+
+// ============ WELFARE ============
+export type AidType = 1 | 2 | 3 | 4 | 5 | 99;
+export type WelfareRequestStatus = 1 | 2 | 3 | 4; // Pending, Approved, Rejected, Delivered
+
+export interface WelfareProgramDto {
+  id: string;
+  name: string;
+  description?: string;
+  budget: number;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  maxBeneficiaries?: number;
+  createdAt: string;
+}
+
+export interface CreateWelfareProgramRequest {
+  name: string;
+  description?: string;
+  budget: number;
+  startDate: string;
+  endDate?: string;
+  maxBeneficiaries?: number;
+}
+
+export interface WelfareRequestDto {
+  id: string;
+  userId: string;
+  programId?: string;
+  programName?: string;
+  aidType: AidType;
+  requestedAmount: number;
+  approvedAmount?: number;
+  status: WelfareRequestStatus;
+  reason: string;
+  requiredDate: string;
+  resolvedAt?: string;
+  resolutionNotes?: string;
+  createdAt: string;
+}
+
+export interface CreateWelfareRequestRequest {
+  userId?: string;
+  programId?: string;
+  aidType: AidType;
+  requestedAmount: number;
+  reason: string;
+  requiredDate: string;
+}
+
+export interface WelfareAidDto {
+  id: string;
+  userId: string;
+  welfareRequestId: string;
+  solidarityFundId?: string;
+  aidType: AidType;
+  amount: number;
+  deliveredAt: string;
+  concept: string;
+  requiresRepayment: boolean;
+  repaymentDueDate?: string;
+}
+
+export interface SolidarityFundDto {
+  id: string;
+  period: string;
+  surplusDistributionId: string;
+  totalSurplus: number;
+  contribution: number;
+  carriedOver: number;
+  availableBalance: number;
+  totalDisbursed: number;
+  isCurrent: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+// ============ OCCUPATIONAL HEALTH (SST) ============
+export type ExamType = 1 | 2 | 3; // PreEmployment, Periodic, Exit
+export type ExamResult = 1 | 2 | 3; // Fit, FitWithRestrictions, Unfit
+export type AccidentSeverity = 1 | 2 | 3; // Minor, Serious, Fatal
+
+export interface MedicalExamDto {
+  id: string;
+  userId: string;
+  examType: ExamType;
+  scheduledDate: string;
+  performedAt?: string;
+  result?: ExamResult;
+  fileUrl?: string;
+  notes?: string;
+  performed: boolean;
+  createdAt: string;
+}
+
+export interface WorkAccidentDto {
+  id: string;
+  userId: string;
+  occurredAt: string;
+  accidentType: string;
+  severity: AccidentSeverity;
+  arl: string;
+  description: string;
+  furatNumber?: string;
+  investigationDate?: string;
+  investigationCompleted: boolean;
+  conclusions?: string;
+  causes?: string;
+  correctiveMeasures?: string;
+  createdAt: string;
+}
+
+export interface ReportAccidentRequest {
+  userId: string;
+  occurredAt: string;
+  accidentType: string;
+  severity: AccidentSeverity;
+  arl: string;
+  description: string;
+  furatNumber?: string;
+}
+
+export interface InvestigateAccidentRequest {
+  investigationDate: string;
+  conclusions: string;
+  causes: string;
+  correctiveMeasures: string;
+}
+
+export interface RiskDto {
+  id: string;
+  level: number; // 1 Low .. 5 Critical
+  factor: string;
+  description: string;
+  isActive: boolean;
+  controls?: string;
+  createdAt: string;
+}
+
+export interface CreateRiskRequest {
+  level: number;
+  factor: string;
+  description: string;
+  controls?: string;
+}
+
+// ============ SOCIAL BALANCE ============
+export interface SocialBalanceIndicatorDto {
+  userId: string;
+  fullName?: string;
+  year: number;
+  educationHours: number;
+  basicEducationHours: number;
+  assemblyParticipations: number;
+  committeeParticipations: number;
+  benefitsReceived: number;
+  meetsEducation: boolean;
+  index: number;
+}
+
+export interface SocialIndicatorDto {
+  name: string;
+  currentValue: number;
+  targetValue: number;
+  unit?: string;
+  coverage?: number;
+}
+
+export interface SocialDimensionDto {
+  name: string;
+  description?: string;
+  coverage: number;
+  target: number;
+  status: string;
+  indicators: SocialIndicatorDto[];
+}
+
+export interface SocialBalanceReportDto {
+  year: number;
+  generatedAt: string;
+  activeAssociates: number;
+  dimensions: SocialDimensionDto[];
+  executiveSummary?: string;
+  strengths: string[];
+  improvementAreas: string[];
+  narrative?: string;
+}
+
+// ============ SUPERSOLIDARIA ============
+export type SupersolidariaReportType = 1 | 2; // Quarterly, Annual
+
+export interface SupersolidariaReportDto {
+  id: string;
+  period: string;
+  periodEnd: string;
+  reportType: SupersolidariaReportType;
+  socialBalanceJson: string;
+  associatesJson: string;
+  complianceJson: string;
+  isSent: boolean;
+  sentAt?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface GenerateSupersolidariaReportRequest {
+  period: string;
+  reportType: SupersolidariaReportType;
+  notes?: string;
+}
+
+// ============ COOPERATIVE ASSISTANT ============
+export interface RegulationCitation {
+  rule: string;
+  article: string;
+  description?: string;
+}
+
+export interface CooperativeQueryResponse {
+  answer: string;
+  markdown?: string;
+  citations: RegulationCitation[];
+  suggestedActions: string[];
+  generatedByAi: boolean;
+}
+
+export interface ComplianceAreaDto {
+  name: string;
+  applicableRule: string;
+  compliant: boolean;
+  coverage: number;
+  detail?: string;
+  findings: string[];
+}
+
+export interface ComplianceDto {
+  year: number;
+  checkedAt: string;
+  areas: ComplianceAreaDto[];
+  compliantAreas: number;
+  nonCompliantAreas: number;
+  overallCoverage: number;
+  overallStatus: string;
+  alerts: string[];
+}
+
+export interface VerifyComplianceRequest {
+  year?: number;
+  verifyEducation: boolean;
+  verifyOccupationalHealth: boolean;
+  verifyHabeasData: boolean;
+}

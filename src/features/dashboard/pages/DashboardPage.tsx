@@ -119,7 +119,7 @@ export const DashboardPage: React.FC = () => {
             try {
                 const [excedentesRes, arcoRes, bienestarRes] = await Promise.all([
                     excedentesService.getByOrganizacion(orgId).catch(() => null),
-                    habeasDataService.getSolicitudesARCOPendientes(orgId).catch(() => null),
+                    habeasDataService.getPendingArco().catch(() => null),
                     bienestarService.getProgramas(orgId).catch(() => null),
                 ]);
 

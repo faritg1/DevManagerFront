@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, PageContainer } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService } from '../../../shared/api';
 
@@ -235,11 +235,11 @@ export const AgentsPage: React.FC = () => {
     };
 
     return (
-        <div className="p-3 sm:p-6 md:p-10 max-w-7xl mx-auto w-full h-full flex flex-col">
+        <PageContainer fullHeight>
             {/* Header */}
             <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
                 <div className="min-w-0">
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl flex items-center gap-2 truncate">
                         <Sparkles className="text-primary shrink-0" size={24} />
                         Asistente IA
                     </h1>
@@ -630,7 +630,7 @@ export const AgentsPage: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </PageContainer>
     );
 };
 

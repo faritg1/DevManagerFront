@@ -6,6 +6,8 @@ import { RoleList } from "../components/RoleList";
 import { RoleFormModal } from "../components/RoleFormModal";
 import { useToast } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
+import { Button, PageContainer, PageHeader } from "../../../shared/ui";
+import { Plus } from "lucide-react";
 
 export const RolesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -98,23 +100,16 @@ export const RolesPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Gestión de Roles
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Administra los roles y sus permisos en la organización
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
-        >
-          <span>+</span> Crear Nuevo Rol
-        </button>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Gestión de Roles"
+        description="Administra los roles y sus permisos en la organización"
+        actions={
+        <Button icon={Plus} onClick={handleCreate}>
+          Crear Nuevo Rol
+        </Button>
+        }
+      />
 
       <RoleList
         roles={roles}
@@ -130,6 +125,6 @@ export const RolesPage: React.FC = () => {
         onSuccess={handleModalSuccess}
         roleToEdit={editingRole}
       />
-    </div>
+    </PageContainer>
   );
 };

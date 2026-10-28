@@ -6,6 +6,7 @@ import type {
   RolePermissionsResponse,
 } from "../../../shared/api/types";
 import { ROUTES } from "../../../shared/config/constants";
+import { Button, PageContainer, PageHeader } from "../../../shared/ui";
 
 interface RoleEditorProps {
   roleId?: string; // si se pasa, carga permisos del rol para editar
@@ -142,23 +143,17 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
 
   if (isLoading)
     return (
-      <div className="p-6 text-slate-500 dark:text-slate-400">
+      <div className="p-6 md:p-10 max-w-7xl mx-auto w-full text-slate-500 dark:text-slate-400">
         Cargando editor...
       </div>
     );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {roleId ? `Editar rol — ${roleName}` : "Crear nuevo rol"}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Define qué puede o no puede hacer este rol en el sistema.
-          </p>
-        </div>
-
+    <PageContainer>
+      <PageHeader
+        title={roleId ? `Editar rol — ${roleName}` : "Crear nuevo rol"}
+        description="Define qué puede o no puede hacer este rol en el sistema."
+        actions={
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <input
@@ -174,19 +169,16 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
             />
             <span>Seleccionar todos</span>
           </label>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50"
-          >
+          <Button onClick={handleSave} disabled={isSaving}>
             {isSaving
               ? "Guardando..."
               : roleId
                 ? "Guardar permisos"
                 : "Crear rol y asignar permisos"}
-          </button>
+          </Button>
         </div>
-      </div>
+        }
+      />
 
       <div className="bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] rounded-lg shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -311,7 +303,7 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

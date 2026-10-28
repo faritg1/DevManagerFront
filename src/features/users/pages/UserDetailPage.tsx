@@ -29,7 +29,7 @@ import type {
   EffectivePermissionsResponse,
 } from "../../../shared/api/types";
 import { useConfig } from "../../../shared/context";
-import { Card, Badge, Button, Avatar } from "../../../shared/ui";
+import { Card, Badge, Button, Avatar, PageContainer } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
 
 const formatDate = (dateStr: string) =>
@@ -146,11 +146,11 @@ export const UserDetailPage: React.FC = () => {
   const validatedCount = skills.filter((s) => s.lastValidatedAt).length;
 
   return (
-    <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-6">
+    <PageContainer className="space-y-6">
       {/* Back button */}
       <button
         onClick={() => navigate(ROUTES.USERS)}
-        className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors"
+        className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
       >
         <ArrowLeft size={16} />
         Volver a Usuarios
@@ -164,7 +164,7 @@ export const UserDetailPage: React.FC = () => {
         <div className="relative pt-12 flex flex-col sm:flex-row items-start sm:items-end gap-4">
           <Avatar name={user.fullName} size="lg" />
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
               {user.fullName}
             </h1>
             <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -180,17 +180,17 @@ export const UserDetailPage: React.FC = () => {
 
         {/* Contact info */}
         <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Mail size={14} />
             {user.email}
           </div>
           {user.phoneNumber && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
               <Phone size={14} />
               {user.phoneNumber}
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Calendar size={14} />
             Miembro desde {formatDate(user.createdAt)}
           </div>
@@ -327,19 +327,19 @@ export const UserDetailPage: React.FC = () => {
             </h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Total skills</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Total skills</span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {skills.length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Validadas</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Validadas</span>
                 <span className="text-sm font-bold text-emerald-500">
                   {validatedCount}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Nivel promedio</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Nivel promedio</span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {skills.length > 0
                     ? (
@@ -349,7 +349,7 @@ export const UserDetailPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Skill más fuerte</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Skill más fuerte</span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {skills.length > 0
                     ? skills.sort((a, b) => b.level - a.level)[0].skillName
@@ -360,7 +360,7 @@ export const UserDetailPage: React.FC = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

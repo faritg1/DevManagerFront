@@ -11,7 +11,7 @@ import {
     AlertCircle,
     Briefcase
 } from 'lucide-react';
-import { Card, Badge, ProgressBar, Button, Input } from '../../../shared/ui';
+import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, ProjectComplexity, type ProjectResponse } from '../../../shared/api/types';
@@ -124,23 +124,14 @@ export const ProjectsPage: React.FC = () => {
     }, [searchQuery, projects]);
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="max-w-7xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8">
-                
-                {/* Header */}
-                {/* Header + actions */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-tight">
-                            Proyectos
-                        </h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-base">
-                            Gestiona y monitorea todos los proyectos de la organización.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-4 flex-wrap">
-                        <div className="w-full md:w-80">
+        <PageContainer>
+            {/* Header + actions */}
+            <PageHeader
+                title="Proyectos"
+                description="Gestiona y monitorea todos los proyectos de la organización."
+                actions={
+                    <div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+                        <div className="w-full sm:w-64 lg:w-80">
                             <Input
                                 placeholder="Buscar proyectos..."
                                 icon={Search}
@@ -154,10 +145,11 @@ export const ProjectsPage: React.FC = () => {
                             </Button>
                         </Link>
                     </div>
-                </div>
-
+                }
+            />
+            <div className="flex flex-col gap-8">
                 {/* Status Tabs Row */}
-                <div className="flex gap-2 overflow-x-auto pb-2 mt-4">
+                <div className="flex gap-2 overflow-x-auto pb-2">
                     {STATUS_TABS.map((tab) => (
                         <button
                             key={tab.label}
@@ -310,7 +302,7 @@ export const ProjectsPage: React.FC = () => {
                     </>
                 )}
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

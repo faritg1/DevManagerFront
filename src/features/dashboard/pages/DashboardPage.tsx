@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Loader2, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { Card, StatCard, Badge, ProgressBar, Button } from '../../../shared/ui';
+import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -195,25 +195,20 @@ export const DashboardPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full relative">
-            <div className="max-w-7xl w-full mx-auto p-6 md:p-10 flex flex-col gap-8">
-                
-                {/* Hero / Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-tight">
-                            {user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
-                        </h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-base">
-                            Resumen general de tu organización y proyectos.
-                        </p>
-                    </div>
+        <PageContainer>
+            {/* Hero / Header */}
+            <PageHeader
+                title={user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
+                description="Resumen general de tu organización y proyectos."
+                actions={
                     <Link to={ROUTES.CREATE_PROJECT}>
                         <Button icon={Plus}>
                             Nuevo Proyecto
                         </Button>
                     </Link>
-                </div>
+                }
+            />
+            <div className="flex flex-col gap-8">
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -483,7 +478,7 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

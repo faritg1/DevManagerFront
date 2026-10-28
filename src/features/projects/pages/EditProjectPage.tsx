@@ -21,6 +21,8 @@ import {
   CardTitle,
   Badge,
   Modal,
+  PageContainer,
+  PageHeader,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
@@ -271,28 +273,21 @@ export const EditProjectPage: React.FC = () => {
   const optionalReqs = requirements.filter((r) => !r.isMandatory);
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="flex flex-col max-w-[1024px] w-full px-4 md:px-6 py-6 mx-auto pb-20">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(`/projects/${id}`)}
-          className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit mb-6"
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Volver al Proyecto</span>
-        </button>
-
+    <PageContainer narrow>
         {/* Header */}
-        <div className="flex flex-wrap justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[#233948] mb-8">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-slate-900 dark:text-white text-2xl md:text-3xl font-black leading-tight">
-              Editar Proyecto
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-normal">
-              {project.code || project.name}
-            </p>
-          </div>
-          <div className="flex gap-3 items-center">
+        <PageHeader
+          before={
+            <button
+              onClick={() => navigate(`/projects/${id}`)}
+              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit"
+            >
+              <ArrowLeft size={20} />
+              <span className="font-medium">Volver al Proyecto</span>
+            </button>
+          }
+          title="Editar Proyecto"
+          description={project.code || project.name}
+          actions={<>
             <Button
               variant="outline"
               icon={X}
@@ -308,8 +303,8 @@ export const EditProjectPage: React.FC = () => {
             >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </Button>
-          </div>
-        </div>
+          </>}
+        />
 
         <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
           {/* Basic Information */}
@@ -513,7 +508,6 @@ export const EditProjectPage: React.FC = () => {
             )}
           </Card>
         </form>
-      </div>
 
       {/* Modal para agregar skill */}
       <Modal
@@ -589,7 +583,7 @@ export const EditProjectPage: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </PageContainer>
   );
 };
 

@@ -521,7 +521,7 @@ export const UsersPage: React.FC = () => {
                 </Card>
                 <Card className="flex items-center gap-4">
                     <div className="p-3 bg-slate-100 dark:bg-slate-500/10 rounded-xl">
-                        <UserX className="text-slate-500" size={24} />
+                        <UserX className="text-slate-500 dark:text-slate-400" size={24} />
                     </div>
                     <div>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">{inactiveUsers}</p>
@@ -798,7 +798,7 @@ export const UsersPage: React.FC = () => {
                             <Avatar name={selectedUser.fullName} size="md" />
                             <div>
                                 <p className="font-bold text-slate-900 dark:text-white">{selectedUser.fullName}</p>
-                                <p className="text-sm text-slate-500">{selectedUser.email}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{selectedUser.email}</p>
                             </div>
                         </div>
                         
@@ -1084,7 +1084,7 @@ export const UsersPage: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-sm text-slate-500">No hay permisos disponibles</div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">No hay permisos disponibles</div>
                 )}
             </Modal>
 
@@ -1109,7 +1109,7 @@ export const UsersPage: React.FC = () => {
                 ) : userSkills.length === 0 ? (
                     <div className="text-center py-8">
                         <Award size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                        <p className="text-sm text-slate-500">Este usuario no tiene habilidades declaradas</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Este usuario no tiene habilidades declaradas</p>
                     </div>
                 ) : (
                     <div className="space-y-3">

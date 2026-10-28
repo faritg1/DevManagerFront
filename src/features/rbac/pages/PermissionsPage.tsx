@@ -5,6 +5,8 @@ import { PermissionList } from "../components/PermissionList";
 import { PermissionFormModal } from "../components/PermissionFormModal";
 import { useToast } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
+import { Button, PageContainer, PageHeader } from "../../../shared/ui";
+import { Plus } from "lucide-react";
 
 export const PermissionsPage: React.FC = () => {
   const toast = useToast();
@@ -83,23 +85,16 @@ export const PermissionsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Gestión de Permisos
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Administra el catálogo de permisos del sistema
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
-        >
-          <span>+</span> Crear Nuevo Permiso
-        </button>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Gestión de Permisos"
+        description="Administra el catálogo de permisos del sistema"
+        actions={
+        <Button icon={Plus} onClick={handleCreate}>
+          Crear Nuevo Permiso
+        </Button>
+        }
+      />
 
       <PermissionList
         permissions={permissions}
@@ -114,6 +109,6 @@ export const PermissionsPage: React.FC = () => {
         onSuccess={handleModalSuccess}
         permissionToEdit={editingPermission}
       />
-    </div>
+    </PageContainer>
   );
 };

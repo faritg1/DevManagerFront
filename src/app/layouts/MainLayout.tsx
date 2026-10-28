@@ -16,7 +16,7 @@ export const MainLayout: React.FC = () => {
             <div className="flex min-h-screen w-full bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
                 <Sidebar isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
                 
-                <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
                     <Header onMenuClick={openMobileMenu} />
 
                     <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth">

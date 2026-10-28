@@ -133,6 +133,7 @@ export const ProjectsPage: React.FC = () => {
                         <button
                             key={tab.label}
                             onClick={() => setActiveTab(tab.value)}
+                            aria-pressed={activeTab === tab.value}
                             className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
                                 activeTab === tab.value
                                     ? 'bg-primary text-white shadow-lg shadow-primary/25'

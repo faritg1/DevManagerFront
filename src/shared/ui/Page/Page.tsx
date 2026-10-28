@@ -18,7 +18,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
     className = '',
 }) => (
     <div
-        className={`p-6 md:p-10 ${narrow ? 'max-w-5xl' : 'max-w-7xl'} mx-auto w-full ${
+        className={`p-4 sm:p-6 md:p-10 ${narrow ? 'max-w-5xl' : 'max-w-7xl'} mx-auto w-full ${
             fullHeight ? 'h-full flex flex-col' : ''
         } ${className}`}
     >
@@ -46,7 +46,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     icon,
     className = '',
 }) => (
-    <div className={`mb-8 ${className}`}>
+    <div className={`mb-6 md:mb-8 ${className}`}>
         {before && <div className="mb-4">{before}</div>}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0">

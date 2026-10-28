@@ -14,8 +14,8 @@ Este proyecto utiliza una arquitectura **Feature-Sliced Design** adaptada, que e
 ```
 src/
 ├── app/                    # Capa de aplicación
-│   ├── App.tsx             # Componente raíz
-│   ├── Router.tsx          # Configuración de rutas
+│   ├── Router.tsx          # Providers globales y rutas
+│   ├── guards/             # ProtectedRoute, PublicRoute, AdminGuard
 │   └── layouts/            # Layouts de la aplicación
 │       ├── MainLayout.tsx  # Layout principal (con sidebar)
 │       └── AuthLayout.tsx  # Layout para auth (login/register)
@@ -34,8 +34,7 @@ src/
 │
 ├── widgets/                # Componentes complejos reutilizables
 │   ├── Sidebar/
-│   ├── Header/
-│   └── index.ts
+│   └── Header/
 │
 └── shared/                 # Código compartido
     ├── ui/                 # Componentes UI atómicos
@@ -49,24 +48,20 @@ src/
     │   └── StatCard/
     ├── hooks/              # Hooks reutilizables
     │   ├── useModal.ts
-    │   ├── useForm.ts
-    │   ├── useLoading.ts
+    │   ├── useIsAdmin.ts
+    │   ├── usePermission.ts
     │   └── useTheme.ts
     ├── api/                # Cliente API y endpoints
     │   ├── client.ts       # HTTP client con auth
-    │   └── endpoints.ts    # Definición de endpoints
-    ├── services/           # Servicios externos (Gemini AI)
+    │   ├── endpoints.ts    # Definición de endpoints
+    │   ├── types.ts        # Contratos del backend
+    │   └── services/       # Un servicio por módulo del API
     ├── context/            # Contextos globales
     │   ├── AuthContext.tsx
     │   └── NotificationContext.tsx
-    ├── config/             # Configuración y constantes
-    │   ├── constants.ts    # Rutas, estados, roles
-    │   └── env.ts          # Variables de entorno
-    ├── utils/              # Utilidades
-    │   ├── helpers.ts      # Funciones helper
-    │   ├── date.ts         # Formateo de fechas
-    │   └── validation.ts   # Validadores de forms
-    └── types/              # Tipos TypeScript globales
+    ├── config/
+    │   └── constants.ts    # Rutas y claves de localStorage
+    └── format.ts           # Formato de fechas, moneda y niveles
 ```
 
 ## 🔧 Capas de la Arquitectura
@@ -142,8 +137,8 @@ interface Agent {
 ## 📦 Uso de Componentes UI
 
 ```tsx
-import { Button, Card, Badge, Input, Modal } from '@shared/ui';
-import { useModal, useForm } from '@shared/hooks';
+import { Button, Card, Badge, Input, Modal } from '../../../shared/ui';
+import { useModal } from '../../../shared/hooks';
 
 const MyComponent = () => {
     const { isOpen, open, close } = useModal();

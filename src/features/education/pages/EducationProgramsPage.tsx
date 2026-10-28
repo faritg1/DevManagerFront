@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, SELECT_CLASS, EmptyState } from '../../../shared/ui';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -99,7 +99,7 @@ export const EducationProgramsPage: React.FC = () => {
                 actions={<Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button>}
             />
 
-            <Card padding="md">
+            <Card padding="none" className="overflow-hidden">
                 {isLoading ? (
                     <LoadingBlock />
                 ) : items.length === 0 ? (
@@ -114,7 +114,7 @@ export const EducationProgramsPage: React.FC = () => {
                                     <th className={TH}>Horas requeridas</th>
                                     <th className={TH}>Inicio</th>
                                     <th className={TH}>Fin</th>
-                                    <th className={TH} />
+                                    <th className={TH_ACTIONS_CLASS}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
@@ -122,17 +122,17 @@ export const EducationProgramsPage: React.FC = () => {
                                     <tr
                                         key={p.id}
                                         onClick={() => navigate(educationProgramPath(p.id))}
-                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-[#233948]/50"
+                                        className={`cursor-pointer ${TR_CLASS}`}
                                     >
-                                        <td className={`${TD} font-semibold`}>{p.name}</td>
+                                        <td className={`${TD} font-semibold`}><span className={TD_TRUNCATE_CLASS} title={p.name}>{p.name}</span></td>
                                         <td className={TD}><Badge variant="info">{PROGRAM_TYPE_LABELS[p.type]}</Badge></td>
                                         <td className={TD}>{p.requiredHours} h</td>
                                         <td className={TD}>{formatDate(p.startDate)}</td>
                                         <td className={TD}>{formatDate(p.endDate)}</td>
-                                        <td className={`${TD} text-right whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
-                                            <Button variant="outline" size="sm" icon={Pencil} onClick={() => openForm(p)}>Editar</Button>{' '}
-                                            <Button variant="outline" size="sm" icon={Trash2} onClick={() => remove(p)}>Eliminar</Button>
-                                        </td>
+                                        <TableActions>
+                                            <IconButton icon={Pencil} label={`Editar ${p.name}`} onClick={() => openForm(p)} />
+                                            <IconButton icon={Trash2} label={`Eliminar ${p.name}`} variant="danger" onClick={() => remove(p)} />
+                                        </TableActions>
                                     </tr>
                                 ))}
                             </tbody>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -131,7 +131,7 @@ export const CompetenciasPage: React.FC = () => {
                 </thead>
                 <tbody className={TBODY_CLASS}>
                     {rows.map(c => (
-                        <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                        <tr key={c.id} className={TR_CLASS}>
                             {showOwner && <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{c.fullName}</td>}
                             <td className={`${TD_CLASS} text-slate-700 dark:text-slate-300`}>
                                 <p className="font-bold">{c.name}</p>

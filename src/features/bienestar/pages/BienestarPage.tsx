@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -344,10 +344,10 @@ export const BienestarPage: React.FC = () => {
                                 <tr><td colSpan={5}><EmptyState title="No hay programas de bienestar" /></td></tr>
                             ) : (
                                 programs.map(p => (
-                                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                    <tr key={p.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
-                                            <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
-                                            {p.description && <p className="text-xs text-slate-500 dark:text-slate-400">{p.description}</p>}
+                                            <p className={`${TD_TRUNCATE_CLASS} font-bold text-slate-900 dark:text-white`} title={p.name}>{p.name}</p>
+                                            {p.description && <p className={`${TD_TRUNCATE_CLASS} text-xs text-slate-500 dark:text-slate-400`} title={p.description}>{p.description}</p>}
                                         </td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.budget)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(p.startDate)}</td>

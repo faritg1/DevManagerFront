@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Loader2, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
@@ -109,7 +109,7 @@ export const ExcedentesPage: React.FC = () => {
                                 <th className={TH_CLASS}>Solidaridad</th>
                                 <th className={TH_CLASS}>Remanente</th>
                                 <th className={TH_CLASS}>Estado</th>
-                                {isAdmin && <th className={TH_CLASS}>Acción</th>}
+                                {isAdmin && <th className={TH_ACTIONS_CLASS}>Acciones</th>}
                             </tr>
                         </thead>
                         <tbody className={TBODY_CLASS}>
@@ -119,7 +119,7 @@ export const ExcedentesPage: React.FC = () => {
                                 <tr><td colSpan={8}><EmptyState title="No hay distribuciones de excedentes" /></td></tr>
                             ) : (
                                 distributions.map(e => (
-                                    <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                    <tr key={e.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
                                             <p className="font-bold text-slate-900 dark:text-white">{formatDate(e.period)}</p>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
@@ -135,13 +135,13 @@ export const ExcedentesPage: React.FC = () => {
                                             </Badge>
                                         </td>
                                         {isAdmin && (
-                                            <td className={TD_CLASS}>
+                                            <TableActions>
                                                 {!e.approvedByAssembly && (
                                                     <Button size="sm" variant="outline" onClick={() => { setApproving(e); setRevaluation(null); setCooperativeReturn(null); }}>
                                                         Aprobar en Asamblea
                                                     </Button>
                                                 )}
-                                            </td>
+                                            </TableActions>
                                         )}
                                     </tr>
                                 ))

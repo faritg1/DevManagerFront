@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -336,12 +336,12 @@ export const SstPage: React.FC = () => {
                                         <th className={TH_CLASS}>ARL</th>
                                         <th className={TH_CLASS}>FURAT</th>
                                         <th className={TH_CLASS}>Estado</th>
-                                        <th className={TH_CLASS}>Acción</th>
+                                        <th className={TH_ACTIONS_CLASS}>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className={TBODY_CLASS}>
                                     {accidents.map(a => (
-                                        <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                        <tr key={a.id} className={TR_CLASS}>
                                             <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(a.occurredAt)}</td>
                                             <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{nameOf(a.userId)}</td>
                                             <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.accidentType}</td>
@@ -355,13 +355,13 @@ export const SstPage: React.FC = () => {
                                                     {a.investigationCompleted ? `Investigado (${formatDate(a.investigationDate)})` : 'Pendiente'}
                                                 </Badge>
                                             </td>
-                                            <td className={TD_CLASS}>
+                                            <TableActions>
                                                 {!a.investigationCompleted && (
                                                     <Button size="sm" variant="outline" onClick={() => { setInvestigating(a); setInvForm(emptyInvestigation()); }}>
                                                         Investigar
                                                     </Button>
                                                 )}
-                                            </td>
+                                            </TableActions>
                                         </tr>
                                     ))}
                                 </tbody>

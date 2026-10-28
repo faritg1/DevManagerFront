@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -127,7 +127,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                 <th className={TH_CLASS}>Creado</th>
                                 <th className={TH_CLASS}>Estado</th>
                                 <th className={TH_CLASS}>Fecha envío</th>
-                                <th className={TH_CLASS}>Acción</th>
+                                <th className={TH_ACTIONS_CLASS}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody className={TBODY_CLASS}>
@@ -137,7 +137,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                 <tr><td colSpan={6}><EmptyState title="No hay reportes generados" /></td></tr>
                             ) : (
                                 reports.map(r => (
-                                    <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                    <tr key={r.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
                                         <td className={TD_CLASS}><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
@@ -145,13 +145,13 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                             <Badge variant={r.isSent ? 'success' : 'warning'} dot>{r.isSent ? 'Enviado' : 'Pendiente'}</Badge>
                                         </td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(r.sentAt)}</td>
-                                        <td className={`${TD_CLASS} flex items-center gap-2`}>
-                                            <Button size="sm" variant="outline" icon={Eye} onClick={() => setViewing(r)}>Ver</Button>
+                                        <TableActions>
+                                            <IconButton icon={Eye} label="Ver reporte" onClick={() => setViewing(r)} />
                                             {isAdmin && !r.isSent && (
                                                 <Button size="sm" icon={Send} onClick={() => handleSend(r.id)}>Enviar</Button>
                                             )}
-                                            {r.isSent && <CheckCircle2 size={18} className="text-emerald-500" />}
-                                        </td>
+                                            {r.isSent && <CheckCircle2 size={18} className="mx-2 text-emerald-500" aria-label="Enviado" />}
+                                        </TableActions>
                                     </tr>
                                 ))
                             )}

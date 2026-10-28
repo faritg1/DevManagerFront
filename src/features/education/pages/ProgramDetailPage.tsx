@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -99,7 +99,7 @@ export const ProgramDetailPage: React.FC = () => {
                 actions={<Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>}
             />
 
-            <Card padding="md">
+            <Card padding="none" className="overflow-hidden">
                 {enrollments.length === 0 ? (
                     <EmptyState title="Aún no hay inscripciones" />
                 ) : (
@@ -111,19 +111,19 @@ export const ProgramDetailPage: React.FC = () => {
                                     <th className={TH}>Estado</th>
                                     <th className={TH}>Horas</th>
                                     <th className={TH}>Finalización</th>
-                                    <th className={TH} />
+                                    <th className={TH_ACTIONS_CLASS}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
                                 {enrollments.map((en) => (
-                                    <tr key={en.id}>
+                                    <tr key={en.id} className={TR_CLASS}>
                                         <td className={`${TD} font-semibold`}>{en.fullName}</td>
                                         <td className={TD}><Badge variant={ENROLLMENT_STATUS_VARIANTS[en.status]}>{ENROLLMENT_STATUS_LABELS[en.status]}</Badge></td>
                                         <td className={TD}>{en.hoursCompleted} / {program.requiredHours} h</td>
                                         <td className={TD}>{formatDate(en.completionDate)}</td>
-                                        <td className={`${TD} text-right`}>
-                                            <Button variant="outline" size="sm" icon={Pencil} onClick={() => openForm(en)}>Actualizar</Button>
-                                        </td>
+                                        <TableActions>
+                                            <IconButton icon={Pencil} label={`Actualizar inscripción de ${en.fullName}`} onClick={() => openForm(en)} />
+                                        </TableActions>
                                     </tr>
                                 ))}
                             </tbody>

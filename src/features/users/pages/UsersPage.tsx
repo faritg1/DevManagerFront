@@ -49,6 +49,8 @@ export const UsersPage: React.FC = () => {
             user.roleName.toLowerCase().includes(query))
         : users;
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    // Posición fija del menú de acciones: así no lo recorta el contenedor con scroll horizontal de la tabla.
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
     const createModal = useModal();
     const editModal = useModal();
@@ -93,8 +95,18 @@ export const UsersPage: React.FC = () => {
 
     useEffect(() => {
         const handleClickOutside = () => setActiveDropdown(null);
+        const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setActiveDropdown(null); };
         document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
+        document.addEventListener('keydown', handleKey);
+        // El menú es "fixed": se cierra si la página se desplaza o cambia de tamaño.
+        window.addEventListener('scroll', handleClickOutside, true);
+        window.addEventListener('resize', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener('keydown', handleKey);
+            window.removeEventListener('scroll', handleClickOutside, true);
+            window.removeEventListener('resize', handleClickOutside);
+        };
     }, []);
 
     const fetchUsers = async () => {
@@ -532,20 +544,29 @@ export const UsersPage: React.FC = () => {
                                                 {formatDate(user.createdAt)}
                                             </div>
                                         </td>
-                                        <td className={`${TD_CLASS} text-right relative`}>
-                                            <button aria-label="Más acciones" 
+                                        <td className={`${TD_CLASS} w-px text-right`}>
+                                            <button aria-label={`Acciones de ${user.fullName}`} title="Acciones"
+                                                aria-haspopup="true"
+                                                aria-expanded={activeDropdown === user.id}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    const r = e.currentTarget.getBoundingClientRect();
+                                                    const right = window.innerWidth - r.right;
+                                                    // Abre hacia arriba si no cabe debajo.
+                                                    setDropdownStyle(window.innerHeight - r.bottom < 340
+                                                        ? { bottom: window.innerHeight - r.top + 4, right }
+                                                        : { top: r.bottom + 4, right });
                                                     setActiveDropdown(activeDropdown === user.id ? null : user.id);
                                                 }}
-                                                className="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#111b22]"
+                                                className="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
                                             >
                                                 <MoreVertical size={18} />
                                             </button>
 
                                             {activeDropdown === user.id && (
-                                                <div 
-                                                    className="absolute right-6 top-full mt-1 w-48 bg-white dark:bg-[#16222b] rounded-xl shadow-xl border border-slate-200 dark:border-[#233948] py-2 z-50"
+                                                <div
+                                                    style={dropdownStyle}
+                                                    className="fixed w-52 bg-white dark:bg-[#16222b] rounded-xl shadow-xl border border-slate-200 dark:border-[#233948] py-2 z-50 text-left whitespace-nowrap"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <button

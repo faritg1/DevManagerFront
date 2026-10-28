@@ -1,7 +1,7 @@
 import React from "react";
 import { RoleDto } from "../../../shared/api/types";
-import { Button, EmptyState, LoadingBlock } from "../../../shared/ui";
-// Using standard HTML table since shared Table component doesn't exist
+import { KeyRound, Pencil, Trash2 } from "lucide-react";
+import { EmptyState, LoadingBlock, IconButton, TableActions, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS } from "../../../shared/ui";
 
 interface RoleListProps {
   roles: RoleDto[];
@@ -31,59 +31,41 @@ export const RoleList: React.FC<RoleListProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border rounded-2xl border-slate-200 dark:border-[#233948]">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
+      <table className={TABLE_CLASS}>
+        <thead className={THEAD_CLASS}>
           <tr>
-            <th className="px-4 py-3">Nombre</th>
-            <th className="px-4 py-3">Descripción</th>
-            <th className="px-4 py-3 text-center">Usuarios</th>
-            <th className="px-4 py-3 text-center">Permisos</th>
-            <th className="px-4 py-3 text-right">Acciones</th>
+            <th className={TH_CLASS}>Nombre</th>
+            <th className={TH_CLASS}>Descripción</th>
+            <th className={`${TH_CLASS} text-center`}>Usuarios</th>
+            <th className={`${TH_CLASS} text-center`}>Permisos</th>
+            <th className={TH_ACTIONS_CLASS}>Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-[#233948] bg-white dark:bg-[#16222b]">
+        <tbody className={TBODY_CLASS}>
           {roles.map((role) => (
-            <tr
-              key={role.id}
-              className="hover:bg-slate-50 dark:hover:bg-[#111b22] transition-colors"
-            >
-              <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
-                {role.name}
+            <tr key={role.id} className={TR_CLASS}>
+              <td className={`${TD_CLASS} font-medium text-slate-900 dark:text-white`}>
+                <span className={TD_TRUNCATE_CLASS} title={role.name}>{role.name}</span>
               </td>
-              <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                {role.description || "-"}
+              <td className={`${TD_CLASS} text-slate-600 dark:text-slate-400`}>
+                <span className={TD_TRUNCATE_CLASS} title={role.description || undefined}>{role.description || "-"}</span>
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className={`${TD_CLASS} text-center`}>
                 <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                   {role.userCount}
                 </span>
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className={`${TD_CLASS} text-center`}>
                 <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                   {role.permissionCount}
                 </span>
               </td>
-              <td className="px-4 py-3 text-right space-x-2">
-                <button
-                  onClick={() => onManagePermissions(role)}
-                  className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium text-xs border border-purple-200 dark:border-purple-800/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-3 py-1 rounded transition-colors"
-                >
-                  Permisos
-                </button>
-                <button
-                  onClick={() => onEdit(role)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs border border-blue-200 dark:border-blue-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-1 rounded transition-colors"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => onDelete(role.id)}
-                  className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs border border-rose-200 dark:border-rose-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-1 rounded transition-colors"
-                >
-                  Eliminar
-                </button>
-              </td>
+              <TableActions>
+                <IconButton icon={KeyRound} label={`Permisos de ${role.name}`} variant="primary" onClick={() => onManagePermissions(role)} />
+                <IconButton icon={Pencil} label={`Editar ${role.name}`} onClick={() => onEdit(role)} />
+                <IconButton icon={Trash2} label={`Eliminar ${role.name}`} variant="danger" onClick={() => onDelete(role.id)} />
+              </TableActions>
             </tr>
           ))}
         </tbody>

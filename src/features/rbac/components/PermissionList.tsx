@@ -1,6 +1,7 @@
 import React from "react";
 import { PermissionDto } from "../../../shared/api/types";
-import { EmptyState, LoadingBlock } from "../../../shared/ui";
+import { Pencil, Trash2 } from "lucide-react";
+import { EmptyState, LoadingBlock, IconButton, TableActions, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS } from "../../../shared/ui";
 
 interface PermissionListProps {
   permissions: PermissionDto[];
@@ -30,51 +31,38 @@ export const PermissionList: React.FC<PermissionListProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border rounded-2xl border-slate-200 dark:border-[#233948]">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
+      <table className={TABLE_CLASS}>
+        <thead className={THEAD_CLASS}>
           <tr>
-            <th className="px-4 py-3">Código</th>
-            <th className="px-4 py-3">Nombre</th>
-            <th className="px-4 py-3">Módulo</th>
-            <th className="px-4 py-3">Descripción</th>
-            <th className="px-4 py-3 text-right">Acciones</th>
+            <th className={TH_CLASS}>Código</th>
+            <th className={TH_CLASS}>Nombre</th>
+            <th className={TH_CLASS}>Módulo</th>
+            <th className={TH_CLASS}>Descripción</th>
+            <th className={TH_ACTIONS_CLASS}>Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-[#233948] bg-white dark:bg-[#16222b]">
+        <tbody className={TBODY_CLASS}>
           {permissions.map((permission) => (
-            <tr
-              key={permission.id}
-              className="hover:bg-slate-50 dark:hover:bg-[#111b22] transition-colors"
-            >
-              <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">
+            <tr key={permission.id} className={TR_CLASS}>
+              <td className={`${TD_CLASS} font-mono text-xs text-slate-500 dark:text-slate-400`}>
                 {permission.code}
               </td>
-              <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
-                {permission.name}
+              <td className={`${TD_CLASS} font-medium text-slate-900 dark:text-white`}>
+                <span className={TD_TRUNCATE_CLASS} title={permission.name}>{permission.name}</span>
               </td>
-              <td className="px-4 py-3">
+              <td className={TD_CLASS}>
                 <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize">
                   {permission.module}
                 </span>
               </td>
-              <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                {permission.description || "-"}
+              <td className={`${TD_CLASS} text-slate-600 dark:text-slate-400`}>
+                <span className={TD_TRUNCATE_CLASS} title={permission.description || undefined}>{permission.description || "-"}</span>
               </td>
-              <td className="px-4 py-3 text-right space-x-2">
-                <button
-                  onClick={() => onEdit(permission)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs border border-blue-200 dark:border-blue-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-1 rounded transition-colors"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => onDelete(permission.id)}
-                  className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs border border-rose-200 dark:border-rose-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-1 rounded transition-colors"
-                >
-                  Eliminar
-                </button>
-              </td>
+              <TableActions>
+                <IconButton icon={Pencil} label={`Editar ${permission.name}`} onClick={() => onEdit(permission)} />
+                <IconButton icon={Trash2} label={`Eliminar ${permission.name}`} variant="danger" onClick={() => onDelete(permission.id)} />
+              </TableActions>
             </tr>
           ))}
         </tbody>

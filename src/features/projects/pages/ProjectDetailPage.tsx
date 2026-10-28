@@ -15,7 +15,7 @@ import { Card, Badge, Button, PageContainer } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
-import { useModal, useConfirm } from '../../../shared/hooks';
+import { useModal, useConfirm, useIsAdmin } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
     PROJECT_STATUS_LABELS,
@@ -75,9 +75,7 @@ export const ProjectDetailPage: React.FC = () => {
     const { catalogs } = useConfig();
     const { confirm } = useConfirm();
     const { user } = useAuth();
-
-    const ADMIN_ROLES = ['admin', 'administrator'] as const;
-    const isAdmin = ADMIN_ROLES.includes((user?.role ?? '').toLowerCase().trim() as typeof ADMIN_ROLES[number]);
+    const isAdmin = useIsAdmin();
 
     // Core state
     const [project, setProject] = useState<ProjectResponse | null>(null);

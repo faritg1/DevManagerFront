@@ -24,8 +24,8 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader } from '../../../shared/ui';
-import { useModal, usePermission } from '../../../shared/hooks';
-import { useNotification, useAuth } from '../../../shared/context';
+import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
+import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
@@ -43,9 +43,7 @@ export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const { hasPermission, isLoading: permsCheckLoading } = usePermission();
-    const { user: currentUser } = useAuth();
-    const ADMIN_ROLES = ['admin', 'administrator'];
-    const isAdmin = ADMIN_ROLES.includes((currentUser?.role ?? '').toLowerCase().trim());
+    const isAdmin = useIsAdmin();
     
     // State
     const [users, setUsers] = useState<UserResponse[]>([]);

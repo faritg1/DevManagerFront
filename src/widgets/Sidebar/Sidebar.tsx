@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
 import { useAuth, useNotification } from '../../shared/context';
-import { useConfirm } from '../../shared/hooks';
+import { useConfirm, useIsAdmin } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
 
 interface NavItemProps {
@@ -123,8 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     );
 
     // Sólo roles con acceso administrativo ven la sección de Seguridad
-    const ADMIN_ROLES = ['admin', 'administrator'];
-    const isAdmin = ADMIN_ROLES.includes((user?.role ?? '').toLowerCase().trim());
+    const isAdmin = useIsAdmin();
 
     // Sidebar content shared by desktop & mobile views
     const renderContent = () => (

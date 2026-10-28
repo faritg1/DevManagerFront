@@ -117,6 +117,15 @@ export const API_ENDPOINTS = {
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
   },
 
+  // In-app notifications of the current user
+  NOTIFICATIONS: {
+    BASE: "/notifications",
+    UNREAD_COUNT: "/notifications/unread-count",
+    READ: (id: string) => `/notifications/${id}/read`,
+    READ_ALL: "/notifications/read-all",
+    BY_ID: (id: string) => `/notifications/${id}`,
+  },
+
   // Reports
   REPORTS: {
     AI_SUMMARY: "/reports/ai-summary",

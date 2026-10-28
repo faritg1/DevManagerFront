@@ -3,3 +3,4 @@ export { NotificationProvider, useNotification, useToast } from './NotificationC
 export { ConfirmProvider } from './ConfirmContext';
 export { ConfigProvider, useConfig } from './ConfigContext';
 export { PermissionsProvider, usePermission } from './PermissionsContext';
+export { UserNotificationsProvider, useNotifications } from './UserNotificationsContext';

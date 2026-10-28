@@ -586,6 +586,21 @@ export interface EffectivePermissionsResponse {
   directOverrides: { permissionCode: string; isGranted: boolean }[];
 }
 
+// ============ NOTIFICATIONS ============
+/** 1 Info, 2 Success, 3 Warning, 4 Error. */
+export type NotificationKind = 1 | 2 | 3 | 4;
+
+export interface UserNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationKind;
+  link?: string | null;
+  isRead: boolean;
+  createdAt: string;
+  readAt?: string | null;
+}
+
 // ============ REPORTS ============
 export interface AiSummaryResponse {
   markdown: string;

@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Menu, Bell, Search, Sun, Moon, ChevronRight } from 'lucide-react';
+import { Menu, Search, Sun, Moon, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../shared/hooks';
 import { ROUTES } from '../../shared/config/constants';
+import { NotificationBell } from './NotificationBell';
 
 interface HeaderProps {
     onMenuClick?: () => void;
@@ -147,10 +148,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
-                <button className="relative p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
-                    <Bell size={20} />
-                    <span className="absolute top-1.5 right-1.5 size-2 bg-rose-500 rounded-full border-2 border-white dark:border-[#111b22]" />
-                </button>
+                <NotificationBell />
             </div>
         </header>
     );

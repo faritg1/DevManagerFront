@@ -146,33 +146,26 @@ export const API_ENDPOINTS = {
 
     // ============ GESTIÓN HUMANA SOLIDARIA ============
 
-    // Nomina
+    // Nómina — compensación de asociados (CTA) y PILA
     NOMINA: {
-      COMPENSACION_BY_ASOCIADO: (asociadoId: string, anio: number) =>
-        `/nomina/compensacion/${asociadoId}/${anio}`,
-      COMPENSACION_CREATE: "/nomina/compensacion",
-      PILA_PLANILLA: (organizationId: string, anio: number, mes: number) =>
-        `/nomina/pila/${organizationId}/${anio}/${mes}`,
+      COMPENSACION: "/nomina/compensacion",
+      COMPENSACION_BY_USER: (userId: string, anio: number) => `/nomina/compensacion/${userId}/${anio}`,
+      PILA_PLANILLA: (anio: number, mes: number) => `/nomina/pila/${anio}/${mes}`,
       PILA_CALCULAR: "/nomina/pila/calcular",
     },
 
-    // Bienestar
+    // Bienestar — programas, solicitudes, auxilios y fondo de solidaridad
     BIENESTAR: {
-      PROGRAMAS: (organizationId: string) =>
-        `/bienestar/programas/${organizationId}`,
-      PROGRAMAS_CREATE: "/bienestar/programas",
-      SOLICITUDES_CREATE: "/bienestar/solicitudes",
-      SOLICITUDES_BY_ASOCIADO: (asociadoId: string) =>
-        `/bienestar/solicitudes/${asociadoId}`,
-      SOLICITUD_APROBAR: (solicitudId: string) =>
-        `/bienestar/solicitudes/${solicitudId}/aprobar`,
-      SOLICITUD_RECHAZAR: (solicitudId: string) =>
-        `/bienestar/solicitudes/${solicitudId}/rechazar`,
+      PROGRAMAS: "/bienestar/programas",
+      SOLICITUDES: "/bienestar/solicitudes",
+      SOLICITUDES_PENDIENTES: "/bienestar/solicitudes/pendientes",
+      SOLICITUDES_BY_USER: (userId: string) => `/bienestar/solicitudes/${userId}`,
+      SOLICITUD_APROBAR: (id: string) => `/bienestar/solicitudes/${id}/aprobar`,
+      SOLICITUD_RECHAZAR: (id: string) => `/bienestar/solicitudes/${id}/rechazar`,
+      SOLICITUD_ENTREGAR: (id: string) => `/bienestar/solicitudes/${id}/entregar`,
+      FONDO: "/bienestar/fondo",
       FONDO_CALCULAR: "/bienestar/fondo/calcular",
-      FONDO_ACTUAL: (organizationId: string) =>
-        `/bienestar/fondo/${organizationId}`,
-      AUXILIOS_BY_ASOCIADO: (asociadoId: string) =>
-        `/bienestar/auxilios/${asociadoId}`,
+      AUXILIOS_BY_USER: (userId: string) => `/bienestar/auxilios/${userId}`,
     },
 
     // Gestión Humana — Competencias
@@ -194,26 +187,16 @@ export const API_ENDPOINTS = {
         `/balance-social/no-cumplen/${organizationId}/${anio}`,
     },
 
-    // SST
+    // SST — exámenes médicos, accidentes de trabajo y matriz de riesgos
     SST: {
-      EXAMENES_CREATE: "/sst/examenes",
-      EXAMEN_REGISTRAR: (examenId: string) =>
-        `/sst/examenes/${examenId}/registrar`,
-      EXAMENES_BY_ASOCIADO: (asociadoId: string) =>
-        `/sst/examenes/asociado/${asociadoId}`,
-      EXAMENES_PENDIENTES: (organizationId: string) =>
-        `/sst/examenes/pendientes/${organizationId}`,
-      ARL_VIGENCIA: (organizationId: string) =>
-        `/sst/arl/vigencia/${organizationId}`,
-      ACCIDENTES_CREATE: "/sst/accidentes",
-      ACCIDENTES_PENDIENTES_INVESTIGACION: (organizationId: string) =>
-        `/sst/accidentes/pendientes-investigacion/${organizationId}`,
-      ACCIDENTE_INVESTIGAR: (accidenteId: string) =>
-        `/sst/accidentes/${accidenteId}/investigar`,
-      ACCIDENTES_BY_ORGANIZACION: (organizationId: string) =>
-        `/sst/accidentes/${organizationId}`,
-      RIESGOS: (organizationId: string) => `/sst/riesgos/${organizationId}`,
-      RIESGOS_CREATE: "/sst/riesgos",
+      EXAMENES: "/sst/examenes",
+      EXAMEN_REGISTRAR: (id: string) => `/sst/examenes/${id}/registrar`,
+      EXAMENES_BY_USER: (userId: string) => `/sst/examenes/asociado/${userId}`,
+      EXAMENES_PENDIENTES: "/sst/examenes/pendientes",
+      ACCIDENTES: "/sst/accidentes",
+      ACCIDENTES_PENDIENTES_INVESTIGACION: "/sst/accidentes/pendientes-investigacion",
+      ACCIDENTE_INVESTIGAR: (id: string) => `/sst/accidentes/${id}/investigar`,
+      RIESGOS: "/sst/riesgos",
     },
 
     // Excedentes

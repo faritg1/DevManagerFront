@@ -5,6 +5,7 @@ import { Card, StatCard, Badge, ProgressBar, Button } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
+import { useIsAdmin } from '../../../shared/hooks';
 import { ProjectStatus, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../../projects/utils/complexityConfig';
 
@@ -36,6 +37,7 @@ export const DashboardPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { catalogs } = useConfig();
     const { user } = useAuth();
+    const isAdmin = useIsAdmin();
 
     // State
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
@@ -111,21 +113,20 @@ export const DashboardPage: React.FC = () => {
 
     // Cargar KPIs de gestión solidaria (best-effort: si un endpoint falla o no
     // aplica a la organización, se omite sin romper el dashboard).
+    // La organización sale del JWT; ARCO pendientes es solo Admin (se omite para el resto).
     useEffect(() => {
-        const orgId = user?.organizationId;
-        if (!orgId) return;
+        if (!user?.id) return;
 
         const fetchSolidaridad = async () => {
             try {
                 const [excedentesRes, arcoRes, bienestarRes] = await Promise.all([
                     excedentesService.getAll().catch(() => null),
-                    habeasDataService.getPendingArco().catch(() => null),
-                    bienestarService.getProgramas(orgId).catch(() => null),
+                    isAdmin ? habeasDataService.getPendingArco().catch(() => null) : Promise.resolve(null),
+                    bienestarService.getPrograms().catch(() => null),
                 ]);
 
-                const latestExcedente = excedentesRes?.success && excedentesRes.data && excedentesRes.data.length > 0
-                    ? excedentesRes.data[0].totalSurplus
-                    : 0;
+                const surplus = excedentesRes?.success && excedentesRes.data ? excedentesRes.data : [];
+                const latestExcedente = [...surplus].sort((x, y) => y.period.localeCompare(x.period))[0]?.totalSurplus ?? 0;
 
                 setSolidaridad({
                     excedentesPeriodo: latestExcedente,
@@ -139,7 +140,7 @@ export const DashboardPage: React.FC = () => {
         };
 
         fetchSolidaridad();
-    }, [user?.organizationId]);
+    }, [user?.id, isAdmin]);
 
     // Calcular estadísticas
     const stats = {

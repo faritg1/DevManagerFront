@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {
-    ShieldAlert, Loader2, AlertCircle, FileText, Plus, Stethoscope,
-    ClipboardCheck, ShieldCheck,
-} from 'lucide-react';
+import { ShieldAlert, Loader2, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck } from 'lucide-react';
 import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { sstService } from '../../../shared/api';
+import { useIsAdmin } from '../../../shared/hooks';
+import { sstService, associatesService } from '../../../shared/api';
 import type {
-    ExamenMedicoDto,
-    AccidenteDto,
-    RiesgoDto,
-    CreateRiesgoDto,
-    ArlVigenciaResponse,
+    AssociateDto,
+    CreateRiskRequest,
+    ExamResult,
+    InvestigateAccidentRequest,
+    MedicalExamDto,
+    RiskDto,
+    WorkAccidentDto,
 } from '../../../shared/api/types';
 
 const formatDate = (s: string | null | undefined) => {
@@ -20,51 +20,56 @@ const formatDate = (s: string | null | undefined) => {
     catch { return '—'; }
 };
 
+const today = () => new Date().toISOString().slice(0, 10);
+
+const EXAM_TYPE_LABEL: Record<number, string> = { 1: 'Ingreso', 2: 'Periódico', 3: 'Retiro' };
+const EXAM_RESULT_LABEL: Record<number, string> = { 1: 'Apto', 2: 'Apto con restricciones', 3: 'No apto' };
+const SEVERITY_LABEL: Record<number, string> = { 1: 'Leve', 2: 'Grave', 3: 'Mortal' };
+const RISK_LEVEL_LABEL: Record<number, string> = { 1: 'Bajo', 2: 'Medio', 3: 'Alto', 4: 'Muy alto', 5: 'Crítico' };
+
+const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
+const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+
+const emptyRisk = (): CreateRiskRequest => ({ level: 1, factor: '', description: '' });
+const emptyInvestigation = (): InvestigateAccidentRequest => ({ investigationDate: today(), conclusions: '', causes: '', correctiveMeasures: '' });
+
 export const SstPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
-    const orgId = user?.organizationId ?? '';
+    const isAdmin = useIsAdmin();
 
-    const [examenes, setExamenes] = useState<ExamenMedicoDto[]>([]);
-    const [riesgos, setRiesgos] = useState<RiesgoDto[]>([]);
-    const [accidentes, setAccidentes] = useState<AccidenteDto[]>([]);
-    const [arl, setArl] = useState<ArlVigenciaResponse | null>(null);
+    const [associates, setAssociates] = useState<AssociateDto[]>([]);
+    const [exams, setExams] = useState<MedicalExamDto[]>([]);
+    const [risks, setRisks] = useState<RiskDto[]>([]);
+    const [accidents, setAccidents] = useState<WorkAccidentDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    // Registrar examen
-    const [regExamen, setRegExamen] = useState<ExamenMedicoDto | null>(null);
-    const [regResultado, setRegResultado] = useState('');
-    const [regObservaciones, setRegObservaciones] = useState('');
+    const [recording, setRecording] = useState<MedicalExamDto | null>(null);
+    const [examResult, setExamResult] = useState<ExamResult>(1);
+    const [examNotes, setExamNotes] = useState('');
 
-    // Crear riesgo
-    const [riesgoOpen, setRiesgoOpen] = useState(false);
-    const [riesgoForm, setRiesgoForm] = useState<CreateRiesgoDto>({ organizationId: '', nivelRiesgo: 1, factor: '', descripcion: '', controles: '' });
+    const [riskOpen, setRiskOpen] = useState(false);
+    const [riskForm, setRiskForm] = useState<CreateRiskRequest>(emptyRisk);
 
-    // Investigar accidente
-    const [invAccidente, setInvAccidente] = useState<AccidenteDto | null>(null);
-    const [invFecha, setInvFecha] = useState(new Date().toISOString().slice(0, 10));
-    const [invConclusiones, setInvConclusiones] = useState('');
-    const [invCausas, setInvCausas] = useState('');
-    const [invMedidas, setInvMedidas] = useState('');
+    const [investigating, setInvestigating] = useState<WorkAccidentDto | null>(null);
+    const [invForm, setInvForm] = useState<InvestigateAccidentRequest>(emptyInvestigation);
+
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
 
     const loadAll = async () => {
-        if (!orgId) return;
+        if (!user?.id) return;
         setIsLoading(true);
-        setError(null);
         try {
-            const [exRes, riRes, acRes, arlRes] = await Promise.all([
-                sstService.getExamenesPendientes(orgId),
-                sstService.getRiesgos(orgId),
-                sstService.getAccidentesByOrganizacion(orgId),
-                sstService.verificarVigenciaArl(orgId),
+            const [exRes, riRes, acRes] = await Promise.all([
+                isAdmin ? sstService.getPendingExams() : sstService.getExamsByUser(user.id),
+                sstService.getRisks(),
+                isAdmin ? sstService.getAccidents() : Promise.resolve(null),
             ]);
-            setExamenes(exRes.success && exRes.data ? exRes.data : []);
-            setRiesgos(riRes.success && riRes.data ? riRes.data : []);
-            setAccidentes(acRes.success && acRes.data ? acRes.data : []);
-            if (arlRes.success) setArl(arlRes.data);
+            setExams(exRes.success && exRes.data ? exRes.data : []);
+            setRisks(riRes.success && riRes.data ? riRes.data : []);
+            setAccidents(acRes?.success && acRes.data ? acRes.data : []);
         } catch {
-            setError('Error de conexión al cargar SST');
+            // el listener global muestra el error
         } finally {
             setIsLoading(false);
         }
@@ -72,62 +77,61 @@ export const SstPage: React.FC = () => {
 
     useEffect(() => {
         loadAll();
-    }, [orgId]);
+        if (isAdmin) {
+            associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => {});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAdmin, user?.id]);
 
-    const handleRegistrarExamen = async () => {
-        if (!regExamen) return;
+    const handleRecordExam = async () => {
+        if (!recording) return;
         try {
-            const res = await sstService.registrarExamen(regExamen.id, regResultado, null, regObservaciones || null);
+            const res = await sstService.recordExam(recording.id, examResult, examNotes.trim() || undefined);
             if (res.success && res.data) {
                 showNotification({ type: 'success', message: 'Resultado de examen registrado' });
-                setRegExamen(null);
-                setRegResultado('');
-                setRegObservaciones('');
+                setRecording(null);
                 loadAll();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'No se pudo registrar el examen' });
             }
         } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
+            // el listener global muestra el error
         }
     };
 
-    const handleCrearRiesgo = async () => {
+    const handleCreateRisk = async () => {
         try {
-            const res = await sstService.crearRiesgo({ ...riesgoForm, organizationId: orgId });
+            const res = await sstService.createRisk({
+                level: riskForm.level,
+                factor: riskForm.factor.trim(),
+                description: riskForm.description.trim(),
+                ...(riskForm.controls?.trim() ? { controls: riskForm.controls.trim() } : {}),
+            });
             if (res.success && res.data) {
                 showNotification({ type: 'success', message: 'Riesgo agregado a la matriz' });
-                setRiesgoOpen(false);
-                setRiesgoForm({ organizationId: orgId, nivelRiesgo: 1, factor: '', descripcion: '', controles: '' });
+                setRiskOpen(false);
+                setRiskForm(emptyRisk());
                 loadAll();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'Error al crear riesgo' });
             }
         } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
+            // el listener global muestra el error
         }
     };
 
-    const handleInvestigar = async () => {
-        if (!invAccidente) return;
+    const handleInvestigate = async () => {
+        if (!investigating) return;
         try {
-            const res = await sstService.registrarInvestigacion(invAccidente.id, invFecha, invConclusiones, invCausas, invMedidas);
+            const res = await sstService.investigateAccident(investigating.id, invForm);
             if (res.success && res.data) {
                 showNotification({ type: 'success', message: 'Investigación registrada' });
-                setInvAccidente(null);
-                setInvConclusiones('');
-                setInvCausas('');
-                setInvMedidas('');
+                setInvestigating(null);
                 loadAll();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'No se pudo registrar la investigación' });
             }
         } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
+            // el listener global muestra el error
         }
     };
 
-    const pendientesInvestigacion = accidentes.filter(a => !a.investigacionCompletada);
+    const pendingInvestigation = accidents.filter(a => !a.investigationCompleted);
+    const invValid = invForm.conclusions.trim() && invForm.causes.trim() && invForm.correctiveMeasures.trim();
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
@@ -137,64 +141,54 @@ export const SstPage: React.FC = () => {
                         Seguridad y Salud en el Trabajo (SST)
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Exámenes médicos, matriz de riesgos, accidentes (FURAT) y vigencia ARL.
+                        Exámenes médicos, matriz de riesgos y accidentes de trabajo (FURAT).
                     </p>
                 </div>
-                <Button icon={Plus} onClick={() => { setRiesgoForm(f => ({ ...f, organizationId: orgId })); setRiesgoOpen(true); }}>
-                    Agregar Riesgo
-                </Button>
+                {isAdmin && (
+                    <Button icon={Plus} onClick={() => { setRiskForm(emptyRisk()); setRiskOpen(true); }}>
+                        Agregar Riesgo
+                    </Button>
+                )}
             </div>
 
-            {error && (
-                <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-sm text-rose-700 dark:text-rose-300">
-                    {error}
-                </div>
-            )}
-
-            {arl && (
-                <div className={`mb-6 p-4 rounded-xl border text-sm ${arl.vigente ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-300'}`}>
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck size={18} />
-                        <span className="font-bold">ARL: {arl.vigente ? 'Vigente' : 'Vencida'}</span>
-                        <span>· {arl.diasRestantes} días restantes</span>
-                    </div>
-                    {arl.alerta && <p className="mt-1">{arl.alerta}</p>}
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <StatCard title="Exámenes pendientes" value={examenes.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
-                <StatCard title="Riesgos" value={riesgos.length} icon={ShieldAlert} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
-                <StatCard title="Accidentes sin investigar" value={pendientesInvestigacion.length} icon={AlertCircle} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
+            <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
+                <StatCard title={isAdmin ? 'Exámenes pendientes' : 'Mis exámenes'} value={exams.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
+                <StatCard title="Riesgos" value={risks.length} icon={ShieldAlert} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
+                {isAdmin && <StatCard title="Accidentes sin investigar" value={pendingInvestigation.length} icon={AlertCircle} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Exámenes pendientes */}
                 <Card>
                     <div className="flex items-center gap-2 mb-4">
                         <Stethoscope className="text-blue-500" size={20} />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Exámenes Médicos Pendientes</h2>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{isAdmin ? 'Exámenes Médicos Pendientes' : 'Mis Exámenes Médicos'}</h2>
                     </div>
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                    ) : examenes.length === 0 ? (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin exámenes pendientes.</p>
+                    ) : exams.length === 0 ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin exámenes.</p>
                     ) : (
                         <div className="space-y-3">
-                            {examenes.map(e => (
-                                <div key={e.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-center justify-between">
+                            {exams.map(e => (
+                                <div key={e.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] flex items-center justify-between gap-2">
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white">{e.tipoExamenNombre}</p>
-                                        <p className="text-xs text-slate-500">Programado: {formatDate(e.fechaProgramado)} · Asociado: {e.asociadoId}</p>
+                                        <p className="font-bold text-slate-900 dark:text-white">Examen de {EXAM_TYPE_LABEL[e.examType] ?? e.examType}</p>
+                                        <p className="text-xs text-slate-500">
+                                            Programado: {formatDate(e.scheduledDate)}{isAdmin && <> · {nameOf(e.userId)}</>}
+                                        </p>
+                                        {e.performed && e.result && (
+                                            <p className="text-xs text-slate-500">Resultado: {EXAM_RESULT_LABEL[e.result]} ({formatDate(e.performedAt)})</p>
+                                        )}
                                     </div>
-                                    <Button size="sm" onClick={() => { setRegExamen(e); setRegResultado(''); setRegObservaciones(''); }}>Registrar</Button>
+                                    {isAdmin && !e.performed && (
+                                        <Button size="sm" onClick={() => { setRecording(e); setExamResult(1); setExamNotes(''); }}>Registrar</Button>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     )}
                 </Card>
 
-                {/* Matriz de riesgos */}
                 <Card>
                     <div className="flex items-center gap-2 mb-4">
                         <ShieldAlert className="text-orange-500" size={20} />
@@ -202,20 +196,20 @@ export const SstPage: React.FC = () => {
                     </div>
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                    ) : riesgos.length === 0 ? (
+                    ) : risks.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin riesgos registrados.</p>
                     ) : (
                         <div className="space-y-3">
-                            {riesgos.map(r => (
+                            {risks.map(r => (
                                 <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
                                     <div className="flex items-center justify-between">
                                         <p className="font-bold text-slate-900 dark:text-white">{r.factor}</p>
-                                        <Badge variant={r.nivelRiesgo >= 3 ? 'danger' : r.nivelRiesgo === 2 ? 'warning' : 'success'}>
-                                            Nivel {r.nivelRiesgo}
+                                        <Badge variant={r.level >= 3 ? 'danger' : r.level === 2 ? 'warning' : 'success'}>
+                                            {RISK_LEVEL_LABEL[r.level] ?? `Nivel ${r.level}`}
                                         </Badge>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">{r.descripcion}</p>
-                                    {r.controles && <p className="text-xs text-slate-500 mt-1"><ClipboardCheck size={12} className="inline" /> {r.controles}</p>}
+                                    <p className="text-xs text-slate-500 mt-1">{r.description}</p>
+                                    {r.controls && <p className="text-xs text-slate-500 mt-1"><ClipboardCheck size={12} className="inline" /> {r.controls}</p>}
                                 </div>
                             ))}
                         </div>
@@ -223,135 +217,135 @@ export const SstPage: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Accidentes */}
-            <Card>
-                <div className="flex items-center gap-2 mb-4">
-                    <FileText className="text-rose-500" size={20} />
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accidentes de Trabajo (FURAT)</h2>
-                </div>
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                ) : accidentes.length === 0 ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
-                                <tr>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fecha</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Tipo</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Gravedad</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
-                                {accidentes.map(a => (
-                                    <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4 text-slate-500">{formatDate(a.fecha)}</td>
-                                        <td className="px-6 py-4 text-slate-500">{a.tipo}</td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={a.gravedad >= 2 ? 'danger' : 'warning'}>{a.gravedadNombre}</Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-500">{a.arl}</td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={a.investigacionCompletada ? 'success' : 'warning'} dot>
-                                                {a.investigacionCompletada ? 'Investigado' : 'Pendiente'}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {!a.investigacionCompletada && (
-                                                <Button size="sm" variant="outline" onClick={() => { setInvAccidente(a); setInvFecha(new Date().toISOString().slice(0, 10)); setInvConclusiones(''); setInvCausas(''); setInvMedidas(''); }}>
-                                                    Investigar
-                                                </Button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            {isAdmin && (
+                <Card>
+                    <div className="flex items-center gap-2 mb-4">
+                        <FileText className="text-rose-500" size={20} />
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accidentes de Trabajo (FURAT)</h2>
                     </div>
-                )}
-            </Card>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    ) : accidents.length === 0 ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                                    <tr>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fecha</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Asociado</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Tipo</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Gravedad</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
+                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                                    {accidents.map(a => (
+                                        <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
+                                            <td className="px-6 py-4 text-slate-500">{formatDate(a.occurredAt)}</td>
+                                            <td className="px-6 py-4 text-slate-500">{nameOf(a.userId)}</td>
+                                            <td className="px-6 py-4 text-slate-500">{a.accidentType}</td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={a.severity >= 2 ? 'danger' : 'warning'}>{SEVERITY_LABEL[a.severity] ?? a.severity}</Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500">{a.arl}</td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={a.investigationCompleted ? 'success' : 'warning'} dot>
+                                                    {a.investigationCompleted ? 'Investigado' : 'Pendiente'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {!a.investigationCompleted && (
+                                                    <Button size="sm" variant="outline" onClick={() => { setInvestigating(a); setInvForm(emptyInvestigation()); }}>
+                                                        Investigar
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </Card>
+            )}
 
-            {/* Modal registrar examen */}
             <Modal
-                isOpen={!!regExamen}
-                onClose={() => setRegExamen(null)}
+                isOpen={!!recording}
+                onClose={() => setRecording(null)}
                 title="Registrar Resultado de Examen"
                 icon={<Stethoscope className="text-blue-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleRegistrarExamen}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRegExamen(null)}>Cancelar</Button>
+                        <Button onClick={handleRecordExam}>Guardar</Button>
+                        <Button variant="outline" onClick={() => setRecording(null)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <Input label="Resultado *" value={regResultado} onChange={(e) => setRegResultado(e.target.value)} placeholder="Ej: Apto / No apto" />
-                    <Input label="Observaciones" value={regObservaciones} onChange={(e) => setRegObservaciones(e.target.value)} />
+                    <div>
+                        <label className="text-slate-700 dark:text-white text-sm font-bold">Resultado *</label>
+                        <select value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)} className={selectClass}>
+                            {Object.entries(EXAM_RESULT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                    </div>
+                    <Input label="Observaciones" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
                 </div>
             </Modal>
 
-            {/* Modal crear riesgo */}
             <Modal
-                isOpen={riesgoOpen}
-                onClose={() => setRiesgoOpen(false)}
+                isOpen={riskOpen}
+                onClose={() => setRiskOpen(false)}
                 title="Agregar Riesgo"
                 icon={<ShieldAlert className="text-orange-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCrearRiesgo}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRiesgoOpen(false)}>Cancelar</Button>
+                        <Button onClick={handleCreateRisk} disabled={!riskForm.factor.trim() || !riskForm.description.trim()}>Guardar</Button>
+                        <Button variant="outline" onClick={() => setRiskOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input type="number" label="Nivel de riesgo *" value={riesgoForm.nivelRiesgo} onChange={(e) => setRiesgoForm(f => ({ ...f, nivelRiesgo: Number(e.target.value) }))} min={1} max={5} />
-                    <Input label="Factor *" value={riesgoForm.factor} onChange={(e) => setRiesgoForm(f => ({ ...f, factor: e.target.value }))} />
+                    <div>
+                        <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel de riesgo *</label>
+                        <select value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))} className={selectClass}>
+                            {Object.entries(RISK_LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                    </div>
+                    <Input label="Factor *" value={riskForm.factor} onChange={(e) => setRiskForm(f => ({ ...f, factor: e.target.value }))} />
                     <div className="sm:col-span-2">
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Descripción *</label>
-                        <textarea
-                            value={riesgoForm.descripcion}
-                            onChange={(e) => setRiesgoForm(f => ({ ...f, descripcion: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"
-                            rows={3}
-                        />
+                        <textarea value={riskForm.description} onChange={(e) => setRiskForm(f => ({ ...f, description: e.target.value }))} className={textareaClass} rows={3} />
                     </div>
                     <div className="sm:col-span-2">
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Controles</label>
-                        <textarea
-                            value={riesgoForm.controles || ''}
-                            onChange={(e) => setRiesgoForm(f => ({ ...f, controles: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"
-                            rows={3}
-                        />
+                        <textarea value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} className={textareaClass} rows={3} />
                     </div>
                 </div>
             </Modal>
 
-            {/* Modal investigar accidente */}
             <Modal
-                isOpen={!!invAccidente}
-                onClose={() => setInvAccidente(null)}
+                isOpen={!!investigating}
+                onClose={() => setInvestigating(null)}
                 title="Investigar Accidente"
                 icon={<ClipboardCheck className="text-rose-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleInvestigar}>Guardar Investigación</Button>
-                        <Button variant="outline" onClick={() => setInvAccidente(null)}>Cancelar</Button>
+                        <Button onClick={handleInvestigate} disabled={!invValid}>Guardar Investigación</Button>
+                        <Button variant="outline" onClick={() => setInvestigating(null)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <Input type="date" label="Fecha de investigación *" value={invFecha} onChange={(e) => setInvFecha(e.target.value)} />
-                    <Input label="Conclusiones *" value={invConclusiones} onChange={(e) => setInvConclusiones(e.target.value)} />
-                    <Input label="Causas *" value={invCausas} onChange={(e) => setInvCausas(e.target.value)} />
-                    <Input label="Medidas correctivas *" value={invMedidas} onChange={(e) => setInvMedidas(e.target.value)} />
+                    <Input type="date" label="Fecha de investigación *" value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
+                    <Input label="Conclusiones *" value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} />
+                    <Input label="Causas *" value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} />
+                    <Input label="Medidas correctivas *" value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} />
                 </div>
             </Modal>
         </div>

@@ -254,8 +254,8 @@ export const ProjectDetailPage: React.FC = () => {
                 </>}
             />
             <div className="flex flex-col gap-8">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <Card padding="md" className="text-center">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10">
                                 <Calendar className="text-blue-500" size={24} />
@@ -267,7 +267,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    <Card padding="md" className="text-center">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-500/10">
                                 <Calendar className="text-purple-500" size={24} />
@@ -279,7 +279,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    <Card padding="md" className="text-center">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className={`p-3 rounded-xl ${
                                 complexityConfig.variant === 'danger' ? 'bg-rose-50 dark:bg-rose-500/10' :

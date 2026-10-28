@@ -81,11 +81,11 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
                     <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
                     <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
+                    <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
   
                     <Route element={<AdminGuard />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
                       <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
-                      <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
                       <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
                       <Route path={ROUTES.USERS} element={<UsersPage />} />
                       <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />

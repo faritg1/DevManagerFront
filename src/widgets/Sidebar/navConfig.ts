@@ -55,7 +55,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'dashboard', permission: 'menu.platform.dashboard', label: 'Dashboard', icon: LayoutDashboard, to: ROUTES.DASHBOARD },
             { key: 'projects', permission: 'menu.platform.projects', label: 'Proyectos', icon: Briefcase, to: ROUTES.PROJECTS },
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
-            { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS, adminOnly: true },
+            { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
         ],
     },
     {

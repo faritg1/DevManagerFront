@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <header className="h-16 border-b border-slate-200 dark:border-[#233948] bg-white/80 dark:bg-[#111b22]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
             {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
             <div className="flex items-center gap-2 min-w-0">
-                <button 
+                <button aria-label="Abrir menú" 
                     onClick={onMenuClick}
                     className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg"
                 >

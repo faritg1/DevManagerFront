@@ -530,7 +530,7 @@ export const UsersPage: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right relative">
-                                            <button 
+                                            <button aria-label="Más acciones" 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setActiveDropdown(activeDropdown === user.id ? null : user.id);
@@ -1077,7 +1077,7 @@ export const UsersPage: React.FC = () => {
                                     {adjustingSkillId === skill.id ? (
                                         <div className="flex items-center gap-2">
                                             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
-                                                <button
+                                                <button aria-label="Bajar nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.max(1, prev - 1))}
                                                     className="p-0.5 hover:text-primary"
@@ -1087,7 +1087,7 @@ export const UsersPage: React.FC = () => {
                                                 <span className="text-sm font-bold w-16 text-center text-slate-900 dark:text-white">
                                                     {adjustLevel} — {skillLevelLabel(adjustLevel)}
                                                 </span>
-                                                <button
+                                                <button aria-label="Subir nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.min(5, prev + 1))}
                                                     className="p-0.5 hover:text-primary"

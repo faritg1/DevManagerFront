@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   required
                 />
-                <button
+                <button aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"

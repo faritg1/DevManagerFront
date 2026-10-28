@@ -1,11 +1,6 @@
 import React, { useState } from "react";
-import {
-  UserPlus,
-  Users,
-  Loader2,
-  CheckCircle2,
-} from "lucide-react";
-import { Button, Avatar, Badge, Modal, Input } from "../../../shared/ui";
+import { UserPlus, Users, CheckCircle2 } from "lucide-react";
+import { Button, Avatar, Badge, Modal, Input, LoadingBlock } from "../../../shared/ui";
 import { usersService, assignmentsService } from "../../../shared/api";
 import {
   ApplicationStatus,
@@ -81,7 +76,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   }, [isOpen]);
 
   const handleAssign = async () => {
-    if (!selectedUserId) return;
+    if (!selectedUserId || isAssigning) return;
     const selectedUser = orgUsers.find((u) => u.id === selectedUserId);
     const ok = await confirm({
       message: assignment
@@ -135,18 +130,14 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      onSubmit={handleAssign}
       title={assignment ? `Reasignar puesto de ${assignment.userName}` : "Asignar Miembro al Proyecto"}
       icon={<UserPlus className="text-emerald-500" size={20} />}
       size="lg"
       footer={
         <>
-          <Button
-            onClick={handleAssign}
-            disabled={!selectedUserId || isAssigning}
-            icon={isAssigning ? Loader2 : UserPlus}
-            className={isAssigning ? "[&_svg]:animate-spin" : ""}
-          >
-            {isAssigning ? "Asignando..." : assignment ? "Reasignar" : "Asignar al Proyecto"}
+          <Button type="submit" disabled={!selectedUserId} isLoading={isAssigning} icon={UserPlus}>
+            {assignment ? "Reasignar" : "Asignar al Proyecto"}
           </Button>
           <Button variant="outline" onClick={onClose}>
             Cancelar
@@ -162,10 +153,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
         />
 
         {loadingUsers && (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <span className="ml-3 text-slate-500 dark:text-slate-400">Cargando usuarios...</span>
-          </div>
+          <LoadingBlock label="Cargando usuarios..." className="py-8" />
         )}
 
         {!loadingUsers && filteredUsers.length === 0 && (
@@ -180,17 +168,24 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
         )}
 
         {!loadingUsers && filteredUsers.length > 0 && (
-          <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+          <div role="radiogroup" aria-label="Usuario a asignar" className="max-h-64 overflow-y-auto space-y-2 p-1">
             {filteredUsers.map((user) => (
-              <div
+              <label
                 key={user.id}
-                onClick={() => setSelectedUserId(user.id)}
-                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
                   selectedUserId === user.id
                     ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20"
                     : "bg-slate-50 dark:bg-background-dark border-transparent hover:border-slate-200 dark:hover:border-border-dark"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="assign-user"
+                  value={user.id}
+                  checked={selectedUserId === user.id}
+                  onChange={() => setSelectedUserId(user.id)}
+                  className="sr-only"
+                />
                 <Avatar name={user.fullName} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-slate-900 dark:text-white truncate">
@@ -204,9 +199,9 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
                   {user.roleName}
                 </Badge>
                 {selectedUserId === user.id && (
-                  <CheckCircle2 className="text-primary shrink-0" size={20} />
+                  <CheckCircle2 className="text-primary shrink-0" size={20} aria-hidden="true" />
                 )}
-              </div>
+              </label>
             ))}
           </div>
         )}

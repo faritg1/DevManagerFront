@@ -6,7 +6,6 @@ import {
     Edit,
     Trash2,
     UserPlus,
-    Loader2,
     AlertCircle,
     Sparkles,
 } from 'lucide-react';
@@ -221,12 +220,12 @@ export const ProjectDetailPage: React.FC = () => {
                             </Button>
                             <Button 
                                 variant="outline"
-                                icon={isDeleting ? Loader2 : Trash2}
+                                icon={Trash2}
                                 onClick={handleDeleteProject}
-                                disabled={isDeleting}
-                                className={`border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
+                                isLoading={isDeleting}
+                                className="border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                             >
-                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                                Eliminar
                             </Button>
                             <Button 
                                 variant="outline"

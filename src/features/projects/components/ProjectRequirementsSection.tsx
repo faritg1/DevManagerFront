@@ -1,17 +1,13 @@
 import React, { useState } from "react";
-import {
-  Target,
-  Plus,
-  Loader2,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, Badge, Button, Modal, LevelSelector, SELECT_CLASS } from "../../../shared/ui";
+import { Target, Plus } from "lucide-react";
+import { Card, CardHeader, CardTitle, Badge, Button, Modal, LevelSelector, Select, LoadingBlock } from "../../../shared/ui";
 import { projectsService, skillsService } from "../../../shared/api";
 import type {
   SkillRequirementResponse,
   SkillDto,
   AddSkillRequirementRequest,
 } from "../../../shared/api/types";
-import { useModal } from "../../../shared/hooks";
+import { useModal, useIsAdmin } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
 
 interface ProjectRequirementsSectionProps {
@@ -28,6 +24,8 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
   const { showNotification } = useNotification();
   const { catalogs } = useConfig();
   const requirementModal = useModal();
+  // POST /projects/{id}/reqs is Admin-only on the API, so only admins get the add actions.
+  const isAdmin = useIsAdmin();
 
   const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
@@ -62,6 +60,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
   };
 
   const handleSave = async () => {
+    if (savingRequirement) return;
     if (!requirementForm.skillId) {
       showNotification({ type: "error", message: "Selecciona una habilidad" });
       return;
@@ -101,18 +100,22 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
               Requisitos de Habilidades
               <Badge variant="default">{requirements.length}</Badge>
             </div>
-            <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
-              Agregar
-            </Button>
+            {isAdmin && (
+              <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
+                Agregar
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
 
         {requirements.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-slate-500 dark:text-slate-400 mb-4">No hay requisitos definidos</p>
-            <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
-              Agregar Requisito
-            </Button>
+            {isAdmin && (
+              <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
+                Agregar Requisito
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -170,17 +173,14 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
       <Modal
         isOpen={requirementModal.isOpen}
         onClose={requirementModal.close}
+        onSubmit={handleSave}
         title="Agregar Requisito de Habilidad"
         icon={<Target className="text-primary" size={20} />}
         size="md"
         footer={
           <>
-            <Button
-              onClick={handleSave}
-              disabled={savingRequirement || !requirementForm.skillId}
-              icon={savingRequirement ? Loader2 : Plus}
-            >
-              {savingRequirement ? "Guardando..." : "Agregar Requisito"}
+            <Button type="submit" isLoading={savingRequirement} icon={Plus}>
+              Agregar Requisito
             </Button>
             <Button variant="outline" onClick={requirementModal.close}>
               Cancelar
@@ -189,34 +189,24 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         }
       >
         <div className="space-y-5">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="requirement-skill" className="text-slate-700 dark:text-white text-sm font-bold">Habilidad *</label>
-            {loadingSkills ? (
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                <Loader2 className="animate-spin" size={16} />
-                Cargando habilidades...
-              </div>
-            ) : (
-              <select
-                id="requirement-skill"
-                value={requirementForm.skillId}
-                onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
-                className={`${SELECT_CLASS} w-full`}
-              >
-                <option value="">Seleccionar habilidad...</option>
-                {availableSkills.map((skill) => (
-                  <option key={skill.id} value={skill.id}>
-                    {skill.name} {skill.category && `(${skill.category})`}
-                  </option>
-                ))}
-              </select>
-            )}
-            {availableSkills.length === 0 && !loadingSkills && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                No hay habilidades disponibles o todas ya están asignadas.
-              </p>
-            )}
-          </div>
+          {loadingSkills ? (
+            <LoadingBlock label="Cargando habilidades..." className="py-4" />
+          ) : (
+            <Select
+              label="Habilidad *"
+              required
+              value={requirementForm.skillId}
+              onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
+              hint={availableSkills.length === 0 ? "No hay habilidades disponibles o todas ya están asignadas." : undefined}
+            >
+              <option value="">Seleccionar habilidad...</option>
+              {availableSkills.map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skill.name} {skill.category && `(${skill.category})`}
+                </option>
+              ))}
+            </Select>
+          )}
 
           <div className="flex flex-col gap-2" role="group" aria-labelledby="requirement-level">
             <p id="requirement-level" className="text-slate-700 dark:text-white text-sm font-bold">Nivel Requerido *</p>
@@ -232,6 +222,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             <div className="flex gap-3">
               <button
                 type="button"
+                aria-pressed={requirementForm.isMandatory}
                 onClick={() => setRequirementForm((prev) => ({ ...prev, isMandatory: true }))}
                 className={`flex-1 p-4 rounded-xl border text-center transition-all ${
                   requirementForm.isMandatory
@@ -249,6 +240,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
               </button>
               <button
                 type="button"
+                aria-pressed={!requirementForm.isMandatory}
                 onClick={() => setRequirementForm((prev) => ({ ...prev, isMandatory: false }))}
                 className={`flex-1 p-4 rounded-xl border text-center transition-all ${
                   !requirementForm.isMandatory

@@ -2,7 +2,6 @@
 import { formatNumber } from '../../../shared/format';
 import {
   Sparkles,
-  Loader2,
   AlertCircle,
   Users,
   TrendingUp,
@@ -12,7 +11,7 @@ import {
   ChevronDown,
   Medal,
 } from "lucide-react";
-import { Badge, Button, Avatar, Modal } from "../../../shared/ui";
+import { Badge, Button, Avatar, Modal, LoadingBlock } from "../../../shared/ui";
 import { agentService, projectsService } from "../../../shared/api";
 import type { MatchCandidatesResponse, CandidateMatch } from "../../../shared/api/types";
 import { useNotification } from "../../../shared/context";
@@ -141,10 +140,9 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
       <div className="space-y-5">
 
         {isMatching && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
-            <p className="text-slate-700 dark:text-slate-300 font-medium">Analizando perfiles con IA...</p>
-            <p className="text-slate-500 dark:text-slate-500 text-sm mt-1">Esto puede tardar unos segundos</p>
+          <div className="py-16 text-center">
+            <LoadingBlock label="Analizando perfiles con IA..." className="py-0" />
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Esto puede tardar unos segundos</p>
           </div>
         )}
 
@@ -165,7 +163,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
           const stats = getCandidateStats();
           return (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500 dark:text-slate-400" /> },
                   { label: "Excelentes (≥90%)", value: stats.above90, icon: <CheckCircle2 size={16} className="text-emerald-500" /> },
@@ -334,11 +332,11 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                               <Button
                                 variant="primary"
                                 onClick={() => handleApply(candidate.userId, candidate.fullName)}
-                                disabled={isApplying}
+                                isLoading={isApplying}
                                 className="w-full mt-1"
-                                icon={isApplying ? Loader2 : CheckCircle2}
+                                icon={CheckCircle2}
                               >
-                                {isApplying ? "Enviando postulación..." : "Postularme como candidato principal"}
+                                Postularme como candidato principal
                               </Button>
                             )}
                           </div>

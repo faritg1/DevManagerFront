@@ -25,6 +25,8 @@ const sizeStyles = {
 // Pila de modales abiertos (orden de apertura), compartida por todas las instancias.
 const openModals: object[] = [];
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export const Modal: React.FC<ModalProps> = ({
     isOpen,
     onClose,
@@ -37,20 +39,46 @@ export const Modal: React.FC<ModalProps> = ({
     const titleId = useId();
     // Ref para que un onClose nuevo en cada render no reordene la pila.
     const onCloseRef = useRef(onClose);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    // The opener is read during render: by effect time an [autoFocus] child already holds focus.
+    const openerRef = useRef<HTMLElement | null>(null);
+    const wasOpen = useRef(false);
+    if (isOpen !== wasOpen.current) {
+        wasOpen.current = isOpen;
+        if (isOpen) openerRef.current = document.activeElement as HTMLElement | null;
+    }
     useEffect(() => { onCloseRef.current = onClose; });
 
     useEffect(() => {
         if (!isOpen) return;
         const entry = {};
         openModals.push(entry);
-        // Con modales apilados, Escape cierra sólo el último abierto.
+        const opener = openerRef.current;
+        const dialog = dialogRef.current;
+        const focusables = () => (dialog ? [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(el => el.offsetParent !== null) : []);
+        // Focus the first control of the content (an [autoFocus] child already wins), else any control, else the dialog.
+        if (dialog && !dialog.contains(document.activeElement)) {
+            const first = dialog.querySelector<HTMLElement>(`[data-modal-body] :is(${FOCUSABLE})`) ?? focusables()[0] ?? dialog;
+            first.focus();
+        }
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && openModals[openModals.length - 1] === entry) onCloseRef.current();
+            // Con modales apilados, Escape y Tab sólo actúan sobre el último abierto.
+            if (openModals[openModals.length - 1] !== entry) return;
+            if (e.key === 'Escape') onCloseRef.current();
+            if (e.key !== 'Tab' || !dialog) return;
+            const items = focusables();
+            if (items.length === 0) { e.preventDefault(); dialog.focus(); return; }
+            const first = items[0];
+            const last = items[items.length - 1];
+            const active = document.activeElement;
+            if (e.shiftKey && (active === first || !dialog.contains(active))) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && (active === last || !dialog.contains(active))) { e.preventDefault(); first.focus(); }
         };
         document.addEventListener('keydown', onKey);
         return () => {
             document.removeEventListener('keydown', onKey);
             openModals.splice(openModals.indexOf(entry), 1);
+            if (opener?.isConnected) opener.focus();
         };
     }, [isOpen]);
 
@@ -71,6 +99,8 @@ export const Modal: React.FC<ModalProps> = ({
                 </span>
                 
                 <div
+                    ref={dialogRef}
+                    tabIndex={-1}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby={title ? titleId : undefined}
@@ -80,7 +110,7 @@ export const Modal: React.FC<ModalProps> = ({
                         shadow-2xl transform transition-all 
                         sm:my-8 sm:align-middle ${sizeStyles[size]} w-full 
                         border border-slate-200 dark:border-border-dark 
-                        relative z-20
+                        relative z-20 focus:outline-none
                     `}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -99,7 +129,7 @@ export const Modal: React.FC<ModalProps> = ({
                         </div>
                     )}
                     
-                    <div className="px-4 py-5 sm:px-6 sm:py-6">
+                    <div data-modal-body className="px-4 py-5 sm:px-6 sm:py-6">
                         {children}
                     </div>
                     

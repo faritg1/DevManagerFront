@@ -9,3 +9,4 @@ export * from './StatCard';
 export * from './Modal';
 export * from './ConfirmDialog/ConfirmDialog';
 export * from './LevelSelector/LevelSelector';
+export * from './Page';

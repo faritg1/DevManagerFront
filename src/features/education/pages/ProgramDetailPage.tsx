@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
+import { ArrowLeft, Pencil, UserPlus } from 'lucide-react';
+import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -75,7 +75,7 @@ export const ProgramDetailPage: React.FC = () => {
     if (isLoading) {
         return (
             <PageContainer>
-                <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                <LoadingBlock className="py-20" />
             </PageContainer>
         );
     }

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Loader2,
   UserX,
   Sparkles,
   CheckCircle2,
@@ -13,7 +12,7 @@ import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
 import { useCertifications } from "../hooks/useCertifications";
 import { agentService } from "../../../shared/api";
-import { Card, Badge, Button, Modal, PageContainer } from "../../../shared/ui";
+import { Card, Badge, Button, Modal, PageContainer, LoadingBlock } from "../../../shared/ui";
 import {
   ProfileHeader,
   BioCard,
@@ -210,10 +209,7 @@ export const ProfilePage: React.FC = () => {
 
   if (isLoadingProfile) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-        <p className="text-slate-500 dark:text-slate-400">Cargando perfil...</p>
-      </div>
+      <LoadingBlock label="Cargando perfil…" className="h-full py-20" />
     );
   }
 

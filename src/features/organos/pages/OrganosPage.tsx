@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -343,10 +343,7 @@ export const OrganosPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando órganos...</p>
-            </div>
+            <LoadingBlock label="Cargando órganos…" className="h-full py-20" />
         );
     }
 
@@ -396,7 +393,7 @@ export const OrganosPage: React.FC = () => {
                     </p>
 
                     {detailLoading ? (
-                        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div>

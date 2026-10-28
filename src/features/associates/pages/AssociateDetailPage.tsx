@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader } from '../../../shared/ui';
+import { ArrowLeft } from 'lucide-react';
+import { Button, Card, Badge, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService } from '../../../shared/api';
 import type { AssociateDetailDto, AssociateStatus } from '../../../shared/api/types';
@@ -67,7 +67,7 @@ export const AssociateDetailPage: React.FC = () => {
     if (isLoading) {
         return (
             <PageContainer>
-                <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                <LoadingBlock className="py-20" />
             </PageContainer>
         );
     }

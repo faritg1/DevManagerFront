@@ -8,13 +8,12 @@ import {
     FolderOpen,
     GraduationCap,
     Landmark,
-    Loader2,
     Pencil,
     UserCheck,
     Users,
     type LucideIcon,
 } from 'lucide-react';
-import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
@@ -135,10 +134,7 @@ export const OrganizationsPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex h-full flex-col items-center justify-center py-20">
-                <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando organización...</p>
-            </div>
+            <LoadingBlock label="Cargando organización…" className="h-full py-20" />
         );
     }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
+import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
 import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
@@ -144,7 +144,7 @@ export const BalanceSocialPage: React.FC = () => {
                     </div>
                 )}
                 {lookupLoading ? (
-                    <div className="flex items-center justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                    <LoadingBlock className="py-6" />
                 ) : indicator ? renderIndicator(indicator) : (
                     <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicador consultado.</p>
                 )}

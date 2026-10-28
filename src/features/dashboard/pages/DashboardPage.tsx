@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Loader2, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader } from '../../../shared/ui';
+import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
+import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -329,10 +329,7 @@ export const DashboardPage: React.FC = () => {
                 )}
 
                 {isLoading && (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                        <p className="text-slate-500 dark:text-slate-400">Cargando proyectos...</p>
-                    </div>
+                    <LoadingBlock label="Cargando proyectos…" className="py-20" />
                 )}
 
                 {error && !isLoading && (

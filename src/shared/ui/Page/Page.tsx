@@ -63,6 +63,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </div>
 );
 
-export const LoadingBlock: React.FC = () => (
-    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+/** Indicador de carga estándar; `label` muestra un texto bajo el spinner. */
+export const LoadingBlock: React.FC<{ label?: string; className?: string }> = ({ label, className = 'py-12' }) => (
+    <div role="status" className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
+        {label ? <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p> : <span className="sr-only">Cargando…</span>}
+    </div>
 );

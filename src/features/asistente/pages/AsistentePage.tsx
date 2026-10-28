@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-    Bot, Loader2, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
+    Bot, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
     Scale, CheckCircle2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
@@ -182,9 +182,7 @@ export const AsistentePage: React.FC = () => {
             )}
 
             {loading && (
-                <div className="mb-6 flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <LoadingBlock className="mb-6 py-8" />
             )}
 
             {tab === 'consultar' && !loading && (

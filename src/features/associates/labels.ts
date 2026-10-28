@@ -47,8 +47,7 @@ export const ENTITY_TYPES: Record<number, string> = {
 export const formatDate = (d?: string | null): string =>
     d ? new Date(`${d.slice(0, 10)}T00:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-export const formatDateTime = (d?: string | null): string =>
-    d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+export { formatDateTime } from '../../shared/format';
 
 /** Errores del API ya se notifican globalmente (excepto 404); esto cubre el resto. */
 export const isApiError = (e: unknown): e is ApiError =>

@@ -7,12 +7,7 @@ import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
 import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
-
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
+import { formatDate } from '../../../shared/format';
 
 const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
     1: 'Acceso',

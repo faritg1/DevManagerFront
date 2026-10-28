@@ -11,17 +11,13 @@ import type {
     CreateCompensationRequest,
     PilaContributionDto,
 } from '../../../shared/api/types';
+import { currency, today } from '../../../shared/format';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
     2: 'Fijo mensual',
     3: 'Por proyecto',
 };
-
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 const selectClass = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
 

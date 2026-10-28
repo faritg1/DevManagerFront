@@ -18,6 +18,7 @@ import type {
     VoteOption,
     VoteResultsDto,
 } from '../../../shared/api/types';
+import { formatDate, formatDateTime, today } from '../../../shared/format';
 
 const BODY_TYPE_LABEL: Record<GoverningBodyType, string> = {
     1: 'Asamblea General',
@@ -31,19 +32,12 @@ const BODY_TYPE_LABEL: Record<GoverningBodyType, string> = {
 const SESSION_TYPE_LABEL: Record<number, string> = { 1: 'Ordinaria', 2: 'Extraordinaria' };
 const VOTE_OPTION_LABEL: Record<VoteOption, string> = { 1: 'Aprobar', 2: 'Rechazar', 3: 'Abstención', 4: 'En blanco' };
 
-const today = () => new Date().toISOString().slice(0, 10);
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
     const d = new Date();
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 16);
 };
-
-const formatDate = (d: string | null | undefined): string =>
-    d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-
-const formatDateTime = (d: string | null | undefined): string =>
-    d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
 const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';

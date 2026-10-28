@@ -14,17 +14,7 @@ import type {
     WelfareProgramDto,
     WelfareRequestDto,
 } from '../../../shared/api/types';
-
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
-
-const today = () => new Date().toISOString().slice(0, 10);
+import { formatDate, currency, today } from '../../../shared/format';
 
 const AID_TYPE_LABEL: Record<AidType, string> = {
     1: 'Auxilio económico',

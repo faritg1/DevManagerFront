@@ -5,9 +5,7 @@ import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
 import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
-
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
+import { currency } from '../../../shared/format';
 
 const dimensionVariant = (status: string): 'success' | 'warning' | 'danger' =>
     status === 'Cumple' ? 'success' : status === 'En Progreso' ? 'warning' : 'danger';

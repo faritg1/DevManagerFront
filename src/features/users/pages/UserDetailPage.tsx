@@ -31,13 +31,7 @@ import type {
 import { useConfig } from "../../../shared/context";
 import { Card, Badge, Button, Avatar, PageContainer } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
-
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+import { formatDate } from "../../../shared/format";
 
 const getLevelLabel = (level: number) => {
   const labels: Record<number, string> = {

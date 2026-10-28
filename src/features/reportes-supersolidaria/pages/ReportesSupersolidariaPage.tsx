@@ -11,12 +11,7 @@ import type {
     SupersolidariaReportDto,
     SupersolidariaReportType,
 } from '../../../shared/api/types';
-
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
+import { formatDate } from '../../../shared/format';
 
 const REPORT_TYPE_LABEL: Record<SupersolidariaReportType, string> = { 1: 'Trimestral', 2: 'Anual' };
 

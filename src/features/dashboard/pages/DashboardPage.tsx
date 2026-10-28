@@ -8,6 +8,7 @@ import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse, type UserResponse, type ApplicationResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../../projects/utils/complexityConfig';
+import { currency } from '../../../shared/format';
 
 const getProjectGradient = (name: string): string => {
     const gradients = [
@@ -257,7 +258,7 @@ export const DashboardPage: React.FC = () => {
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <StatCard
                                 title="Excedentes del período"
-                                value={new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(solidaridad.excedentesPeriodo)}
+                                value={currency(solidaridad.excedentesPeriodo)}
                                 icon={PiggyBank}
                                 iconColor="text-emerald-500"
                                 iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"

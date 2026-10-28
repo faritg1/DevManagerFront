@@ -16,14 +16,8 @@ import type {
     RiskDto,
     WorkAccidentDto,
 } from '../../../shared/api/types';
+import { formatDate, today } from '../../../shared/format';
 
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
-
-const today = () => new Date().toISOString().slice(0, 10);
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
     const d = new Date();

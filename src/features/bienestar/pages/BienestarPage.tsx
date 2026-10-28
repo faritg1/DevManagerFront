@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -322,22 +322,22 @@ export const BienestarPage: React.FC = () => {
             </Card>
 
             <Card padding="none" className="overflow-hidden mb-6">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-[#233948] flex items-center gap-2">
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-[#233948] flex items-center gap-2`}>
                     <Heart className="text-rose-500" size={20} />
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                    <table className={TABLE_CLASS}>
+                        <thead className={THEAD_CLASS}>
                             <tr>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Nombre</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Presupuesto</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Inicio</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fin</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
+                                <th className={TH_CLASS}>Nombre</th>
+                                <th className={TH_CLASS}>Presupuesto</th>
+                                <th className={TH_CLASS}>Inicio</th>
+                                <th className={TH_CLASS}>Fin</th>
+                                <th className={TH_CLASS}>Estado</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                        <tbody className={TBODY_CLASS}>
                             {progLoading ? (
                                 <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : programs.length === 0 ? (
@@ -345,14 +345,14 @@ export const BienestarPage: React.FC = () => {
                             ) : (
                                 programs.map(p => (
                                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
                                             {p.description && <p className="text-xs text-slate-500 dark:text-slate-400">{p.description}</p>}
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.budget)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(p.startDate)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(p.endDate)}</td>
-                                        <td className="px-6 py-4">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.budget)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(p.startDate)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(p.endDate)}</td>
+                                        <td className={TD_CLASS}>
                                             <Badge variant={p.isActive ? 'success' : 'default'} dot>{p.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                         </td>
                                     </tr>

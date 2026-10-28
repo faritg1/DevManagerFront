@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -326,36 +326,36 @@ export const SstPage: React.FC = () => {
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full text-left text-sm whitespace-nowrap">
-                                <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                            <table className={TABLE_CLASS}>
+                                <thead className={THEAD_CLASS}>
                                     <tr>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fecha</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Asociado</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Tipo</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Gravedad</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">FURAT</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>
+                                        <th className={TH_CLASS}>Fecha</th>
+                                        <th className={TH_CLASS}>Asociado</th>
+                                        <th className={TH_CLASS}>Tipo</th>
+                                        <th className={TH_CLASS}>Gravedad</th>
+                                        <th className={TH_CLASS}>ARL</th>
+                                        <th className={TH_CLASS}>FURAT</th>
+                                        <th className={TH_CLASS}>Estado</th>
+                                        <th className={TH_CLASS}>Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                                <tbody className={TBODY_CLASS}>
                                     {accidents.map(a => (
                                         <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(a.occurredAt)}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{nameOf(a.userId)}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.accidentType}</td>
-                                            <td className="px-6 py-4">
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(a.occurredAt)}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{nameOf(a.userId)}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.accidentType}</td>
+                                            <td className={TD_CLASS}>
                                                 <Badge variant={a.severity >= 2 ? 'danger' : 'warning'}>{SEVERITY_LABEL[a.severity] ?? a.severity}</Badge>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.arl}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.furatNumber || '—'}</td>
-                                            <td className="px-6 py-4">
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.arl}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.furatNumber || '—'}</td>
+                                            <td className={TD_CLASS}>
                                                 <Badge variant={a.investigationCompleted ? 'success' : 'warning'} dot>
                                                     {a.investigationCompleted ? `Investigado (${formatDate(a.investigationDate)})` : 'Pendiente'}
                                                 </Badge>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className={TD_CLASS}>
                                                 {!a.investigationCompleted && (
                                                     <Button size="sm" variant="outline" onClick={() => { setInvestigating(a); setInvForm(emptyInvestigation()); }}>
                                                         Investigar

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -119,18 +119,18 @@ export const ReportesSupersolidariaPage: React.FC = () => {
 
             <Card padding="none" className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                    <table className={TABLE_CLASS}>
+                        <thead className={THEAD_CLASS}>
                             <tr>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Período</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Tipo</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Creado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fecha envío</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>
+                                <th className={TH_CLASS}>Período</th>
+                                <th className={TH_CLASS}>Tipo</th>
+                                <th className={TH_CLASS}>Creado</th>
+                                <th className={TH_CLASS}>Estado</th>
+                                <th className={TH_CLASS}>Fecha envío</th>
+                                <th className={TH_CLASS}>Acción</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                        <tbody className={TBODY_CLASS}>
                             {isLoading ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : reports.length === 0 ? (
@@ -138,14 +138,14 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                             ) : (
                                 reports.map(r => (
                                     <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
-                                        <td className="px-6 py-4"><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
-                                        <td className="px-6 py-4">
+                                        <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
+                                        <td className={TD_CLASS}><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
+                                        <td className={TD_CLASS}>
                                             <Badge variant={r.isSent ? 'success' : 'warning'} dot>{r.isSent ? 'Enviado' : 'Pendiente'}</Badge>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(r.sentAt)}</td>
-                                        <td className="px-6 py-4 flex items-center gap-2">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(r.sentAt)}</td>
+                                        <td className={`${TD_CLASS} flex items-center gap-2`}>
                                             <Button size="sm" variant="outline" icon={Eye} onClick={() => setViewing(r)}>Ver</Button>
                                             {isAdmin && !r.isSent && (
                                                 <Button size="sm" icon={Send} onClick={() => handleSend(r.id)}>Enviar</Button>

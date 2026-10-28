@@ -23,7 +23,7 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
@@ -471,18 +471,18 @@ export const UsersPage: React.FC = () => {
             
             <Card padding="none" className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                    <table className={TABLE_CLASS}>
+                        <thead className={THEAD_CLASS}>
                             <tr>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Usuario</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Email</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Rol</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Creado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider text-right">Acciones</th>
+                                <th className={TH_CLASS}>Usuario</th>
+                                <th className={TH_CLASS}>Email</th>
+                                <th className={TH_CLASS}>Rol</th>
+                                <th className={TH_CLASS}>Estado</th>
+                                <th className={TH_CLASS}>Creado</th>
+                                <th className={`${TH_CLASS} text-right`}>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                        <tbody className={TBODY_CLASS}>
                             {filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
@@ -492,7 +492,7 @@ export const UsersPage: React.FC = () => {
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50 transition-colors group">
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <div className="flex items-center gap-3">
                                                 <Avatar name={user.fullName} size="sm" />
                                                 <div>
@@ -505,17 +505,17 @@ export const UsersPage: React.FC = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>
                                             <div className="flex items-center gap-2">
                                                 <Mail size={14} /> {user.email}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <Badge variant="purple">
                                                 {user.roleName}
                                             </Badge>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <Badge 
                                                 variant={user.isActive ? 'success' : 'danger'} 
                                                 dot
@@ -523,13 +523,13 @@ export const UsersPage: React.FC = () => {
                                                 {user.isActive ? 'Activo' : 'Inactivo'}
                                             </Badge>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>
                                             <div className="flex items-center gap-1">
                                                 <Calendar size={14} />
                                                 {formatDate(user.createdAt)}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right relative">
+                                        <td className={`${TD_CLASS} text-right relative`}>
                                             <button aria-label="Más acciones" 
                                                 onClick={(e) => {
                                                     e.stopPropagation();

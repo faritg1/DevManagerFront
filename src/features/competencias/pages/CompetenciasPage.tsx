@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -9,7 +9,7 @@ import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/forma
 
 const selectClass = `${SELECT_CLASS} w-full mt-2`;
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const thClass = 'px-6 py-4 font-bold uppercase text-xs tracking-wider';
+const thClass = TH_CLASS;
 
 const emptyForm = (): CreateCompetencyRequest => ({ userId: '', name: '', level: 1 });
 
@@ -119,8 +119,8 @@ export const CompetenciasPage: React.FC = () => {
 
     const table = (rows: CompetencyDto[], showOwner: boolean) => (
         <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+            <table className={TABLE_CLASS}>
+                <thead className={THEAD_CLASS}>
                     <tr>
                         {showOwner && <th className={thClass}>Asociado</th>}
                         <th className={thClass}>Competencia</th>
@@ -129,17 +129,17 @@ export const CompetenciasPage: React.FC = () => {
                         <th className={thClass}>Actualizada</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                <tbody className={TBODY_CLASS}>
                     {rows.map(c => (
                         <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                            {showOwner && <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{c.fullName}</td>}
-                            <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+                            {showOwner && <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{c.fullName}</td>}
+                            <td className={`${TD_CLASS} text-slate-700 dark:text-slate-300`}>
                                 <p className="font-bold">{c.name}</p>
                                 {c.notes && <p className="text-xs text-slate-500 whitespace-normal dark:text-slate-400">{c.notes}</p>}
                             </td>
-                            <td className="px-6 py-4"><Badge variant="purple">{skillLevelLabel(c.level)}</Badge></td>
-                            <td className="px-6 py-4">{availabilityCell(c)}</td>
-                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(c.updatedAt)}</td>
+                            <td className={TD_CLASS}><Badge variant="purple">{skillLevelLabel(c.level)}</Badge></td>
+                            <td className={TD_CLASS}>{availabilityCell(c)}</td>
+                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(c.updatedAt)}</td>
                         </tr>
                     ))}
                 </tbody>

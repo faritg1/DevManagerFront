@@ -16,7 +16,7 @@ import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS } from "../../../shared/ui";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -291,32 +291,32 @@ export const SkillsCatalogPage: React.FC = () => {
           )}
         </Card>
       ) : (
-        <Card padding="none">
+        <Card padding="none" className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead>
+              <thead className={THEAD_CLASS}>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <th className={TH_CLASS}>
                     Nombre
                   </th>
-                  <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <th className={TH_CLASS}>
                     Categoría
                   </th>
-                  <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <th className={TH_CLASS}>
                     Tipo
                   </th>
-                  <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-right">
+                  <th className={`${TH_CLASS} text-right`}>
                     Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className={TBODY_CLASS}>
                 {filteredSkills.map((skill) => (
                   <tr
                     key={skill.id}
                     className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className={TD_CLASS}>
                       <div className="flex items-center gap-2">
                         {renderSkillTypeIcon(skill.skillType)}
                         <span className="text-sm font-medium text-slate-900 dark:text-white">
@@ -324,7 +324,7 @@ export const SkillsCatalogPage: React.FC = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className={TD_CLASS}>
                       {skill.category ? (
                         <Badge variant="default" icon={Tag}>
                           {skill.category}
@@ -335,10 +335,10 @@ export const SkillsCatalogPage: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className={TD_CLASS}>
                       {renderSkillTypeBadge(skill.skillType)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className={TD_CLASS}>
                       <div className="flex items-center gap-2 justify-end">
                         <Button
                           variant="ghost"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -242,26 +242,26 @@ export const NominaPage: React.FC = () => {
             {isAdmin && sheet.length > 0 && (
                 <Card padding="none" className="overflow-hidden mt-6">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                        <table className={TABLE_CLASS}>
+                            <thead className={THEAD_CLASS}>
                                 <tr>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Asociado</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">IBC</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Salud</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Pensión</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Total</th>
+                                    <th className={TH_CLASS}>Asociado</th>
+                                    <th className={TH_CLASS}>IBC</th>
+                                    <th className={TH_CLASS}>Salud</th>
+                                    <th className={TH_CLASS}>Pensión</th>
+                                    <th className={TH_CLASS}>ARL</th>
+                                    <th className={TH_CLASS}>Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                            <tbody className={TBODY_CLASS}>
                                 {sheet.map(p => (
                                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{nameOf(p.userId)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.contributionBase)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.healthContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.pensionContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.arlContribution)}</td>
-                                        <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">{currency(p.total)}</td>
+                                        <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{nameOf(p.userId)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.contributionBase)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.healthContribution)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.pensionContribution)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.arlContribution)}</td>
+                                        <td className={`${TD_CLASS} font-bold text-emerald-600 dark:text-emerald-400`}>{currency(p.total)}</td>
                                     </tr>
                                 ))}
                             </tbody>

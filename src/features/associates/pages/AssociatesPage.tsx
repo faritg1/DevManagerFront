@@ -81,7 +81,7 @@ export const AssociatesPage: React.FC = () => {
                     <select
                         aria-label="Filtrar por estado"
                         value={status}
-                        onChange={(e) => setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : '')}
+                        onChange={(e) => { setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : ''); pager.setPage(1); }}
                         className={`${SELECT_SM_CLASS} sm:ml-auto`}
                     >
                         <option value="">Todos los estados</option>

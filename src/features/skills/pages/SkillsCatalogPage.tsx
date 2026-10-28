@@ -239,7 +239,7 @@ export const SkillsCatalogPage: React.FC = () => {
               placeholder="Buscar por nombre o categoría..." aria-label="Buscar habilidades"
               icon={Search}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); pager.setPage(1); }}
             />
           </div>
 
@@ -248,7 +248,7 @@ export const SkillsCatalogPage: React.FC = () => {
             <select
               aria-label="Filtrar por tipo"
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as FilterType)}
+              onChange={(e) => { setFilterType(e.target.value as FilterType); pager.setPage(1); }}
               className={SELECT_SM_CLASS}
             >
               <option value="all">Todos los tipos</option>
@@ -260,7 +260,7 @@ export const SkillsCatalogPage: React.FC = () => {
           <select
             aria-label="Filtrar por categoría"
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+            onChange={(e) => { setFilterCategory(e.target.value); pager.setPage(1); }}
             className={SELECT_SM_CLASS}
           >
             <option value="all">Todas las categorías</option>

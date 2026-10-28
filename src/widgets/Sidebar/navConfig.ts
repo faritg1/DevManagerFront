@@ -138,3 +138,8 @@ export const firstVisibleRoute = (access: NavAccess): string | undefined => {
 export const findNavItem = (pathname: string): NavItemConfig | undefined =>
     NAV_CONFIG.flatMap((section) => section.items.flatMap((item) => item.children ?? [item]))
         .find((item) => item.to && (pathname === item.to || pathname.startsWith(item.to + '/')));
+
+/** Ruta de la pantalla que abre un código de permiso de menú (catálogo de permisos). */
+export const routeForPermission = (code: string): string | undefined =>
+    NAV_CONFIG.flatMap((section) => section.items.flatMap((item) => item.children ?? [item]))
+        .find((item) => item.permission === code)?.to;

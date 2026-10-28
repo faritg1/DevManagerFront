@@ -523,24 +523,11 @@ export interface UpdateRoleRequest {
 
 export interface PermissionDto {
   id: string;
-  code: string; // e.g., "users.read"
+  code: string; // e.g., "menu.platform.dashboard"
   name: string;
   module: string;
   description?: string | null;
-}
-
-export interface CreatePermissionRequest {
-  code: string;
-  name: string;
-  module: string;
-  description?: string | null;
-}
-
-export interface UpdatePermissionRequest {
-  code?: string;
-  name?: string;
-  module?: string;
-  description?: string | null;
+  sortOrder?: number;
 }
 
 /** Node of GET /permissions/tree: roots are menu sections, children their options. */
@@ -597,15 +584,6 @@ export interface EffectivePermissionsResponse {
   roles: { name: string }[];
   effectivePermissions: { code: string }[];
   directOverrides: { permissionCode: string; isGranted: boolean }[];
-}
-
-export interface ValidatePermissionRequest {
-  userId: string;
-  permissionCode: string;
-}
-
-export interface ValidatePermissionResponse {
-  hasPermission: boolean;
 }
 
 // ============ REPORTS ============

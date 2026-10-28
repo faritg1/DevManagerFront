@@ -1,114 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { PermissionDto } from "../../../shared/api/types";
 import { rbacService } from "../../../shared/api";
-import { PermissionList } from "../components/PermissionList";
-import { PermissionFormModal } from "../components/PermissionFormModal";
-import { useToast } from "../../../shared/context";
-import { useConfirm } from "../../../shared/hooks";
-import { Button, PageContainer, PageHeader } from "../../../shared/ui";
-import { Plus } from "lucide-react";
+import type { PermissionTreeNode } from "../../../shared/api/types";
+import { EmptyState, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
+import { routeForPermission } from "../../../widgets/Sidebar/navConfig";
 
+/** Read-only catalogue of menu permissions: sections and the options (screens) they unlock. */
 export const PermissionsPage: React.FC = () => {
-  const toast = useToast();
-  const [permissions, setPermissions] = useState<PermissionDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPermission, setEditingPermission] =
-    useState<PermissionDto | null>(null);
-
-  const loadPermissions = async () => {
-    setIsLoading(true);
-    try {
-      const response = await rbacService.getAllPermissions();
-      if (response.success) {
-        setPermissions(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to load permissions", error);
-      toast.error("Error", "No se pudieron cargar los permisos");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [tree, setTree] = useState<PermissionTreeNode[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    loadPermissions();
+    rbacService.getPermissionTree().then((res) => setTree(res.data)).catch(() => setFailed(true));
   }, []);
-
-  const handleCreate = () => {
-    setEditingPermission(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (permission: PermissionDto) => {
-    setEditingPermission(permission);
-    setIsModalOpen(true);
-  };
-
-  const { confirm } = useConfirm();
-
-  const handleDelete = async (id: string) => {
-    const ok = await confirm({
-      message: '¿Estás seguro de eliminar este permiso?'
-    });
-    if (!ok) return;
-
-    try {
-      const response = await rbacService.deletePermission(id);
-      if (response.success) {
-        toast.success("Permiso eliminado correctamente");
-        loadPermissions(); // Reload list
-      } else {
-        toast.error(
-          "Error",
-          response.message || "Error al eliminar el permiso",
-        );
-      }
-    } catch (error) {
-      console.error("Failed to delete permission", error);
-      toast.error("Error", "Ocurrió un error al eliminar el permiso");
-    }
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingPermission(null);
-  };
-
-  const handleModalSuccess = () => {
-    toast.success(
-      editingPermission
-        ? "Permiso actualizado correctamente"
-        : "Permiso creado correctamente",
-    );
-    loadPermissions();
-  };
 
   return (
     <PageContainer>
       <PageHeader
-        title="Gestión de Permisos"
-        description="Administra el catálogo de permisos del sistema"
-        actions={
-        <Button icon={Plus} onClick={handleCreate}>
-          Crear Nuevo Permiso
-        </Button>
-        }
+        title="Permisos del menú"
+        description="Cada rol ve las secciones y opciones que tenga asignadas. Asígnalos desde Roles."
       />
 
-      <PermissionList
-        permissions={permissions}
-        isLoading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <PermissionFormModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        onSuccess={handleModalSuccess}
-        permissionToEdit={editingPermission}
-      />
+      {failed ? (
+        <EmptyState title="No se pudo cargar el catálogo de permisos" />
+      ) : !tree ? (
+        <LoadingBlock label="Cargando permisos…" />
+      ) : (
+        <div className="space-y-4">
+          {tree.map((section) => (
+            <section key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#233948] dark:bg-[#16222b]">
+              <header className="border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-[#233948] dark:bg-[#111b22]">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{section.name}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <code>{section.code}</code>
+                  {section.description && ` · ${section.description}`}
+                </p>
+              </header>
+              <ul className="divide-y divide-slate-100 dark:divide-[#233948]">
+                {section.children.map((option) => (
+                  <li key={option.id} className="grid gap-1 px-4 py-2.5 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)] sm:gap-4">
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{option.name}</span>
+                    <span className="truncate text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
+                      <code>{routeForPermission(option.code) ?? option.code}</code>
+                    </span>
+                    <span className="text-slate-600 dark:text-slate-300">{option.description || "—"}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
     </PageContainer>
   );
 };

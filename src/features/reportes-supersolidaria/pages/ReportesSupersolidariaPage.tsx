@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -134,7 +134,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                             {isLoading ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : reports.length === 0 ? (
-                                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay reportes generados</td></tr>
+                                <tr><td colSpan={6}><EmptyState title="No hay reportes generados" /></td></tr>
                             ) : (
                                 reports.map(r => (
                                     <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">

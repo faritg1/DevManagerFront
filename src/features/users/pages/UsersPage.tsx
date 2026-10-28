@@ -23,7 +23,7 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
 import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
@@ -485,8 +485,11 @@ export const UsersPage: React.FC = () => {
                         <tbody className={TBODY_CLASS}>
                             {filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
-                                        {searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                                    <td colSpan={6}>
+                                        <EmptyState
+                                            title={searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                                            description={searchQuery ? 'Prueba con otro nombre o correo.' : undefined}
+                                        />
                                     </td>
                                 </tr>
                             ) : (

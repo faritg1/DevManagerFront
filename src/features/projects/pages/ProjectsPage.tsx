@@ -11,7 +11,7 @@ import {
     AlertCircle,
     Briefcase
 } from 'lucide-react';
-import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
@@ -160,22 +160,17 @@ export const ProjectsPage: React.FC = () => {
                         </Button>
                     </div>
                 ) : filteredProjects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="p-4 rounded-full bg-slate-100 dark:bg-[#16222b] mb-4">
-                            <FolderOpen className="w-10 h-10 text-slate-400" />
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
-                            {searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
-                        </p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
-                            {searchQuery ? 'Intenta con otros términos de búsqueda' : 'Crea tu primer proyecto para comenzar'}
-                        </p>
-                        {!searchQuery && (
+                    <EmptyState
+                        icon={FolderOpen}
+                        className="py-20"
+                        title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
+                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : 'Crea tu primer proyecto para comenzar.'}
+                        action={!searchQuery && (
                             <Link to={ROUTES.CREATE_PROJECT}>
                                 <Button icon={Plus}>Crear Proyecto</Button>
                             </Link>
                         )}
-                    </div>
+                    />
                 ) : (
                     <>
                         <p className="text-sm text-slate-500 dark:text-slate-400">

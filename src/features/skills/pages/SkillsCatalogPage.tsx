@@ -10,13 +10,12 @@ import {
   Filter,
   Tag,
   Layers,
-  AlertCircle,
 } from "lucide-react";
 import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS } from "../../../shared/ui";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, EmptyState } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -272,23 +271,20 @@ export const SkillsCatalogPage: React.FC = () => {
       </Card>
 
       {filteredSkills.length === 0 ? (
-        <Card className="p-10 text-center">
-          <AlertCircle size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-          <p className="text-slate-500 dark:text-slate-400 font-medium">
-            {searchQuery || filterType !== "all" || filterCategory !== "all"
-              ? "No se encontraron habilidades con los filtros aplicados"
-              : "No hay habilidades registradas"}
-          </p>
-          {!searchQuery && filterType === "all" && filterCategory === "all" && (
-            <Button
-              variant="outline"
-              icon={Plus}
-              className="mt-4"
-              onClick={handleCreate}
-            >
-              Crear primera habilidad
-            </Button>
-          )}
+        <Card>
+          <EmptyState
+            icon={Code2}
+            title={
+              searchQuery || filterType !== "all" || filterCategory !== "all"
+                ? "No se encontraron habilidades con los filtros aplicados"
+                : "No hay habilidades registradas"
+            }
+            action={!searchQuery && filterType === "all" && filterCategory === "all" && (
+              <Button variant="outline" icon={Plus} onClick={handleCreate}>
+                Crear primera habilidad
+              </Button>
+            )}
+          />
         </Card>
       ) : (
         <Card padding="none" className="overflow-hidden">

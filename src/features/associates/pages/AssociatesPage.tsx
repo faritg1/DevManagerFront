@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, SELECT_SM_CLASS } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -87,7 +87,7 @@ export const AssociatesPage: React.FC = () => {
                 {isLoading ? (
                     <LoadingBlock />
                 ) : items.length === 0 ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-6">No hay asociados para este filtro.</p>
+                    <EmptyState title="No hay asociados con este filtro" description="Prueba con otro estado o registra un asociado nuevo." />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>

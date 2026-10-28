@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FilePlus } from 'lucide-react';
-import { Button, Card, Modal, Input, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Button, Card, Modal, Input, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
@@ -65,7 +65,7 @@ export const DataPoliciesPage: React.FC = () => {
             {isLoading ? (
                 <LoadingBlock />
             ) : items.length === 0 ? (
-                <Card padding="md"><p className="text-sm text-slate-500 dark:text-slate-400 text-center">No hay políticas publicadas.</p></Card>
+                <Card padding="md"><EmptyState title="No hay políticas publicadas" className="py-6" /></Card>
             ) : (
                 items.map((p, i) => (
                     <Card key={p.id} padding="md">

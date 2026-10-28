@@ -1,6 +1,6 @@
 import React from "react";
 import { RoleDto } from "../../../shared/api/types";
-import { Button } from "../../../shared/ui/Button"; // Fixed import casing
+import { Button, EmptyState, LoadingBlock } from "../../../shared/ui";
 // Using standard HTML table since shared Table component doesn't exist
 
 interface RoleListProps {
@@ -19,13 +19,13 @@ export const RoleList: React.FC<RoleListProps> = ({
   onManagePermissions,
 }) => {
   if (isLoading) {
-    return <div className="p-4 text-center">Cargando roles...</div>;
+    return <LoadingBlock label="Cargando roles…" />;
   }
 
   if (roles.length === 0) {
     return (
-      <div className="p-8 text-center border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400">
-        No hay roles definidos.
+      <div className="border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948]">
+        <EmptyState title="No hay roles definidos" />
       </div>
     );
   }

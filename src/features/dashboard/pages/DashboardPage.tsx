@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, XCircle, Award, Sparkles, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, StatCard, Badge, ProgressBar, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -345,16 +345,17 @@ export const DashboardPage: React.FC = () => {
                 )}
 
                 {!isLoading && !error && projects.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-500/10 mb-4">
-                            <FolderOpen className="w-10 h-10 text-slate-400" />
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">No hay proyectos</p>
-                        <p className="text-slate-500 dark:text-slate-400 mb-4">Comienza creando tu primer proyecto</p>
-                        <Link to={ROUTES.CREATE_PROJECT}>
-                            <Button icon={Plus}>Crear Proyecto</Button>
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icon={FolderOpen}
+                        className="py-20"
+                        title="No hay proyectos"
+                        description="Comienza creando tu primer proyecto."
+                        action={
+                            <Link to={ROUTES.CREATE_PROJECT}>
+                                <Button icon={Plus}>Crear Proyecto</Button>
+                            </Link>
+                        }
+                    />
                 )}
 
                 {!isLoading && !error && projects.length > 0 && (

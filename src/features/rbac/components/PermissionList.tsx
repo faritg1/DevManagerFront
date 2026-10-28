@@ -1,5 +1,6 @@
 import React from "react";
 import { PermissionDto } from "../../../shared/api/types";
+import { EmptyState, LoadingBlock } from "../../../shared/ui";
 
 interface PermissionListProps {
   permissions: PermissionDto[];
@@ -16,16 +17,14 @@ export const PermissionList: React.FC<PermissionListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-4 text-center text-slate-500 dark:text-slate-400">
-        Cargando permisos...
-      </div>
+      <LoadingBlock label="Cargando permisos…" />
     );
   }
 
   if (permissions.length === 0) {
     return (
-      <div className="p-8 text-center border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400">
-        No hay permisos definidos.
+      <div className="border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948]">
+        <EmptyState title="No hay permisos definidos" />
       </div>
     );
   }

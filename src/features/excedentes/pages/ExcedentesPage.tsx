@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Loader2, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
@@ -116,7 +116,7 @@ export const ExcedentesPage: React.FC = () => {
                             {isLoading ? (
                                 <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : distributions.length === 0 ? (
-                                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay distribuciones de excedentes</td></tr>
+                                <tr><td colSpan={8}><EmptyState title="No hay distribuciones de excedentes" /></td></tr>
                             ) : (
                                 distributions.map(e => (
                                     <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">

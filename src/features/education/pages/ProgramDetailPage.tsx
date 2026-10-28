@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, LoadingBlock } from '../../../shared/ui';
+import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -101,7 +101,7 @@ export const ProgramDetailPage: React.FC = () => {
 
             <Card padding="md">
                 {enrollments.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Aún no hay inscripciones.</p>
+                    <EmptyState title="Aún no hay inscripciones" />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>

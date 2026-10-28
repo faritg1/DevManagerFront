@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Inbox, Loader2, type LucideIcon } from 'lucide-react';
 
 interface PageContainerProps {
     children: React.ReactNode;
@@ -60,6 +60,27 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </div>
             {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
         </div>
+    </div>
+);
+
+interface EmptyStateProps {
+    title: string;
+    description?: React.ReactNode;
+    icon?: LucideIcon;
+    /** Acción opcional, p. ej. un botón "Crear". */
+    action?: React.ReactNode;
+    className?: string;
+}
+
+/** Estado vacío estándar: icono, mensaje corto y acción opcional. */
+export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon: Icon = Inbox, action, className = 'py-12' }) => (
+    <div className={`flex flex-col items-center justify-center gap-2 px-4 text-center ${className}`}>
+        <div className="mb-1 rounded-full bg-slate-100 p-3 text-slate-400 dark:bg-white/5 dark:text-slate-500">
+            <Icon size={24} aria-hidden="true" />
+        </div>
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</p>
+        {description && <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+        {action && <div className="mt-2">{action}</div>}
     </div>
 );
 

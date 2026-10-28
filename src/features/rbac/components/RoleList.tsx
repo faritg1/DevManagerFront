@@ -31,7 +31,7 @@ export const RoleList: React.FC<RoleListProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border rounded-lg border-slate-200 dark:border-[#233948]">
+    <div className="overflow-x-auto border rounded-2xl border-slate-200 dark:border-[#233948]">
       <table className="w-full text-sm text-left">
         <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
           <tr>

@@ -1,9 +1,3 @@
-/**
- * API Services
- * Barrel export para todos los servicios del API
- * Basado en: API_GUIDE.md
- */
-
 export { authService } from "./authService";
 export { usersService } from "./usersService";
 export { profileService } from "./profileService";

@@ -1,9 +1,3 @@
-/**
- * Projects Service
- * Maneja operaciones de proyectos y sus requisitos
- * Basado en: API_GUIDE.md
- */
-
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
@@ -19,12 +13,6 @@ import type {
 } from "../types";
 
 export const projectsService = {
-  /**
-   * Obtiene todos los proyectos con filtro opcional por estado
-   * GET /api/projects?status={status}
-   *
-   * Estados: 0=Draft, 1=Active, 2=OnHold, 3=Completed, 4=Cancelled
-   */
   async getAll(
     status?: ProjectStatus,
   ): Promise<ApiResponse<ProjectResponse[]>> {
@@ -35,32 +23,14 @@ export const projectsService = {
     );
   },
 
-  /**
-   * Obtiene los detalles de un proyecto específico
-   * GET /api/projects/{id}
-   */
   async getById(id: string): Promise<ApiResponse<ProjectResponse>> {
     return apiClient.get<ProjectResponse>(API_ENDPOINTS.PROJECTS.BY_ID(id));
   },
 
-  /**
-   * Crea un nuevo proyecto
-   * POST /api/projects
-   * Requiere rol Manager o Admin
-   *
-   * Complejidad: 0=Low, 1=Medium, 2=High
-   */
   async create(data: CreateProjectRequest): Promise<ApiResponse<string>> {
     return apiClient.post<string>(API_ENDPOINTS.PROJECTS.BASE, data);
   },
 
-  /**
-   * Actualiza un proyecto existente (partial update)
-   * PUT /api/projects/{id}
-   * Requiere rol Manager o Admin
-   *
-   * Solo se actualizan los campos enviados
-   */
   async update(
     id: string,
     data: UpdateProjectRequest,
@@ -68,21 +38,10 @@ export const projectsService = {
     return apiClient.put<void>(API_ENDPOINTS.PROJECTS.BY_ID(id), data);
   },
 
-  /**
-   * Elimina un proyecto (soft delete)
-   * DELETE /api/projects/{id}
-   * Requiere rol Manager o Admin
-   */
   async delete(id: string): Promise<ApiResponse<void>> {
     return apiClient.delete<void>(API_ENDPOINTS.PROJECTS.BY_ID(id));
   },
 
-  // ============ REQUISITOS DE SKILLS ============
-
-  /**
-   * Obtiene todos los requisitos de habilidades de un proyecto
-   * GET /api/projects/{id}/reqs
-   */
   async getRequirements(
     projectId: string,
   ): Promise<ApiResponse<SkillRequirementResponse[]>> {
@@ -91,10 +50,6 @@ export const projectsService = {
     );
   },
 
-  /**
-   * Agrega un requisito de habilidad al proyecto
-   * POST /api/projects/{id}/reqs
-   */
   async addRequirement(
     projectId: string,
     data: AddSkillRequirementRequest,
@@ -105,12 +60,6 @@ export const projectsService = {
     );
   },
 
-  // ============ APLICACIONES/POSTULACIONES ============
-
-  /**
-   * Obtiene todas las postulaciones de un proyecto
-   * GET /api/projects/{id}/applications
-   */
   async getApplications(
     projectId: string,
   ): Promise<ApiResponse<ApplicationResponse[]>> {
@@ -119,10 +68,6 @@ export const projectsService = {
     );
   },
 
-  /**
-   * Permite a un empleado postularse a un proyecto
-   * POST /api/projects/{id}/apply
-   */
   async apply(
     projectId: string,
     data?: ApplyToProjectRequest,

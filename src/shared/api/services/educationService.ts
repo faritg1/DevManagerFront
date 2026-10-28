@@ -1,8 +1,3 @@
-/**
- * Education Service
- * Programas de educación cooperativa e inscripciones (solo Admin)
- */
-
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
@@ -33,7 +28,6 @@ export const educationService = {
   getEnrollments(programId: string): Promise<ApiResponse<EnrollmentDto[]>> {
     return apiClient.get<EnrollmentDto[]>(API_ENDPOINTS.EDUCATION.ENROLLMENTS(programId));
   },
-  /** 409 asociado retirado o inscripción duplicada */
   enroll(programId: string, data: EnrollRequest): Promise<ApiResponse<EnrollmentDto>> {
     return apiClient.post<EnrollmentDto>(API_ENDPOINTS.EDUCATION.ENROLLMENTS(programId), data);
   },

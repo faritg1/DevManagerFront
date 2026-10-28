@@ -17,6 +17,8 @@ import type {
   ValidatePermissionResponse,
   CreatePermissionRequest,
   UpdatePermissionRequest,
+  PermissionTreeNode,
+  MyPermissionsResponse,
 } from "../types";
 
 export const rbacService = {
@@ -85,6 +87,14 @@ export const rbacService = {
 
   async deletePermission(id: string): Promise<ApiResponse<void>> {
     return apiClient.delete<void>(API_ENDPOINTS.PERMISSIONS.BY_ID(id));
+  },
+
+  async getPermissionTree(roleId?: string): Promise<ApiResponse<PermissionTreeNode[]>> {
+    return apiClient.get<PermissionTreeNode[]>(API_ENDPOINTS.PERMISSIONS.TREE, { roleId });
+  },
+
+  async getMyPermissions(): Promise<ApiResponse<MyPermissionsResponse>> {
+    return apiClient.get<MyPermissionsResponse>(API_ENDPOINTS.PERMISSIONS.ME);
   },
 
   async getGroupedPermissions(): Promise<ApiResponse<PermissionGroupDto[]>> {

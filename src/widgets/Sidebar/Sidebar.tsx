@@ -3,9 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { User, LogOut, Hexagon, X, ChevronDown, type LucideIcon } from 'lucide-react';
 import { ROUTES, STORAGE_KEYS } from '../../shared/config/constants';
 import { useAuth, useNotification } from '../../shared/context';
-import { useConfirm, useIsAdmin } from '../../shared/hooks';
+import { useConfirm, usePermission } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
-import { NAV_CONFIG, type NavItemConfig } from './navConfig';
+import { NAV_CONFIG, visibleNav, type NavItemConfig } from './navConfig';
 
 const CollapsedContext = createContext(false);
 
@@ -145,11 +145,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     const itemActive = (item: NavItemConfig): boolean =>
         item.children ? item.children.some(itemActive) : !!item.to && isActive(item.to);
 
-    // Ítems con adminOnly sólo los ven roles administrativos.
-    const isAdmin = useIsAdmin();
-    const sections = NAV_CONFIG
-        .map((section) => ({ ...section, items: section.items.filter((item) => isAdmin || !item.adminOnly) }))
-        .filter((section) => section.items.length > 0);
+    // Menú filtrado por permisos de menú (GET /permissions/me); mientras cargan se muestra un esqueleto.
+    const access = usePermission();
+    const sections = access.isLoading ? [] : visibleNav(access);
 
     // Secciones plegadas (persistidas). La que contiene la ruta activa se despliega al navegar.
     const [collapsedSections, setCollapsedSections] = useState(readCollapsedSections);
@@ -240,7 +238,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 flex flex-col gap-3 overflow-y-auto" aria-label="Menú principal">
+            <nav className="flex-1 px-4 flex flex-col gap-3 overflow-y-auto" aria-label="Menú principal" aria-busy={access.isLoading}>
+                {access.isLoading && [0, 1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-9 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" aria-hidden="true" />
+                ))}
                 {sections.map((section) => (
                     <NavSection
                         key={section.key}

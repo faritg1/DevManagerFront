@@ -111,6 +111,8 @@ export const API_ENDPOINTS = {
     BASE: "/permissions",
     BY_ID: (id: string) => `/permissions/${id}`,
     GROUPED: "/permissions/grouped",
+    TREE: "/permissions/tree",
+    ME: "/permissions/me",
     ASSIGN_TO_USER: "/permissions/assign-to-user",
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
     VALIDATE: "/permissions/validate",

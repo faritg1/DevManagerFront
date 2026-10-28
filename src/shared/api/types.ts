@@ -543,6 +543,24 @@ export interface UpdatePermissionRequest {
   description?: string | null;
 }
 
+/** Node of GET /permissions/tree: roots are menu sections, children their options. */
+export interface PermissionTreeNode extends PermissionDto {
+  parentCode?: string;
+  /** Only present when the tree is requested for a role. */
+  isGranted?: boolean;
+  children: PermissionTreeNode[];
+}
+
+/** GET /permissions/me: ancestor pruning and admin-all already applied server-side. */
+export interface MyPermissionsResponse {
+  userId: string;
+  userName: string;
+  isAdmin: boolean;
+  roles: RoleDto[];
+  effectivePermissions: PermissionDto[];
+  directOverrides: { permissionId: string; permissionCode: string; permissionName: string; isGranted: boolean }[];
+}
+
 export interface PermissionGroupDto {
   module: string;
   permissions: PermissionDto[];

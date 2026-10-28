@@ -24,7 +24,7 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
-import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
+import { useModal, useIsAdmin } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
@@ -34,7 +34,6 @@ import { formatDate, skillLevelLabel } from '../../../shared/format';
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
-    const { hasPermission, isLoading: permsCheckLoading } = usePermission();
     const isAdmin = useIsAdmin();
     
     const [users, setUsers] = useState<UserResponse[]>([]);
@@ -434,7 +433,7 @@ export const UsersPage: React.FC = () => {
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra el acceso y roles de los miembros del equipo."
-                actions={(isAdmin || hasPermission('users.create')) && (
+                actions={isAdmin && (
                     <Button icon={UserPlus} onClick={createModal.open}>
                         Invitar Usuario
                     </Button>
@@ -578,7 +577,7 @@ export const UsersPage: React.FC = () => {
                                                     >
                                                         <Eye size={16} /> Ver perfil
                                                     </button>
-                                                    {(isAdmin || hasPermission('users.update')) && (
+                                                    {isAdmin && (
                                                     <button
                                                         onClick={() => handleOpenEdit(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
@@ -624,7 +623,7 @@ export const UsersPage: React.FC = () => {
                                                         <Award size={16} /> Skills / Validar
                                                     </button>
 
-                                                    {(isAdmin || hasPermission('users.update')) && (
+                                                    {isAdmin && (
                                                     <button
                                                         onClick={() => handleToggleStatus(user)}
                                                         className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22] flex items-center gap-2"
@@ -636,7 +635,7 @@ export const UsersPage: React.FC = () => {
                                                         )}
                                                     </button>
                                                     )}
-                                                    {(isAdmin || hasPermission('users.delete')) && (
+                                                    {isAdmin && (
                                                     <>
                                                     <hr className="my-2 border-slate-200 dark:border-[#233948]" />
                                                     <button

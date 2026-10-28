@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, Button, Input, LevelSelector, SELECT_CLASS } from '../../../shared/ui';
-import { Award, Loader2, Link as LinkIcon, Save, Plus, FileText } from 'lucide-react';
+import { Modal, Button, Input, Select, Textarea, LevelSelector, LoadingBlock } from '../../../shared/ui';
+import { Award, Link as LinkIcon, Save, Plus } from 'lucide-react';
 import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
@@ -44,17 +44,14 @@ export const SkillModal: React.FC<Props> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
+            onSubmit={() => { if (!saving && isFormValid) onSave(); }}
             title={editing ? 'Editar Habilidad' : 'Agregar Habilidad'}
             icon={<Award className="text-primary" size={20} />}
             size="md"
             footer={
                 <>
-                    <Button 
-                        onClick={onSave}
-                        disabled={saving || !isFormValid}
-                        icon={saving ? Loader2 : (editing ? Save : Plus)}
-                    >
-                        {saving ? 'Guardando...' : (editing ? 'Guardar cambios' : 'Agregar Habilidad')}
+                    <Button type="submit" isLoading={saving} icon={editing ? Save : Plus}>
+                        {editing ? 'Guardar cambios' : 'Agregar Habilidad'}
                     </Button>
                     <Button variant="outline" onClick={onClose}>
                         Cancelar
@@ -63,32 +60,25 @@ export const SkillModal: React.FC<Props> = ({
             }
         >
             <div className="space-y-5">
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="skill-modal-habilidad" className="text-slate-700 dark:text-white text-sm font-bold">
-                        Habilidad *
-                    </label>
-                    {editing ? (
-                        <Input id="skill-modal-habilidad" value={editing.skillName} disabled />
-                    ) : loadingSkills ? (
-                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                            <Loader2 className="animate-spin" size={16} />
-                            Cargando habilidades...
-                        </div>
-                    ) : (
-                        <select
-                            value={form.skillId}
-                            onChange={(e) => setForm(prev => ({ ...prev, skillId: e.target.value }))}
-                            className={`${SELECT_CLASS} w-full`}
-                        >
-                            <option value="">Seleccionar habilidad...</option>
-                            {availableSkills.map(skill => (
-                                <option key={skill.id} value={skill.id}>
-                                    {skill.name} {skill.category && `(${skill.category})`}
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
+                {editing ? (
+                    <Input label="Habilidad *" value={editing.skillName} disabled />
+                ) : loadingSkills ? (
+                    <LoadingBlock label="Cargando habilidades..." className="py-4" />
+                ) : (
+                    <Select
+                        label="Habilidad *"
+                        required
+                        value={form.skillId}
+                        onChange={(e) => setForm(prev => ({ ...prev, skillId: e.target.value }))}
+                    >
+                        <option value="">Seleccionar habilidad...</option>
+                        {availableSkills.map(skill => (
+                            <option key={skill.id} value={skill.id}>
+                                {skill.name} {skill.category && `(${skill.category})`}
+                            </option>
+                        ))}
+                    </Select>
+                )}
 
                 <div className="flex flex-col gap-2" role="group" aria-labelledby="skill-modal-nivel">
                     <p id="skill-modal-nivel" className="text-slate-700 dark:text-white text-sm font-bold">
@@ -107,41 +97,31 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="skill-modal-evidencia" className="text-slate-700 dark:text-white text-sm font-bold">
-                        Evidencia {requiresEvidence && '*'}
-                    </label>
-                    <Input id="skill-modal-evidencia"
-                        value={form.evidenceUrl || ''}
-                        onChange={(e) => setForm(prev => ({ ...prev, evidenceUrl: e.target.value }))}
-                        placeholder="https://github.com/tu-proyecto o certificación"
-                        icon={LinkIcon}
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {requiresEvidence 
-                            ? '⚠️ Obligatorio para niveles avanzados (4+). Agrega un link a un proyecto o certificación.'
-                            : 'Agrega un link a un proyecto, repositorio o certificación que demuestre tu dominio.'}
-                    </p>
-                </div>
+                <Input
+                    label={`Evidencia${requiresEvidence ? ' *' : ''}`}
+                    required={requiresEvidence}
+                    value={form.evidenceUrl || ''}
+                    onChange={(e) => setForm(prev => ({ ...prev, evidenceUrl: e.target.value }))}
+                    placeholder="https://github.com/tu-proyecto o certificación"
+                    icon={LinkIcon}
+                    hint={requiresEvidence
+                        ? 'Obligatorio para niveles avanzados (4+). Agrega un link a un proyecto o certificación.'
+                        : 'Agrega un link a un proyecto, repositorio o certificación que demuestre tu dominio.'}
+                />
 
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="skill-modal-descripcion-de-experiencia" className="text-slate-700 dark:text-white text-sm font-bold">
-                        Descripción de Experiencia {requiresEvidence && '*'}
-                    </label>
-                    <textarea id="skill-modal-descripcion-de-experiencia"
-                        value={form.experienceDescription || ''}
-                        onChange={(e) => setForm(prev => ({ ...prev, experienceDescription: e.target.value }))}
-                        placeholder="Describe tu experiencia con esta habilidad, proyectos en los que has trabajado, tecnologías que dominas..."
-                        rows={4}
-                        maxLength={1000}
-                        className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white placeholder:text-slate-400 p-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {requiresEvidence
-                            ? '⚠️ Obligatorio para niveles avanzados (4+). Describe tu experiencia (máx 1000 caracteres).'
-                            : 'Describe tu experiencia (máx 1000 caracteres). Útil si no tienes URL de evidencia.'}
-                    </p>
-                </div>
+                <Textarea
+                    label={`Descripción de Experiencia${requiresEvidence ? ' *' : ''}`}
+                    required={requiresEvidence}
+                    value={form.experienceDescription || ''}
+                    onChange={(e) => setForm(prev => ({ ...prev, experienceDescription: e.target.value }))}
+                    placeholder="Describe tu experiencia con esta habilidad, proyectos en los que has trabajado, tecnologías que dominas..."
+                    rows={4}
+                    maxLength={1000}
+                    className="resize-none"
+                    hint={requiresEvidence
+                        ? 'Obligatorio para niveles avanzados (4+). Describe tu experiencia (máx 1000 caracteres).'
+                        : 'Describe tu experiencia (máx 1000 caracteres). Útil si no tienes URL de evidencia.'}
+                />
             </div>
         </Modal>
     );

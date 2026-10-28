@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Button, Badge, IconButton } from '../../../shared/ui';
-import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles, FileText, ExternalLink } from 'lucide-react';
+import { Card, CardHeader, CardTitle, Button, Badge, IconButton, LoadingBlock } from '../../../shared/ui';
+import { Award, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import type { EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
@@ -68,9 +68,7 @@ export const SkillsSection: React.FC<Props> = ({
             </CardHeader>
 
             {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                    <Loader2 className="animate-spin text-primary" size={24} />
-                </div>
+                <LoadingBlock className="py-8" />
             ) : skills.length === 0 ? (
                 <div className="text-center py-8">
                     <Award className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
@@ -94,9 +92,7 @@ export const SkillsSection: React.FC<Props> = ({
                             className={`p-3 rounded-xl ${getLevelBg(skill.level)} border border-transparent hover:border-slate-200 dark:hover:border-border-dark transition-all relative`}
                         >
                             {opLoading && (
-                                <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center z-10">
-                                    <Loader2 className="animate-spin text-primary" />
-                                </div>
+                                <LoadingBlock className="absolute inset-0 z-10 bg-white/50 dark:bg-black/50" />
                             )}
                             
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
@@ -114,19 +110,14 @@ export const SkillsSection: React.FC<Props> = ({
                                 
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                     {onValidateAI && (
-                                        <button
-                                            type="button"
-                                            disabled={opLoading || validatingSkillId === skill.id}
+                                        <IconButton
+                                            icon={Sparkles}
+                                            label="Validar con IA"
+                                            disabled={opLoading}
+                                            isLoading={validatingSkillId === skill.id}
                                             onClick={() => onValidateAI(skill)}
-                                            title="Validar con IA"
-                                            className="p-1.5 rounded hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-500 disabled:opacity-50"
-                                        >
-                                            {validatingSkillId === skill.id ? (
-                                                <Loader2 size={16} className="animate-spin" />
-                                            ) : (
-                                                <Sparkles size={16} />
-                                            )}
-                                        </button>
+                                            className="!text-purple-500 hover:!bg-purple-100 dark:hover:!bg-purple-500/20"
+                                        />
                                     )}
                                     <IconButton icon={Edit} label="Editar habilidad" disabled={opLoading} onClick={() => onEdit(skill)} />
                                     <IconButton icon={Trash2} label="Eliminar habilidad" variant="danger" disabled={opLoading} onClick={() => onDelete(skill)} />

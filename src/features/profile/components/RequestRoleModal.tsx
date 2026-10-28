@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, Button, SELECT_CLASS } from '../../../shared/ui';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { Modal, Button, Select, LoadingBlock } from '../../../shared/ui';
+import { ShieldCheck } from 'lucide-react';
 import type { RoleDto } from '../../../shared/api/types';
 
 interface Props {
@@ -25,15 +25,13 @@ export const RequestRoleModal: React.FC<Props> = ({
     <Modal
         isOpen={isOpen}
         onClose={() => { onClose(); setSelectedRoleId(null); }}
+        onSubmit={onRequest}
         title="Solicitar cambio de rol"
         icon={<ShieldCheck className="text-primary" size={20} />}
         size="sm"
         footer={
             <>
-                <Button
-                    onClick={onRequest}
-                    disabled={!selectedRoleId}
-                >
+                <Button type="submit" disabled={loading}>
                     Solicitar
                 </Button>
                 <Button variant="outline" onClick={() => { onClose(); setSelectedRoleId(null); }}>Cancelar</Button>
@@ -42,14 +40,14 @@ export const RequestRoleModal: React.FC<Props> = ({
     >
         <div className="space-y-4">
             {loading ? (
-                <div className="text-center py-4"><Loader2 className="animate-spin text-primary" /></div>
+                <LoadingBlock className="py-4" />
             ) : (
-                <select className={`${SELECT_CLASS} w-full`} value={selectedRoleId ?? ''} onChange={(e) => setSelectedRoleId(e.target.value || null)}>
+                <Select label="Rol *" required value={selectedRoleId ?? ''} onChange={(e) => setSelectedRoleId(e.target.value || null)}>
                     <option value="">Selecciona un rol...</option>
                     {availableRoles.map(r => (
                         <option key={r.id} value={r.id}>{r.name} ({r.permissionCount} permisos)</option>
                     ))}
-                </select>
+                </Select>
             )}
             <p className="text-sm text-slate-500 dark:text-slate-400">Nota: El cambio de rol puede requerir aprobación por un administrador.</p>
         </div>

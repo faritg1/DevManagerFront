@@ -6,11 +6,11 @@ import {
   CardTitle,
   Button,
   Badge,
+  LoadingBlock,
   IconButton,
 } from "../../../shared/ui";
 import {
   Award,
-  Loader2,
   Plus,
   Pencil,
   Trash2,
@@ -92,9 +92,7 @@ export const CertificationsSection: React.FC<Props> = ({
             Certificaciones
           </CardTitle>
         </CardHeader>
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="animate-spin text-primary" size={24} />
-        </div>
+        <LoadingBlock className="py-8" />
       </Card>
     );
   }
@@ -147,9 +145,7 @@ export const CertificationsSection: React.FC<Props> = ({
                 className="p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark hover:border-primary/30 transition-all relative"
               >
                 {opLoading && (
-                  <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center rounded-xl z-10">
-                    <Loader2 className="animate-spin text-primary" />
-                  </div>
+                  <LoadingBlock className="absolute inset-0 z-10 rounded-xl bg-white/50 dark:bg-black/50" />
                 )}
 
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">

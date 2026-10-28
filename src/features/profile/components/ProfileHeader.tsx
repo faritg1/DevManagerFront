@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Save, X, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
+import { Edit, Save, X, CheckCircle2, Trash2 } from 'lucide-react';
 import { Avatar, Button, Badge, PageHeader } from '../../../shared/ui';
 import type { ProfileResponse, UpdateProfileRequest, AllConfigCatalogsDto } from '../../../shared/api/types';
 
@@ -72,8 +72,8 @@ export const ProfileHeader: React.FC<Props> = ({
                 <Button variant="outline" icon={X} onClick={onCancelEdit}>
                     Cancelar
                 </Button>
-                <Button icon={isSaving ? Loader2 : Save} onClick={onSave} disabled={isSaving}>
-                    {isSaving ? 'Guardando...' : 'Guardar'}
+                <Button icon={Save} onClick={onSave} isLoading={isSaving}>
+                    Guardar
                 </Button>
             </>)}
         />

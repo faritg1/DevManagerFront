@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
-import { Key, Loader2, ShieldCheck } from 'lucide-react';
+import { Card, CardHeader, CardTitle, Button, Badge, LoadingBlock } from '../../../shared/ui';
+import { Key, ShieldCheck } from 'lucide-react';
 import type { EffectivePermissionsResponse, RoleDto } from '../../../shared/api/types';
 
 interface Props {
@@ -27,7 +27,7 @@ export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoa
 
         <div className="p-4">
             {permsLoading ? (
-                <div className="text-center py-4"><Loader2 className="animate-spin text-primary" /></div>
+                <LoadingBlock className="py-4" />
             ) : effectivePerms ? (
                 <>
                     <div className="mb-3">

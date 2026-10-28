@@ -53,6 +53,7 @@ export const STORAGE_KEYS = {
     AUTH_USER: 'auth_user',
     THEME: 'theme',
     SIDEBAR_COLLAPSED: 'sidebar_collapsed',
+    SIDEBAR_SECTIONS: 'sidebar_collapsed_sections',
     LANGUAGE: 'language',
 } as const;
 

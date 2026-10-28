@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button, Card, Badge } from '../../../shared/ui';
+import { Button, Card, Badge, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService } from '../../../shared/api';
 import type { AssociateDetailDto, AssociateStatus } from '../../../shared/api/types';
@@ -60,36 +60,41 @@ export const AssociateDetailPage: React.FC = () => {
         }
     };
 
-    if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" /></div>;
+    const backButton = (
+        <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.ASSOCIATES)}>Volver</Button>
+    );
+
+    if (isLoading) {
+        return (
+            <PageContainer>
+                <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            </PageContainer>
+        );
+    }
     if (!data) {
         return (
-            <div className="space-y-4">
-                <p className="text-slate-500">No se encontró el asociado.</p>
-                <Button variant="outline" icon={ArrowLeft} onClick={() => navigate(ROUTES.ASSOCIATES)}>Volver</Button>
-            </div>
+            <PageContainer className="space-y-4">
+                <p className="text-slate-500 dark:text-slate-400">No se encontró el asociado.</p>
+                {backButton}
+            </PageContainer>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <Button variant="outline" icon={ArrowLeft} onClick={() => navigate(ROUTES.ASSOCIATES)}>Volver</Button>
-
-            <Card padding="md">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{data.fullName}</h1>
-                        <p className="text-sm text-slate-500">{data.email} · {ROLE_LABELS[data.role]}</p>
-                    </div>
+        <PageContainer className="space-y-6">
+            <PageHeader
+                before={backButton}
+                title={data.fullName}
+                description={`${data.email} · ${ROLE_LABELS[data.role]}`}
+                actions={<>
                     <Badge variant={STATUS_VARIANTS[data.status]}>{STATUS_LABELS[data.status]}</Badge>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4">
                     {ALLOWED_TRANSITIONS[data.status].map((s) => (
                         <Button key={s} size="sm" variant={s === 4 ? 'danger' : 'primary'} onClick={() => setTarget(s)}>
                             {ACTION_LABELS[s]}
                         </Button>
                     ))}
-                </div>
-            </Card>
+                </>}
+            />
 
             <Card padding="md">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Periodos de membresía</h2>
@@ -122,6 +127,6 @@ export const AssociateDetailPage: React.FC = () => {
                     onConfirm={confirmTransition}
                 />
             )}
-        </div>
+        </PageContainer>
     );
 };

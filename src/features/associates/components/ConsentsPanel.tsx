@@ -75,7 +75,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
             )}
 
             {consents.length === 0 ? (
-                <p className="text-sm text-slate-500">Sin consentimientos registrados.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Sin consentimientos registrados.</p>
             ) : (
                 <ul className="space-y-3">
                     {consents.map((c) => (
@@ -86,9 +86,9 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                                 </div>
                                 <Badge variant={c.isActive ? 'success' : 'default'}>{c.isActive ? 'Activo' : 'Revocado'}</Badge>
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">Otorgado: {formatDateTime(c.grantedAt)}</p>
+                            <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">Otorgado: {formatDateTime(c.grantedAt)}</p>
                             {c.revokedAt && (
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
                                     Revocado: {formatDateTime(c.revokedAt)}{c.revocationReason ? ` — ${c.revocationReason}` : ''}
                                 </p>
                             )}

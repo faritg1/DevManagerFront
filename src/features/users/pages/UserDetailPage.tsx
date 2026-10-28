@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
-  ArrowLeft,
-  Loader2,
   AlertTriangle,
   Mail,
   Phone,
@@ -29,7 +27,7 @@ import type {
   EffectivePermissionsResponse,
 } from "../../../shared/api/types";
 import { useConfig } from "../../../shared/context";
-import { Card, Badge, Button, Avatar, PageContainer } from "../../../shared/ui";
+import { Card, Badge, Avatar, PageContainer, PageHeader, BackButton, LoadingBlock } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
 import { formatDate, skillLevelLabel } from "../../../shared/format";
 
@@ -43,7 +41,6 @@ const getLevelColor = (level: number) => {
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { catalogs } = useConfig();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -100,80 +97,61 @@ export const UserDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 md:p-10 flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">Cargando perfil...</p>
-        </div>
-      </div>
+      <PageContainer>
+        <LoadingBlock label="Cargando perfil..." className="py-20" />
+      </PageContainer>
     );
   }
 
   if (error || !user) {
     return (
-      <div className="p-6 md:p-10 flex flex-col items-center justify-center min-h-[400px]">
-        <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-          <AlertTriangle className="w-10 h-10 text-rose-500" />
+      <PageContainer>
+        <BackButton to={ROUTES.USERS} />
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
+            <AlertTriangle className="w-10 h-10 text-rose-500" />
+          </div>
+          <p className="text-slate-700 dark:text-slate-300 font-semibold">
+            {error || "Usuario no encontrado"}
+          </p>
         </div>
-        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
-          {error || "Usuario no encontrado"}
-        </p>
-        <Button variant="outline" icon={ArrowLeft} onClick={() => navigate(ROUTES.USERS)}>
-          Volver a Usuarios
-        </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   const validatedCount = skills.filter((s) => s.lastValidatedAt).length;
 
   return (
-    <PageContainer className="space-y-6">
-      <button
-        onClick={() => navigate(ROUTES.USERS)}
-        className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
-      >
-        <ArrowLeft size={16} />
-        Volver a Usuarios
-      </button>
-
-      <Card className="relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-primary/20 to-blue-400/20" />
-
-        <div className="relative pt-12 flex flex-col sm:flex-row items-start sm:items-end gap-4">
-          <Avatar name={user.fullName} size="lg" />
-          <div className="flex-1">
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-              {user.fullName}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              <Badge variant="purple" icon={ShieldCheck}>
-                {user.roleName}
-              </Badge>
-              <Badge variant={user.isActive ? "success" : "danger"} dot>
-                {user.isActive ? "Activo" : "Inactivo"}
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <Mail size={14} />
-            {user.email}
-          </div>
-          {user.phoneNumber && (
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-              <Phone size={14} />
-              {user.phoneNumber}
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <Calendar size={14} />
-            Miembro desde {formatDate(user.createdAt)}
-          </div>
-        </div>
-      </Card>
+    <PageContainer>
+      <PageHeader
+        backTo={ROUTES.USERS}
+        icon={<span className="mr-1 shrink-0" aria-hidden="true"><Avatar name={user.fullName} size="lg" /></span>}
+        title={user.fullName}
+        description={
+          <span className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Badge variant="purple" icon={ShieldCheck}>
+              {user.roleName}
+            </Badge>
+            <Badge variant={user.isActive ? "success" : "danger"} dot>
+              {user.isActive ? "Activo" : "Inactivo"}
+            </Badge>
+            <span className="inline-flex items-center gap-1.5">
+              <Mail size={14} aria-hidden="true" />
+              {user.email}
+            </span>
+            {user.phoneNumber && (
+              <span className="inline-flex items-center gap-1.5">
+                <Phone size={14} aria-hidden="true" />
+                {user.phoneNumber}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar size={14} aria-hidden="true" />
+              Miembro desde {formatDate(user.createdAt)}
+            </span>
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

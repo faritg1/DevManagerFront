@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-    ArrowLeft, 
     Calendar, 
     Target,
     Edit,
@@ -11,7 +10,7 @@ import {
     AlertCircle,
     Sparkles,
 } from 'lucide-react';
-import { Card, Badge, Button, PageContainer } from '../../../shared/ui';
+import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBlock } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -182,7 +181,7 @@ export const ProjectDetailPage: React.FC = () => {
             const response = await projectsService.delete(id);
             if (response.success) {
                 showNotification({ type: 'success', message: `Proyecto "${project.name}" eliminado exitosamente` });
-                navigate(ROUTES.PROJECTS);
+                navigate(ROUTES.PROJECTS, { replace: true });
             } else {
                 showNotification({ type: 'error', message: response.message || 'Error al eliminar el proyecto' });
             }
@@ -195,26 +194,25 @@ export const ProjectDetailPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando proyecto...</p>
-            </div>
+            <PageContainer>
+                <LoadingBlock label="Cargando proyecto..." className="py-20" />
+            </PageContainer>
         );
     }
 
     if (error || !project) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                    <AlertCircle className="w-10 h-10 text-rose-500" />
+            <PageContainer>
+                <BackButton to={ROUTES.PROJECTS} />
+                <div className="flex flex-col items-center justify-center py-20">
+                    <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
+                        <AlertCircle className="w-10 h-10 text-rose-500" />
+                    </div>
+                    <p className="text-slate-700 dark:text-slate-300 font-semibold">
+                        {error || 'Proyecto no encontrado'}
+                    </p>
                 </div>
-                <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
-                    {error || 'Proyecto no encontrado'}
-                </p>
-                <Button variant="outline" onClick={() => navigate(ROUTES.PROJECTS)}>
-                    Volver a Proyectos
-                </Button>
-            </div>
+            </PageContainer>
         );
     }
 
@@ -224,87 +222,64 @@ export const ProjectDetailPage: React.FC = () => {
 
     return (
         <PageContainer>
-            <div className="flex flex-col gap-8">
-                
-                <button 
-                    onClick={() => navigate(ROUTES.PROJECTS)}
-                    className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit"
-                >
-                    <ArrowLeft size={20} />
-                    <span className="font-medium">Volver a Proyectos</span>
-                </button>
-
-                <div className="flex flex-col md:flex-row gap-6">
-                    <div className={`h-20 w-20 rounded-2xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-2xl shadow-xl flex-shrink-0`}>
+            <PageHeader
+                backTo={ROUTES.PROJECTS}
+                icon={
+                    <span className={`size-12 rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0`} aria-hidden="true">
                         {getProjectInitials(project.name)}
-                    </div>
-
-                    <div className="flex-1">
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div>
-                                <div className="flex flex-wrap items-center gap-3 mb-2">
-                                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                                        {project.name}
-                                    </h1>
-                                    <Badge variant={statusConfig.variant} dot>
-                                        {statusConfig.label}
-                                    </Badge>
-                                </div>
-                                {project.code && (
-                                    <p className="text-slate-500 dark:text-slate-400 font-mono text-sm mb-2">
-                                        {project.code}
-                                    </p>
-                                )}
-                                {project.description && (
-                                    <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
-                                        {project.description}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-wrap gap-3">
-                                {isAdmin && (
-                                    <>
-                                        <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
-                                            Editar
-                                        </Button>
-                                        <Button 
-                                            variant="outline"
-                                            icon={isDeleting ? Loader2 : Trash2}
-                                            onClick={handleDeleteProject}
-                                            disabled={isDeleting}
-                                            className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
-                                        >
-                                            {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                                        </Button>
-                                        <Button 
-                                            variant="outline"
-                                            icon={Sparkles}
-                                            onClick={matchingModal.open}
-                                            className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                                        >
-                                            Buscar Candidatos IA
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            icon={UserPlus}
-                                            onClick={() => { setEditingAssignment(null); assignModal.open(); }}
-                                            className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                                        >
-                                            Asignar Miembro
-                                        </Button>
-                                    </>
-                                )}
-                                {!hasAlreadyApplied && (
-                                    <Button icon={UserPlus} onClick={handleApply}>
-                                        Postularme
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                    </span>
+                }
+                title={project.name}
+                description={
+                    <span className="flex flex-col gap-2">
+                        <span className="flex flex-wrap items-center gap-2">
+                            <Badge variant={statusConfig.variant} dot>{statusConfig.label}</Badge>
+                            {project.code && <span className="font-mono">{project.code}</span>}
+                        </span>
+                        {project.description && <span className="max-w-2xl text-slate-600 dark:text-slate-400">{project.description}</span>}
+                    </span>
+                }
+                actions={<>
+                    {isAdmin && (
+                        <>
+                            <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
+                                Editar
+                            </Button>
+                            <Button 
+                                variant="outline"
+                                icon={isDeleting ? Loader2 : Trash2}
+                                onClick={handleDeleteProject}
+                                disabled={isDeleting}
+                                className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
+                            >
+                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                            </Button>
+                            <Button 
+                                variant="outline"
+                                icon={Sparkles}
+                                onClick={matchingModal.open}
+                                className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                            >
+                                Buscar Candidatos IA
+                            </Button>
+                            <Button
+                                variant="outline"
+                                icon={UserPlus}
+                                onClick={() => { setEditingAssignment(null); assignModal.open(); }}
+                                className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                            >
+                                Asignar Miembro
+                            </Button>
+                        </>
+                    )}
+                    {!hasAlreadyApplied && (
+                        <Button icon={UserPlus} onClick={handleApply}>
+                            Postularme
+                        </Button>
+                    )}
+                </>}
+            />
+            <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <Card padding="md" className="text-center">
                         <div className="flex flex-col items-center gap-2">

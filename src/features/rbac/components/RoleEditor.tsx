@@ -149,6 +149,7 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
   return (
     <PageContainer>
       <PageHeader
+        backTo={ROUTES.ROLES}
         title={roleId ? `Editar rol — ${roleName}` : "Crear nuevo rol"}
         description="Define qué puede o no puede hacer este rol en el sistema."
         actions={

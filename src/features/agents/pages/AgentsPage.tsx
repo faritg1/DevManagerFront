@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, PageContainer } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService, type ApiError } from '../../../shared/api';
 
@@ -223,27 +223,23 @@ export const AgentsPage: React.FC = () => {
 
     return (
         <PageContainer fullHeight>
-            <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl flex items-center gap-2 truncate">
-                        <Sparkles className="text-primary shrink-0" size={24} />
-                        Asistente IA
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-0.5 hidden sm:block">
-                        Consulta en lenguaje natural sobre tu equipo y proyectos.
-                    </p>
-                </div>
-                {messages.length > 1 && (
+            <PageHeader
+                className="!mb-4 sm:!mb-6"
+                icon={<Sparkles className="text-primary shrink-0" size={24} aria-hidden="true" />}
+                title="Asistente IA"
+                description="Consulta en lenguaje natural sobre tu equipo y proyectos."
+                actions={messages.length > 1 && (
                     <Button
                         variant="outline"
+                        size="sm"
                         icon={Trash2}
                         onClick={handleClearHistory}
-                        className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 shrink-0 text-xs sm:text-sm px-2 sm:px-4"
+                        className="border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                     >
-                        <span className="hidden sm:inline">Limpiar Historial</span>
+                        Limpiar historial
                     </Button>
                 )}
-            </div>
+            />
 
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
                 <Card className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">

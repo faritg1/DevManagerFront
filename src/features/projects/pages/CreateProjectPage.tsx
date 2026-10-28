@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
-import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
+import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader, SELECT_CLASS, useGoBack } from '../../../shared/ui';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
@@ -18,6 +18,7 @@ interface ProjectFormData {
 
 export const CreateProjectPage: React.FC = () => {
     const navigate = useNavigate();
+    const goBack = useGoBack(ROUTES.PROJECTS);
     const { showNotification } = useNotification();
     const { catalogs } = useConfig();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +57,7 @@ export const CreateProjectPage: React.FC = () => {
 
             if (response.success) {
                 showNotification({ type: 'success', message: 'Proyecto creado exitosamente' });
-                navigate(ROUTES.PROJECTS);
+                navigate(ROUTES.PROJECTS, { replace: true });
             } else {
                 showNotification({ type: 'error', message: response.message || 'Error al crear proyecto' });
             }
@@ -71,13 +72,14 @@ export const CreateProjectPage: React.FC = () => {
     return (
         <PageContainer narrow>
             <PageHeader
+                backTo={ROUTES.PROJECTS}
                 title="Crear Nuevo Proyecto"
                 description="Define los detalles del proyecto, alcance y asigna el equipo."
                 actions={<>
                         <Button 
                             variant="outline" 
                             icon={X}
-                            onClick={() => navigate(ROUTES.PROJECTS)}
+                            onClick={goBack}
                             disabled={isSubmitting}
                         >
                             Cancelar

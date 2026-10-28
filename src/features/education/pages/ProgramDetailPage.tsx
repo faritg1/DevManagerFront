@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { useParams } from 'react-router-dom';
+import { Pencil, UserPlus } from 'lucide-react';
+import { BackButton, Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -12,7 +12,6 @@ import { EnrollmentHoursForm, type EnrollmentFormValue } from '../components/Enr
 
 export const ProgramDetailPage: React.FC = () => {
     const { programId = '' } = useParams<{ programId: string }>();
-    const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [program, setProgram] = useState<EducationProgramDto | null>(null);
     const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
@@ -82,7 +81,8 @@ export const ProgramDetailPage: React.FC = () => {
     if (!program) {
         return (
             <PageContainer>
-                <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Programa no encontrado.</p>
+                <BackButton to={ROUTES.EDUCATION} />
+                <EmptyState title="Programa no encontrado" description="Puede que se haya eliminado o que el enlace no sea correcto." />
             </PageContainer>
         );
     }
@@ -90,7 +90,7 @@ export const ProgramDetailPage: React.FC = () => {
     return (
         <PageContainer>
             <PageHeader
-                before={<Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(ROUTES.EDUCATION)}>Volver</Button>}
+                backTo={ROUTES.EDUCATION}
                 title={program.name}
                 description={<>
                     <Badge variant="info">{PROGRAM_TYPE_LABELS[program.type]}</Badge>{' '}

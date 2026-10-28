@@ -19,8 +19,27 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.ASSOCIATES]: 'Asociados',
     [ROUTES.DATA_POLICIES]: 'Políticas de datos',
     [ROUTES.ROLES]: 'Roles',
+    [ROUTES.PERMISSIONS]: 'Permisos',
     [ROUTES.PROFILE]: 'Mi Perfil',
     [ROUTES.SETTINGS]: 'Configuración',
+    [ROUTES.SKILLS_CATALOG]: 'Habilidades',
+    [ROUTES.EDUCATION]: 'Educación',
+    [ROUTES.NOMINA]: 'Nómina',
+    [ROUTES.BIENESTAR]: 'Bienestar',
+    [ROUTES.BALANCE_SOCIAL]: 'Balance Social',
+    [ROUTES.SST]: 'SST',
+    [ROUTES.EXCEDENTES]: 'Excedentes',
+    [ROUTES.HABEAS_DATA]: 'Habeas Data',
+    [ROUTES.ORGANOS]: 'Órganos',
+    [ROUTES.COMPETENCIAS]: 'Competencias',
+    [ROUTES.REPORTES_SUPERSOLIDARIA]: 'Reportes Supersolidaria',
+    [ROUTES.ASISTENTE]: 'Asistente',
+};
+
+// Segmentos finales de rutas anidadas (p. ej. /projects/:id/edit, /roles/:id/permissions).
+const SEGMENT_NAMES: Record<string, string> = {
+    edit: 'Editar',
+    permissions: 'Permisos',
 };
 
 // Obtener nombre de la ruta o generar uno a partir del path
@@ -29,16 +48,11 @@ const getRouteName = (path: string): string => {
         return ROUTE_NAMES[path];
     }
     
-    // Manejar rutas con parámetros dinámicos (e.g., /projects/:id)
-    if (path.startsWith('/projects/')) {
-        if (path.endsWith('/edit')) {
-            return 'Editar';
-        }
-        return 'Detalle';
-    }
-    
     const segments = path.split('/').filter(Boolean);
     const lastSegment = segments[segments.length - 1] || 'Inicio';
+    if (SEGMENT_NAMES[lastSegment]) return SEGMENT_NAMES[lastSegment];
+    // Un segundo nivel que no es una ruta conocida es un identificador (/users/:id, /education/:programId…).
+    if (segments.length >= 2) return 'Detalle';
     return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1).replace(/-/g, ' ');
 };
 

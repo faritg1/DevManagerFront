@@ -1,5 +1,6 @@
 import React from 'react';
-import { Inbox, Loader2, type LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Inbox, Loader2, type LucideIcon } from 'lucide-react';
 
 interface PageContainerProps {
     children: React.ReactNode;
@@ -31,8 +32,11 @@ interface PageHeaderProps {
     description?: React.ReactNode;
     /** Botones o controles alineados a la derecha (se apilan en móvil). */
     actions?: React.ReactNode;
-    /** Contenido sobre el título, p. ej. un botón "Volver". */
+    /** Contenido sobre el título (bajo el botón "Volver" si hay `backTo`). */
     before?: React.ReactNode;
+    /** Ruta padre: muestra "Volver" (regresa en el historial si se llegó navegando dentro de la app, si no va a esta ruta). */
+    backTo?: string;
+    backLabel?: string;
     icon?: React.ReactNode;
     className?: string;
 }
@@ -43,10 +47,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     description,
     actions,
     before,
+    backTo,
+    backLabel,
     icon,
     className = '',
 }) => (
     <div className={`mb-6 md:mb-8 ${className}`}>
+        {backTo && <BackButton to={backTo} label={backLabel} className="mb-4" />}
         {before && <div className="mb-4">{before}</div>}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0">
@@ -62,6 +69,35 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
     </div>
 );
+
+/** Regresa a la página anterior de la app; sin historial previo (enlace directo, recarga) va a `fallback`. */
+export const useGoBack = (fallback: string) => {
+    const navigate = useNavigate();
+    return () => {
+        // React Router guarda en history.state el índice de la entrada; > 0 significa que hay una página previa de la app.
+        const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+        if (idx > 0) navigate(-1);
+        else navigate(fallback, { replace: true });
+    };
+};
+
+/**
+ * Botón "Volver": usa el historial cuando la página anterior es de la app (conserva filtros y scroll);
+ * si se abrió por enlace directo o recarga, va a la ruta padre `to`.
+ */
+export const BackButton: React.FC<{ to: string; label?: string; className?: string }> = ({ to, label = 'Volver', className = '' }) => {
+    const goBack = useGoBack(to);
+    return (
+        <button
+            type="button"
+            onClick={goBack}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white ${className}`}
+        >
+            <ArrowLeft size={16} aria-hidden="true" />
+            {label}
+        </button>
+    );
+};
 
 interface EmptyStateProps {
     title: string;

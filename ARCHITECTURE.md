@@ -174,7 +174,6 @@ Crea un archivo `.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_GEMINI_API_KEY=tu_api_key_aqui
 ```
 
 ## 🔄 Flujo de Datos

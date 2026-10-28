@@ -15,6 +15,32 @@ export const API_ENDPOINTS = {
   USERS: {
     BASE: "/users",
     BY_ID: (id: string) => `/users/${id}`,
+    DOCUMENT: (id: string) => `/users/${id}/document`,
+    CONSENTS: (id: string) => `/users/${id}/consents`,
+  },
+
+  // Associates (Solidarity)
+  ASSOCIATES: {
+    BASE: "/associates",
+    BY_ID: (userId: string) => `/associates/${userId}`,
+    TRANSITIONS: (userId: string) => `/associates/${userId}/transitions`,
+  },
+
+  // Cooperative education
+  EDUCATION: {
+    PROGRAMS: "/education/programs",
+    PROGRAM: (id: string) => `/education/programs/${id}`,
+    ENROLLMENTS: (programId: string) => `/education/programs/${programId}/enrollments`,
+    ENROLLMENT: (id: string) => `/education/enrollments/${id}`,
+  },
+
+  // Habeas Data
+  DATA_POLICIES: {
+    BASE: "/data-policies",
+    CURRENT: "/data-policies/current",
+  },
+  CONSENTS: {
+    REVOKE: (id: string) => `/consents/${id}/revoke`,
   },
 
   // Profile (Current User)
@@ -39,6 +65,7 @@ export const API_ENDPOINTS = {
     BY_EMPLOYEE: (id: string) => `/employees/${id}/skills`,
     UPSERT: "/employees/skills",
     VALIDATE: (id: string) => `/employees/skills/${id}/validate`,
+    BY_ID: (id: string) => `/employees/skills/${id}`,
   },
 
   // Projects
@@ -58,6 +85,7 @@ export const API_ENDPOINTS = {
   // Assignments
   ASSIGNMENTS: {
     BASE: "/assignments",
+    BY_ID: (id: string) => `/assignments/${id}`,
   },
 
   // Agent IA (sin /api prefix - usa agentClient)
@@ -91,7 +119,12 @@ export const API_ENDPOINTS = {
 
   // Reports
   REPORTS: {
-    AI_SUMMARY: "/Reports/ai-summary",
+    AI_SUMMARY: "/reports/ai-summary",
+    SKILLS_DISTRIBUTION: "/reports/skills-distribution",
+    PROJECT_METRICS: "/reports/project-metrics",
+    EMPLOYEE_UTILIZATION: "/reports/employee-utilization",
+    DEPARTMENT_METRICS: "/reports/department-metrics",
+    EDUCATION_COVERAGE: "/reports/education-coverage",
   },
 
     // Configuration (Catalogs)
@@ -113,159 +146,100 @@ export const API_ENDPOINTS = {
 
     // ============ GESTIÓN HUMANA SOLIDARIA ============
 
-    // Nomina
+    // Nómina — compensación de asociados (CTA) y PILA
     NOMINA: {
-      COMPENSACION_BY_ASOCIADO: (asociadoId: string, anio: number) =>
-        `/nomina/compensacion/${asociadoId}/${anio}`,
-      COMPENSACION_CREATE: "/nomina/compensacion",
-      PILA_PLANILLA: (organizationId: string, anio: number, mes: number) =>
-        `/nomina/pila/${organizationId}/${anio}/${mes}`,
+      COMPENSACION: "/nomina/compensacion",
+      COMPENSACION_BY_USER: (userId: string, anio: number) => `/nomina/compensacion/${userId}/${anio}`,
+      PILA_PLANILLA: (anio: number, mes: number) => `/nomina/pila/${anio}/${mes}`,
       PILA_CALCULAR: "/nomina/pila/calcular",
     },
 
-    // Bienestar
+    // Bienestar — programas, solicitudes, auxilios y fondo de solidaridad
     BIENESTAR: {
-      PROGRAMAS: (organizationId: string) =>
-        `/bienestar/programas/${organizationId}`,
-      PROGRAMAS_CREATE: "/bienestar/programas",
-      SOLICITUDES_CREATE: "/bienestar/solicitudes",
-      SOLICITUDES_BY_ASOCIADO: (asociadoId: string) =>
-        `/bienestar/solicitudes/${asociadoId}`,
-      SOLICITUD_APROBAR: (solicitudId: string) =>
-        `/bienestar/solicitudes/${solicitudId}/aprobar`,
-      SOLICITUD_RECHAZAR: (solicitudId: string) =>
-        `/bienestar/solicitudes/${solicitudId}/rechazar`,
+      PROGRAMAS: "/bienestar/programas",
+      SOLICITUDES: "/bienestar/solicitudes",
+      SOLICITUDES_PENDIENTES: "/bienestar/solicitudes/pendientes",
+      SOLICITUDES_BY_USER: (userId: string) => `/bienestar/solicitudes/${userId}`,
+      SOLICITUD_APROBAR: (id: string) => `/bienestar/solicitudes/${id}/aprobar`,
+      SOLICITUD_RECHAZAR: (id: string) => `/bienestar/solicitudes/${id}/rechazar`,
+      SOLICITUD_ENTREGAR: (id: string) => `/bienestar/solicitudes/${id}/entregar`,
+      FONDO: "/bienestar/fondo",
       FONDO_CALCULAR: "/bienestar/fondo/calcular",
-      FONDO_ACTUAL: (organizationId: string) =>
-        `/bienestar/fondo/${organizationId}`,
-      AUXILIOS_BY_ASOCIADO: (asociadoId: string) =>
-        `/bienestar/auxilios/${asociadoId}`,
+      AUXILIOS_BY_USER: (userId: string) => `/bienestar/auxilios/${userId}`,
     },
 
-    // Gestion Humana — Competencias
+    // Gestión Humana — Competencias
     GESTION_HUMANA: {
-      COMPETENCIAS_BY_ASOCIADO: (asociadoId: string) =>
-        `/gestion-humana/competencias/${asociadoId}`,
-      COMPETENCIAS_CREATE: "/gestion-humana/competencias",
-      COMPETENCIA_DISPONIBILIDAD: (competenciaId: string) =>
-        `/gestion-humana/competencias/${competenciaId}/disponibilidad`,
+      COMPETENCIAS: "/gestion-humana/competencias",
+      COMPETENCIAS_BY_USER: (userId: string) => `/gestion-humana/competencias/${userId}`,
+      COMPETENCIAS_BUSCAR: "/gestion-humana/competencias/buscar",
+      COMPETENCIA_DISPONIBILIDAD: (id: string) => `/gestion-humana/competencias/${id}/disponibilidad`,
     },
 
-    // Gestion Humana — Educación
-    EDUCACION: {
-      PROGRAMAS: (organizationId: string) =>
-        `/gestion-humana/educacion/programas/${organizationId}`,
-      PROGRAMAS_CREATE: "/gestion-humana/educacion/programas",
-      INSCRIBIR: "/gestion-humana/educacion/inscribir",
-      HISTORIAL: (asociadoId: string) =>
-        `/gestion-humana/educacion/historial/${asociadoId}`,
-      CUMPLIMIENTO: (asociadoId: string, anio: number) =>
-        `/gestion-humana/educacion/cumplimiento/${asociadoId}/${anio}`,
-    },
-
-    // Balance Social
+    // Balance Social (derivado de datos reales)
     BALANCE_SOCIAL: {
-      INDICADOR: (asociadoId: string, anio: number) =>
-        `/balance-social/indicador/${asociadoId}/${anio}`,
-      INDICADOR_CALCULAR: "/balance-social/indicador/calcular",
-      ORGANIZACION: (organizationId: string, anio: number) =>
-        `/balance-social/organizacion/${organizationId}/${anio}`,
-      NO_CUMPLEN: (organizationId: string, anio: number) =>
-        `/balance-social/no-cumplen/${organizationId}/${anio}`,
+      INDICADOR: (userId: string, anio: number) => `/balance-social/indicador/${userId}/${anio}`,
+      ORGANIZACION: (anio: number) => `/balance-social/organizacion/${anio}`,
+      NO_CUMPLEN: (anio: number) => `/balance-social/no-cumplen/${anio}`,
+      REPORTE: (anio: number) => `/balance-social/reporte/${anio}`,
     },
 
-    // SST
+    // SST — exámenes médicos, accidentes de trabajo y matriz de riesgos
     SST: {
-      EXAMENES_CREATE: "/sst/examenes",
-      EXAMEN_REGISTRAR: (examenId: string) =>
-        `/sst/examenes/${examenId}/registrar`,
-      EXAMENES_BY_ASOCIADO: (asociadoId: string) =>
-        `/sst/examenes/asociado/${asociadoId}`,
-      EXAMENES_PENDIENTES: (organizationId: string) =>
-        `/sst/examenes/pendientes/${organizationId}`,
-      ARL_VIGENCIA: (organizationId: string) =>
-        `/sst/arl/vigencia/${organizationId}`,
-      ACCIDENTES_CREATE: "/sst/accidentes",
-      ACCIDENTES_PENDIENTES_INVESTIGACION: (organizationId: string) =>
-        `/sst/accidentes/pendientes-investigacion/${organizationId}`,
-      ACCIDENTE_INVESTIGAR: (accidenteId: string) =>
-        `/sst/accidentes/${accidenteId}/investigar`,
-      ACCIDENTES_BY_ORGANIZACION: (organizationId: string) =>
-        `/sst/accidentes/${organizationId}`,
-      RIESGOS: (organizationId: string) => `/sst/riesgos/${organizationId}`,
-      RIESGOS_CREATE: "/sst/riesgos",
+      EXAMENES: "/sst/examenes",
+      EXAMEN_REGISTRAR: (id: string) => `/sst/examenes/${id}/registrar`,
+      EXAMENES_BY_USER: (userId: string) => `/sst/examenes/asociado/${userId}`,
+      EXAMENES_PENDIENTES: "/sst/examenes/pendientes",
+      ACCIDENTES: "/sst/accidentes",
+      ACCIDENTES_PENDIENTES_INVESTIGACION: "/sst/accidentes/pendientes-investigacion",
+      ACCIDENTE_INVESTIGAR: (id: string) => `/sst/accidentes/${id}/investigar`,
+      RIESGOS: "/sst/riesgos",
     },
 
     // Excedentes
     EXCEDENTES: {
+      BASE: "/excedentes",
+      BY_PERIODO: (period: string) => `/excedentes/${period}`,
       CALCULAR: "/excedentes/calcular",
-      BY_PERIODO: (organizationId: string, periodo: string) =>
-        `/excedentes/${organizationId}/${periodo}`,
-      BY_ORGANIZACION: (organizationId: string) =>
-        `/excedentes/${organizationId}`,
-      APROBAR: (excedenteId: string) =>
-        `/excedentes/${excedenteId}/aprobar`,
+      APROBAR: (id: string) => `/excedentes/${id}/aprobar`,
     },
 
-    // Habeas Data
+    // Habeas Data — ARCO (consent lives in DATA_POLICIES / USERS.CONSENTS)
     HABEAS_DATA: {
-      AUTORIZACIONES_CREATE: "/habeas-data/autorizaciones",
-      AUTORIZACION_REVOCAR: (autorizacionId: string) =>
-        `/habeas-data/autorizaciones/${autorizacionId}/revocar`,
-      AUTORIZACION_VIGENTE: (asociadoId: string) =>
-        `/habeas-data/autorizaciones/${asociadoId}/vigente`,
-      AUTORIZACION_TIENE_VIGENTE: (asociadoId: string) =>
-        `/habeas-data/autorizaciones/${asociadoId}/tiene-vigente`,
-      ARCO_CREATE: "/habeas-data/arco",
-      ARCO_ATENDER: (solicitudId: string) =>
-        `/habeas-data/arco/${solicitudId}/atender`,
-      ARCO_RECHAZAR: (solicitudId: string) =>
-        `/habeas-data/arco/${solicitudId}/rechazar`,
-      ARCO_BY_ASOCIADO: (asociadoId: string) =>
-        `/habeas-data/arco/asociado/${asociadoId}`,
-      ARCO_PENDIENTES: (organizationId: string) =>
-        `/habeas-data/arco/pendientes/${organizationId}`,
+      ARCO: "/habeas-data/arco",
+      ARCO_ATENDER: (id: string) => `/habeas-data/arco/${id}/atender`,
+      ARCO_RECHAZAR: (id: string) => `/habeas-data/arco/${id}/rechazar`,
+      ARCO_BY_USER: (userId: string) => `/habeas-data/arco/asociado/${userId}`,
+      ARCO_PENDIENTES: "/habeas-data/arco/pendientes",
     },
 
-    // Órganos (NO usa envelope ApiResponse — retorna DTOs crudos)
+    // Órganos de administración y control
     ORGANOS: {
       BASE: "/organos",
       BY_ID: (id: string) => `/organos/${id}`,
-      BY_ORGANIZATION: (organizationId: string) =>
-        `/organos/organization/${organizationId}`,
-      BY_TYPE: (organizationId: string, tipo: string | number) =>
-        `/organos/organization/${organizationId}/tipo/${tipo}`,
-      UPDATE: (id: string) => `/organos/${id}`,
-      DELETE: (id: string) => `/organos/${id}`,
-      MIEMBROS_CREATE: "/organos/miembros",
+      BY_TYPE: (tipo: number) => `/organos/tipo/${tipo}`,
+      MIEMBROS: "/organos/miembros",
       MIEMBROS_BY_ORGANO: (organoId: string) => `/organos/${organoId}/miembros`,
-      MIEMBRO_UPDATE: (id: string) => `/organos/miembros/${id}`,
-      MIEMBRO_DELETE: (id: string) => `/organos/miembros/${id}`,
-      ACTAS_CREATE: "/organos/actas",
+      MIEMBRO_BY_ID: (id: string) => `/organos/miembros/${id}`,
+      ACTAS: "/organos/actas",
       ACTA_BY_ID: (id: string) => `/organos/actas/${id}`,
       ACTAS_BY_ORGANO: (organoId: string) => `/organos/${organoId}/actas`,
-      ASAMBLEAS_CREATE: "/organos/asambleas",
+      ASAMBLEAS: "/organos/asambleas",
       ASAMBLEA_BY_ID: (id: string) => `/organos/asambleas/${id}`,
-      ASAMBLEAS_BY_ORGANIZATION: (organizationId: string) =>
-        `/organos/asambleas/organization/${organizationId}`,
       ASAMBLEA_ASISTENCIA: (id: string) => `/organos/asambleas/${id}/asistencia`,
       ASAMBLEA_CERRAR: (id: string) => `/organos/asambleas/${id}/cerrar`,
-      VOTOS_CREATE: "/organos/votos",
-      VOTOS_RESULTADOS: (asambleaId: string) =>
-        `/organos/votos/resultados/${asambleaId}`,
-      VOTOS_HA_VOTADO: (asambleaId: string, asociadoId: string) =>
-        `/organos/votos/ha-votado/${asambleaId}/${asociadoId}`,
+      VOTOS: "/organos/votos",
+      VOTOS_RESULTADOS: (asambleaId: string) => `/organos/votos/resultados/${asambleaId}`,
+      VOTOS_HA_VOTADO: (asambleaId: string, userId: string) =>
+        `/organos/votos/ha-votado/${asambleaId}/${userId}`,
     },
 
     // Reportes Supersolidaria
     REPORTES_SUPERSOLIDARIA: {
+      BASE: "/reportes/supersolidaria",
+      BY_PERIODO: (period: string) => `/reportes/supersolidaria/${period}`,
       GENERAR: "/reportes/supersolidaria/generar",
-      BY_PERIODO: (organizationId: string, periodo: string) =>
-        `/reportes/supersolidaria/${organizationId}/${periodo}`,
-      BY_ORGANIZACION: (organizationId: string) =>
-        `/reportes/supersolidaria/${organizationId}`,
-      ENVIAR: (reporteId: string) =>
-        `/reportes/supersolidaria/${reporteId}/enviar`,
+      ENVIAR: (id: string) => `/reportes/supersolidaria/${id}/enviar`,
     },
 
     // Asistente Cooperativo

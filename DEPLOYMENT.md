@@ -30,7 +30,6 @@ Antes de desplegar, asegúrate de tener:
 4. **Configura variables de entorno:**
    - En "Environment Variables" agrega:
      - `VITE_API_URL` → URL de tu backend (ej: `https://tu-backend.com`)
-     - `VITE_GEMINI_API_KEY` → Tu API key de Google Gemini
 
 5. **Deploy:**
    - Click en "Deploy"
@@ -71,7 +70,7 @@ vercel --prod
 
 5. **Variables de entorno:**
    - En "Site settings" → "Environment variables"
-   - Agrega `VITE_API_URL` y `VITE_GEMINI_API_KEY`
+   - Agrega `VITE_API_URL`
 
 6. **Deploy automático** cada vez que hagas push a `main`
 
@@ -140,7 +139,6 @@ netlify deploy --prod
 
 ```env
 VITE_API_URL=https://tu-backend.com
-VITE_GEMINI_API_KEY=tu-api-key-aqui
 ```
 
 **IMPORTANTE:** 

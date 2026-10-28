@@ -43,6 +43,7 @@ export interface RegisterOrganizationRequest {
   adminEmail: string;
   adminPassword: string;
   adminFullName: string;
+  entityType?: number | null;
 }
 
 export interface RegisterOrganizationResponse {
@@ -54,14 +55,6 @@ export interface RegisterOrganizationResponse {
 }
 
 // ============ USERS ============
-/**
- * Nota de contrato: el backend actual (UserResponse DTO) NO expone los campos de
- * persona (PersonType, DocumentType, DocumentNumber, BirthDate) aunque la entidad
- * User los tiene. Estos campos se declaran opcionales para forward-compatibility:
- * si el backend empieza a devolverlos, el frontend ya los tipa. Ver reporte de apply.
- */
-export type PersonType = "Asociado" | "Empleado" | "Both";
-
 export interface UserResponse {
   id: string;
   email: string;
@@ -70,14 +63,13 @@ export interface UserResponse {
   phoneNumber: string | null;
   isActive: boolean;
   createdAt: string;
-  // ===== Persona (sector solidario) — no expuestos por /api/users hoy =====
-  personType?: PersonType | null;
-  documentType?: string | null;
-  documentNumber?: string | null;
-  birthDate?: string | null;
+  documentType?: number;
+  documentNumber?: string;
+  isEmployee?: boolean;
 }
 
 export interface CreateUserRequest {
+  isEmployee?: boolean;
   email: string;
   password: string;
   fullName: string;
@@ -86,6 +78,7 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
+  isEmployee?: boolean;
   fullName?: string;
   phoneNumber?: string | null;
   roleId?: string;
@@ -313,10 +306,25 @@ export interface ReviewApplicationRequest {
 export interface CreateAssignmentRequest {
   projectId: string;
   userId: string;
-  role: string;
-  hoursPerWeek?: number;
-  startDate?: string | null;
-  endDate?: string | null;
+  projectRoleId?: string | null;
+  applicationId?: string | null;
+}
+
+export interface UpdateAssignmentRequest {
+  projectRoleId?: string | null;
+}
+
+/** status: 1=Active, 2=Removed, 3=Completed */
+export interface AssignmentResponse {
+  id: string;
+  projectId: string;
+  projectName: string;
+  userId: string;
+  userName: string;
+  roleName?: string | null;
+  status: number;
+  assignedAt: string;
+  endedAt?: string | null;
 }
 
 // ============ AGENT IA ============
@@ -561,679 +569,675 @@ export interface AiSummaryResponse {
   markdown: string;
 }
 
-// ============================================================================
-// GESTIÓN HUMANA SOLIDARIA — Módulos de cooperativas/fondos/mutuales
-// Contratos leídos desde los controllers del backend (branch main, Fases 1-5)
-// ============================================================================
-
-// ============ ENUMS (sector solidario) ============
-export enum CompensacionModelo {
-  DiasPorTarifa = 1,
-  FijoMensual = 2,
-  PorProyecto = 3,
+export interface SkillDistributionResponse {
+  skillName: string;
+  averageLevel: number;
+  totalEmployees: number;
+  /** key: level "1".."5", value: employee count */
+  levelDistribution: Record<string, number>;
 }
 
-export enum PilaTipoAportante {
-  Independiente = 51, // CTA tipo 51 para asociados cooperativos
+export interface ProjectMetricsResponse {
+  totalActiveProjects: number;
+  projectsAtRisk: number;
+  mostDemandedSkills: { skillName: string; requiredInProjects: number }[];
 }
 
-export enum TipoAuxilio {
-  AuxilioEconomico = 1,
-  BecaEducativa = 2,
-  CreditoBlando = 3,
-  AuxilioFunerario = 4,
-  ApoyoVivienda = 5,
-  Otro = 99,
+export interface EmployeeUtilizationDetail {
+  employeeId: string;
+  fullName: string;
+  email: string;
+  activeProjectCount: number;
+  assignedProjects: string[];
+  utilizationPercentage: number;
+  allocationStatus: string;
+  skillsCount: number;
+  yearsExperience?: number | null;
 }
 
-export enum EstadoSolicitudBienestar {
-  Pendiente = 1,
-  EnEvaluacion = 2,
-  Aprobada = 3,
-  Rechazada = 4,
-  Entregada = 5,
+export interface EmployeeUtilizationResponse {
+  totalEmployees: number;
+  allocatedEmployees: number;
+  unallocatedEmployees: number;
+  averageProjectsPerEmployee: number;
+  /** percentage 0-100 */
+  utilizationRate: number;
+  employees: EmployeeUtilizationDetail[];
 }
 
-export enum TipoEducacion {
-  Basica = 1,
-  Avanzada = 2,
-  Especializada = 3,
+export interface DepartmentMetricsResponse {
+  totalEmployees: number;
+  activeEmployees: number;
+  averageSkillsPerEmployee: number;
+  totalUniqueSkills: number;
+  employeesWithCertifications: number;
+  averageYearsExperience: number;
+  totalRoles: number;
+  experienceDistribution: {
+    junior: number;
+    midLevel: number;
+    senior: number;
+    lead: number;
+  };
 }
 
-export enum TipoSolicitudARCO {
-  Acceso = 1,
-  Rectificacion = 2,
-  Cancelacion = 3,
-  Oposicion = 4,
+// ============ SOLIDARITY: ASSOCIATES ============
+export type AssociateStatus = 1 | 2 | 3 | 4; // Applicant, Active, Suspended, Withdrawn
+export type AssociateRole = "Associate" | "Employee" | "Both" | "None";
+
+export interface AssociateDto {
+  userId: string;
+  fullName: string;
+  documentType?: number;
+  documentNumber?: string;
+  status: AssociateStatus;
+  isEmployee: boolean;
+  role: AssociateRole;
+  currentAdmissionDate?: string;
 }
 
-export enum EstadoSolicitudARCO {
-  Pendiente = 1,
-  Atendida = 2,
-  Rechazada = 3,
-}
-
-export enum TipoOrgano {
-  AsambleaGeneral = 1,
-  ConsejoAdministracion = 2,
-  JuntaVigilancia = 3,
-  RevisorFiscal = 4,
-  Comite = 5,
-  Otros = 99,
-}
-
-export enum TipoAsamblea {
-  Ordinaria = 1,
-  Extraordinaria = 2,
-}
-
-export enum TipoVoto {
-  Aprobado = 1,
-  Rechazado = 2,
-  Abstencion = 3,
-  Blanco = 4,
-}
-
-export enum GravedadAccidente {
-  Leve = 1,
-  Grave = 2,
-  Mortal = 3,
-}
-
-export enum TipoExamenMedico {
-  Ingreso = 1,
-  Periodico = 2,
-  Retiro = 3,
-}
-
-// ============ NOMINA ============
-export interface CompensacionDto {
+export interface MembershipPeriodDto {
   id: string;
-  asociadoId: string;
-  organizationId: string;
-  periodo: string;
-  modelo: CompensacionModelo;
-  valorBase: number;
-  valorCalculado: number;
-  observaciones: string | null;
+  applicationDate: string;
+  admissionDate?: string;
+  withdrawalDate?: string;
+  withdrawalReason?: string;
+}
+
+export interface AssociateDetailDto extends AssociateDto {
+  email: string;
+  hasActiveConsent: boolean;
+  periods: MembershipPeriodDto[];
+}
+
+export interface CreateAssociateRequest {
+  userId: string;
+  applicationDate?: string;
+}
+
+export interface TransitionRequest {
+  toStatus: AssociateStatus;
+  effectiveDate?: string;
+  reason?: string;
+}
+
+export interface TransitionResult {
+  status: AssociateStatus;
+  warnings: string[];
+}
+
+export interface SetDocumentRequest {
+  documentType: number;
+  documentNumber: string;
+}
+
+// ============ SOLIDARITY: HABEAS DATA ============
+export interface DataPolicyDto {
+  id: string;
+  version: string;
+  purpose: string;
+  text: string;
+  effectiveFrom: string;
   createdAt: string;
 }
 
-export interface CreateCompensacionDto {
-  asociadoId: string;
-  organizationId: string;
-  periodo: string; // DateTime ISO
-  modelo: CompensacionModelo;
-  valorBase: number;
-  observaciones?: string | null;
+export interface CreateDataPolicyRequest {
+  version: string;
+  purpose: string;
+  text: string;
+  effectiveFrom?: string;
 }
 
-export interface PilaAporteDto {
+export interface ConsentDto {
   id: string;
-  asociadoId: string;
-  organizationId: string;
-  periodo: string;
-  tipoAportante: PilaTipoAportante;
-  ingresoBase: number;
-  aporteEPS: number;
-  aportePension: number;
-  aporteARL: number;
+  userId: string;
+  policyVersionId: string;
+  policyVersion: string;
+  purpose: string;
+  grantedAt: string;
+  grantedByUserId: string;
+  revokedAt?: string;
+  revokedByUserId?: string;
+  revocationReason?: string;
+  isActive: boolean;
+}
+
+// ============ SOLIDARITY: COOPERATIVE EDUCATION ============
+export type ProgramType = 1 | 2 | 3 | 4;
+export type EnrollmentStatus = 1 | 2 | 3;
+
+export interface EducationProgramDto {
+  id: string;
+  name: string;
+  type: ProgramType;
+  requiredHours: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SaveProgramRequest {
+  name: string;
+  type: ProgramType;
+  requiredHours: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface EnrollmentDto {
+  id: string;
+  programId: string;
+  userId: string;
+  fullName: string;
+  status: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface EnrollRequest {
+  userId: string;
+  status?: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface UpdateEnrollmentRequest {
+  status: EnrollmentStatus;
+  hoursCompleted: number;
+  completionDate?: string;
+}
+
+export interface EducationCoverageResponse {
+  year: number;
+  eligibleAssociates: number;
+  coveredAssociates: number;
+  coverageRatio: number;
+  avgHours: number;
+  basicCompliant: boolean;
+  hoursByType: { Basic?: number; Permanent?: number; Governance?: number; Informal?: number };
+}
+// ============================================================================
+// SOLIDARITY (consolidated contracts) — org comes from the JWT; enums are numbers
+// ============================================================================
+
+// ============ HABEAS DATA: ARCO ============
+export type ArcoType = 1 | 2 | 3 | 4; // Access, Rectification, Cancellation, Opposition
+export type ArcoStatus = 1 | 2 | 3; // Pending, Attended, Rejected
+
+export interface ArcoRequestDto {
+  id: string;
+  userId: string;
+  type: ArcoType;
+  status: ArcoStatus;
+  filingNumber: string;
+  requestedAt: string;
+  description: string;
+  response?: string;
+  respondedAt?: string;
+}
+
+export interface CreateArcoRequest {
+  userId?: string;
+  type: ArcoType;
+  description: string;
+}
+
+// ============ COMPETENCIES ============
+export interface CompetencyDto {
+  id: string;
+  userId: string;
+  fullName: string;
+  name: string;
+  level: number; // 1-5
+  isAvailable: boolean;
+  notes?: string;
+  updatedAt: string;
+}
+
+export interface CreateCompetencyRequest {
+  userId: string;
+  name: string;
+  level: number;
+  notes?: string;
+}
+
+// ============ GOVERNING BODIES ============
+export type GoverningBodyType = 1 | 2 | 3 | 4 | 5 | 99;
+export type SessionType = 1 | 2; // Ordinary, Extraordinary
+export type VoteOption = 1 | 2 | 3 | 4; // Approve, Reject, Abstain, Blank
+
+export interface GoverningBodyDto {
+  id: string;
+  type: GoverningBodyType;
+  name: string;
+  constitutionDate: string;
+  description?: string;
+  isActive: boolean;
+  membersCount: number;
+  minutesCount: number;
+}
+
+export interface CreateGoverningBodyRequest {
+  type: GoverningBodyType;
+  name: string;
+  constitutionDate: string;
+  description?: string;
+}
+
+export interface UpdateGoverningBodyRequest {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface GoverningBodyMemberDto {
+  id: string;
+  governingBodyId: string;
+  userId: string;
+  fullName: string;
+  position: string;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+}
+
+export interface AssignMemberRequest {
+  governingBodyId: string;
+  userId: string;
+  position: string;
+  startDate: string;
+}
+
+export interface UpdateMemberRequest {
+  position?: string;
+  endDate?: string;
+  isActive?: boolean;
+}
+
+export interface MinutesDto {
+  id: string;
+  governingBodyId: string;
+  assemblyId?: string;
+  sessionDate: string;
+  sessionType: SessionType;
+  quorum: number;
+  decisions: string;
+  noticeUrl?: string;
+  minutesUrl?: string;
+  notes?: string;
+}
+
+export interface CreateMinutesRequest {
+  governingBodyId: string;
+  assemblyId?: string;
+  sessionDate: string;
+  sessionType: SessionType;
+  quorum: number;
+  decisions: string;
+  noticeUrl?: string;
+  minutesUrl?: string;
+  notes?: string;
+}
+
+export interface AssemblyDto {
+  id: string;
+  governingBodyId?: string;
+  scheduledAt: string;
+  type: SessionType;
+  notice: string;
+  minimumQuorum: number;
+  attendees?: number;
+  hasQuorum: boolean;
+  isClosed: boolean;
+  closedAt?: string;
+  results?: string;
+  votesCount: number;
+}
+
+export interface ConveneAssemblyRequest {
+  governingBodyId?: string;
+  scheduledAt: string;
+  type: SessionType;
+  notice: string;
+  minimumQuorum: number;
+}
+
+export interface CastVoteRequest {
+  assemblyId: string;
+  userId?: string;
+  option: VoteOption;
+  notes?: string;
+}
+
+export interface VoteResultsDto {
+  assemblyId: string;
+  totalVotes: number;
+  approve: number;
+  reject: number;
+  abstain: number;
+  blank: number;
+}
+
+// ============ SURPLUS ============
+export interface SurplusDistributionDto {
+  id: string;
+  period: string;
+  totalSurplus: number;
+  protectionReserve: number;
+  educationFund: number;
+  solidarityFund: number;
+  remainder: number;
+  revaluation?: number;
+  cooperativeReturn?: number;
+  approvedByAssembly: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CalculateSurplusRequest {
+  period: string;
+  totalSurplus: number;
+  notes?: string;
+}
+
+export interface ApproveSurplusRequest {
+  revaluation?: number;
+  cooperativeReturn?: number;
+}
+
+// ============ PAYROLL ============
+export type CompensationModel = 1 | 2 | 3; // DaysByRate, FixedMonthly, PerProject
+
+export interface CompensationDto {
+  id: string;
+  userId: string;
+  period: string;
+  model: CompensationModel;
+  baseValue: number;
+  dailyRate?: number;
+  calculatedValue: number;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CreateCompensationRequest {
+  userId: string;
+  period: string;
+  model: CompensationModel;
+  baseValue: number;
+  dailyRate?: number;
+  notes?: string;
+}
+
+export interface PilaContributionDto {
+  id: string;
+  userId: string;
+  period: string;
+  contributorType: number;
+  arlRiskLevel: number;
+  contributionBase: number;
+  healthContribution: number;
+  pensionContribution: number;
+  arlContribution: number;
   total: number;
-}
-
-// ============ BIENESTAR ============
-export interface ProgramaBienestarDto {
-  id: string;
-  organizationId: string;
-  nombre: string;
-  descripcion: string | null;
-  presupuesto: number;
-  fechaInicio: string;
-  fechaFin: string | null;
-  activo: boolean;
-  maxBeneficiarios: number | null;
   createdAt: string;
 }
 
-export interface CreateProgramaBienestarDto {
-  organizationId: string;
-  nombre: string;
-  descripcion?: string | null;
-  presupuesto: number;
-  fechaInicio: string;
-  fechaFin?: string | null;
-  maxBeneficiarios?: number | null;
+export interface CalculatePilaRequest {
+  userId: string;
+  period: string;
+  income: number;
+  arlRiskLevel?: number;
 }
 
-export interface SolicitudBienestarDto {
+// ============ WELFARE ============
+export type AidType = 1 | 2 | 3 | 4 | 5 | 99;
+export type WelfareRequestStatus = 1 | 2 | 3 | 4; // Pending, Approved, Rejected, Delivered
+
+export interface WelfareProgramDto {
   id: string;
-  asociadoId: string;
-  organizationId: string;
-  programaBienestarId: string | null;
-  programaNombre: string | null;
-  tipoAuxilio: TipoAuxilio;
-  tipoAuxilioNombre: string;
-  montoSolicitado: number;
-  montoAprobado: number | null;
-  estado: EstadoSolicitudBienestar;
-  estadoNombre: string;
-  motivo: string;
-  fechaRequerida: string;
-  fechaResolucion: string | null;
-  observacionesResolucion: string | null;
+  name: string;
+  description?: string;
+  budget: number;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  maxBeneficiaries?: number;
   createdAt: string;
 }
 
-export interface CreateSolicitudBienestarDto {
-  asociadoId: string;
-  organizationId: string;
-  programaBienestarId?: string | null;
-  tipoAuxilio: TipoAuxilio;
-  montoSolicitado: number;
-  motivo: string;
-  fechaRequerida: string;
+export interface CreateWelfareProgramRequest {
+  name: string;
+  description?: string;
+  budget: number;
+  startDate: string;
+  endDate?: string;
+  maxBeneficiaries?: number;
 }
 
-export interface FondoSolidaridadDto {
+export interface WelfareRequestDto {
   id: string;
-  organizationId: string;
-  periodo: string;
-  totalExcedentes: number;
-  aporteFondo: number;
-  saldoDisponible: number;
-  totalDesembolsado: number;
-  vigente: boolean;
-  observaciones: string | null;
+  userId: string;
+  programId?: string;
+  programName?: string;
+  aidType: AidType;
+  requestedAmount: number;
+  approvedAmount?: number;
+  status: WelfareRequestStatus;
+  reason: string;
+  requiredDate: string;
+  resolvedAt?: string;
+  resolutionNotes?: string;
   createdAt: string;
 }
 
-export interface AuxilioDto {
-  id: string;
-  asociadoId: string;
-  organizationId: string;
-  solicitudBienestarId: string | null;
-  tipo: TipoAuxilio;
-  tipoNombre: string;
-  monto: number;
-  fechaEntrega: string;
-  concepto: string;
-  requiereReintegro: boolean;
-  fechaLimiteReintegro: string | null;
+export interface CreateWelfareRequestRequest {
+  userId?: string;
+  programId?: string;
+  aidType: AidType;
+  requestedAmount: number;
+  reason: string;
+  requiredDate: string;
 }
 
-// ============ GESTIÓN HUMANA — COMPETENCIAS ============
-export interface CompetenciaAsociadoDto {
+export interface WelfareAidDto {
   id: string;
-  asociadoId: string;
-  competencia: string;
-  nivel: number;
-  disponible: boolean;
-  fechaActualizacion: string;
-  observaciones: string | null;
+  userId: string;
+  welfareRequestId: string;
+  solidarityFundId?: string;
+  aidType: AidType;
+  amount: number;
+  deliveredAt: string;
+  concept: string;
+  requiresRepayment: boolean;
+  repaymentDueDate?: string;
 }
 
-// ============ GESTIÓN HUMANA — EDUCACIÓN ============
-export interface ProgramaEducacionDto {
+export interface SolidarityFundDto {
   id: string;
-  organizationId: string;
-  nombre: string;
-  descripcion: string | null;
-  tipo: TipoEducacion;
-  horas: number;
-  esObligatorio: boolean;
-  fechaInicio: string;
-  fechaFin: string | null;
-  activo: boolean;
+  period: string;
+  surplusDistributionId: string;
+  totalSurplus: number;
+  contribution: number;
+  carriedOver: number;
+  availableBalance: number;
+  totalDisbursed: number;
+  isCurrent: boolean;
+  notes?: string;
   createdAt: string;
 }
 
-export interface CreateProgramaEducacionDto {
-  organizationId: string;
-  nombre: string;
-  descripcion?: string | null;
-  tipo: TipoEducacion;
-  horas: number;
-  esObligatorio: boolean;
-  fechaInicio: string;
-  fechaFin?: string | null;
-}
+// ============ OCCUPATIONAL HEALTH (SST) ============
+export type ExamType = 1 | 2 | 3; // PreEmployment, Periodic, Exit
+export type ExamResult = 1 | 2 | 3; // Fit, FitWithRestrictions, Unfit
+export type AccidentSeverity = 1 | 2 | 3; // Minor, Serious, Fatal
 
-export interface AsociadoEducacionDto {
+export interface MedicalExamDto {
   id: string;
-  asociadoId: string;
-  programaEducacionId: string;
-  programaNombre: string | null;
-  tipoEducacion: string | null;
-  horasPrograma: number;
-  horasCursadas: number;
-  progreso: number;
-  fechaInscripcion: string;
-  fechaCompletado: string | null;
-  completado: boolean;
-  resultado: string | null;
-}
-
-export interface CreateAsociadoEducacionDto {
-  asociadoId: string;
-  programaEducacionId: string;
-  organizationId: string;
-}
-
-// ============ BALANCE SOCIAL ============
-export interface IndicadorBalanceSocialDto {
-  id: string;
-  asociadoId: string;
-  organizationId: string;
-  anio: number;
-  horasEducacion: number;
-  participacionAsambleas: number;
-  participacionComites: number;
-  aportesSociales: number;
-  beneficiosRecibidos: number;
-  cumpleEducacion: boolean;
-  indiceBalanceSocial: number;
-  observaciones: string | null;
-}
-
-// ============ EXCEDENTES ============
-export interface ExcedenteDto {
-  id: string;
-  organizationId: string;
-  periodo: string;
-  totalExcedentes: number;
-  reservaProteccionAportes: number;
-  fondoEducacion: number;
-  fondoSolidaridad: number;
-  revalorizacion: number | null;
-  retornoCooperativo: number | null;
-  aprobadoPorAsamblea: boolean;
-  observaciones: string | null;
+  userId: string;
+  examType: ExamType;
+  scheduledDate: string;
+  performedAt?: string;
+  result?: ExamResult;
+  fileUrl?: string;
+  notes?: string;
+  performed: boolean;
   createdAt: string;
 }
 
-export interface CreateExcedenteDto {
-  organizationId: string;
-  periodo: string;
-  totalExcedentes: number;
-  observaciones?: string | null;
-}
-
-// ============ HABEAS DATA ============
-export interface AutorizacionDto {
+export interface WorkAccidentDto {
   id: string;
-  asociadoId: string;
-  organizationId: string;
-  fechaAutorizacion: string;
-  vigencia: string | null;
-  revocada: boolean;
-  fechaRevocacion: string | null;
-  finalidad: string;
-  medioAutorizacion: string;
-  direccionIp: string | null;
-  vigente: boolean; // computed on backend: !revocada && (!vigencia || vigencia >= now)
-  createdAt: string;
-}
-
-export interface CreateAutorizacionDto {
-  asociadoId: string;
-  organizationId: string;
-  finalidad: string;
-  medioAutorizacion?: string; // default "Digital"
-  direccionIp?: string | null;
-}
-
-export interface SolicitudARCODto {
-  id: string;
-  asociadoId: string;
-  organizationId: string;
-  tipo: TipoSolicitudARCO;
-  tipoNombre: string;
-  fecha: string;
-  estado: EstadoSolicitudARCO;
-  estadoNombre: string;
-  descripcion: string;
-  respuesta: string | null;
-  fechaRespuesta: string | null;
-  radicado: string | null;
-  createdAt: string;
-}
-
-export interface CreateSolicitudARCODto {
-  asociadoId: string;
-  organizationId: string;
-  tipo: TipoSolicitudARCO;
-  descripcion: string;
-}
-
-// ============ SST ============
-export interface ExamenMedicoDto {
-  id: string;
-  asociadoId: string;
-  organizationId: string;
-  tipoExamen: TipoExamenMedico;
-  tipoExamenNombre: string;
-  fechaProgramado: string;
-  fechaRealizado: string | null;
-  resultado: string | null;
-  archivoUrl: string | null;
-  observaciones: string | null;
-  realizado: boolean; // computed: fechaRealizado.HasValue
-  createdAt: string;
-}
-
-export interface CreateExamenMedicoDto {
-  asociadoId: string;
-  organizationId: string;
-  tipoExamen: TipoExamenMedico;
-  fechaProgramado: string;
-}
-
-export interface ArlVigenciaResponse {
-  vigente: boolean;
-  diasRestantes: number;
-  alerta: string | null;
-}
-
-export interface AccidenteDto {
-  id: string;
-  asociadoId: string;
-  organizationId: string;
-  fecha: string;
-  tipo: string;
-  gravedad: GravedadAccidente;
-  gravedadNombre: string;
+  userId: string;
+  occurredAt: string;
+  accidentType: string;
+  severity: AccidentSeverity;
   arl: string;
-  descripcion: string;
-  furat: string | null;
-  fechaInvestigacion: string | null;
-  investigacionCompletada: boolean;
-  conclusiones: string | null;
-  causas: string | null;
-  medidasCorrectivas: string | null;
+  description: string;
+  furatNumber?: string;
+  investigationDate?: string;
+  investigationCompleted: boolean;
+  conclusions?: string;
+  causes?: string;
+  correctiveMeasures?: string;
   createdAt: string;
 }
 
-export interface CreateAccidenteDto {
-  asociadoId: string;
-  organizationId: string;
-  fecha: string;
-  tipo: string;
-  gravedad: GravedadAccidente;
+export interface ReportAccidentRequest {
+  userId: string;
+  occurredAt: string;
+  accidentType: string;
+  severity: AccidentSeverity;
   arl: string;
-  descripcion: string;
-  furat?: string | null;
+  description: string;
+  furatNumber?: string;
 }
 
-export interface RiesgoDto {
+export interface InvestigateAccidentRequest {
+  investigationDate: string;
+  conclusions: string;
+  causes: string;
+  correctiveMeasures: string;
+}
+
+export interface RiskDto {
   id: string;
-  organizationId: string;
-  nivelRiesgo: number;
-  nivelRiesgoNombre: string;
+  level: number; // 1 Low .. 5 Critical
   factor: string;
-  descripcion: string;
-  activo: boolean;
-  controles: string | null;
+  description: string;
+  isActive: boolean;
+  controls?: string;
   createdAt: string;
 }
 
-export interface CreateRiesgoDto {
-  organizationId: string;
-  nivelRiesgo: number;
+export interface CreateRiskRequest {
+  level: number;
   factor: string;
-  descripcion: string;
-  controles?: string | null;
+  description: string;
+  controls?: string;
 }
 
-// ============ ÓRGANOS ============
-export interface OrganoDto {
+// ============ SOCIAL BALANCE ============
+export interface SocialBalanceIndicatorDto {
+  userId: string;
+  fullName?: string;
+  year: number;
+  educationHours: number;
+  basicEducationHours: number;
+  assemblyParticipations: number;
+  committeeParticipations: number;
+  benefitsReceived: number;
+  meetsEducation: boolean;
+  index: number;
+}
+
+export interface SocialIndicatorDto {
+  name: string;
+  currentValue: number;
+  targetValue: number;
+  unit?: string;
+  coverage?: number;
+}
+
+export interface SocialDimensionDto {
+  name: string;
+  description?: string;
+  coverage: number;
+  target: number;
+  status: string;
+  indicators: SocialIndicatorDto[];
+}
+
+export interface SocialBalanceReportDto {
+  year: number;
+  generatedAt: string;
+  activeAssociates: number;
+  dimensions: SocialDimensionDto[];
+  executiveSummary?: string;
+  strengths: string[];
+  improvementAreas: string[];
+  narrative?: string;
+}
+
+// ============ SUPERSOLIDARIA ============
+export type SupersolidariaReportType = 1 | 2; // Quarterly, Annual
+
+export interface SupersolidariaReportDto {
   id: string;
-  tipo: TipoOrgano;
-  tipoNombre: string;
-  nombre: string;
-  organizationId: string;
-  fechaConstitucion: string;
-  descripcion: string | null;
-  activo: boolean;
-  miembrosCount: number;
-  actasCount: number;
-}
-
-export interface CreateOrganoDto {
-  tipo: TipoOrgano;
-  nombre: string;
-  organizationId: string;
-  fechaConstitucion: string;
-  descripcion?: string | null;
-}
-
-export interface UpdateOrganoDto {
-  nombre?: string;
-  descripcion?: string | null;
-  activo?: boolean;
-}
-
-export interface MiembroOrganoDto {
-  id: string;
-  organoId: string;
-  asociadoId: string;
-  cargo: string;
-  fechaInicio: string;
-  fechaFin: string | null;
-  activo: boolean;
-}
-
-export interface AsignarMiembroDto {
-  organoId: string;
-  asociadoId: string;
-  cargo: string;
-  fechaInicio: string;
-}
-
-export interface UpdateMiembroDto {
-  cargo?: string;
-  fechaFin?: string | null;
-  activo?: boolean;
-}
-
-export interface ActaDto {
-  id: string;
-  organoId: string;
-  asambleaId: string | null;
-  fecha: string;
-  tipoSesion: string;
-  quorum: number;
-  decisiones: string;
-  convocatoriaUrl: string | null;
-  actaUrl: string | null;
-  observaciones: string | null;
-}
-
-export interface CreateActaDto {
-  organoId: string;
-  asambleaId?: string | null;
-  fecha: string;
-  tipoSesion?: string; // default "Ordinaria"
-  quorum: number;
-  decisiones: string;
-  convocatoriaUrl?: string | null;
-  actaUrl?: string | null;
-  observaciones?: string | null;
-}
-
-export interface AsambleaDto {
-  id: string;
-  organizationId: string;
-  organoId: string | null;
-  fecha: string;
-  tipo: TipoAsamblea;
-  tipoNombre: string;
-  convocatoria: string;
-  quorumMinimo: number;
-  asistentes: number | null;
-  cerrada: boolean;
-  fechaCierre: string | null;
-  resultados: string | null;
-  votosCount: number;
-}
-
-export interface ConvocarAsambleaDto {
-  organizationId: string;
-  organoId?: string | null;
-  fecha: string;
-  tipo: TipoAsamblea;
-  convocatoria: string;
-  quorumMinimo: number;
-}
-
-export interface RegistrarAsistenciaDto {
-  asistentes: number;
-}
-
-export interface CerrarAsambleaDto {
-  resultados?: string | null;
-}
-
-export interface VotoDto {
-  id: string;
-  asambleaId: string;
-  asociadoId: string;
-  votoEmitido: TipoVoto;
-  votoNombre: string;
-  fecha: string;
-  observaciones: string | null;
-}
-
-export interface EmitirVotoDto {
-  asambleaId: string;
-  asociadoId: string;
-  votoEmitido: TipoVoto;
-  observaciones?: string | null;
-}
-
-export interface ResultadoVotacionDto {
-  asambleaId: string;
-  totalVotos: number;
-  aprobados: number;
-  rechazados: number;
-  abstenciones: number;
-  blancos: number;
-}
-
-export interface HaVotadoResponse {
-  haVotado: boolean;
-}
-
-// ============ REPORTES SUPERSOLIDARIA ============
-export interface ReporteSupersolidariaDto {
-  id: string;
-  organizationId: string;
-  periodo: string;
-  balanceSocialJson: string | null;
-  asociadosJson: string | null;
-  cumplimientoJson: string | null;
-  tipoReporte: string;
-  enviado: boolean;
-  fechaEnvio: string | null;
-  observaciones: string | null;
+  period: string;
+  periodEnd: string;
+  reportType: SupersolidariaReportType;
+  socialBalanceJson: string;
+  associatesJson: string;
+  complianceJson: string;
+  isSent: boolean;
+  sentAt?: string;
+  notes?: string;
   createdAt: string;
 }
 
-export interface CreateReporteDto {
-  organizationId: string;
-  periodo: string;
-  tipoReporte?: string; // default "Trimestral"
+export interface GenerateSupersolidariaReportRequest {
+  period: string;
+  reportType: SupersolidariaReportType;
+  notes?: string;
 }
 
-// ============ ASISTENTE COOPERATIVO ============
-export interface CooperativaQueryRequest {
-  consulta: string;
-  contexto?: string | null;
-  requerirAprobacion?: boolean;
+// ============ COOPERATIVE ASSISTANT ============
+export interface RegulationCitation {
+  rule: string;
+  article: string;
+  description?: string;
 }
 
-export interface CitacionNormativa {
-  norma: string;
-  articulo: string;
-  descripcion?: string | null;
-  urlReferencia?: string | null;
+export interface CooperativeQueryResponse {
+  answer: string;
+  markdown?: string;
+  citations: RegulationCitation[];
+  suggestedActions: string[];
+  generatedByAi: boolean;
 }
 
-export interface CooperativaQueryResponse {
-  respuesta: string;
-  markdown?: string | null;
-  citations: CitacionNormativa[];
-  accionesSugeridas: string[];
-  actionId?: string | null;
-  requiereAprobacion: boolean;
+export interface ComplianceAreaDto {
+  name: string;
+  applicableRule: string;
+  compliant: boolean;
+  coverage: number;
+  detail?: string;
+  findings: string[];
 }
 
-export interface GenerarBalanceSocialRequest {
-  organizationId: string;
-  anio?: number;
-  incluirRecomendaciones?: boolean;
+export interface ComplianceDto {
+  year: number;
+  checkedAt: string;
+  areas: ComplianceAreaDto[];
+  compliantAreas: number;
+  nonCompliantAreas: number;
+  overallCoverage: number;
+  overallStatus: string;
+  alerts: string[];
 }
 
-export interface IndicadorSocialDto {
-  nombre: string;
-  valorActual: number;
-  valorMeta: number;
-  unidad?: string | null;
-  cobertura: number;
-}
-
-export interface DimensionSocialDto {
-  nombre: string;
-  descripcion?: string | null;
-  cobertura: number;
-  meta: number;
-  indicadores: IndicadorSocialDto[];
-  estado?: string | null;
-}
-
-export interface BalanceSocialReportDto {
-  organizationId: string;
-  organizationName: string;
-  anio: number;
-  generadoEn: string;
-  dimensiones: DimensionSocialDto[];
-  resumenEjecutivo?: string | null;
-  fortalezas: string[];
-  oportunidadesMejora: string[];
-  narrativa?: string | null;
-}
-
-export interface VerificarCumplimientoRequest {
-  organizationId: string;
-  verificarEducacion?: boolean;
-  verificarSST?: boolean;
-  verificarHabeasData?: boolean;
-  verificarAportes?: boolean;
-}
-
-export interface AreaCumplimientoDto {
-  nombre: string;
-  normaAplicable: string;
-  cumple: boolean;
-  cobertura: number;
-  detalle?: string | null;
-  hallazgos: string[];
-}
-
-export interface CumplimientoDto {
-  organizationId: string;
-  organizationName: string;
-  verificadoEn: string;
-  areas: AreaCumplimientoDto[];
-  // C# computed (no setter) — NOT serialized por el backend; se calculan en el front
-  areasCumplen?: number;
-  areasNoCumplen?: number;
-  coberturaGeneral?: number;
-  estadoGeneral?: string;
-  alertas: string[];
-}
-
-export interface ResponderDudaRequest {
-  organizationId: string;
-  pregunta: string;
-  tipoAsociado?: string | null;
+export interface VerifyComplianceRequest {
+  year?: number;
+  verifyEducation: boolean;
+  verifyOccupationalHealth: boolean;
+  verifyHabeasData: boolean;
 }

@@ -17,6 +17,8 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.AGENTS]: 'Agentes IA',
     [ROUTES.ORGANIZATIONS]: 'Organizaciones',
     [ROUTES.USERS]: 'Usuarios',
+    [ROUTES.ASSOCIATES]: 'Asociados',
+    [ROUTES.DATA_POLICIES]: 'Políticas de datos',
     [ROUTES.ROLES]: 'Roles',
     [ROUTES.PROFILE]: 'Mi Perfil',
     [ROUTES.SETTINGS]: 'Configuración',
@@ -36,12 +38,6 @@ const getRouteName = (path: string): string => {
             return 'Editar';
         }
         // /projects/:id
-        return 'Detalle';
-    }
-    if (path.startsWith('/agents/')) {
-        if (path.endsWith('/edit')) {
-            return 'Editar';
-        }
         return 'Detalle';
     }
     

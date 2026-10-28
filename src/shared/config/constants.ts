@@ -26,11 +26,14 @@ export const ROUTES = {
     USER_DETAIL: '/users/:id',
     ROLES: '/roles',
     PERMISSIONS: '/permissions',
+    ASSOCIATES: '/associates',
+    ASSOCIATE_DETAIL: '/associates/:userId',
+    DATA_POLICIES: '/data-policies',
+    EDUCATION: '/education',
+    EDUCATION_PROGRAM: '/education/:programId',
     
     // Agents (AI Agents)
     AGENTS: '/agents',
-    AGENT_DETAIL: '/agents/:id',
-    CREATE_AGENT: '/agents/create',
     
     // Skills Catalog
     SKILLS_CATALOG: '/skills',
@@ -40,10 +43,8 @@ export const ROUTES = {
     SETTINGS: '/settings',
 
     // ===== Gestión Humana Solidaria =====
-    ASOCIADOS: '/asociados',
     NOMINA: '/nomina',
     BIENESTAR: '/bienestar',
-    EDUCACION: '/educacion',
     BALANCE_SOCIAL: '/balance-social',
     SST: '/sst',
     EXCEDENTES: '/excedentes',
@@ -117,3 +118,6 @@ export type ProjectStatusLabel = typeof PROJECT_STATUS[keyof typeof PROJECT_STAT
 /** @deprecated Use AgentStatus from @shared/types instead */
 export type AgentStatusLabel = typeof AGENT_STATUS[keyof typeof AGENT_STATUS];
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+
+export const associateDetailPath = (userId: string): string => `/associates/${userId}`;
+export const educationProgramPath = (programId: string): string => `/education/${programId}`;

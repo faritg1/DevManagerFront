@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import {
-    FileLock2, Loader2, AlertCircle, Plus, ShieldCheck, FileText,
-    CheckCircle2, XCircle,
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FileLock2, Loader2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card, Badge, Button, Input, Modal, StatCard } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { habeasDataService, usersService } from '../../../shared/api';
-import {
-    TipoSolicitudARCO,
-    type AutorizacionDto,
-    type SolicitudARCODto,
-    type CreateAutorizacionDto,
-    type CreateSolicitudARCODto,
-    type UserResponse,
-} from '../../../shared/api/types';
+import { useIsAdmin } from '../../../shared/hooks';
+import { habeasDataService, associatesService } from '../../../shared/api';
+import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '../../../shared/api/types';
+import { ROUTES } from '../../../shared/config/constants';
 
 const formatDate = (s: string | null | undefined) => {
     if (!s) return '—';
@@ -21,272 +14,173 @@ const formatDate = (s: string | null | undefined) => {
     catch { return '—'; }
 };
 
-const arcoTipoLabel: Record<number, string> = {
-    [TipoSolicitudARCO.Acceso]: 'Acceso',
-    [TipoSolicitudARCO.Rectificacion]: 'Rectificación',
-    [TipoSolicitudARCO.Cancelacion]: 'Cancelación',
-    [TipoSolicitudARCO.Oposicion]: 'Oposición',
+const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
+    1: 'Acceso',
+    2: 'Rectificación',
+    3: 'Cancelación',
+    4: 'Oposición',
 };
 
+const ARCO_STATUS: Record<number, { label: string; variant: 'warning' | 'success' | 'danger' }> = {
+    1: { label: 'Pendiente', variant: 'warning' },
+    2: { label: 'Atendida', variant: 'success' },
+    3: { label: 'Rechazada', variant: 'danger' },
+};
+
+const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+
+/** Solicitudes ARCO. El consentimiento se gestiona en Políticas de datos y en el detalle del asociado. */
 export const HabeasDataPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
-    const orgId = user?.organizationId ?? '';
+    const isAdmin = useIsAdmin();
 
-    const [asociados, setAsociados] = useState<UserResponse[]>([]);
-    const [pendientes, setPendientes] = useState<SolicitudARCODto[]>([]);
+    const [associates, setAssociates] = useState<AssociateDto[]>([]);
+    const [requests, setRequests] = useState<ArcoRequestDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    // Autorización
-    const [authAsociadoId, setAuthAsociadoId] = useState('');
-    const [authVigente, setAuthVigente] = useState<AutorizacionDto | null>(null);
-    const [authOpen, setAuthOpen] = useState(false);
-    const [authForm, setAuthForm] = useState<CreateAutorizacionDto>({ asociadoId: '', organizationId: '', finalidad: '', medioAutorizacion: 'Digital' });
-
-    // Solicitud ARCO
-    const [arcoAsociadoId, setArcoAsociadoId] = useState('');
     const [arcoOpen, setArcoOpen] = useState(false);
-    const [arcoForm, setArcoForm] = useState<CreateSolicitudARCODto>({ asociadoId: '', organizationId: '', tipo: TipoSolicitudARCO.Acceso, descripcion: '' });
+    const [arcoForm, setArcoForm] = useState<CreateArcoRequest>({ type: 1, description: '' });
 
-    // Atender ARCO
-    const [atender, setAtender] = useState<SolicitudARCODto | null>(null);
-    const [atenderAction, setAtenderAction] = useState<'atender' | 'rechazar'>('atender');
-    const [respuesta, setRespuesta] = useState('');
-    const [motivoRechazo, setMotivoRechazo] = useState('');
+    const [answering, setAnswering] = useState<ArcoRequestDto | null>(null);
+    const [answerAction, setAnswerAction] = useState<'atender' | 'rechazar'>('atender');
+    const [answer, setAnswer] = useState('');
 
-    const loadPendientes = async () => {
-        if (!orgId) return;
+    const nameOf = (userId: string) =>
+        associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
+
+    const loadRequests = useCallback(async () => {
+        if (!user?.id) return;
         setIsLoading(true);
-        setError(null);
         try {
-            const res = await habeasDataService.getSolicitudesARCOPendientes(orgId);
-            setPendientes(res.success && res.data ? res.data : []);
+            const res = isAdmin
+                ? await habeasDataService.getPendingArco()
+                : await habeasDataService.getArcoByUser(user.id);
+            setRequests(res.success && res.data ? res.data : []);
         } catch {
-            setPendientes([]);
-            setError('Error al cargar solicitudes ARCO');
+            setRequests([]);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [isAdmin, user?.id]);
 
     useEffect(() => {
-        usersService.getAll().then(res => {
-            if (res.success && res.data && res.data[0]) {
-                setAsociados(res.data);
-                setAuthAsociadoId(res.data[0].id);
-                setArcoAsociadoId(res.data[0].id);
-            }
-        }).catch(() => showNotification({ type: 'error', message: 'Error al cargar asociados' }));
-        loadPendientes();
-    }, [orgId]);
-
-    const verificarVigente = async () => {
-        if (!authAsociadoId) return;
-        setError(null);
-        try {
-            const res = await habeasDataService.getAutorizacionVigente(authAsociadoId);
-            setAuthVigente(res.success ? res.data : null);
-        } catch {
-            setAuthVigente(null);
-            setError('Error al verificar autorización');
+        if (isAdmin) {
+            associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => setAssociates([]));
         }
-    };
+        loadRequests();
+    }, [isAdmin, loadRequests]);
 
-    const handleRegistrarAutorizacion = async () => {
+    const handleCreate = async () => {
         try {
-            const res = await habeasDataService.registrarAutorizacion({ ...authForm, organizationId: orgId });
+            const payload: CreateArcoRequest = { type: arcoForm.type, description: arcoForm.description.trim() };
+            if (isAdmin && arcoForm.userId) payload.userId = arcoForm.userId;
+            const res = await habeasDataService.createArco(payload);
             if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Autorización registrada' });
-                setAuthOpen(false);
-                setAuthForm({ asociadoId: authAsociadoId, organizationId: orgId, finalidad: '', medioAutorizacion: 'Digital' });
-                verificarVigente();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'Error al registrar autorización' });
-            }
-        } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
-        }
-    };
-
-    const handleCrearARCO = async () => {
-        try {
-            const res = await habeasDataService.crearSolicitudARCO({ ...arcoForm, organizationId: orgId });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Solicitud ARCO creada' });
+                showNotification({ type: 'success', message: `Solicitud ARCO radicada: ${res.data.filingNumber}` });
                 setArcoOpen(false);
-                setArcoForm({ asociadoId: arcoAsociadoId, organizationId: orgId, tipo: TipoSolicitudARCO.Acceso, descripcion: '' });
-            } else {
-                showNotification({ type: 'error', message: res.message || 'Error al crear solicitud ARCO' });
+                setArcoForm({ type: 1, description: '' });
+                loadRequests();
             }
         } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
+            // el listener global muestra el error
         }
     };
 
-    const handleAtender = async () => {
-        if (!atender) return;
+    const handleAnswer = async () => {
+        if (!answering) return;
         try {
-            const res = await habeasDataService.atenderSolicitudARCO(atender.id, respuesta);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Solicitud ARCO atendida' });
-                setAtender(null);
-                setRespuesta('');
-                loadPendientes();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'No se pudo atender la solicitud' });
+            const res = answerAction === 'atender'
+                ? await habeasDataService.attendArco(answering.id, answer.trim())
+                : await habeasDataService.rejectArco(answering.id, answer.trim());
+            if (res.success) {
+                showNotification({ type: 'success', message: answerAction === 'atender' ? 'Solicitud ARCO atendida' : 'Solicitud ARCO rechazada' });
+                setAnswering(null);
+                setAnswer('');
+                loadRequests();
             }
-        } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
+        } catch (err) {
+            if ((err as { status?: number })?.status === 409) {
+                showNotification({ type: 'error', message: 'La solicitud ya fue respondida' });
+                setAnswering(null);
+                loadRequests();
+            }
         }
     };
 
-    const handleRechazar = async () => {
-        if (!atender) return;
-        try {
-            const res = await habeasDataService.rechazarSolicitudARCO(atender.id, motivoRechazo);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Solicitud ARCO rechazada' });
-                setAtender(null);
-                setMotivoRechazo('');
-                loadPendientes();
-            } else {
-                showNotification({ type: 'error', message: res.message || 'No se pudo rechazar la solicitud' });
-            }
-        } catch {
-            showNotification({ type: 'error', message: 'Error de conexión' });
-        }
-    };
+    const pendingCount = requests.filter(r => r.status === 1).length;
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto w-full">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                        Habeas Data
+                        Habeas Data (ARCO)
                     </h1>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Autorizaciones de tratamiento de datos y solicitudes ARCO (Ley 1581/2012).
+                        Solicitudes de acceso, rectificación, cancelación y oposición (Ley 1581/2012).
                     </p>
                 </div>
-                <div className="flex gap-3">
-                    <Button variant="outline" icon={FileText} onClick={() => { setArcoForm(f => ({ ...f, asociadoId: arcoAsociadoId, organizationId: orgId })); setArcoOpen(true); }}>
-                        Crear Solicitud ARCO
-                    </Button>
-                    <Button icon={Plus} onClick={() => { setAuthForm(f => ({ ...f, asociadoId: authAsociadoId, organizationId: orgId })); setAuthOpen(true); }}>
-                        Registrar Autorización
-                    </Button>
-                </div>
+                <Button icon={FileText} onClick={() => { setArcoForm({ type: 1, description: '' }); setArcoOpen(true); }}>
+                    Crear Solicitud ARCO
+                </Button>
             </div>
-
-            {error && (
-                <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-sm text-rose-700 dark:text-rose-300">
-                    {error}
-                </div>
-            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <StatCard title="ARCO pendientes" value={pendientes.length} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
-                <StatCard title="Autorización" value={authVigente ? 'Vigente' : '—'} icon={ShieldCheck} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title={isAdmin ? 'ARCO pendientes' : 'Mis solicitudes pendientes'} value={pendingCount} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
+                <Card>
+                    <div className="flex items-center gap-2">
+                        <ShieldCheck className="text-emerald-500" size={20} />
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                            Los consentimientos se gestionan por política versionada
+                            {isAdmin && <> en <Link className="text-primary font-bold" to={ROUTES.DATA_POLICIES}>Políticas de datos</Link> y en el detalle de cada asociado</>}.
+                        </p>
+                    </div>
+                </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Verificación de autorización */}
-                <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <ShieldCheck className="text-emerald-500" size={20} />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Verificar Autorización Vigente</h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <select
-                            value={authAsociadoId}
-                            onChange={(e) => setAuthAsociadoId(e.target.value)}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none"
-                        >
-                            <option value="">Asociado</option>
-                            {asociados.map(a => <option key={a.id} value={a.id}>{a.fullName}</option>)}
-                        </select>
-                        <Button variant="outline" onClick={verificarVigente} disabled={!authAsociadoId}>Verificar</Button>
-                    </div>
-                    {authVigente && (
-                        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
-                            <p className="font-bold text-slate-900 dark:text-white">Autorización vigente</p>
-                            <p className="text-sm text-slate-500 mt-1">{authVigente.finalidad}</p>
-                            <p className="text-xs text-slate-500 mt-1">Medio: {authVigente.medioAutorizacion} · {formatDate(authVigente.fechaAutorizacion)}</p>
-                        </div>
-                    )}
-                    {!authVigente && (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin autorización vigente para este asociado.</p>
-                    )}
-                </Card>
-
-                {/* ARCO pendientes */}
-                <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <FileLock2 className="text-orange-500" size={20} />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Solicitudes ARCO Pendientes</h2>
-                    </div>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-                    ) : pendientes.length === 0 ? (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin solicitudes ARCO pendientes.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {pendientes.map(s => (
-                                <div key={s.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
-                                    <div className="flex items-center justify-between">
-                                        <p className="font-bold text-slate-900 dark:text-white">{arcoTipoLabel[s.tipo] || s.tipoNombre}</p>
-                                        <Badge variant="warning">Pendiente</Badge>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-1">{asociados.find(a => a.id === s.asociadoId)?.fullName || s.asociadoId}</p>
-                                    <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{s.descripcion}</p>
+            <Card>
+                <div className="flex items-center gap-2 mb-4">
+                    <FileLock2 className="text-orange-500" size={20} />
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                        {isAdmin ? 'Solicitudes ARCO Pendientes' : 'Mis Solicitudes ARCO'}
+                    </h2>
+                </div>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                ) : requests.length === 0 ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Sin solicitudes ARCO.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {requests.map(r => (
+                            <div key={r.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="font-bold text-slate-900 dark:text-white">
+                                        {ARCO_TYPE_LABEL[r.type]} · <span className="text-xs font-mono text-slate-500">{r.filingNumber}</span>
+                                    </p>
+                                    <Badge variant={ARCO_STATUS[r.status]?.variant ?? 'default'}>{ARCO_STATUS[r.status]?.label ?? r.status}</Badge>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">{nameOf(r.userId)} · {formatDate(r.requestedAt)}</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{r.description}</p>
+                                {r.response && (
+                                    <p className="text-sm text-slate-500 mt-1"><span className="font-bold">Respuesta:</span> {r.response} ({formatDate(r.respondedAt)})</p>
+                                )}
+                                {isAdmin && r.status === 1 && (
                                     <div className="flex gap-2 mt-2">
-                                        <Button size="sm" onClick={() => { setAtender(s); setAtenderAction('atender'); setRespuesta(''); setMotivoRechazo(''); }}>
+                                        <Button size="sm" onClick={() => { setAnswering(r); setAnswerAction('atender'); setAnswer(''); }}>
                                             <CheckCircle2 size={14} /> Atender
                                         </Button>
-                                        <Button size="sm" variant="danger" onClick={() => { setAtender(s); setAtenderAction('rechazar'); setMotivoRechazo(''); setRespuesta(''); }}>
+                                        <Button size="sm" variant="danger" onClick={() => { setAnswering(r); setAnswerAction('rechazar'); setAnswer(''); }}>
                                             <XCircle size={14} /> Rechazar
                                         </Button>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </Card>
-            </div>
-
-            {/* Modal autorización */}
-            <Modal
-                isOpen={authOpen}
-                onClose={() => setAuthOpen(false)}
-                title="Registrar Autorización"
-                icon={<ShieldCheck className="text-emerald-500" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button onClick={handleRegistrarAutorizacion}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setAuthOpen(false)}>Cancelar</Button>
-                    </>
-                }
-            >
-                <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select
-                            value={authForm.asociadoId}
-                            onChange={(e) => setAuthForm(f => ({ ...f, asociadoId: e.target.value }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2"
-                        >
-                            <option value="">Seleccionar</option>
-                            {asociados.map(a => <option key={a.id} value={a.id}>{a.fullName}</option>)}
-                        </select>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                    <Input label="Finalidad *" value={authForm.finalidad} onChange={(e) => setAuthForm(f => ({ ...f, finalidad: e.target.value }))} placeholder="Ej: Tratamiento de datos personales" />
-                    <Input label="Medio de autorización" value={authForm.medioAutorizacion || ''} onChange={(e) => setAuthForm(f => ({ ...f, medioAutorizacion: e.target.value }))} />
-                </div>
-            </Modal>
+                )}
+            </Card>
 
-            {/* Modal solicitud ARCO */}
             <Modal
                 isOpen={arcoOpen}
                 onClose={() => setArcoOpen(false)}
@@ -295,59 +189,47 @@ export const HabeasDataPage: React.FC = () => {
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleCrearARCO}>Guardar</Button>
+                        <Button onClick={handleCreate} disabled={!arcoForm.description.trim()}>Guardar</Button>
                         <Button variant="outline" onClick={() => setArcoOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select
-                            value={arcoForm.asociadoId}
-                            onChange={(e) => setArcoForm(f => ({ ...f, asociadoId: e.target.value }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2"
-                        >
-                            <option value="">Seleccionar</option>
-                            {asociados.map(a => <option key={a.id} value={a.id}>{a.fullName}</option>)}
-                        </select>
-                    </div>
+                    {isAdmin && (
+                        <div>
+                            <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado</label>
+                            <select value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))} className={selectClass}>
+                                <option value="">Yo mismo</option>
+                                {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                            </select>
+                        </div>
+                    )}
                     <div>
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
-                        <select
-                            value={arcoForm.tipo}
-                            onChange={(e) => setArcoForm(f => ({ ...f, tipo: Number(e.target.value) as TipoSolicitudARCO }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2"
-                        >
-                            <option value={TipoSolicitudARCO.Acceso}>Acceso</option>
-                            <option value={TipoSolicitudARCO.Rectificacion}>Rectificación</option>
-                            <option value={TipoSolicitudARCO.Cancelacion}>Cancelación</option>
-                            <option value={TipoSolicitudARCO.Oposicion}>Oposición</option>
+                        <select value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))} className={selectClass}>
+                            {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
                         </select>
                     </div>
-                    <Input label="Descripción *" value={arcoForm.descripcion} onChange={(e) => setArcoForm(f => ({ ...f, descripcion: e.target.value }))} />
+                    <Input label="Descripción *" value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
                 </div>
             </Modal>
 
-            {/* Modal atender/rechazar ARCO */}
             <Modal
-                isOpen={!!atender}
-                onClose={() => setAtender(null)}
-                title={atenderAction === 'atender' ? 'Atender Solicitud ARCO' : 'Rechazar Solicitud ARCO'}
+                isOpen={!!answering}
+                onClose={() => setAnswering(null)}
+                title={answerAction === 'atender' ? 'Atender Solicitud ARCO' : 'Rechazar Solicitud ARCO'}
                 icon={<FileLock2 className="text-orange-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        {atenderAction === 'atender'
-                            ? <Button onClick={handleAtender} disabled={!respuesta}>Atender</Button>
-                            : <Button variant="danger" onClick={handleRechazar} disabled={!motivoRechazo}>Rechazar</Button>}
-                        <Button variant="outline" onClick={() => setAtender(null)}>Cancelar</Button>
+                        {answerAction === 'atender'
+                            ? <Button onClick={handleAnswer} disabled={!answer.trim()}>Atender</Button>
+                            : <Button variant="danger" onClick={handleAnswer} disabled={!answer.trim()}>Rechazar</Button>}
+                        <Button variant="outline" onClick={() => setAnswering(null)}>Cancelar</Button>
                     </>
                 }
             >
-                <div className="grid grid-cols-1 gap-4">
-                    <Input label={atenderAction === 'atender' ? 'Respuesta *' : 'Motivo de rechazo *'} value={atenderAction === 'atender' ? respuesta : motivoRechazo} onChange={(e) => atenderAction === 'atender' ? setRespuesta(e.target.value) : setMotivoRechazo(e.target.value)} />
-                </div>
+                <Input label={answerAction === 'atender' ? 'Respuesta *' : 'Motivo de rechazo *'} value={answer} onChange={(e) => setAnswer(e.target.value)} />
             </Modal>
         </div>
     );

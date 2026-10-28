@@ -1,163 +1,60 @@
 /**
  * Bienestar Service
- * Programas de bienestar, solicitudes, auxilios y fondo de solidaridad
- * Rutas: api/bienestar
+ * Programas de bienestar, solicitudes de auxilio, auxilios entregados y fondo de solidaridad.
+ * Rutas: api/bienestar — la organización sale del JWT.
  */
 
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
   ApiResponse,
-  AuxilioDto,
-  CreateProgramaBienestarDto,
-  CreateSolicitudBienestarDto,
-  FondoSolidaridadDto,
-  ProgramaBienestarDto,
-  SolicitudBienestarDto,
+  CreateWelfareProgramRequest,
+  CreateWelfareRequestRequest,
+  SolidarityFundDto,
+  WelfareAidDto,
+  WelfareProgramDto,
+  WelfareRequestDto,
 } from "../types";
 
-const withQuery = (
-  endpoint: string,
-  params: Record<string, string | number | boolean | undefined | null>,
-): string => {
-  const search = Object.entries(params)
-    .filter(([, v]) => v !== undefined && v !== null && v !== "")
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-    .join("&");
-  return search ? `${endpoint}?${search}` : endpoint;
-};
+const E = API_ENDPOINTS.BIENESTAR;
 
 export const bienestarService = {
-  // ===== Programas =====
+  /** GET /api/bienestar/programas */
+  getPrograms: (): Promise<ApiResponse<WelfareProgramDto[]>> => apiClient.get(E.PROGRAMAS),
 
-  /**
-   * Obtiene los programas de bienestar de una organización
-   * GET /api/bienestar/programas/{organizationId}
-   */
-  async getProgramas(
-    organizationId: string,
-  ): Promise<ApiResponse<ProgramaBienestarDto[]>> {
-    return apiClient.get<ProgramaBienestarDto[]>(
-      API_ENDPOINTS.BIENESTAR.PROGRAMAS(organizationId),
-    );
-  },
+  /** POST /api/bienestar/programas (Admin) */
+  createProgram: (data: CreateWelfareProgramRequest): Promise<ApiResponse<WelfareProgramDto>> => apiClient.post(E.PROGRAMAS, data),
 
-  /**
-   * Crea un nuevo programa de bienestar
-   * POST /api/bienestar/programas
-   */
-  async createPrograma(
-    data: CreateProgramaBienestarDto,
-  ): Promise<ApiResponse<ProgramaBienestarDto>> {
-    return apiClient.post<ProgramaBienestarDto>(
-      API_ENDPOINTS.BIENESTAR.PROGRAMAS_CREATE,
-      data,
-    );
-  },
+  /** POST /api/bienestar/solicitudes — userId omitido = el usuario autenticado */
+  createRequest: (data: CreateWelfareRequestRequest): Promise<ApiResponse<WelfareRequestDto>> => apiClient.post(E.SOLICITUDES, data),
 
-  // ===== Solicitudes =====
+  /** GET /api/bienestar/solicitudes/pendientes (Admin) */
+  getPendingRequests: (): Promise<ApiResponse<WelfareRequestDto[]>> => apiClient.get(E.SOLICITUDES_PENDIENTES),
 
-  /**
-   * Crea una solicitud de bienestar
-   * POST /api/bienestar/solicitudes
-   */
-  async createSolicitud(
-    data: CreateSolicitudBienestarDto,
-  ): Promise<ApiResponse<SolicitudBienestarDto>> {
-    return apiClient.post<SolicitudBienestarDto>(
-      API_ENDPOINTS.BIENESTAR.SOLICITUDES_CREATE,
-      data,
-    );
-  },
+  /** GET /api/bienestar/solicitudes/{userId} (propio o Admin) */
+  getRequestsByUser: (userId: string): Promise<ApiResponse<WelfareRequestDto[]>> => apiClient.get(E.SOLICITUDES_BY_USER(userId)),
 
-  /**
-   * Obtiene las solicitudes de un asociado
-   * GET /api/bienestar/solicitudes/{asociadoId}
-   */
-  async getSolicitudesByAsociado(
-    asociadoId: string,
-  ): Promise<ApiResponse<SolicitudBienestarDto[]>> {
-    return apiClient.get<SolicitudBienestarDto[]>(
-      API_ENDPOINTS.BIENESTAR.SOLICITUDES_BY_ASOCIADO(asociadoId),
-    );
-  },
+  /** POST /api/bienestar/solicitudes/{id}/aprobar (Admin) */
+  approveRequest: (id: string, approvedAmount: number, notes?: string): Promise<ApiResponse<WelfareRequestDto>> =>
+    apiClient.post(E.SOLICITUD_APROBAR(id), notes ? { approvedAmount, notes } : { approvedAmount }),
 
-  /**
-   * Aprueba una solicitud de bienestar (query params)
-   * POST /api/bienestar/solicitudes/{solicitudId}/aprobar?montoAprobado=&resueltoPorUserId=
-   */
-  async aprobarSolicitud(
-    solicitudId: string,
-    montoAprobado: number,
-    resueltoPorUserId: string,
-  ): Promise<ApiResponse<SolicitudBienestarDto>> {
-    const endpoint = withQuery(
-      API_ENDPOINTS.BIENESTAR.SOLICITUD_APROBAR(solicitudId),
-      { montoAprobado, resueltoPorUserId },
-    );
-    return apiClient.post<SolicitudBienestarDto>(endpoint);
-  },
+  /** POST /api/bienestar/solicitudes/{id}/rechazar (Admin) */
+  rejectRequest: (id: string, notes: string): Promise<ApiResponse<WelfareRequestDto>> =>
+    apiClient.post(E.SOLICITUD_RECHAZAR(id), { notes }),
 
-  /**
-   * Rechaza una solicitud de bienestar (query params)
-   * POST /api/bienestar/solicitudes/{solicitudId}/rechazar?observaciones=&resueltoPorUserId=
-   */
-  async rechazarSolicitud(
-    solicitudId: string,
-    observaciones: string,
-    resueltoPorUserId: string,
-  ): Promise<ApiResponse<SolicitudBienestarDto>> {
-    const endpoint = withQuery(
-      API_ENDPOINTS.BIENESTAR.SOLICITUD_RECHAZAR(solicitudId),
-      { observaciones, resueltoPorUserId },
-    );
-    return apiClient.post<SolicitudBienestarDto>(endpoint);
-  },
+  /** POST /api/bienestar/solicitudes/{id}/entregar (Admin) */
+  deliverRequest: (id: string, requiresRepayment: boolean, concept?: string): Promise<ApiResponse<WelfareAidDto>> =>
+    apiClient.post(E.SOLICITUD_ENTREGAR(id), concept ? { concept, requiresRepayment } : { requiresRepayment }),
 
-  // ===== Fondo de Solidaridad =====
+  /** POST /api/bienestar/fondo/calcular (Admin) — aporte desde la distribución de excedentes del período */
+  calculateFund: (period: string, notes?: string): Promise<ApiResponse<SolidarityFundDto>> =>
+    apiClient.post(E.FONDO_CALCULAR, notes ? { period, notes } : { period }),
 
-  /**
-   * Calcula y registra el aporte al fondo de solidaridad (10% excedentes)
-   * POST /api/bienestar/fondo/calcular?organizationId=&periodo=&totalExcedentes=
-   */
-  async calcularAporteFondo(
-    organizationId: string,
-    periodo: string,
-    totalExcedentes: number,
-  ): Promise<ApiResponse<FondoSolidaridadDto>> {
-    const endpoint = withQuery(API_ENDPOINTS.BIENESTAR.FONDO_CALCULAR, {
-      organizationId,
-      periodo,
-      totalExcedentes,
-    });
-    return apiClient.post<FondoSolidaridadDto>(endpoint);
-  },
+  /** GET /api/bienestar/fondo — 404 si aún no hay fondo */
+  getCurrentFund: (): Promise<ApiResponse<SolidarityFundDto>> => apiClient.get(E.FONDO),
 
-  /**
-   * Obtiene el estado actual del fondo de solidaridad
-   * GET /api/bienestar/fondo/{organizationId}
-   */
-  async getFondoActual(
-    organizationId: string,
-  ): Promise<ApiResponse<FondoSolidaridadDto | null>> {
-    return apiClient.get<FondoSolidaridadDto | null>(
-      API_ENDPOINTS.BIENESTAR.FONDO_ACTUAL(organizationId),
-    );
-  },
-
-  // ===== Auxilios =====
-
-  /**
-   * Obtiene los auxilios de un asociado
-   * GET /api/bienestar/auxilios/{asociadoId}
-   */
-  async getAuxiliosByAsociado(
-    asociadoId: string,
-  ): Promise<ApiResponse<AuxilioDto[]>> {
-    return apiClient.get<AuxilioDto[]>(
-      API_ENDPOINTS.BIENESTAR.AUXILIOS_BY_ASOCIADO(asociadoId),
-    );
-  },
+  /** GET /api/bienestar/auxilios/{userId} (propio o Admin) */
+  getAidsByUser: (userId: string): Promise<ApiResponse<WelfareAidDto[]>> => apiClient.get(E.AUXILIOS_BY_USER(userId)),
 };
 
 export default bienestarService;

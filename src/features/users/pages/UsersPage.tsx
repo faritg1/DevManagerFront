@@ -70,7 +70,8 @@ export const UsersPage: React.FC = () => {
         password: '',
         fullName: '',
         roleId: '',
-        phoneNumber: ''
+        phoneNumber: '',
+        isEmployee: true
     });
     const [editForm, setEditForm] = useState<UpdateUserRequest>({});
 
@@ -199,7 +200,7 @@ export const UsersPage: React.FC = () => {
                     message: 'Usuario creado exitosamente'
                 });
                 createModal.close();
-                setCreateForm({ email: '', password: '', fullName: '', roleId: '', phoneNumber: '' });
+                setCreateForm({ email: '', password: '', fullName: '', roleId: '', phoneNumber: '', isEmployee: true });
                 fetchUsers();
             } else {
                 showNotification({
@@ -223,7 +224,8 @@ export const UsersPage: React.FC = () => {
         setEditForm({
             fullName: user.fullName,
             phoneNumber: user.phoneNumber || '',
-            isActive: user.isActive
+            isActive: user.isActive,
+            isEmployee: user.isEmployee ?? true
         });
         editModal.open();
         setActiveDropdown(null);
@@ -764,6 +766,10 @@ export const UsersPage: React.FC = () => {
                         value={createForm.phoneNumber || ''}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     />
+                    <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input type="checkbox" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                        Es empleado (vinculación laboral)
+                    </label>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                         * El rol se asigna automáticamente como "Empleado". Un administrador puede cambiarlo posteriormente.
                     </p>
@@ -812,6 +818,10 @@ export const UsersPage: React.FC = () => {
                             value={editForm.phoneNumber || ''}
                             onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                         />
+                        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input type="checkbox" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                            Es empleado (vinculación laboral)
+                        </label>
                         
                         <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#111b22] rounded-xl">
                             <div>

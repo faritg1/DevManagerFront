@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge, Button } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
-import { projectsService } from '../../../shared/api';
+import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { 
@@ -23,6 +23,7 @@ import {
     type ProjectResponse, 
     type SkillRequirementResponse,
     type ApplicationResponse,
+    type AssignmentResponse,
 } from '../../../shared/api/types';
 
 // Sub-components
@@ -30,6 +31,7 @@ import { ProjectRequirementsSection } from '../components/ProjectRequirementsSec
 import { ProjectApplicationsSection } from '../components/ProjectApplicationsSection';
 import { ProjectMatchingModal } from '../components/ProjectMatchingModal';
 import { ProjectAssignModal } from '../components/ProjectAssignModal';
+import { ProjectAssignmentsSection } from '../components/ProjectAssignmentsSection';
 
 // ─── Helpers ────────────────────────────────────────────
 const formatDate = (dateString: string | null): string => {
@@ -79,6 +81,8 @@ export const ProjectDetailPage: React.FC = () => {
     const [project, setProject] = useState<ProjectResponse | null>(null);
     const [requirements, setRequirements] = useState<SkillRequirementResponse[]>([]);
     const [applications, setApplications] = useState<ApplicationResponse[]>([]);
+    const [assignments, setAssignments] = useState<AssignmentResponse[]>([]);
+    const [editingAssignment, setEditingAssignment] = useState<AssignmentResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -111,6 +115,21 @@ export const ProjectDetailPage: React.FC = () => {
     };
 
     // Data fetching
+    const loadAssignments = async () => {
+        if (!id) return;
+        try {
+            const res = await assignmentsService.getAll({ projectId: id });
+            if (res.success && res.data) setAssignments(res.data);
+        } catch {
+            showNotification({ type: 'error', message: 'Error al cargar los miembros asignados' });
+        }
+    };
+
+    useEffect(() => {
+        loadAssignments();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
+
     useEffect(() => {
         if (!id) return;
         const fetchProjectData = async () => {
@@ -285,7 +304,7 @@ export const ProjectDetailPage: React.FC = () => {
                                         <Button
                                             variant="outline"
                                             icon={UserPlus}
-                                            onClick={assignModal.open}
+                                            onClick={() => { setEditingAssignment(null); assignModal.open(); }}
                                             className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                                         >
                                             Asignar Miembro
@@ -376,6 +395,13 @@ export const ProjectDetailPage: React.FC = () => {
                         onApplicationsChange={setApplications}
                     />
                 </div>
+
+                <ProjectAssignmentsSection
+                    assignments={assignments}
+                    isAdmin={isAdmin}
+                    onEdit={(assignment) => { setEditingAssignment(assignment); assignModal.open(); }}
+                    onAssignmentsChange={loadAssignments}
+                />
             </div>
 
             {/* Modals — delegated to sub-components */}
@@ -389,6 +415,9 @@ export const ProjectDetailPage: React.FC = () => {
                 isOpen={assignModal.isOpen}
                 onClose={assignModal.close}
                 applications={applications}
+                assignedUserIds={assignments.map(a => a.userId)}
+                assignment={editingAssignment}
+                onSaved={loadAssignments}
             />
         </div>
     );

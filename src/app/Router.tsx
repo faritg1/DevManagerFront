@@ -30,11 +30,14 @@ import {
   SkillsCatalogPage,
   ReportsPage,
   SettingsPage,
-  AsociadosPage,
+  AssociatesPage,
+  AssociateDetailPage,
+  EducationProgramsPage,
+  ProgramDetailPage,
+  DataPoliciesPage,
   NominaPage,
   OrganosPage,
   BienestarPage,
-  EducacionPage,
   BalanceSocialPage,
   SstPage,
   ExcedentesPage,
@@ -42,14 +45,6 @@ import {
   ReportesSupersolidariaPage,
   AsistentePage,
 } from "../features";
-
-// Placeholder pages for routes not yet implemented
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div className="p-10 text-slate-500 text-center">
-    <h2 className="text-2xl font-bold mb-2">{title}</h2>
-    <p>Próximamente</p>
-  </div>
-);
 
 export const AppRouter: React.FC = () => {
   return (
@@ -99,14 +94,6 @@ export const AppRouter: React.FC = () => {
 
                 {/* Agents */}
                 <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
-                <Route
-                  path={ROUTES.CREATE_AGENT}
-                  element={<PlaceholderPage title="Crear Agente" />}
-                />
-                <Route
-                  path={ROUTES.AGENT_DETAIL}
-                  element={<PlaceholderPage title="Detalle del Agente" />}
-                />
 
                 {/* Administration — Admin only */}
                 <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
@@ -116,6 +103,11 @@ export const AppRouter: React.FC = () => {
                   />
                   <Route path={ROUTES.USERS} element={<UsersPage />} />
                   <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                  <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                  <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                  <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                  <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                  <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
                 </Route>
 
                 {/* Security — Roles & Permissions (Admin only) */}
@@ -139,11 +131,9 @@ export const AppRouter: React.FC = () => {
                 />
 
                 {/* ===== Gestión Humana Solidaria ===== */}
-                <Route path={ROUTES.ASOCIADOS} element={<AsociadosPage />} />
                 <Route path={ROUTES.NOMINA} element={<NominaPage />} />
                 <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
                 <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
-                <Route path={ROUTES.EDUCACION} element={<EducacionPage />} />
                 <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
                 <Route path={ROUTES.SST} element={<SstPage />} />
                 <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />

@@ -4,7 +4,6 @@
 
 interface EnvConfig {
     apiUrl: string;
-    geminiApiKey: string;
     isDevelopment: boolean;
     isProduction: boolean;
     appName: string;
@@ -20,7 +19,6 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 
 export const env: EnvConfig = {
     apiUrl: getEnvVar('VITE_API_URL', 'http://localhost:5000/api'),
-    geminiApiKey: getEnvVar('VITE_GEMINI_API_KEY', ''),
     isDevelopment: getEnvVar('MODE', 'development') === 'development',
     isProduction: getEnvVar('MODE', 'development') === 'production',
     appName: 'DevManager',

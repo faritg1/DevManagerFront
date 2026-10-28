@@ -173,6 +173,7 @@ export const ProfilePage: React.FC = () => {
       });
       return false;
     }
+    return ok;
   };
 
   const handleValidateSkillAI = async (skill: EmployeeSkillResponse) => {

@@ -8,7 +8,7 @@ import type {
   SkillCategoryDto,
 } from "../../../shared/api/types";
 import { useToast } from "../../../shared/context";
-import { Modal, Button, Input, SELECT_SM_CLASS } from "../../../shared/ui";
+import { Modal, Button, Input, Select } from "../../../shared/ui";
 
 interface SkillFormModalProps {
   isOpen: boolean;
@@ -78,8 +78,8 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (isSaving) return;
     if (!validate()) return;
 
     const resolvedCategory = category === "__custom__" ? customCategory.trim() : category;
@@ -127,6 +127,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      onSubmit={handleSubmit}
       title={isEditing ? "Editar Habilidad" : "Nueva Habilidad"}
       icon={<Code2 size={20} className="text-primary" />}
       size="md"
@@ -135,19 +136,16 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           <Button variant="ghost" onClick={onClose} disabled={isSaving}>
             Cancelar
           </Button>
-          <Button
-            icon={Save}
-            isLoading={isSaving}
-            onClick={handleSubmit}
-          >
+          <Button type="submit" icon={Save} isLoading={isSaving}>
             {isEditing ? "Guardar cambios" : "Crear habilidad"}
           </Button>
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-5">
         <Input
-          label="Nombre de la habilidad"
+          label="Nombre de la habilidad *"
+          required
           placeholder="Ej: React, Docker, SAP ERP..."
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -157,13 +155,10 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
         />
 
         <div className="space-y-2">
-          <label htmlFor="skill-form-modal-categoria" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Categoría
-          </label>
-          <select id="skill-form-modal-categoria"
+          <Select
+            label="Categoría"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className={`${SELECT_SM_CLASS} w-full`}
           >
             <option value="">Sin categoría</option>
             {allCategories.map((cat) => (
@@ -172,10 +167,11 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
               </option>
             ))}
             <option value="__custom__">+ Nueva categoría...</option>
-          </select>
+          </Select>
           {category === "__custom__" && (
             <Input
               placeholder="Nombre de la nueva categoría"
+              aria-label="Nombre de la nueva categoría"
               value={customCategory}
               onChange={(e) => setCustomCategory(e.target.value)}
               error={errors.category}
@@ -190,6 +186,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
+              aria-pressed={skillType === 1}
               onClick={() => setSkillType(1 as SkillType)}
               className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
                 skillType === 1
@@ -220,6 +217,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
             </button>
             <button
               type="button"
+              aria-pressed={skillType === 0}
               onClick={() => setSkillType(0 as SkillType)}
               className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
                 skillType === 0
@@ -250,7 +248,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
             </button>
           </div>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 };

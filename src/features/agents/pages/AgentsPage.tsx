@@ -2,7 +2,7 @@ import { formatTime } from '../../../shared/format';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, PageContainer, PageHeader } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, Textarea, PageContainer, PageHeader } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { agentService, type ApiError } from '../../../shared/api';
 
@@ -190,6 +190,7 @@ export const AgentsPage: React.FC = () => {
     };
 
     const handleRejectAction = async () => {
+        if (isRejecting) return;
         if (!rejectReason.trim()) {
             showNotification({ type: 'error', message: 'Debes indicar un motivo para rechazar' });
             return;
@@ -440,12 +441,12 @@ export const AgentsPage: React.FC = () => {
                                     <div className="flex gap-2 px-2 pt-1">
                                         <Button
                                             size="sm"
-                                            icon={approvingId === message.id ? Loader2 : ShieldCheck}
+                                            variant="success"
+                                            icon={ShieldCheck}
                                             onClick={() => handleApproveAction(message.id, message.actionId!)}
-                                            disabled={approvingId === message.id}
-                                            className={`bg-emerald-500 hover:bg-emerald-600 text-white text-xs ${approvingId === message.id ? '[&_svg]:animate-spin' : ''}`}
+                                            isLoading={approvingId === message.id}
                                         >
-                                            {approvingId === message.id ? 'Aprobando...' : 'Aprobar'}
+                                            Aprobar
                                         </Button>
                                         <Button
                                             size="sm"
@@ -475,8 +476,8 @@ export const AgentsPage: React.FC = () => {
                             </div>
                             <div className="flex-1 max-w-2xl">
                                 <div className="rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-background-dark dark:to-background-dark border border-slate-200 dark:border-border-dark inline-flex items-center gap-2 sm:gap-3 shadow-sm">
-                                    <Loader2 className="animate-spin text-primary shrink-0" size={16} />
-                                    <div className="flex flex-col">
+                                    <Loader2 className="animate-spin text-primary shrink-0" size={16} aria-hidden="true" />
+                                    <div className="flex flex-col" role="status">
                                         <span className="text-sm font-medium text-slate-900 dark:text-white">Pensando...</span>
                                         <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Analizando tu consulta con IA</span>
                                     </div>
@@ -512,6 +513,9 @@ export const AgentsPage: React.FC = () => {
                     <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                         <button
                             type="button"
+                            role="switch"
+                            aria-checked={requireApproval}
+                            aria-label="Requerir aprobación (HITL)"
                             onClick={() => setRequireApproval(prev => !prev)}
                             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border shrink-0 ${
                                 requireApproval
@@ -551,12 +555,14 @@ export const AgentsPage: React.FC = () => {
                             }}
                         />
                         <Button
-                            icon={isLoading ? Loader2 : Send}
+                            icon={Send}
                             onClick={handleSendMessage}
-                            disabled={!inputValue.trim() || isLoading}
+                            disabled={!inputValue.trim()}
+                            isLoading={isLoading}
+                            aria-label="Enviar"
                             className="self-end px-3 sm:px-4"
                         >
-                            <span className="hidden sm:inline">{isLoading ? 'Enviando...' : 'Enviar'}</span>
+                            <span className="hidden sm:inline">Enviar</span>
                         </Button>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 hidden sm:block">
@@ -568,35 +574,31 @@ export const AgentsPage: React.FC = () => {
             <Modal
                 isOpen={rejectModal.open}
                 onClose={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}
+                onSubmit={handleRejectAction}
                 title="Rechazar Acción del Agente"
                 icon={<ShieldX className="text-rose-500" size={20} />}
                 size="sm"
-            >
-                <div className="space-y-4">
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                        Indica el motivo por el cual rechazas esta acción. Esto ayudará al agente a mejorar sus futuras sugerencias.
-                    </p>
-                    <textarea
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder="Ej: El candidato ya está asignado a otro proyecto de alta prioridad..."
-                        rows={3}
-                        className="w-full resize-none rounded-xl border border-slate-300 dark:border-border-dark bg-white dark:bg-background-dark px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    />
-                    <div className="flex justify-end gap-3">
+                footer={
+                    <>
+                        <Button type="submit" variant="danger" icon={ShieldX} isLoading={isRejecting}>
+                            Confirmar Rechazo
+                        </Button>
                         <Button variant="outline" onClick={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}>
                             Cancelar
                         </Button>
-                        <Button
-                            onClick={handleRejectAction}
-                            disabled={!rejectReason.trim() || isRejecting}
-                            icon={isRejecting ? Loader2 : ShieldX}
-                            className={`bg-rose-500 hover:bg-rose-600 text-white ${isRejecting ? '[&_svg]:animate-spin' : ''}`}
-                        >
-                            {isRejecting ? 'Rechazando...' : 'Confirmar Rechazo'}
-                        </Button>
-                    </div>
-                </div>
+                    </>
+                }
+            >
+                <Textarea
+                    label="Motivo del rechazo *"
+                    required
+                    hint="Esto ayudará al agente a mejorar sus futuras sugerencias."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Ej: El candidato ya está asignado a otro proyecto de alta prioridad..."
+                    rows={3}
+                    className="resize-none text-sm"
+                />
             </Modal>
         </PageContainer>
     );

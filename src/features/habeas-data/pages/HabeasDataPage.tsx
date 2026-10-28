@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -22,8 +22,6 @@ const ARCO_STATUS: Record<number, { label: string; variant: 'warning' | 'success
     3: { label: 'Rechazada', variant: 'danger' },
 };
 
-const selectClass = `${SELECT_CLASS} w-full mt-2`;
-
 /** Solicitudes ARCO. El consentimiento se gestiona en Políticas de datos y en el detalle del asociado. */
 export const HabeasDataPage: React.FC = () => {
     const { showNotification } = useNotification();
@@ -40,6 +38,14 @@ export const HabeasDataPage: React.FC = () => {
     const [answering, setAnswering] = useState<ArcoRequestDto | null>(null);
     const [answerAction, setAnswerAction] = useState<'atender' | 'rechazar'>('atender');
     const [answer, setAnswer] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
+    const submitting = (fn: () => Promise<void>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try { await fn(); } finally { setSaving(false); }
+    };
 
     const nameOf = (userId: string) =>
         associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
@@ -66,7 +72,8 @@ export const HabeasDataPage: React.FC = () => {
         loadRequests();
     }, [isAdmin, loadRequests]);
 
-    const handleCreate = async () => {
+    const handleCreate = submitting(async () => {
+        if (!arcoForm.description.trim()) return;
         try {
             const payload: CreateArcoRequest = { type: arcoForm.type, description: arcoForm.description.trim() };
             if (isAdmin && arcoForm.userId) payload.userId = arcoForm.userId;
@@ -80,10 +87,11 @@ export const HabeasDataPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleAnswer = async () => {
-        if (!answering) return;
+
+    const handleAnswer = submitting(async () => {
+        if (!answering || !answer.trim()) return;
         try {
             const res = answerAction === 'atender'
                 ? await habeasDataService.attendArco(answering.id, answer.trim())
@@ -101,7 +109,8 @@ export const HabeasDataPage: React.FC = () => {
                 loadRequests();
             }
         }
-    };
+    });
+
 
     const pendingCount = requests.filter(r => r.status === 1).length;
 
@@ -175,52 +184,48 @@ export const HabeasDataPage: React.FC = () => {
             <Modal
                 isOpen={arcoOpen}
                 onClose={() => setArcoOpen(false)}
+                onSubmit={handleCreate}
                 title="Crear Solicitud ARCO"
                 icon={<FileLock2 className="text-orange-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleCreate} disabled={!arcoForm.description.trim()}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setArcoOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
                     {isAdmin && (
-                        <div>
-                            <label htmlFor="habeas-data-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado</label>
-                            <select id="habeas-data-asociado" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))} className={selectClass}>
-                                <option value="">Yo mismo</option>
-                                {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                            </select>
-                        </div>
+                        <Select label="Asociado" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))}>
+                            <option value="">Yo mismo</option>
+                            {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                        </Select>
                     )}
-                    <div>
-                        <label htmlFor="habeas-data-tipo" className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
-                        <select id="habeas-data-tipo" value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))} className={selectClass}>
-                            {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
-                        </select>
-                    </div>
-                    <Input label="Descripción *" value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
+                    <Select label="Tipo *" required value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))}>
+                        {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
+                    </Select>
+                    <Input label="Descripción *" required value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
                 </div>
             </Modal>
 
             <Modal
                 isOpen={!!answering}
                 onClose={() => setAnswering(null)}
+                onSubmit={handleAnswer}
                 title={answerAction === 'atender' ? 'Atender Solicitud ARCO' : 'Rechazar Solicitud ARCO'}
                 icon={<FileLock2 className="text-orange-500" size={20} />}
                 size="md"
                 footer={
                     <>
                         {answerAction === 'atender'
-                            ? <Button onClick={handleAnswer} disabled={!answer.trim()}>Atender</Button>
-                            : <Button variant="danger" onClick={handleAnswer} disabled={!answer.trim()}>Rechazar</Button>}
+                            ? <Button type="submit" isLoading={saving}>Atender</Button>
+                            : <Button type="submit" variant="danger" isLoading={saving}>Rechazar</Button>}
                         <Button variant="outline" onClick={() => setAnswering(null)}>Cancelar</Button>
                     </>
                 }
             >
-                <Input label={answerAction === 'atender' ? 'Respuesta *' : 'Motivo de rechazo *'} value={answer} onChange={(e) => setAnswer(e.target.value)} />
+                <Input label={answerAction === 'atender' ? 'Respuesta *' : 'Motivo de rechazo *'} required value={answer} onChange={(e) => setAnswer(e.target.value)} />
             </Modal>
         </PageContainer>
     );

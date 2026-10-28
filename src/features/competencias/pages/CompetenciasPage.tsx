@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
 import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../../../shared/api/types';
 import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
 
-const selectClass = `${SELECT_CLASS} w-full mt-2`;
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const thClass = TH_CLASS;
 
 const emptyForm = (): CreateCompetencyRequest => ({ userId: '', name: '', level: 1 });
 
@@ -33,6 +30,7 @@ export const CompetenciasPage: React.FC = () => {
 
     const [createOpen, setCreateOpen] = useState(false);
     const [form, setForm] = useState<CreateCompetencyRequest>(emptyForm);
+    const [saving, setSaving] = useState(false);
 
     const targetUserId = isAdmin ? ownerId : user?.id ?? '';
 
@@ -73,6 +71,8 @@ export const CompetenciasPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
+        if (saving || !form.userId || !form.name.trim()) return;
+        setSaving(true);
         try {
             const res = await gestionHumanaService.create({
                 userId: form.userId,
@@ -88,6 +88,8 @@ export const CompetenciasPage: React.FC = () => {
             }
         } catch {
             // el listener global muestra el error (409 si el asociado está retirado o ya la tiene)
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -122,11 +124,11 @@ export const CompetenciasPage: React.FC = () => {
             <table className={TABLE_CLASS}>
                 <thead className={THEAD_CLASS}>
                     <tr>
-                        {showOwner && <th className={thClass}>Asociado</th>}
-                        <th className={thClass}>Competencia</th>
-                        <th className={thClass}>Nivel</th>
-                        <th className={thClass}>Disponibilidad</th>
-                        <th className={thClass}>Actualizada</th>
+                        {showOwner && <th className={TH_CLASS}>Asociado</th>}
+                        <th className={TH_CLASS}>Competencia</th>
+                        <th className={TH_CLASS}>Nivel</th>
+                        <th className={TH_CLASS}>Disponibilidad</th>
+                        <th className={TH_CLASS}>Actualizada</th>
                     </tr>
                 </thead>
                 <tbody className={TBODY_CLASS}>
@@ -192,7 +194,7 @@ export const CompetenciasPage: React.FC = () => {
                     </h2>
                 </div>
                 {isAdmin && (
-                    <select value={ownerId} onChange={(e) => setOwnerId(e.target.value)} className={`${selectClass} mb-4`}>
+                    <select aria-label="Asociado" value={ownerId} onChange={(e) => setOwnerId(e.target.value)} className={`${SELECT_CLASS} w-full mb-4`}>
                         <option value="">Seleccione un asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </select>
@@ -209,33 +211,28 @@ export const CompetenciasPage: React.FC = () => {
             <Modal
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
+                onSubmit={handleCreate}
                 title="Registrar Competencia"
                 icon={<Award className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreate} disabled={!form.userId || !form.name.trim()}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label htmlFor="competencias-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select id="competencias-asociado" value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
-                            <option value="">Seleccione un asociado</option>
-                            {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                        </select>
-                    </div>
-                    <Input label="Competencia *" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
+                    <Select label="Asociado *" required value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))}>
+                        <option value="">Seleccione un asociado</option>
+                        {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                    </Select>
+                    <Input label="Competencia *" required value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
                     <div role="group" aria-labelledby="competencias-nivel">
                         <p id="competencias-nivel" className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</p>
                         <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
-                    <div>
-                        <label htmlFor="competencias-notas" className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>
-                        <textarea id="competencias-notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
-                    </div>
+                    <Textarea label="Notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                 </div>
             </Modal>
         </PageContainer>

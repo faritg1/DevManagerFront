@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input, SELECT_CLASS } from '../../../shared/ui';
+import { Modal, Button, Input, Select } from '../../../shared/ui';
 import type { AssociateDto, EnrollmentDto, EnrollmentStatus } from '../../../shared/api/types';
 import { ENROLLMENT_STATUS_LABELS } from '../labels';
 
@@ -19,8 +19,6 @@ interface Props {
     onSubmit: (value: EnrollmentFormValue) => void;
 }
 
-const selectCls = SELECT_CLASS;
-
 /** Se monta solo mientras está abierto (el padre lo renderiza condicionalmente) para reiniciar el estado. */
 export const EnrollmentHoursForm: React.FC<Props> = ({ enrollment, associates, isSaving, onClose, onSubmit }) => {
     const [userId, setUserId] = useState(enrollment?.userId ?? '');
@@ -36,38 +34,30 @@ export const EnrollmentHoursForm: React.FC<Props> = ({ enrollment, associates, i
             isOpen
             onClose={onClose}
             title={enrollment ? `Actualizar inscripción de ${enrollment.fullName}` : 'Inscribir asociado'}
+            onSubmit={() => {
+                if (!valid || isSaving) return;
+                onSubmit({ userId, status, hoursCompleted: hoursNum, completionDate: status === 2 ? completionDate : undefined });
+            }}
             footer={
                 <>
-                    <Button
-                        isLoading={isSaving}
-                        disabled={!valid}
-                        onClick={() => onSubmit({ userId, status, hoursCompleted: hoursNum, completionDate: status === 2 ? completionDate : undefined })}
-                    >
-                        Guardar
-                    </Button>
+                    <Button type="submit" isLoading={isSaving}>Guardar</Button>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                 </>
             }
         >
             <div className="space-y-4">
                 {!enrollment && (
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="enrollment-hours-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select id="enrollment-hours-asociado" value={userId} onChange={(e) => setUserId(e.target.value)} className={selectCls}>
-                            <option value="">— Selecciona un asociado —</option>
-                            {associates.map((a) => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                        </select>
-                    </div>
+                    <Select label="Asociado *" required value={userId} onChange={(e) => setUserId(e.target.value)}>
+                        <option value="">— Selecciona un asociado —</option>
+                        {associates.map((a) => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                    </Select>
                 )}
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="enrollment-hours-estado" className="text-slate-700 dark:text-white text-sm font-bold">Estado *</label>
-                    <select id="enrollment-hours-estado" value={status} onChange={(e) => setStatus(Number(e.target.value) as EnrollmentStatus)} className={selectCls}>
-                        {Object.entries(ENROLLMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
-                </div>
-                <Input label="Horas completadas *" type="number" min={0} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
+                <Select label="Estado *" required value={status} onChange={(e) => setStatus(Number(e.target.value) as EnrollmentStatus)}>
+                    {Object.entries(ENROLLMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </Select>
+                <Input label="Horas completadas *" required type="number" min={0} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
                 {status === 2 && (
-                    <Input label="Fecha de finalización *" type="date" value={completionDate} onChange={(e) => setCompletionDate(e.target.value)} />
+                    <Input label="Fecha de finalización *" required type="date" value={completionDate} onChange={(e) => setCompletionDate(e.target.value)} />
                 )}
             </div>
         </Modal>

@@ -464,7 +464,7 @@ export const BienestarPage: React.FC = () => {
                             rows={3}
                         />
                     </div>
-                    <Input type="number" label="Presupuesto *" required min={1} value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
+                    <Input type="number" label="Presupuesto *" required min={0.01} step="any" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
                     <Input type="date" label="Fecha inicio *" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
                     <Input type="date" label="Fecha fin" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
                     <Input type="number" label="Máx. beneficiarios" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
@@ -499,7 +499,7 @@ export const BienestarPage: React.FC = () => {
                         <option value="">Sin programa</option>
                         {programs.filter(p => p.isActive).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </Select>
-                    <Input type="number" label="Monto solicitado *" required min={1} value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
+                    <Input type="number" label="Monto solicitado *" required min={0.01} step="any" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
                     <Input type="date" label="Fecha requerida *" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
                     <div className="sm:col-span-2">
                         <Input label="Motivo *" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
@@ -529,7 +529,7 @@ export const BienestarPage: React.FC = () => {
             >
                 <div className="grid grid-cols-1 gap-4">
                     {resolving?.action === 'aprobar' && (
-                        <Input type="number" label="Monto aprobado *" required min={1} value={approvedAmount} onChange={(e) => setApprovedAmount(Number(e.target.value))} />
+                        <Input type="number" label="Monto aprobado *" required min={0.01} step="any" value={approvedAmount} onChange={(e) => setApprovedAmount(Number(e.target.value))} />
                     )}
                     {resolving?.action === 'entregar' && (
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">

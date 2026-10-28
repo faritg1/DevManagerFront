@@ -24,7 +24,7 @@ const validationText = (el: Control): string => {
         return min > 0 && min < 1 ? 'Debe ser mayor que 0' : `El valor mínimo es ${el.min}`;
     }
     if (v.rangeOverflow && 'max' in el) return `El valor máximo es ${el.max}`;
-    if (v.stepMismatch) return 'Ingresa un número entero';
+    if (v.stepMismatch) return 'step' in el && el.step && el.step !== '1' ? `Usa incrementos de ${el.step}` : 'Ingresa un número entero';
     if (v.tooShort && 'minLength' in el) return `Debe tener al menos ${el.minLength} caracteres`;
     if (v.typeMismatch) return el.type === 'email' ? 'Ingresa un correo válido' : 'El formato no es válido';
     if (v.badInput) return 'Ingresa un número válido';

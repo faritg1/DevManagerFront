@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, IconButton, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, IconButton, Input, Select, Textarea, Modal, ProgressBar, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -39,9 +39,6 @@ const nowLocal = () => {
     return d.toISOString().slice(0, 16);
 };
 
-const selectClass = `${SELECT_CLASS} w-full`;
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const labelClass = 'text-slate-700 dark:text-white text-sm font-bold';
 
 const emptyMinutes = (governingBodyId: string): CreateMinutesRequest => ({
     governingBodyId, sessionDate: today(), sessionType: 1, quorum: 0, decisions: '',
@@ -64,6 +61,14 @@ export const OrganosPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [createOpen, setCreateOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
+    const submitting = (fn: () => Promise<void>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try { await fn(); } finally { setSaving(false); }
+    };
     const [createForm, setCreateForm] = useState<CreateGoverningBodyRequest>({ type: 2, name: '', constitutionDate: today() });
 
     const [selected, setSelected] = useState<GoverningBodyDto | null>(null);
@@ -112,7 +117,8 @@ export const OrganosPage: React.FC = () => {
         }
     }, [isAdmin]);
 
-    const handleCreate = async () => {
+    const handleCreate = submitting(async () => {
+        if (!createForm.name.trim()) return;
         try {
             const res = await organosService.create({ ...createForm, name: createForm.name.trim() });
             if (res.success && res.data) {
@@ -125,7 +131,8 @@ export const OrganosPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const loadMembers = async (bodyId: string) => {
         const res = await organosService.getMembers(bodyId);
@@ -159,7 +166,7 @@ export const OrganosPage: React.FC = () => {
         if (res.success && res.data) setSelected(res.data);
     };
 
-    const handleAddMember = async () => {
+    const handleAddMember = submitting(async () => {
         if (!selected || !memberForm.userId || !memberForm.position.trim()) return;
         try {
             await organosService.assignMember({
@@ -176,7 +183,8 @@ export const OrganosPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const handleRemoveMember = async (member: GoverningBodyMemberDto) => {
         if (!selected) return;
@@ -201,8 +209,8 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    const handleCreateMinutes = async () => {
-        if (!selected) return;
+    const handleCreateMinutes = submitting(async () => {
+        if (!selected || !minutesForm.decisions.trim()) return;
         try {
             const res = await organosService.createMinutes({
                 governingBodyId: selected.id,
@@ -224,7 +232,8 @@ export const OrganosPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const voterOf = (id: string) => id || user?.id || '';
 
@@ -261,7 +270,8 @@ export const OrganosPage: React.FC = () => {
         if (selected) await loadAssemblies(selected.id);
     };
 
-    const handleConvene = async () => {
+    const handleConvene = submitting(async () => {
+        if (!conveneForm.notice.trim()) return;
         try {
             const res = await organosService.conveneAssembly({
                 ...conveneForm,
@@ -276,7 +286,8 @@ export const OrganosPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const handleAttendance = async () => {
         if (!assembly) return;
@@ -504,30 +515,29 @@ export const OrganosPage: React.FC = () => {
             <Modal
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
+                onSubmit={handleCreate}
                 title="Crear Órgano"
                 icon={<Plus className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreate} disabled={!createForm.name.trim()}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Nombre *" value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
-                    <div>
-                        <label htmlFor="organos-tipo" className={labelClass}>Tipo *</label>
-                        <select id="organos-tipo"
-                            value={createForm.type}
-                            onChange={(e) => setCreateForm(f => ({ ...f, type: Number(e.target.value) as GoverningBodyType }))}
-                            className={`${selectClass} mt-2`}
-                        >
-                            {Object.entries(BODY_TYPE_LABEL).map(([k, v]) => (
-                                <option key={k} value={k}>{v}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <Input label="Nombre *" required value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
+                    <Select
+                        label="Tipo *"
+                        required
+                        value={createForm.type}
+                        onChange={(e) => setCreateForm(f => ({ ...f, type: Number(e.target.value) as GoverningBodyType }))}
+                    >
+                        {Object.entries(BODY_TYPE_LABEL).map(([k, v]) => (
+                            <option key={k} value={k}>{v}</option>
+                        ))}
+                    </Select>
                     <Input type="date" label="Fecha de constitución" value={createForm.constitutionDate} onChange={(e) => setCreateForm(f => ({ ...f, constitutionDate: e.target.value }))} />
                     <Input label="Descripción" value={createForm.description ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, description: e.target.value || undefined }))} />
                 </div>
@@ -536,26 +546,28 @@ export const OrganosPage: React.FC = () => {
             <Modal
                 isOpen={memberOpen}
                 onClose={() => setMemberOpen(false)}
+                onSubmit={handleAddMember}
                 title="Asignar Miembro"
                 icon={<Users className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleAddMember} disabled={!memberForm.userId || !memberForm.position.trim()}>Asignar</Button>
+                        <Button type="submit" isLoading={saving}>Asignar</Button>
                         <Button variant="outline" onClick={() => setMemberOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="space-y-4">
-                    <select
+                    <Select
+                        label="Asociado *"
+                        required
                         value={memberForm.userId}
                         onChange={(e) => setMemberForm(f => ({ ...f, userId: e.target.value }))}
-                        className={selectClass}
                     >
-                        <option value="">Asociado *</option>
+                        <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                    </select>
-                    <Input label="Cargo *" value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
+                    </Select>
+                    <Input label="Cargo *" required value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
                     <Input type="date" label="Fecha de inicio" value={memberForm.startDate} onChange={(e) => setMemberForm(f => ({ ...f, startDate: e.target.value }))} />
                 </div>
             </Modal>
@@ -563,41 +575,34 @@ export const OrganosPage: React.FC = () => {
             <Modal
                 isOpen={minutesOpen}
                 onClose={() => setMinutesOpen(false)}
+                onSubmit={handleCreateMinutes}
                 title="Registrar Acta"
                 icon={<FileText className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreateMinutes} disabled={!minutesForm.decisions.trim() || !minutesForm.sessionDate}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setMinutesOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input type="date" label="Fecha de sesión *" value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
-                    <div>
-                        <label htmlFor="organos-tipo-de-sesion" className={labelClass}>Tipo de sesión *</label>
-                        <select id="organos-tipo-de-sesion" value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
-                            {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input type="number" min={0} label="Quórum *" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
-                    <div>
-                        <label htmlFor="organos-asamblea-relacionada" className={labelClass}>Asamblea relacionada</label>
-                        <select id="organos-asamblea-relacionada" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))} className={`${selectClass} mt-2`}>
-                            <option value="">Ninguna</option>
-                            {assemblies.map(as => <option key={as.id} value={as.id}>{SESSION_TYPE_LABEL[as.type]} · {formatDate(as.scheduledAt)}</option>)}
-                        </select>
-                    </div>
+                    <Input type="date" label="Fecha de sesión *" required value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
+                    <Select label="Tipo de sesión *" required value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))}>
+                        {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input type="number" min={0} required label="Quórum *" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
+                    <Select label="Asamblea relacionada" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))}>
+                        <option value="">Ninguna</option>
+                        {assemblies.map(as => <option key={as.id} value={as.id}>{SESSION_TYPE_LABEL[as.type]} · {formatDate(as.scheduledAt)}</option>)}
+                    </Select>
                     <div className="sm:col-span-2">
-                        <label htmlFor="organos-decisiones" className={labelClass}>Decisiones *</label>
-                        <textarea id="organos-decisiones" value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} className={textareaClass} rows={4} />
+                        <Textarea label="Decisiones *" required value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} rows={4} />
                     </div>
                     <Input label="URL de la convocatoria" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
                     <Input label="URL del acta" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <label htmlFor="organos-notas" className={labelClass}>Notas</label>
-                        <textarea id="organos-notas" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
+                        <Textarea label="Notas" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                     </div>
                 </div>
             </Modal>
@@ -638,28 +643,25 @@ export const OrganosPage: React.FC = () => {
             <Modal
                 isOpen={conveneOpen}
                 onClose={() => setConveneOpen(false)}
+                onSubmit={handleConvene}
                 title="Convocar Asamblea"
                 icon={<Building2 className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleConvene} disabled={!conveneForm.notice.trim() || !conveneForm.scheduledAt || conveneForm.minimumQuorum < 1}>Convocar</Button>
+                        <Button type="submit" isLoading={saving}>Convocar</Button>
                         <Button variant="outline" onClick={() => setConveneOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input type="datetime-local" label="Fecha y hora *" value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
-                    <div>
-                        <label htmlFor="organos-tipo-2" className={labelClass}>Tipo *</label>
-                        <select id="organos-tipo-2" value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))} className={`${selectClass} mt-2`}>
-                            {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input type="number" min={1} label="Quórum mínimo *" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
+                    <Input type="datetime-local" label="Fecha y hora *" required value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
+                    <Select label="Tipo *" required value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))}>
+                        {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input type="number" min={1} required label="Quórum mínimo *" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
                     <div className="sm:col-span-2">
-                        <label htmlFor="organos-convocatoria" className={labelClass}>Convocatoria *</label>
-                        <textarea id="organos-convocatoria" value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} className={textareaClass} rows={4} />
+                        <Textarea label="Convocatoria *" required value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} rows={4} />
                     </div>
                 </div>
             </Modal>
@@ -714,13 +716,10 @@ export const OrganosPage: React.FC = () => {
                             <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                 <h4 className="font-bold text-slate-900 dark:text-white">Votar</h4>
                                 {isAdmin && (
-                                    <div>
-                                        <label htmlFor="organos-votante" className={labelClass}>Votante</label>
-                                        <select id="organos-votante" value={voterId} onChange={(e) => handleVoterChange(e.target.value)} className={`${selectClass} mt-2`}>
-                                            <option value="">Yo ({user?.name})</option>
-                                            {associates.filter(a => a.userId !== user?.id).map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                                        </select>
-                                    </div>
+                                    <Select label="Votante" value={voterId} onChange={(e) => handleVoterChange(e.target.value)}>
+                                        <option value="">Yo ({user?.name})</option>
+                                        {associates.filter(a => a.userId !== user?.id).map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
+                                    </Select>
                                 )}
                                 {hasVoted ? (
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold">
@@ -730,7 +729,7 @@ export const OrganosPage: React.FC = () => {
                                     <>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                             {(Object.keys(VOTE_OPTION_LABEL).map(Number) as VoteOption[]).map(opt => (
-                                                <Button key={opt} size="sm" variant={voteOption === opt ? 'primary' : 'outline'} onClick={() => setVoteOption(opt)}>
+                                                <Button key={opt} size="sm" variant={voteOption === opt ? 'primary' : 'outline'} aria-pressed={voteOption === opt} onClick={() => setVoteOption(opt)}>
                                                     {VOTE_OPTION_LABEL[opt]}
                                                 </Button>
                                             ))}
@@ -753,10 +752,7 @@ export const OrganosPage: React.FC = () => {
                                 </div>
                                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                     <h4 className="font-bold text-slate-900 dark:text-white">Cierre</h4>
-                                    <div>
-                                        <label htmlFor="organos-resultados" className={labelClass}>Resultados</label>
-                                        <textarea id="organos-resultados" value={closeResults} onChange={(e) => setCloseResults(e.target.value)} className={textareaClass} rows={2} />
-                                    </div>
+                                    <Textarea label="Resultados" value={closeResults} onChange={(e) => setCloseResults(e.target.value)} rows={2} />
                                     <Button size="sm" variant="danger" icon={Lock} onClick={handleClose}>Cerrar asamblea</Button>
                                 </div>
                             </div>

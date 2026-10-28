@@ -4,56 +4,11 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DevManager - Talent Management Platform</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1392ec",
-                        "primary-dark": "#0f7bc2",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#111b22",
-                        "surface-dark": "#192833",
-                        "card-dark": "#16222b",
-                        "border-dark": "#233948",
-                        "input-border": "#325167",
-                        "text-muted": "#92b2c9",
-                        "text-secondary": "#92b2c9"
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"],
-                        "body": ["Noto Sans", "sans-serif"]
-                    }
-                },
-            },
-        }
-    </script>
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #101a22; }
-        ::-webkit-scrollbar-thumb { background: #325167; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #1392ec; }
-        
-        body {
-            background-color: #111b22; /* Fallback */
-        }
-
-        /* Anillo de foco visible para controles sin estilos de foco propios */
-        a:focus-visible, button:focus-visible, summary:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
-            outline: 2px solid #1392ec;
-            outline-offset: 2px;
-        }
-    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased min-h-screen selection:bg-primary selection:text-white">
     <div id="root"></div>

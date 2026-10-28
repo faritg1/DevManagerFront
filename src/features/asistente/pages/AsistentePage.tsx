@@ -137,7 +137,7 @@ export const AsistentePage: React.FC = () => {
 
     const renderRespuesta = (r: CooperativeQueryResponse) => (
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22]">
-            <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
+            <div className="prose prose-sm dark:prose-invert max-w-none break-words">
                 <ReactMarkdown>{r.answer}</ReactMarkdown>
             </div>
             <Badge variant={r.generatedByAi ? 'purple' : 'default'} className="mt-2">{r.generatedByAi ? 'Generado con IA' : 'Respuesta normativa base'}</Badge>
@@ -249,7 +249,7 @@ export const AsistentePage: React.FC = () => {
                                     <Badge variant="purple">{reporteRes.year}</Badge>
                                 </div>
                                 {reporteRes.executiveSummary && <p className="text-sm text-slate-600 dark:text-slate-400">{reporteRes.executiveSummary}</p>}
-                                {reporteRes.narrative && <div className="text-sm text-slate-600 dark:text-slate-400 break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
+                                {reporteRes.narrative && <div className="prose prose-sm dark:prose-invert max-w-none break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
                                 <div className="space-y-2">
                                     {reporteRes.dimensions.map(d => (
                                         <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-[#111b22]">

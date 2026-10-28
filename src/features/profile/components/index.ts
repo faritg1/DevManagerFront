@@ -7,4 +7,3 @@ export * from "./SkillsSection";
 export * from "./SkillModal";
 export * from "./CertificationsSection";
 export * from "./CertificationModal";
-export * from "./RequestRoleModal";

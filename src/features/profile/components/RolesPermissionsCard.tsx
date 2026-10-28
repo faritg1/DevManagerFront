@@ -1,27 +1,19 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Button, Badge, LoadingBlock } from '../../../shared/ui';
-import { Key, ShieldCheck } from 'lucide-react';
-import type { EffectivePermissionsResponse, RoleDto } from '../../../shared/api/types';
+import { Card, CardHeader, CardTitle, Badge, LoadingBlock } from '../../../shared/ui';
+import { Key } from 'lucide-react';
+import type { EffectivePermissionsResponse } from '../../../shared/api/types';
 
 interface Props {
     effectivePerms: EffectivePermissionsResponse | null;
     permsLoading: boolean;
-    onRequestRoleOpen: () => void;
 }
 
-export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoading, onRequestRoleOpen }) => (
+export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoading }) => (
     <Card>
         <CardHeader>
-            <CardTitle className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                    <Key className="text-primary" size={20} />
-                    Roles & Permisos
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={onRequestRoleOpen}>
-                        Solicitar cambio de rol
-                    </Button>
-                </div>
+            <CardTitle className="flex items-center gap-2">
+                <Key className="text-primary" size={20} />
+                Roles & Permisos
             </CardTitle>
         </CardHeader>
 

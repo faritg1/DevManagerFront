@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Coins, Loader2, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState } from '../../../shared/ui';
+import { Coins, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
@@ -114,7 +114,7 @@ export const ExcedentesPage: React.FC = () => {
                         </thead>
                         <tbody className={TBODY_CLASS}>
                             {isLoading ? (
-                                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={8}><LoadingBlock /></td></tr>
                             ) : distributions.length === 0 ? (
                                 <tr><td colSpan={8}><EmptyState title="No hay distribuciones de excedentes" /></td></tr>
                             ) : (

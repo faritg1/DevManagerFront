@@ -86,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             <div className="flex items-center gap-2 min-w-0">
                 <button aria-label="Abrir menú" 
                     onClick={onMenuClick}
-                    className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg"
+                    className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                     <Menu size={24} />
                 </button>
@@ -140,8 +140,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             <div className="flex items-center gap-2">
                 <button 
                     onClick={toggleTheme}
-                    className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
+                    className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                 >
                     {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </button>

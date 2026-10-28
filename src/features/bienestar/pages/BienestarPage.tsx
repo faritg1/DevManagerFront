@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState } from '../../../shared/ui';
+import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -339,7 +339,7 @@ export const BienestarPage: React.FC = () => {
                         </thead>
                         <tbody className={TBODY_CLASS}>
                             {progLoading ? (
-                                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={5}><LoadingBlock /></td></tr>
                             ) : programs.length === 0 ? (
                                 <tr><td colSpan={5}><EmptyState title="No hay programas de bienestar" /></td></tr>
                             ) : (

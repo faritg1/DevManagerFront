@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState } from '../../../shared/ui';
+import { FileBarChart2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -132,7 +132,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         </thead>
                         <tbody className={TBODY_CLASS}>
                             {isLoading ? (
-                                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
+                                <tr><td colSpan={6}><LoadingBlock /></td></tr>
                             ) : reports.length === 0 ? (
                                 <tr><td colSpan={6}><EmptyState title="No hay reportes generados" /></td></tr>
                             ) : (

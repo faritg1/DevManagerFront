@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, 
@@ -29,10 +29,12 @@ import {
     Award,
     LucideIcon
 } from 'lucide-react';
-import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
+import { ROUTES, NAV_SECTIONS, STORAGE_KEYS } from '../../shared/config/constants';
 import { useAuth, useNotification } from '../../shared/context';
 import { useConfirm, useIsAdmin } from '../../shared/hooks';
 import { Avatar } from '../../shared/ui';
+
+const CollapsedContext = createContext(false);
 
 interface NavItemProps {
     to: string;
@@ -41,33 +43,45 @@ interface NavItemProps {
     isActive: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, isActive }) => (
-    <Link 
-        to={to} 
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${
+const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, isActive }) => {
+    const collapsed = useContext(CollapsedContext);
+    return (
+    <Link
+        to={to}
+        title={collapsed ? label : undefined}
+        aria-current={isActive ? 'page' : undefined}
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${collapsed ? 'justify-center' : ''} ${
             isActive 
                 ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm' 
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
         }`}
     >
-        <Icon size={20} className={isActive ? 'fill-current' : ''} />
-        <span className="text-sm font-medium">{label}</span>
+        <Icon size={20} className={`shrink-0 ${isActive ? 'fill-current' : ''}`} />
+        <span className={collapsed ? 'sr-only' : 'text-sm font-medium'}>{label}</span>
     </Link>
-);
+    );
+};
 
 interface NavSectionProps {
     title: string;
     children: React.ReactNode;
 }
 
-const NavSection: React.FC<NavSectionProps> = ({ title, children }) => (
+const NavSection: React.FC<NavSectionProps> = ({ title, children }) => {
+    const collapsed = useContext(CollapsedContext);
+    return (
     <div className="space-y-1">
-        <div className="px-3 py-2 text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">
-            {title}
-        </div>
+        {collapsed ? (
+            <div className="mx-3 my-2 border-t border-slate-200 dark:border-[#233948]" role="separator" aria-label={title} />
+        ) : (
+            <div className="px-3 py-2 text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">
+                {title}
+            </div>
+        )}
         {children}
     </div>
-);
+    );
+};
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -122,15 +136,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     // Sólo roles con acceso administrativo ven la sección de Seguridad
     const isAdmin = useIsAdmin();
 
+    const [collapsed, setCollapsed] = useState(() => localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true');
+    // Configuración emite un StorageEvent al cambiar la preferencia (también llega desde otras pestañas).
+    useEffect(() => {
+        const sync = () => setCollapsed(localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true');
+        window.addEventListener('storage', sync);
+        return () => window.removeEventListener('storage', sync);
+    }, []);
+
     // Sidebar content shared by desktop & mobile views
-    const renderContent = () => (
-        <>
-            <div className="p-6 flex items-center justify-between">
+    const renderContent = (compact = false) => (
+        <CollapsedContext.Provider value={compact}>
+            <div className={`p-6 flex items-center ${compact ? 'justify-center' : 'justify-between'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="size-8 text-primary">
+                    <div className="size-8 text-primary shrink-0">
                         <Hexagon fill="currentColor" className="w-full h-full" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">DevManager</span>
+                    <span className={compact ? 'sr-only' : 'text-xl font-bold tracking-tight text-slate-900 dark:text-white'}>DevManager</span>
                 </div>
                 {onClose && (
                     <button
@@ -143,14 +165,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 )}
             </div>
 
-            <div className="px-6 pb-6">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#16222b] rounded-xl border border-slate-100 dark:border-[#233948]">
+            <div className={compact ? 'px-3 pb-6 flex justify-center' : 'px-6 pb-6'} title={compact ? user?.name : undefined}>
+                <div className={`flex items-center gap-3 ${compact ? 'p-1.5' : 'p-3'} bg-slate-50 dark:bg-[#16222b] rounded-xl border border-slate-100 dark:border-[#233948]`}>
                     <Avatar 
                         src={user?.avatar} 
                         name={user?.name || 'Usuario'} 
                         size="sm"
                     />
-                    <div className="flex flex-col overflow-hidden">
+                    <div className={compact ? 'sr-only' : 'flex flex-col overflow-hidden'}>
                         <span className="text-sm font-bold text-slate-900 dark:text-white truncate">
                             {user?.name || 'Usuario'}
                         </span>
@@ -206,22 +228,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                     {/* Seguridad (Roles & Permisos) - solo admins */}
                     {isAdmin && (
                     <div>
-                        <div
+                        <button
+                            type="button"
                             onClick={() => setSecurityOpen((s) => !s)}
-                            className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                            aria-expanded={securityOpen}
+                            title={compact ? 'Seguridad' : undefined}
+                            className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : 'justify-between'} ${
                                 isActive(ROUTES.ROLES) || isActive(ROUTES.PERMISSIONS)
                                     ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                             }`}
                         >
                             <div className="flex items-center gap-3">
-                                <ShieldCheck size={20} />
-                                <span className="text-sm font-medium">Seguridad</span>
+                                <ShieldCheck size={20} className="shrink-0" />
+                                <span className={compact ? 'sr-only' : 'text-sm font-medium'}>Seguridad</span>
                             </div>
-                            <ChevronDown size={18} className={`transition-transform ${securityOpen ? 'rotate-180' : ''}`} />
-                        </div>
+                            {!compact && <ChevronDown size={18} className={`transition-transform ${securityOpen ? 'rotate-180' : ''}`} />}
+                        </button>
 
-                        <div className={`mt-2 space-y-2 pl-10 ${securityOpen ? 'block' : 'hidden'}`}>
+                        <div className={`mt-2 space-y-2 ${compact ? '' : 'pl-10'} ${securityOpen ? 'block' : 'hidden'}`}>
                             <NavItem to={ROUTES.ROLES} icon={ShieldCheck} label="Roles" isActive={isActive(ROUTES.ROLES)} />
                             <NavItem to={ROUTES.PERMISSIONS} icon={Key} label="Permisos" isActive={isActive(ROUTES.PERMISSIONS)} />
                         </div>
@@ -232,22 +257,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
             <div className="p-4 border-t border-slate-200 dark:border-[#233948] mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
-                <button 
+                <button
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                    title={compact ? 'Cerrar Sesión' : undefined}
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : ''}`}
                 >
-                    <LogOut size={20} />
-                    <span className="text-sm font-medium">Cerrar Sesión</span>
+                    <LogOut size={20} className="shrink-0" />
+                    <span className={compact ? 'sr-only' : 'text-sm font-medium'}>Cerrar Sesión</span>
                 </button>
             </div>
-        </>
+        </CollapsedContext.Provider>
     );
 
     return (
         <>
             {/* ── Desktop Sidebar ── visible md+ ── */}
-            <aside className="w-64 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0">
-                {renderContent()}
+            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-[#111b22] border-r border-slate-200 dark:border-[#233948] flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
+                {renderContent(collapsed)}
             </aside>
 
             <div

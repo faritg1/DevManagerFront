@@ -39,6 +39,7 @@ export const SettingsPage: React.FC = () => {
   const handleSidebarToggle = (collapsed: boolean) => {
     setSidebarCollapsed(collapsed);
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(collapsed));
+    window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.SIDEBAR_COLLAPSED }));
   };
 
   const handleLogout = () => {
@@ -171,8 +172,12 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
             <button
+              type="button"
+              role="switch"
+              aria-checked={sidebarCollapsed}
+              aria-label="Barra lateral compacta"
               onClick={() => handleSidebarToggle(!sidebarCollapsed)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
+              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#16222b] ${
                 sidebarCollapsed
                   ? "bg-primary"
                   : "bg-slate-300 dark:bg-slate-600"

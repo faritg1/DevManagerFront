@@ -29,6 +29,15 @@ import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, Effec
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate, skillLevelLabel } from '../../../shared/format';
 
+const EMPTY_CREATE_FORM: CreateUserRequest = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    isEmployee: true
+};
+
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
@@ -47,15 +56,8 @@ export const UsersPage: React.FC = () => {
 
     const [isSaving, setIsSaving] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
-    const [createForm, setCreateForm] = useState<CreateUserRequest>({
-        email: '',
-        password: '',
-        fullName: '',
-        roleId: '',
-        phoneNumber: '',
-        isEmployee: true
-    });
-    const [editForm, setEditForm] = useState<UpdateUserRequest>({});
+    const [createForm, setCreateForm] = useState<CreateUserRequest>(EMPTY_CREATE_FORM);
+    const [editForm, setEditForm] = useState<UpdateUserRequest>({ firstName: '', lastName: '' });
 
     const [roles, setRoles] = useState<RoleDto[]>([]);
     const [rolesLoading, setRolesLoading] = useState(false);
@@ -102,9 +104,8 @@ export const UsersPage: React.FC = () => {
             } else {
                 setError(response.message || 'Error al cargar usuarios');
             }
-        } catch (err) {
+        } catch {
             setError('Error de conexión al cargar usuarios');
-            console.error('Error fetching users:', err);
         } finally {
             setIsLoading(false);
         }
@@ -112,11 +113,15 @@ export const UsersPage: React.FC = () => {
 
     const handleCreate = async () => {
         if (isSaving) return;
-        if (!createForm.email || !createForm.password || !createForm.fullName) {
+        if (!createForm.firstName.trim() || !createForm.lastName.trim() || !createForm.email.trim() || !createForm.password) {
             showNotification({
                 type: 'error',
-                message: 'Completa los campos obligatorios'
+                message: 'Completa nombres, apellidos, email y contraseña'
             });
+            return;
+        }
+        if (createForm.password.length < 8) {
+            showNotification({ type: 'error', message: 'La contraseña debe tener mínimo 8 caracteres' });
             return;
         }
 
@@ -129,7 +134,7 @@ export const UsersPage: React.FC = () => {
                     message: 'Usuario creado exitosamente'
                 });
                 createModal.close();
-                setCreateForm({ email: '', password: '', fullName: '', roleId: '', phoneNumber: '', isEmployee: true });
+                setCreateForm(EMPTY_CREATE_FORM);
                 fetchUsers();
             } else {
                 showNotification({
@@ -150,8 +155,9 @@ export const UsersPage: React.FC = () => {
     const handleOpenEdit = (user: UserResponse) => {
         setSelectedUser(user);
         setEditForm({
-            fullName: user.fullName,
-            phoneNumber: user.phoneNumber || '',
+            firstName: user.firstName ?? '',
+            lastName: user.lastName ?? '',
+            phone: user.phoneNumber || '',
             isActive: user.isActive,
             isEmployee: user.isEmployee ?? true
         });
@@ -175,8 +181,8 @@ export const UsersPage: React.FC = () => {
                     setUserAssignedRoleIds(assigned);
                     setEffectivePerms(effResp.data);
                 }
-            } catch (err) {
-                console.error('Failed loading roles/permissions', err);
+            } catch {
+                showNotification({ type: 'error', message: 'No se pudieron cargar los roles del usuario' });
             } finally {
                 setRolesLoading(false);
             }
@@ -197,8 +203,8 @@ export const UsersPage: React.FC = () => {
                 ]);
                 if (resp.success && resp.data) setEffectivePerms(resp.data);
                 if (groupedResp.success && groupedResp.data) setGroupedPerms(groupedResp.data);
-            } catch (err) {
-                console.error('Failed loading effective permissions', err);
+            } catch {
+                showNotification({ type: 'error', message: 'No se pudieron cargar los permisos del usuario' });
             } finally {
                 setPermsLoading(false);
             }
@@ -243,8 +249,7 @@ export const UsersPage: React.FC = () => {
                 } else {
                     setUserSkills([]);
                 }
-            } catch (err) {
-                console.error('Failed loading user skills', err);
+            } catch {
                 setUserSkills([]);
             } finally {
                 setSkillsLoading(false);
@@ -271,8 +276,7 @@ export const UsersPage: React.FC = () => {
             } else {
                 showNotification({ type: 'error', message: resp.message || 'Error al validar skill' });
             }
-        } catch (err) {
-            console.error('Validate skill error:', err);
+        } catch {
             showNotification({ type: 'error', message: 'Error de conexión al validar' });
         } finally {
             setValidatingSkillId(null);
@@ -286,6 +290,10 @@ export const UsersPage: React.FC = () => {
 
     const handleSaveEdit = async () => {
         if (!selectedUser || isSaving) return;
+        if (!editForm.firstName.trim() || !editForm.lastName.trim()) {
+            showNotification({ type: 'error', message: 'Nombres y apellidos son obligatorios' });
+            return;
+        }
 
         setIsSaving(true);
         try {
@@ -315,8 +323,12 @@ export const UsersPage: React.FC = () => {
 
     const handleToggleStatus = async (user: UserResponse) => {
         try {
-            const response = await usersService.update(user.id, { 
-                isActive: !user.isActive 
+            // The backend requires both names on every PUT.
+            const response = await usersService.update(user.id, {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phone: user.phoneNumber,
+                isActive: !user.isActive
             });
             if (response.success) {
                 showNotification({
@@ -565,13 +577,24 @@ export const UsersPage: React.FC = () => {
                 }
             >
                 <div className="space-y-4">
-                    <Input
-                        label="Nombre Completo *"
-                        required
-                        placeholder="Ej: Juan Pérez"
-                        value={createForm.fullName}
-                        onChange={(e) => setCreateForm(prev => ({ ...prev, fullName: e.target.value }))}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input
+                            label="Nombres *"
+                            required
+                            maxLength={80}
+                            placeholder="Ej: Juan"
+                            value={createForm.firstName}
+                            onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
+                        />
+                        <Input
+                            label="Apellidos *"
+                            required
+                            maxLength={80}
+                            placeholder="Ej: Pérez"
+                            value={createForm.lastName}
+                            onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
+                        />
+                    </div>
                     <Input
                         label="Email *"
                         type="email"
@@ -593,8 +616,9 @@ export const UsersPage: React.FC = () => {
                     <Input
                         label="Teléfono"
                         placeholder="+57 300 123 4567"
-                        value={createForm.phoneNumber || ''}
-                        onChange={(e) => setCreateForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                        maxLength={30}
+                        value={createForm.phone || ''}
+                        onChange={(e) => setCreateForm(prev => ({ ...prev, phone: e.target.value }))}
                     />
                     <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <input type="checkbox" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
@@ -634,15 +658,27 @@ export const UsersPage: React.FC = () => {
                             </div>
                         </div>
                         
-                        <Input
-                            label="Nombre Completo"
-                            value={editForm.fullName || ''}
-                            onChange={(e) => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
-                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Input
+                                label="Nombres *"
+                                required
+                                maxLength={80}
+                                value={editForm.firstName}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                            />
+                            <Input
+                                label="Apellidos *"
+                                required
+                                maxLength={80}
+                                value={editForm.lastName}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                            />
+                        </div>
                         <Input
                             label="Teléfono"
-                            value={editForm.phoneNumber || ''}
-                            onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                            maxLength={30}
+                            value={editForm.phone || ''}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                         />
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                             <input type="checkbox" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
@@ -756,8 +792,7 @@ export const UsersPage: React.FC = () => {
 
                                                     // Refresh users list to reflect possible primary roleName change
                                                     fetchUsers();
-                                                } catch (err) {
-                                                    console.error('RBAC error', err);
+                                                } catch {
                                                     showNotification({ type: 'error', message: 'No se pudo actualizar el rol' });
                                                 } finally {
                                                     setRolesSaving(false);

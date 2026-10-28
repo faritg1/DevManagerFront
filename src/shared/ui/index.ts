@@ -12,3 +12,4 @@ export * from './LevelSelector/LevelSelector';
 export * from './Page';
 export * from './tableStyles';
 export * from './formStyles';
+export * from './Pager/Pager';

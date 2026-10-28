@@ -8,6 +8,8 @@ interface ModalProps {
     icon?: React.ReactNode;
     children: React.ReactNode;
     footer?: React.ReactNode;
+    /** Wraps body and footer in a <form>: Enter submits and native `required` checks run. Give the primary button type="submit". */
+    onSubmit?: () => void;
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full';
 }
 
@@ -34,6 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
     icon,
     children,
     footer,
+    onSubmit,
     size = 'md',
 }) => {
     const titleId = useId();
@@ -84,6 +87,20 @@ export const Modal: React.FC<ModalProps> = ({
 
     if (!isOpen) return null;
 
+    const content = (
+        <>
+            <div data-modal-body className="px-4 py-5 sm:px-6 sm:py-6">
+                {children}
+            </div>
+
+            {footer && (
+                <div className="bg-slate-50 dark:bg-background-dark/50 px-4 sm:px-6 py-4 flex flex-row-reverse flex-wrap gap-3 border-t border-slate-200 dark:border-border-dark">
+                    {footer}
+                </div>
+            )}
+        </>
+    );
+
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
@@ -120,7 +137,7 @@ export const Modal: React.FC<ModalProps> = ({
                                 {icon}
                                 {title}
                             </h3>
-                            <button aria-label="Cerrar" 
+                            <button type="button" aria-label="Cerrar"
                                 onClick={onClose}
                                 className="shrink-0 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-background-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
@@ -129,15 +146,7 @@ export const Modal: React.FC<ModalProps> = ({
                         </div>
                     )}
                     
-                    <div data-modal-body className="px-4 py-5 sm:px-6 sm:py-6">
-                        {children}
-                    </div>
-                    
-                    {footer && (
-                        <div className="bg-slate-50 dark:bg-background-dark/50 px-4 sm:px-6 py-4 flex flex-row-reverse flex-wrap gap-3 border-t border-slate-200 dark:border-border-dark">
-                            {footer}
-                        </div>
-                    )}
+                    {onSubmit ? <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>{content}</form> : content}
                 </div>
             </div>
         </div>

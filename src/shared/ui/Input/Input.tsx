@@ -11,17 +11,47 @@ interface FieldProps {
     hint?: string;
 }
 
-/** Ids and aria props that tie a control to its label, error and hint. */
+type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/** Spanish text for a failed native constraint (required, min, type=email…). */
+const validationText = (el: Control): string => {
+    const v = el.validity;
+    if (v.valueMissing) return 'Este campo es obligatorio';
+    if (v.rangeUnderflow && 'min' in el) return `El valor mínimo es ${el.min}`;
+    if (v.rangeOverflow && 'max' in el) return `El valor máximo es ${el.max}`;
+    if (v.tooShort && 'minLength' in el) return `Debe tener al menos ${el.minLength} caracteres`;
+    if (v.typeMismatch) return el.type === 'email' ? 'Ingresa un correo válido' : 'El formato no es válido';
+    return el.validationMessage;
+};
+
+/**
+ * Ids and aria props that tie a control to its label, error and hint.
+ * Native constraint failures (on form submit) are shown inline as the field error instead of the browser bubble.
+ */
 const useField = (id: string | undefined, { error, hint }: FieldProps, describedBy?: string) => {
     const autoId = useId();
+    const [nativeError, setNativeError] = useState('');
     const controlId = id ?? autoId;
     const messageId = `${controlId}-msg`;
-    const message = error || hint;
+    const shownError = error || nativeError || undefined;
+    const message = shownError || hint;
     const ids = [describedBy, message ? messageId : undefined].filter(Boolean).join(' ');
     return {
         controlId,
         messageId,
-        aria: { 'aria-invalid': error ? true : undefined, 'aria-describedby': ids || undefined },
+        shownError,
+        aria: {
+            'aria-invalid': shownError ? true : undefined,
+            'aria-describedby': ids || undefined,
+            onInvalid: (e: React.FormEvent<Control>) => {
+                e.preventDefault();
+                const el = e.currentTarget;
+                setNativeError(validationText(el));
+                // Without the browser bubble nothing gets focus, so the first invalid field takes it.
+                if (el.form?.querySelector('input:invalid, select:invalid, textarea:invalid') === el) el.focus();
+            },
+            onInput: () => setNativeError(''),
+        },
     };
 };
 
@@ -63,14 +93,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     'aria-describedby': describedBy,
     ...props
 }, ref) => {
-    const { controlId, messageId, aria } = useField(id, { error, hint }, describedBy);
+    const { controlId, messageId, shownError, aria } = useField(id, { error, hint }, describedBy);
     const [revealed, setRevealed] = useState(false);
     const isPassword = type === 'password';
     const paddingLeft = Icon && iconPosition === 'left' ? 'pl-11' : 'pl-4';
     const paddingRight = (Icon && iconPosition === 'right') || isPassword ? 'pr-11' : 'pr-4';
 
     return (
-        <Field label={label} error={error} hint={hint} controlId={controlId} messageId={messageId}>
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
             <div className="relative group">
                 <input
                     ref={ref}
@@ -79,7 +109,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                     {...aria}
                     className={`
                         w-full rounded-xl border
-                        ${error ? ERROR_BORDER : 'border-slate-300 dark:border-border-dark focus:ring-primary focus:border-primary dark:focus:border-primary'}
+                        ${shownError ? ERROR_BORDER : 'border-slate-300 dark:border-border-dark focus:ring-primary focus:border-primary dark:focus:border-primary'}
                         bg-slate-50 dark:bg-background-dark
                         text-slate-900 dark:text-white
                         placeholder:text-slate-400 dark:placeholder:text-slate-500
@@ -127,10 +157,10 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
     label, error, hint, id, className = '', 'aria-describedby': describedBy, children, ...props
 }, ref) => {
-    const { controlId, messageId, aria } = useField(id, { error, hint }, describedBy);
+    const { controlId, messageId, shownError, aria } = useField(id, { error, hint }, describedBy);
     return (
-        <Field label={label} error={error} hint={hint} controlId={controlId} messageId={messageId}>
-            <select ref={ref} id={controlId} {...aria} className={`${SELECT_CLASS} w-full ${error ? ERROR_BORDER : ''} ${className}`} {...props}>
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
+            <select ref={ref} id={controlId} {...aria} className={`${SELECT_CLASS} w-full ${shownError ? ERROR_BORDER : ''} ${className}`} {...props}>
                 {children}
             </select>
         </Field>
@@ -145,10 +175,10 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
     label, error, hint, id, className = '', 'aria-describedby': describedBy, ...props
 }, ref) => {
-    const { controlId, messageId, aria } = useField(id, { error, hint }, describedBy);
+    const { controlId, messageId, shownError, aria } = useField(id, { error, hint }, describedBy);
     return (
-        <Field label={label} error={error} hint={hint} controlId={controlId} messageId={messageId}>
-            <textarea ref={ref} id={controlId} {...aria} className={`${TEXTAREA_CLASS} ${error ? ERROR_BORDER : ''} ${className}`} {...props} />
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
+            <textarea ref={ref} id={controlId} {...aria} className={`${TEXTAREA_CLASS} ${shownError ? ERROR_BORDER : ''} ${className}`} {...props} />
         </Field>
     );
 });

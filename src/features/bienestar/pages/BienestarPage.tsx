@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
 import type {
     AidType,
@@ -33,8 +33,6 @@ const statusBadge = (status: number) => {
         default: return <Badge variant="warning">Pendiente</Badge>;
     }
 };
-
-const selectClass = SELECT_CLASS;
 
 const emptyProgram = (): CreateWelfareProgramRequest => ({ name: '', budget: 0, startDate: today() });
 const emptyRequest = (): CreateWelfareRequestRequest => ({ aidType: 1, requestedAmount: 0, reason: '', requiredDate: today() });
@@ -71,6 +69,16 @@ export const BienestarPage: React.FC = () => {
     const [approvedAmount, setApprovedAmount] = useState(0);
     const [notes, setNotes] = useState('');
     const [requiresRepayment, setRequiresRepayment] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
+    const submitting = (fn: () => Promise<void>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try { await fn(); } finally { setSaving(false); }
+    };
+
+    const programPager = usePagedFilter(programs, { searchFields: p => [p.name, p.description] });
 
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
 
@@ -140,7 +148,7 @@ export const BienestarPage: React.FC = () => {
         if (lookupUserId) loadUser(lookupUserId);
     };
 
-    const handleCreateProgram = async () => {
+    const handleCreateProgram = submitting(async () => {
         const f = programForm;
         try {
             const res = await bienestarService.createProgram({
@@ -160,9 +168,10 @@ export const BienestarPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleCreateRequest = async () => {
+
+    const handleCreateRequest = submitting(async () => {
         const f = requestForm;
         try {
             const res = await bienestarService.createRequest({
@@ -182,7 +191,8 @@ export const BienestarPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const openResolve = (request: WelfareRequestDto, action: Resolve['action']) => {
         setResolving({ request, action });
@@ -191,7 +201,7 @@ export const BienestarPage: React.FC = () => {
         setRequiresRepayment(false);
     };
 
-    const handleResolve = async () => {
+    const handleResolve = submitting(async () => {
         if (!resolving) return;
         const { request, action } = resolving;
         try {
@@ -210,7 +220,8 @@ export const BienestarPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const handleCalculateFund = async () => {
         setFundLoading(true);
@@ -312,8 +323,8 @@ export const BienestarPage: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <Input type="date" value={fundPeriod} onChange={(e) => setFundPeriod(e.target.value)} label="Período de excedentes" />
                             <div className="flex items-end">
-                                <Button icon={Calculator} onClick={handleCalculateFund} disabled={fundLoading}>
-                                    {fundLoading ? 'Calculando...' : 'Calcular'}
+                                <Button icon={Calculator} onClick={handleCalculateFund} isLoading={fundLoading}>
+                                    Calcular
                                 </Button>
                             </div>
                         </div>
@@ -322,9 +333,12 @@ export const BienestarPage: React.FC = () => {
             </Card>
 
             <Card padding="none" className="overflow-hidden mb-6">
-                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex items-center gap-2`}>
-                    <Heart className="text-rose-500" size={20} />
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
+                    <div className="flex items-center gap-2">
+                        <Heart className="text-rose-500" size={20} />
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
+                    </div>
+                    <SearchInput pager={programPager} label="Buscar programa" />
                 </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>
@@ -340,10 +354,10 @@ export const BienestarPage: React.FC = () => {
                         <tbody className={TBODY_CLASS}>
                             {progLoading ? (
                                 <tr><td colSpan={5}><LoadingBlock /></td></tr>
-                            ) : programs.length === 0 ? (
-                                <tr><td colSpan={5}><EmptyState title="No hay programas de bienestar" /></td></tr>
+                            ) : programPager.total === 0 ? (
+                                <tr><td colSpan={5}><EmptyState title={programPager.query ? 'Ningún programa coincide con la búsqueda' : 'No hay programas de bienestar'} /></td></tr>
                             ) : (
-                                programs.map(p => (
+                                programPager.pageItems.map(p => (
                                     <tr key={p.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
                                             <p className={`${TD_TRUNCATE_CLASS} font-bold text-slate-900 dark:text-white`} title={p.name}>{p.name}</p>
@@ -361,6 +375,7 @@ export const BienestarPage: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                <Pager pager={programPager} />
             </Card>
 
             {isAdmin && (
@@ -383,12 +398,12 @@ export const BienestarPage: React.FC = () => {
                     </div>
                     {isAdmin && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                            <select value={lookupUserId} onChange={(e) => setLookupUserId(e.target.value)} className={selectClass}>
+                            <select aria-label="Asociado a consultar" value={lookupUserId} onChange={(e) => setLookupUserId(e.target.value)} className={SELECT_CLASS}>
                                 <option value="">Seleccionar asociado</option>
                                 {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                             </select>
-                            <Button variant="outline" onClick={() => loadUser(lookupUserId)} disabled={!lookupUserId || lookupLoading}>
-                                {lookupLoading ? 'Cargando...' : 'Consultar'}
+                            <Button variant="outline" onClick={() => loadUser(lookupUserId)} disabled={!lookupUserId} isLoading={lookupLoading}>
+                                Consultar
                             </Button>
                         </div>
                     )}
@@ -426,31 +441,31 @@ export const BienestarPage: React.FC = () => {
             <Modal
                 isOpen={programOpen}
                 onClose={() => setProgramOpen(false)}
+                onSubmit={handleCreateProgram}
                 title="Nuevo Programa de Bienestar"
                 icon={<Heart className="text-rose-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreateProgram} disabled={!programForm.name.trim() || programForm.budget <= 0}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setProgramOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                        <Input label="Nombre *" value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
+                        <Input label="Nombre *" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
                     <div className="sm:col-span-2">
-                        <label htmlFor="bienestar-descripcion" className="text-slate-700 dark:text-white text-sm font-bold">Descripción</label>
-                        <textarea id="bienestar-descripcion"
+                        <Textarea
+                            label="Descripción"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"
                             rows={3}
                         />
                     </div>
-                    <Input type="number" label="Presupuesto *" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha inicio *" value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
+                    <Input type="number" label="Presupuesto *" required min={1} value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha inicio *" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
                     <Input type="date" label="Fecha fin" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
                     <Input type="number" label="Máx. beneficiarios" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
                 </div>
@@ -459,34 +474,35 @@ export const BienestarPage: React.FC = () => {
             <Modal
                 isOpen={requestOpen}
                 onClose={() => setRequestOpen(false)}
+                onSubmit={handleCreateRequest}
                 title="Nueva Solicitud de Bienestar"
                 icon={<HandCoins className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreateRequest} disabled={!requestForm.reason.trim() || requestForm.requestedAmount <= 0}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setRequestOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {isAdmin && (
-                        <select value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))} className={selectClass}>
+                        <Select label="Asociado" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                        </select>
+                        </Select>
                     )}
-                    <select value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))} className={selectClass}>
+                    <Select label="Tipo de auxilio *" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
                         {Object.entries(AID_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
-                    <select value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))} className={selectClass}>
+                    </Select>
+                    <Select label="Programa" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
                         <option value="">Sin programa</option>
                         {programs.filter(p => p.isActive).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                    <Input type="number" label="Monto solicitado *" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha requerida *" value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
+                    </Select>
+                    <Input type="number" label="Monto solicitado *" required min={1} value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha requerida *" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Input label="Motivo *" value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
+                        <Input label="Motivo *" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
                     </div>
                 </div>
             </Modal>
@@ -494,15 +510,16 @@ export const BienestarPage: React.FC = () => {
             <Modal
                 isOpen={!!resolving}
                 onClose={() => setResolving(null)}
+                onSubmit={handleResolve}
                 title={resolving?.action === 'aprobar' ? 'Aprobar solicitud' : resolving?.action === 'rechazar' ? 'Rechazar solicitud' : 'Entregar auxilio'}
                 icon={resolving?.action === 'rechazar' ? <XCircle className="text-rose-500" size={20} /> : <CheckCircle2 className="text-emerald-500" size={20} />}
                 size="md"
                 footer={
                     <>
                         <Button
+                            type="submit"
                             variant={resolving?.action === 'rechazar' ? 'danger' : 'primary'}
-                            onClick={handleResolve}
-                            disabled={resolving?.action === 'rechazar' ? !notes.trim() : resolving?.action === 'aprobar' && approvedAmount <= 0}
+                            isLoading={saving}
                         >
                             {resolving?.action === 'aprobar' ? 'Aprobar' : resolving?.action === 'rechazar' ? 'Rechazar' : 'Entregar'}
                         </Button>
@@ -512,7 +529,7 @@ export const BienestarPage: React.FC = () => {
             >
                 <div className="grid grid-cols-1 gap-4">
                     {resolving?.action === 'aprobar' && (
-                        <Input type="number" label="Monto aprobado *" value={approvedAmount} onChange={(e) => setApprovedAmount(Number(e.target.value))} />
+                        <Input type="number" label="Monto aprobado *" required min={1} value={approvedAmount} onChange={(e) => setApprovedAmount(Number(e.target.value))} />
                     )}
                     {resolving?.action === 'entregar' && (
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -523,6 +540,7 @@ export const BienestarPage: React.FC = () => {
                     <Input
                         label={resolving?.action === 'rechazar' ? 'Motivo del rechazo *' : resolving?.action === 'entregar' ? 'Concepto' : 'Observaciones'}
                         value={notes}
+                        required={resolving?.action === 'rechazar'}
                         onChange={(e) => setNotes(e.target.value)}
                     />
                 </div>

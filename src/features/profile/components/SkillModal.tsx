@@ -71,7 +71,7 @@ export const SkillModal: React.FC<Props> = ({
                     {editing ? (
                         <Input value={editing.skillName} disabled />
                     ) : loadingSkills ? (
-                        <div className="flex items-center gap-2 text-slate-500">
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <Loader2 className="animate-spin" size={16} />
                             Cargando habilidades...
                         </div>

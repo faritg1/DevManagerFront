@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input } from '../../../shared/ui';
+import { Modal, Button, Input, SELECT_CLASS } from '../../../shared/ui';
 import type { AssociateDto, EnrollmentDto, EnrollmentStatus } from '../../../shared/api/types';
 import { ENROLLMENT_STATUS_LABELS } from '../labels';
 
@@ -19,7 +19,7 @@ interface Props {
     onSubmit: (value: EnrollmentFormValue) => void;
 }
 
-const selectCls = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3';
+const selectCls = SELECT_CLASS;
 
 /** Se monta solo mientras está abierto (el padre lo renderiza condicionalmente) para reiniciar el estado. */
 export const EnrollmentHoursForm: React.FC<Props> = ({ enrollment, associates, isSaving, onClose, onSubmit }) => {

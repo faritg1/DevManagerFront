@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -22,7 +22,7 @@ const ARCO_STATUS: Record<number, { label: string; variant: 'warning' | 'success
     3: { label: 'Rechazada', variant: 'danger' },
 };
 
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 /** Solicitudes ARCO. El consentimiento se gestiona en Políticas de datos y en el detalle del asociado. */
 export const HabeasDataPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Loader2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -181,7 +181,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         <select
                             value={genForm.reportType}
                             onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2"
+                            className={`${SELECT_CLASS} w-full mt-2`}
                         >
                             <option value={1}>Trimestral</option>
                             <option value={2}>Anual</option>

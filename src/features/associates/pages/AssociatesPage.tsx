@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, SELECT_SM_CLASS } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -74,7 +74,7 @@ export const AssociatesPage: React.FC = () => {
                     <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : '')}
-                        className="h-10 rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#16222b] text-slate-900 dark:text-white px-3 text-sm"
+                        className={SELECT_SM_CLASS}
                     >
                         <option value="">Todos los estados</option>
                         {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -140,7 +140,7 @@ export const AssociatesPage: React.FC = () => {
                         <select
                             value={userId}
                             onChange={(e) => setUserId(e.target.value)}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                            className={SELECT_CLASS}
                         >
                             <option value="">— Selecciona un usuario —</option>
                             {users.filter((u) => !associateIds.has(u.id)).map((u) => (

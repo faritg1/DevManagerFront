@@ -16,7 +16,7 @@ import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader } from "../../../shared/ui";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -248,7 +248,7 @@ export const SkillsCatalogPage: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as FilterType)}
-              className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-[#16222b] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
+              className={SELECT_SM_CLASS}
             >
               <option value="all">Todos los tipos</option>
               <option value="global">Global</option>
@@ -259,7 +259,7 @@ export const SkillsCatalogPage: React.FC = () => {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-[#16222b] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
+            className={SELECT_SM_CLASS}
           >
             <option value="all">Todas las categorías</option>
             {categories.map((cat) => (

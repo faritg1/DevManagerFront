@@ -8,7 +8,7 @@ import type {
   SkillCategoryDto,
 } from "../../../shared/api/types";
 import { useToast } from "../../../shared/context";
-import { Modal, Button, Input } from "../../../shared/ui";
+import { Modal, Button, Input, SELECT_SM_CLASS } from "../../../shared/ui";
 
 interface SkillFormModalProps {
   isOpen: boolean;
@@ -163,7 +163,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 bg-white dark:bg-[#16222b] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
+            className={`${SELECT_SM_CLASS} w-full`}
           >
             <option value="">Sin categoría</option>
             {allCategories.map((cat) => (

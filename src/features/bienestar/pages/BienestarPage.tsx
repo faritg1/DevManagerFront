@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Loader2, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -34,7 +34,7 @@ const statusBadge = (status: number) => {
     }
 };
 
-const selectClass = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
+const selectClass = SELECT_CLASS;
 
 const emptyProgram = (): CreateWelfareProgramRequest => ({ name: '', budget: 0, startDate: today() });
 const emptyRequest = (): CreateWelfareRequestRequest => ({ aidType: 1, requestedAmount: 0, reason: '', requiredDate: today() });

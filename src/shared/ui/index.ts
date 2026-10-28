@@ -10,3 +10,4 @@ export * from './ConfirmDialog/ConfirmDialog';
 export * from './LevelSelector/LevelSelector';
 export * from './Page';
 export * from './tableStyles';
+export * from './formStyles';

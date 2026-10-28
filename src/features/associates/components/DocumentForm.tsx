@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Button, Input } from '../../../shared/ui';
+import { Button, Input, SELECT_CLASS } from '../../../shared/ui';
 import { associatesService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import { DOCUMENT_TYPES, errorText, isApiError, needsLocalToast } from '../labels';
@@ -56,7 +56,7 @@ export const DocumentForm: React.FC<Props> = ({ userId, documentType, documentNu
                     <select
                         value={type}
                         onChange={(e) => setType(Number(e.target.value))}
-                        className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                        className={SELECT_CLASS}
                     >
                         {Object.entries(DOCUMENT_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>

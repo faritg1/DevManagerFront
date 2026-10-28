@@ -4,7 +4,7 @@ import {
   Plus,
   Loader2,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle, Badge, Button, Modal, LevelSelector } from "../../../shared/ui";
+import { Card, CardHeader, CardTitle, Badge, Button, Modal, LevelSelector, SELECT_CLASS } from "../../../shared/ui";
 import { projectsService, skillsService } from "../../../shared/api";
 import type {
   SkillRequirementResponse,
@@ -200,7 +200,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
               <select
                 value={requirementForm.skillId}
                 onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
-                className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                className={`${SELECT_CLASS} w-full`}
               >
                 <option value="">Seleccionar habilidad...</option>
                 {availableSkills.map((skill) => (

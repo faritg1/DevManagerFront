@@ -22,6 +22,7 @@ import {
   Modal,
   PageContainer,
   PageHeader,
+  SELECT_CLASS,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
@@ -319,7 +320,7 @@ export const EditProjectPage: React.FC = () => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className={`${SELECT_CLASS} w-full`}
                 >
                   {catalogs?.projectStatuses.map((status) => (
                       <option key={status.id} value={status.id}>
@@ -375,7 +376,7 @@ export const EditProjectPage: React.FC = () => {
                   name="complexityLevel"
                   value={formData.complexityLevel}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className={`${SELECT_CLASS} w-full`}
                 >
                   {catalogs?.complexityLevels.map((level) => (
                     <option key={level.id} value={level.id}>
@@ -498,7 +499,7 @@ export const EditProjectPage: React.FC = () => {
             <select
               value={newSkillId}
               onChange={(e) => setNewSkillId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              className={`${SELECT_CLASS} w-full`}
             >
               <option value="">Seleccionar habilidad...</option>
               {filteredSkills.map((skill) => (
@@ -516,7 +517,7 @@ export const EditProjectPage: React.FC = () => {
             <select
               value={newSkillLevel}
               onChange={(e) => setNewSkillLevel(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              className={`${SELECT_CLASS} w-full`}
             >
               {catalogs?.skillLevels.map((level) => (
                 <option key={level.id} value={level.id}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Input } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, Input, SELECT_CLASS } from '../../../shared/ui';
 import { Briefcase } from 'lucide-react';
 import type { UpdateProfileRequest, ProfileResponse, AllConfigCatalogsDto, AvailabilityStatus } from '../../../shared/api/types';
 
@@ -48,7 +48,7 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                         <select
                             value={form.seniorityLevelId ?? profile?.seniorityLevelId ?? ''}
                             onChange={(e) => onChange({ seniorityLevelId: e.target.value ? parseInt(e.target.value) : undefined })}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary transition-all"
+                            className={SELECT_CLASS}
                         >
                             <option value="">Selecciona seniority...</option>
                             {catalogs?.seniorityLevels?.map(l => (
@@ -88,7 +88,7 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                         <select
                             value={form.availability ?? profile?.availability ?? ''}
                             onChange={(e) => onChange({ availability: (e.target.value as AvailabilityStatus) || null })}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary transition-all"
+                            className={SELECT_CLASS}
                         >
                             <option value="">Selecciona disponibilidad...</option>
                             <option value="Available">Disponible</option>

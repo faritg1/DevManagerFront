@@ -14,7 +14,7 @@ import {
     Users,
     type LucideIcon,
 } from 'lucide-react';
-import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader } from '../../../shared/ui';
+import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
@@ -22,8 +22,7 @@ import type { AssociateStatus, OrganizationDto, OrganizationEntityType } from '.
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate } from '../../associates/labels';
 
-const selectClass =
-    'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3 outline-none';
+const selectClass = SELECT_CLASS;
 
 /** Valor ausente: texto atenuado en lugar de una etiqueta vacía. */
 const Undefined: React.FC<{ label?: string }> = ({ label = 'Sin definir' }) => (

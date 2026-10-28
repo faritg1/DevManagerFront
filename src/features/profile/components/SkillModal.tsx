@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Input, LevelSelector } from '../../../shared/ui';
+import { Modal, Button, Input, LevelSelector, SELECT_CLASS } from '../../../shared/ui';
 import { Award, Loader2, Link as LinkIcon, Save, Plus, FileText } from 'lucide-react';
 import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
@@ -78,7 +78,7 @@ export const SkillModal: React.FC<Props> = ({
                         <select
                             value={form.skillId}
                             onChange={(e) => setForm(prev => ({ ...prev, skillId: e.target.value }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                            className={`${SELECT_CLASS} w-full`}
                         >
                             <option value="">Seleccionar habilidad...</option>
                             {availableSkills.map(skill => (

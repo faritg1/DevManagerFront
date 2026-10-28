@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
-import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader } from '../../../shared/ui';
+import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
@@ -160,7 +160,7 @@ export const CreateProjectPage: React.FC = () => {
                                     name="complexityLevel"
                                     value={values.complexityLevel}
                                     onChange={handleChange}
-                                    className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    className={`${SELECT_CLASS} w-full`}
                                 >
                                     {catalogs?.complexityLevels.map(level => (
                                         <option key={level.id} value={level.id}>

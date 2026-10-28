@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -31,7 +31,7 @@ const SEVERITY_LABEL: Record<number, string> = { 1: 'Leve', 2: 'Grave', 3: 'Mort
 const RISK_LEVEL_LABEL: Record<number, string> = { 1: 'Bajo', 2: 'Medio', 3: 'Alto', 4: 'Muy alto', 5: 'Crítico' };
 
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 const emptyRisk = (): CreateRiskRequest => ({ level: 1, factor: '', description: '' });
 const emptyInvestigation = (): InvestigateAccidentRequest => ({ investigationDate: today(), conclusions: '', causes: '', correctiveMeasures: '' });

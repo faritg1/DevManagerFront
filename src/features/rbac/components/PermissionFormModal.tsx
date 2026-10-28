@@ -8,6 +8,7 @@ import { rbacService } from "../../../shared/api";
 import { Modal } from "../../../shared/ui/Modal";
 import { Input } from "../../../shared/ui/Input";
 import { Button } from "../../../shared/ui/Button";
+import { SELECT_SM_CLASS } from "../../../shared/ui";
 
 interface PermissionFormModalProps {
   isOpen: boolean;
@@ -264,7 +265,7 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
             <select
               value={selectedAction}
               onChange={handleActionChange}
-              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white"
+              className={`${SELECT_SM_CLASS} w-full`}
             >
               {COMMON_ACTIONS.map((a) => (
                 <option key={a} value={a} className="capitalize">

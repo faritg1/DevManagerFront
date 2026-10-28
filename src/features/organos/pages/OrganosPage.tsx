@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -39,7 +39,7 @@ const nowLocal = () => {
     return d.toISOString().slice(0, 16);
 };
 
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
+const selectClass = `${SELECT_CLASS} w-full`;
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
 const labelClass = 'text-slate-700 dark:text-white text-sm font-bold';
 

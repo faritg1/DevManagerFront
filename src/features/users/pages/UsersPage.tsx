@@ -23,7 +23,7 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS } from '../../../shared/ui';
 import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
@@ -943,7 +943,7 @@ export const UsersPage: React.FC = () => {
                                     <select
                                         value={overridePermId}
                                         onChange={(e) => setOverridePermId(e.target.value)}
-                                        className="w-full text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#111b22] text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        className={`${SELECT_SM_CLASS} w-full`}
                                     >
                                         <option value="">— Selecciona un permiso —</option>
                                         {groupedPerms.map((group) => (

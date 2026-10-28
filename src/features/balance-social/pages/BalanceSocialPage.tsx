@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
@@ -133,7 +133,7 @@ export const BalanceSocialPage: React.FC = () => {
                         <select
                             value={lookupUserId}
                             onChange={(e) => setLookupUserId(e.target.value)}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none"
+                            className={SELECT_CLASS}
                         >
                             <option value="">Seleccionar asociado</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}

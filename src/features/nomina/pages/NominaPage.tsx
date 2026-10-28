@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -19,7 +19,7 @@ const MODEL_LABEL: Record<CompensationModel, string> = {
     3: 'Por proyecto',
 };
 
-const selectClass = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
+const selectClass = SELECT_CLASS;
 
 const emptyForm = (userId = ''): CreateCompensationRequest => ({ userId, period: today(), model: 1, baseValue: 0 });
 

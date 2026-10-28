@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building2, User, Mail, Eye, EyeOff, Hexagon } from 'lucide-react';
 import { useAuth } from '../../../shared/context';
-import { Button, Input } from '../../../shared/ui';
+import { Button, Input, SELECT_CLASS } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES } from '../../associates/labels';
 
@@ -101,7 +101,7 @@ export const RegisterPage: React.FC = () => {
                             <select
                                 value={formData.entityType}
                                 onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
-                                className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                                className={SELECT_CLASS}
                             >
                                 <option value="">No especificar</option>
                                 {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}

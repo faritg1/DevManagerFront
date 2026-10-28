@@ -297,10 +297,12 @@ export interface AddSkillRequirementRequest {
 }
 
 // ============ APPLICATIONS (POSTULACIONES) ============
+// Mirrors Domain.Enums.ApplicationStatus (backend, serialized as numbers). "Pending" is the backend "Applied".
 export enum ApplicationStatus {
-  Pending = 0,
-  Approved = 1,
-  Rejected = 2,
+  Pending = 1,
+  Approved = 2,
+  Rejected = 3,
+  Withdrawn = 4,
 }
 
 export interface ApplicationResponse {

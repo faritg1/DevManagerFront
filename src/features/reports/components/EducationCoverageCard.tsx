@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { reportsService } from "../../../shared/api";
 import type { EducationCoverageResponse } from "../../../shared/api/types";
-import { Card, Badge } from "../../../shared/ui";
+import { Card, Badge, SELECT_SM_CLASS } from "../../../shared/ui";
 import { HOURS_TYPE_LABELS } from "../../education/labels";
 
 const thisYear = new Date().getFullYear();
@@ -34,7 +34,7 @@ export const EducationCoverageCard: React.FC = () => {
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
-          className="h-10 rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#16222b] text-slate-900 dark:text-white px-3 text-sm"
+          className={SELECT_SM_CLASS}
         >
           {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>

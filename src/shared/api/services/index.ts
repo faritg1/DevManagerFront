@@ -1,9 +1,3 @@
-/**
- * API Services
- * Barrel export para todos los servicios del API
- * Basado en: API_GUIDE.md
- */
-
 export { authService } from "./authService";
 export { usersService } from "./usersService";
 export { profileService } from "./profileService";
@@ -29,3 +23,4 @@ export { habeasDataService } from "./habeasDataService";
 export { organosService } from "./organosService";
 export { reportesSupersolidariaService } from "./reportesSupersolidariaService";
 export { asistenteService } from "./asistenteService";
+export { organizationsService } from "./organizationsService";

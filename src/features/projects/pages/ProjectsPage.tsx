@@ -11,27 +11,20 @@ import {
     AlertCircle,
     Briefcase
 } from 'lucide-react';
-import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, ProgressBar, Button, Input, PageContainer, PageHeader, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
-import { ProjectStatus, ProjectComplexity, type ProjectResponse } from '../../../shared/api/types';
+import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
 import { getComplexityConfig } from '../utils/complexityConfig';
 
-// Helpers para mapear estados a badges
 const getStatusConfig = (status: ProjectStatus): { variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'; label: string } => {
+    const label = PROJECT_STATUS_LABELS[status] ?? 'Desconocido';
     switch (status) {
-        case ProjectStatus.Active:
-            return { variant: 'success', label: 'Activo' };
-        case ProjectStatus.Draft:
-            return { variant: 'default', label: 'Borrador' };
-        case ProjectStatus.OnHold:
-            return { variant: 'warning', label: 'En Pausa' };
-        case ProjectStatus.Completed:
-            return { variant: 'info', label: 'Completado' };
-        case ProjectStatus.Cancelled:
-            return { variant: 'danger', label: 'Cancelado' };
-        default:
-            return { variant: 'default', label: 'Desconocido' };
+        case ProjectStatus.Open: return { variant: 'success', label };
+        case ProjectStatus.InProgress: return { variant: 'warning', label };
+        case ProjectStatus.Closed: return { variant: 'info', label };
+        case ProjectStatus.Cancelled: return { variant: 'danger', label };
+        default: return { variant: 'default', label };
     }
 };
 
@@ -65,25 +58,30 @@ const formatDate = (dateString: string | null): string => {
     });
 };
 
-// Tabs de filtro por estado
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
-    { label: 'Activos', value: ProjectStatus.Active },
     { label: 'Borradores', value: ProjectStatus.Draft },
-    { label: 'En Pausa', value: ProjectStatus.OnHold },
-    { label: 'Completados', value: ProjectStatus.Completed },
+    { label: 'Abiertos', value: ProjectStatus.Open },
+    { label: 'En progreso', value: ProjectStatus.InProgress },
+    { label: 'Cerrados', value: ProjectStatus.Closed },
+    { label: 'Cancelados', value: ProjectStatus.Cancelled },
 ];
 
 export const ProjectsPage: React.FC = () => {
     const navigate = useNavigate();
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
-    const [filteredProjects, setFilteredProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<ProjectStatus | undefined>(undefined);
+    const query = searchQuery.trim().toLowerCase();
+    const filteredProjects = query
+        ? projects.filter(project =>
+            project.name.toLowerCase().includes(query) ||
+            project.code?.toLowerCase().includes(query) ||
+            project.description?.toLowerCase().includes(query))
+        : projects;
 
-    // Cargar proyectos
     useEffect(() => {
         const fetchProjects = async () => {
             setIsLoading(true);
@@ -92,7 +90,6 @@ export const ProjectsPage: React.FC = () => {
                 const response = await projectsService.getAll(activeTab);
                 if (response.success && response.data) {
                     setProjects(response.data);
-                    setFilteredProjects(response.data);
                 } else {
                     setError(response.message || 'Error al cargar proyectos');
                 }
@@ -107,25 +104,8 @@ export const ProjectsPage: React.FC = () => {
         fetchProjects();
     }, [activeTab]);
 
-    // Filtrar por búsqueda
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredProjects(projects);
-            return;
-        }
-
-        const query = searchQuery.toLowerCase();
-        const filtered = projects.filter(project => 
-            project.name.toLowerCase().includes(query) ||
-            project.code?.toLowerCase().includes(query) ||
-            project.description?.toLowerCase().includes(query)
-        );
-        setFilteredProjects(filtered);
-    }, [searchQuery, projects]);
-
     return (
         <PageContainer>
-            {/* Header + actions */}
             <PageHeader
                 title="Proyectos"
                 description="Gestiona y monitorea todos los proyectos de la organización."
@@ -133,7 +113,7 @@ export const ProjectsPage: React.FC = () => {
                     <div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <Input
-                                placeholder="Buscar proyectos..."
+                                placeholder="Buscar proyectos..." aria-label="Buscar proyectos"
                                 icon={Search}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,12 +128,12 @@ export const ProjectsPage: React.FC = () => {
                 }
             />
             <div className="flex flex-col gap-8">
-                {/* Status Tabs Row */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
                     {STATUS_TABS.map((tab) => (
                         <button
                             key={tab.label}
                             onClick={() => setActiveTab(tab.value)}
+                            aria-pressed={activeTab === tab.value}
                             className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
                                 activeTab === tab.value
                                     ? 'bg-primary text-white shadow-lg shadow-primary/25'
@@ -165,7 +145,6 @@ export const ProjectsPage: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Content */}
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -182,34 +161,27 @@ export const ProjectsPage: React.FC = () => {
                         </Button>
                     </div>
                 ) : filteredProjects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="p-4 rounded-full bg-slate-100 dark:bg-[#16222b] mb-4">
-                            <FolderOpen className="w-10 h-10 text-slate-400" />
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
-                            {searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
-                        </p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
-                            {searchQuery ? 'Intenta con otros términos de búsqueda' : 'Crea tu primer proyecto para comenzar'}
-                        </p>
-                        {!searchQuery && (
+                    <EmptyState
+                        icon={FolderOpen}
+                        className="py-20"
+                        title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
+                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : 'Crea tu primer proyecto para comenzar.'}
+                        action={!searchQuery && (
                             <Link to={ROUTES.CREATE_PROJECT}>
                                 <Button icon={Plus}>Crear Proyecto</Button>
                             </Link>
                         )}
-                    </div>
+                    />
                 ) : (
                     <>
-                        {/* Projects Count */}
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                             Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
                         </p>
 
-                        {/* Projects Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                             {filteredProjects.map((project, index) => {
                                 const statusConfig = getStatusConfig(project.status);
-                                const complexityConfig = getComplexityConfig(project.complexity);
+                                const complexityConfig = getComplexityConfig(project.complexityLevel);
                                 
                                 return (
                                     <Card 
@@ -218,12 +190,10 @@ export const ProjectsPage: React.FC = () => {
                                         onClick={() => navigate(`/projects/${project.id}`)}
                                         className="group relative overflow-hidden"
                                     >
-                                        {/* Hover Arrow */}
                                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <ArrowRight className="text-primary transform -translate-x-2 group-hover:translate-x-0 transition-transform" />
                                         </div>
 
-                                        {/* Project Header */}
                                         <div className="flex justify-between items-start">
                                             <div className="flex gap-4">
                                                 <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getProjectGradient(index)} flex items-center justify-center text-white font-bold text-lg shadow-lg flex-shrink-0`}>
@@ -234,7 +204,7 @@ export const ProjectsPage: React.FC = () => {
                                                         {project.name}
                                                     </h3>
                                                     {project.code && (
-                                                        <p className="text-slate-400 dark:text-slate-500 text-xs font-mono mt-0.5">
+                                                        <p className="text-slate-500 dark:text-slate-400 text-xs font-mono mt-0.5">
                                                             {project.code}
                                                         </p>
                                                     )}
@@ -247,7 +217,6 @@ export const ProjectsPage: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Badges Row */}
                                         <div className="flex flex-wrap items-center gap-2 mt-4">
                                             <Badge variant={statusConfig.variant} dot>
                                                 {statusConfig.label}
@@ -257,7 +226,6 @@ export const ProjectsPage: React.FC = () => {
                                             </Badge>
                                         </div>
 
-                                        {/* Dates */}
                                         <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
                                             <span className="flex items-center gap-1">
                                                 <Calendar size={14} />
@@ -271,27 +239,15 @@ export const ProjectsPage: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Budget if available */}
-                                        {project.budgetEstimate && (
-                                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#233948]">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-slate-500 dark:text-slate-400">Presupuesto</span>
-                                                    <span className="text-slate-900 dark:text-white font-semibold">
-                                                        ${project.budgetEstimate.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
                                     </Card>
                                 );
                             })}
 
-                            {/* Create New Card */}
                             <Link 
                                 to={ROUTES.CREATE_PROJECT} 
                                 className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-[#233948] bg-transparent p-6 items-center justify-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[280px]"
                             >
-                                <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-[#16222b] flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
+                                <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-[#16222b] flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
                                     <Plus size={28} />
                                 </div>
                                 <p className="text-slate-500 dark:text-slate-400 font-semibold group-hover:text-primary transition-colors">
@@ -306,4 +262,3 @@ export const ProjectsPage: React.FC = () => {
     );
 };
 
-export default ProjectsPage;

@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FileLock2, Loader2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
+import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
 import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
-
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
+import { formatDate } from '../../../shared/format';
 
 const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
     1: 'Acceso',
@@ -27,7 +22,7 @@ const ARCO_STATUS: Record<number, { label: string; variant: 'warning' | 'success
     3: { label: 'Rechazada', variant: 'danger' },
 };
 
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 /** Solicitudes ARCO. El consentimiento se gestiona en Políticas de datos y en el detalle del asociado. */
 export const HabeasDataPage: React.FC = () => {
@@ -143,7 +138,7 @@ export const HabeasDataPage: React.FC = () => {
                     </h2>
                 </div>
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    <LoadingBlock />
                 ) : requests.length === 0 ? (
                     <p className="text-sm text-slate-500 dark:text-slate-400">Sin solicitudes ARCO.</p>
                 ) : (
@@ -231,4 +226,3 @@ export const HabeasDataPage: React.FC = () => {
     );
 };
 
-export default HabeasDataPage;

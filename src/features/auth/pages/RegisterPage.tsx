@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building2, User, Mail, Eye, EyeOff, Hexagon } from 'lucide-react';
 import { useAuth } from '../../../shared/context';
-import { Button, Input } from '../../../shared/ui';
+import { Button, Input, SELECT_CLASS } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES } from '../../associates/labels';
 
@@ -58,14 +58,12 @@ export const RegisterPage: React.FC = () => {
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
-            {/* Background Effects */}
             <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
                 <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500 blur-[120px] animate-pulse" />
                 <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary blur-[100px]" />
             </div>
 
             <div className="w-full max-w-[500px] relative z-10">
-                {/* Header */}
                 <div className="mb-8 text-center sm:text-left flex flex-col gap-4">
                     <div className="size-12 text-primary mx-auto sm:mx-0">
                         <Hexagon fill="currentColor" className="w-full h-full" />
@@ -80,11 +78,10 @@ export const RegisterPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Form Card */}
                 <div className="bg-white dark:bg-[#192833] rounded-2xl shadow-xl border border-slate-200 dark:border-[#233948] p-6 sm:p-8 backdrop-blur-sm">
                     <form className="flex flex-col gap-5" onSubmit={handleRegister}>
                         {error && (
-                            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
+                            <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
                                 {error}
                             </div>
                         )}
@@ -104,7 +101,7 @@ export const RegisterPage: React.FC = () => {
                             <select
                                 value={formData.entityType}
                                 onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
-                                className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                                className={SELECT_CLASS}
                             >
                                 <option value="">No especificar</option>
                                 {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -145,7 +142,7 @@ export const RegisterPage: React.FC = () => {
                                         type={showPassword ? "text" : "password"}
                                         required
                                     />
-                                    <button 
+                                    <button aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} 
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
@@ -179,7 +176,6 @@ export const RegisterPage: React.FC = () => {
                         </Button>
                     </form>
 
-                    {/* Login Link */}
                     <div className="mt-8 text-center">
                         <Link to={ROUTES.LOGIN} className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors">
                             ¿Ya tienes cuenta? <span className="text-primary hover:underline">Iniciar Sesión</span>
@@ -191,4 +187,3 @@ export const RegisterPage: React.FC = () => {
     );
 };
 
-export default RegisterPage;

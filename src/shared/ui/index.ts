@@ -1,4 +1,3 @@
-// Re-export all UI components
 export * from './Button';
 export * from './Input';
 export * from './Card';
@@ -11,3 +10,4 @@ export * from './ConfirmDialog/ConfirmDialog';
 export * from './LevelSelector/LevelSelector';
 export * from './Page';
 export * from './tableStyles';
+export * from './formStyles';

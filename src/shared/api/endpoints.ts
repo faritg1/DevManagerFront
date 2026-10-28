@@ -1,14 +1,13 @@
-/**
- * API Endpoints Configuration
- * Centralized endpoint definitions for the DevManager .NET Backend
- * Basado en: API_GUIDE.md
- */
-
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER_ORGANIZATION: "/auth/register-organization",
+  },
+
+  // Organización del usuario (la del token)
+  ORGANIZATIONS: {
+    ME: "/organizations/me",
   },
 
   // Users
@@ -250,5 +249,3 @@ export const API_ENDPOINTS = {
       RESPONDER: "/asistente/responder",
     },
   } as const;
-
-export type ApiEndpoints = typeof API_ENDPOINTS;

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, PageContainer } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { agentService } from '../../../shared/api';
+import { agentService, type ApiError } from '../../../shared/api';
 
 interface ChatMessage {
     id: string;
@@ -32,14 +32,12 @@ const INITIAL_MESSAGE: ChatMessage = {
     confidence: 1
 };
 
-// Cargar mensajes desde localStorage
 const loadMessagesFromStorage = (): ChatMessage[] => {
     try {
         const stored = localStorage.getItem(CHAT_STORAGE_KEY);
         if (stored) {
             const parsed = JSON.parse(stored);
-            // Convertir timestamps de string a Date
-            return parsed.map((msg: any) => ({
+            return (parsed as Array<ChatMessage & { timestamp: string }>).map((msg) => ({
                 ...msg,
                 timestamp: new Date(msg.timestamp)
             }));
@@ -50,10 +48,8 @@ const loadMessagesFromStorage = (): ChatMessage[] => {
     return [INITIAL_MESSAGE];
 };
 
-// Guardar mensajes en localStorage
 const saveMessagesToStorage = (messages: ChatMessage[]) => {
     try {
-        // Limitar a los últimos MAX_MESSAGES mensajes
         const toSave = messages.slice(-MAX_MESSAGES);
         localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
     } catch (error) {
@@ -65,7 +61,6 @@ export const AgentsPage: React.FC = () => {
     const { showNotification } = useNotification();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     
-    // Chat state - Cargar desde localStorage
     const [messages, setMessages] = useState<ChatMessage[]>(loadMessagesFromStorage);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -75,17 +70,14 @@ export const AgentsPage: React.FC = () => {
     const [rejectReason, setRejectReason] = useState('');
     const [isRejecting, setIsRejecting] = useState(false);
 
-    // Scroll automático al último mensaje
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    // Guardar mensajes automáticamente cuando cambian
     useEffect(() => {
         saveMessagesToStorage(messages);
     }, [messages]);
 
-    // Enviar consulta al agente
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
@@ -130,10 +122,10 @@ export const AgentsPage: React.FC = () => {
                     message: response.message || 'Error al consultar el agente'
                 });
             }
-        } catch (err: any) {
+        } catch (e) {
+            const err = e as ApiError;
             console.error('Error querying agent:', err);
             
-            // Mostrar error más descriptivo
             let errorContent = 'Lo siento, hubo un error de conexión.';
             if (err?.status === 404) {
                 errorContent = '❌ Error 404: El endpoint /api/agent/query no existe en el backend.\n\nVerifica que la ruta del API esté correcta.';
@@ -159,7 +151,6 @@ export const AgentsPage: React.FC = () => {
         }
     };
 
-    // Handle Enter key
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -167,7 +158,6 @@ export const AgentsPage: React.FC = () => {
         }
     };
 
-    // Ejemplos de consultas
     const exampleQueries = [
         "¿Cuántos desarrolladores tenemos con Java nivel 4+?",
         "Analiza las brechas de capacitación en el equipo",
@@ -179,7 +169,6 @@ export const AgentsPage: React.FC = () => {
         setInputValue(query);
     };
 
-    // HITL: Aprobar acción
     const handleApproveAction = async (messageId: string, actionId: string) => {
         setApprovingId(messageId);
         try {
@@ -199,7 +188,6 @@ export const AgentsPage: React.FC = () => {
         }
     };
 
-    // HITL: Rechazar acción
     const handleRejectAction = async () => {
         if (!rejectReason.trim()) {
             showNotification({ type: 'error', message: 'Debes indicar un motivo para rechazar' });
@@ -227,7 +215,6 @@ export const AgentsPage: React.FC = () => {
         }
     };
 
-    // Limpiar historial
     const handleClearHistory = () => {
         setMessages([INITIAL_MESSAGE]);
         localStorage.removeItem(CHAT_STORAGE_KEY);
@@ -236,7 +223,6 @@ export const AgentsPage: React.FC = () => {
 
     return (
         <PageContainer fullHeight>
-            {/* Header */}
             <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
                 <div className="min-w-0">
                     <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl flex items-center gap-2 truncate">
@@ -259,7 +245,6 @@ export const AgentsPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Stats (mini) */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
                 <Card className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3">
                     <div className="p-1.5 sm:p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg shrink-0">
@@ -290,17 +275,14 @@ export const AgentsPage: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Chat Container */}
             <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-[#16222b] rounded-2xl border border-slate-200 dark:border-[#233948] overflow-hidden">
                 
-                {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
                     {messages.map((message) => (
                         <div
                             key={message.id}
                             className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                         >
-                            {/* Avatar */}
                             <div className="flex-shrink-0">
                                 {message.role === 'agent' ? (
                                     <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
@@ -311,7 +293,6 @@ export const AgentsPage: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Message Content */}
                             <div className={`min-w-0 flex-1 max-w-[85%] sm:max-w-3xl ${message.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1.5 sm:gap-2`}>
                                 <div className={`rounded-2xl w-full ${
                                     message.role === 'user' 
@@ -351,7 +332,6 @@ export const AgentsPage: React.FC = () => {
                                         <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                                     )}
                                     
-                                    {/* Suggested actions */}
                                     {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
                                         <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                                             <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
@@ -373,7 +353,6 @@ export const AgentsPage: React.FC = () => {
                                     )}
                                 </div>
 
-                                {/* Metadata del agente */}
                                 {message.role === 'agent' && (
                                     <div className="flex items-center gap-1.5 sm:gap-3 text-xs text-slate-500 dark:text-slate-400 px-1 sm:px-2 flex-wrap">
                                         <span className="flex items-center gap-1">
@@ -418,7 +397,6 @@ export const AgentsPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Reasoning (opcional, colapsable) */}
                                 {message.reasoning && (
                                     <details className="text-xs text-slate-500 dark:text-slate-400 px-2 group">
                                         <summary className="cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
@@ -431,7 +409,6 @@ export const AgentsPage: React.FC = () => {
                                     </details>
                                 )}
 
-                                {/* Tools executed (colapsable) */}
                                 {message.toolsExecuted && message.toolsExecuted.length > 0 && (
                                     <details className="text-xs text-slate-500 dark:text-slate-400 px-2 group">
                                         <summary className="cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
@@ -462,7 +439,6 @@ export const AgentsPage: React.FC = () => {
                                     </details>
                                 )}
 
-                                {/* HITL Approve / Reject buttons */}
                                 {message.requiresApproval && message.actionId && message.hitlStatus === 'pending' && (
                                     <div className="flex gap-2 px-2 pt-1">
                                         <Button
@@ -486,7 +462,6 @@ export const AgentsPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Nota de HITL resuelto */}
                                 {message.hitlStatus === 'rejected' && message.hitlNote && (
                                     <p className="text-xs text-red-500 dark:text-red-400 px-2 italic">
                                         Motivo: {message.hitlNote}
@@ -496,7 +471,6 @@ export const AgentsPage: React.FC = () => {
                         </div>
                     ))}
 
-                    {/* Loading indicator */}
                     {isLoading && (
                         <div className="flex gap-2 sm:gap-3">
                             <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shrink-0">
@@ -517,7 +491,6 @@ export const AgentsPage: React.FC = () => {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Examples (si no hay mensajes) */}
                 {messages.length === 1 && (
                     <div className="px-3 sm:px-6 pb-3 sm:pb-4">
                         <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 sm:mb-3 flex items-center gap-2">
@@ -538,9 +511,7 @@ export const AgentsPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Input */}
                 <div className="border-t border-slate-200 dark:border-[#233948] p-3 sm:p-4">
-                    {/* Require approval toggle */}
                     <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                         <button
                             type="button"
@@ -571,6 +542,7 @@ export const AgentsPage: React.FC = () => {
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyPress}
                             placeholder="Escribe tu consulta..."
+                            aria-label="Consulta para el asistente"
                             rows={1}
                             disabled={isLoading}
                             className="flex-1 resize-none rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] px-3 py-2.5 sm:px-4 sm:py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
@@ -596,7 +568,6 @@ export const AgentsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Modal de Rechazo */}
             <Modal
                 isOpen={rejectModal.open}
                 onClose={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}
@@ -634,4 +605,3 @@ export const AgentsPage: React.FC = () => {
     );
 };
 
-export default AgentsPage;

@@ -49,7 +49,6 @@ export const Card: React.FC<CardProps> = ({
     );
 };
 
-// Subcomponents for better composition
 export const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
     children, 
     className = '' 
@@ -68,22 +67,3 @@ export const CardTitle: React.FC<{ children: React.ReactNode; className?: string
     </h3>
 );
 
-export const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
-    children, 
-    className = '' 
-}) => (
-    <div className={className}>
-        {children}
-    </div>
-);
-
-export const CardFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
-    children, 
-    className = '' 
-}) => (
-    <div className={`pt-4 border-t border-slate-100 dark:border-[#233948] mt-4 ${className}`}>
-        {children}
-    </div>
-);
-
-export default Card;

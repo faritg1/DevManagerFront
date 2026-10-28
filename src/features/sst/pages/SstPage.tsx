@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Loader2, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -16,14 +16,8 @@ import type {
     RiskDto,
     WorkAccidentDto,
 } from '../../../shared/api/types';
+import { formatDate, today } from '../../../shared/format';
 
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
-
-const today = () => new Date().toISOString().slice(0, 10);
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
     const d = new Date();
@@ -37,7 +31,7 @@ const SEVERITY_LABEL: Record<number, string> = { 1: 'Leve', 2: 'Grave', 3: 'Mort
 const RISK_LEVEL_LABEL: Record<number, string> = { 1: 'Bajo', 2: 'Medio', 3: 'Alto', 4: 'Muy alto', 5: 'Crítico' };
 
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
+const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 const emptyRisk = (): CreateRiskRequest => ({ level: 1, factor: '', description: '' });
 const emptyInvestigation = (): InvestigateAccidentRequest => ({ investigationDate: today(), conclusions: '', causes: '', correctiveMeasures: '' });
@@ -257,7 +251,7 @@ export const SstPage: React.FC = () => {
                         </select>
                     )}
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : exams.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin exámenes.</p>
                     ) : (
@@ -294,7 +288,7 @@ export const SstPage: React.FC = () => {
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Matriz de Riesgos</h2>
                     </div>
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : risks.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin riesgos registrados.</p>
                     ) : (
@@ -327,41 +321,41 @@ export const SstPage: React.FC = () => {
                         </label>
                     </div>
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : accidents.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full text-left text-sm whitespace-nowrap">
-                                <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                            <table className={TABLE_CLASS}>
+                                <thead className={THEAD_CLASS}>
                                     <tr>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Fecha</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Asociado</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Tipo</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Gravedad</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">FURAT</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                        <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>
+                                        <th className={TH_CLASS}>Fecha</th>
+                                        <th className={TH_CLASS}>Asociado</th>
+                                        <th className={TH_CLASS}>Tipo</th>
+                                        <th className={TH_CLASS}>Gravedad</th>
+                                        <th className={TH_CLASS}>ARL</th>
+                                        <th className={TH_CLASS}>FURAT</th>
+                                        <th className={TH_CLASS}>Estado</th>
+                                        <th className={TH_CLASS}>Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                                <tbody className={TBODY_CLASS}>
                                     {accidents.map(a => (
                                         <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(a.occurredAt)}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{nameOf(a.userId)}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.accidentType}</td>
-                                            <td className="px-6 py-4">
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(a.occurredAt)}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{nameOf(a.userId)}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.accidentType}</td>
+                                            <td className={TD_CLASS}>
                                                 <Badge variant={a.severity >= 2 ? 'danger' : 'warning'}>{SEVERITY_LABEL[a.severity] ?? a.severity}</Badge>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.arl}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{a.furatNumber || '—'}</td>
-                                            <td className="px-6 py-4">
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.arl}</td>
+                                            <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{a.furatNumber || '—'}</td>
+                                            <td className={TD_CLASS}>
                                                 <Badge variant={a.investigationCompleted ? 'success' : 'warning'} dot>
                                                     {a.investigationCompleted ? `Investigado (${formatDate(a.investigationDate)})` : 'Pendiente'}
                                                 </Badge>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className={TD_CLASS}>
                                                 {!a.investigationCompleted && (
                                                     <Button size="sm" variant="outline" onClick={() => { setInvestigating(a); setInvForm(emptyInvestigation()); }}>
                                                         Investigar
@@ -538,4 +532,3 @@ export const SstPage: React.FC = () => {
     );
 };
 
-export default SstPage;

@@ -1,358 +1,332 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Building2,
-  Users,
-  FolderOpen,
-  Award,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Shield,
-  TrendingUp,
-  Copy,
-} from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-  Avatar,
-  StatCard,
-  PageContainer,
-} from "../../../shared/ui";
-import { useAuth, useNotification } from "../../../shared/context";
-import {
-  usersService,
-  projectsService,
-  skillsService,
-} from "../../../shared/api";
-import {
-  ProjectStatus,
-  type UserResponse,
-  type ProjectResponse,
-  type SkillDto,
-} from "../../../shared/api/types";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../../../shared/config/constants";
+    AlertCircle,
+    Briefcase,
+    Building2,
+    CalendarDays,
+    FolderOpen,
+    GraduationCap,
+    Landmark,
+    Pencil,
+    UserCheck,
+    Users,
+    type LucideIcon,
+} from 'lucide-react';
+import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
+import { useAuth, useNotification } from '../../../shared/context';
+import { useIsAdmin } from '../../../shared/hooks';
+import { organizationsService } from '../../../shared/api';
+import type { AssociateStatus, OrganizationDto, OrganizationEntityType } from '../../../shared/api/types';
+import { ROUTES } from '../../../shared/config/constants';
+import { ENTITY_TYPES, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate } from '../../associates/labels';
+
+const selectClass = SELECT_CLASS;
+
+/** Valor ausente: texto atenuado en lugar de una etiqueta vacía. */
+const Undefined: React.FC<{ label?: string }> = ({ label = 'Sin definir' }) => (
+    <span className="text-sm italic text-slate-500 dark:text-slate-400">{label}</span>
+);
+
+const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+    <div className="min-w-0">
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+        <div className="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-white">{children}</div>
+    </div>
+);
+
+interface StatLinkProps {
+    to: string;
+    title: string;
+    value: React.ReactNode;
+    hint?: React.ReactNode;
+    icon: LucideIcon;
+    tone: string;
+}
+
+const StatLink: React.FC<StatLinkProps> = ({ to, title, value, hint, icon: Icon, tone }) => (
+    <Link
+        to={to}
+        className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-[#233948] dark:bg-[#16222b]"
+    >
+        <div className="flex items-center justify-between">
+            <p className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</p>
+            <div className={`rounded-lg p-2 ${tone}`}>
+                <Icon size={20} />
+            </div>
+        </div>
+        <p className="text-3xl font-bold leading-none text-slate-900 dark:text-white">{value}</p>
+        {hint && <div className="text-xs text-slate-500 dark:text-slate-400">{hint}</div>}
+    </Link>
+);
+
+interface EditForm {
+    name: string;
+    legalName: string;
+    nit: string;
+    entityType: OrganizationEntityType | '';
+}
+
+const toForm = (o: OrganizationDto): EditForm => ({
+    name: o.name,
+    legalName: o.legalName ?? '',
+    nit: o.nit ?? '',
+    entityType: o.entityType ?? '',
+});
 
 export const OrganizationsPage: React.FC = () => {
-  const { user } = useAuth();
-  const { showNotification } = useNotification();
-  const navigate = useNavigate();
+    const { updateUser } = useAuth();
+    const { showNotification } = useNotification();
+    const isAdmin = useIsAdmin();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [members, setMembers] = useState<UserResponse[]>([]);
-  const [projects, setProjects] = useState<ProjectResponse[]>([]);
-  const [skills, setSkills] = useState<SkillDto[]>([]);
+    const [org, setOrg] = useState<OrganizationDto | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [usersRes, projectsRes, skillsRes] = await Promise.all([
-          usersService.getAll(),
-          projectsService.getAll(),
-          skillsService.getAll(),
-        ]);
-        if (usersRes.success && usersRes.data) setMembers(usersRes.data);
-        if (projectsRes.success && projectsRes.data)
-          setProjects(projectsRes.data);
-        if (skillsRes.success && skillsRes.data) setSkills(skillsRes.data);
-      } catch {
-        showNotification({
-          type: "error",
-          message: "Error al cargar datos de la organización",
-        });
-      } finally {
-        setIsLoading(false);
-      }
+    const [form, setForm] = useState<EditForm | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const load = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const res = await organizationsService.getCurrent();
+            if (res.success && res.data) {
+                setOrg(res.data);
+                updateUser({ organizationName: res.data.name });
+            } else {
+                setError(res.message || 'No se pudo cargar la organización');
+            }
+        } catch (e) {
+            setError(errorText(e, 'No se pudo cargar la organización'));
+        } finally {
+            setIsLoading(false);
+        }
     };
-    fetchData();
-  }, []);
 
-  const activeMembers = members.filter((m) => m.isActive).length;
-  const activeProjects = projects.filter(
-    (p) => p.status === ProjectStatus.Active,
-  ).length;
-  const completedProjects = projects.filter(
-    (p) => p.status === ProjectStatus.Completed,
-  ).length;
+    useEffect(() => {
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  const roleDistribution = members.reduce<Record<string, number>>((acc, m) => {
-    acc[m.roleName] = (acc[m.roleName] || 0) + 1;
-    return acc;
-  }, {});
+    const save = async () => {
+        if (!form) return;
+        setIsSaving(true);
+        try {
+            const res = await organizationsService.updateCurrent({
+                name: form.name.trim(),
+                legalName: form.legalName.trim() || null,
+                nit: form.nit.trim() || null,
+                entityType: form.entityType === '' ? null : form.entityType,
+            });
+            if (res.success && res.data) {
+                setOrg(res.data);
+                updateUser({ organizationName: res.data.name });
+                setForm(null);
+                showNotification({ type: 'success', message: 'Organización actualizada' });
+            }
+        } catch {
+            // el listener global muestra el error (400 validación / 409 NIT duplicado)
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
-  const copyOrgId = () => {
-    if (user?.organizationId) {
-      navigator.clipboard.writeText(user.organizationId);
-      showNotification({
-        type: "success",
-        message: "ID de organización copiado",
-      });
+    if (isLoading) {
+        return (
+            <LoadingBlock label="Cargando organización…" className="h-full py-20" />
+        );
     }
-  };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-        <p className="text-slate-500 dark:text-slate-400">
-          Cargando organización...
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <PageContainer className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-black text-2xl shadow-lg">
-            {(user?.organizationName || "O")[0].toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-              {user?.organizationName || "Mi Organización"}
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="success" dot>
-                Activa
-              </Badge>
-              {user?.organizationId && (
-                <button
-                  onClick={copyOrgId}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-primary transition-colors font-mono"
-                  title="Copiar ID"
-                >
-                  {user.organizationId.slice(0, 8)}...
-                  <Copy size={12} />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          title="Miembros"
-          value={`${activeMembers}/${members.length}`}
-          icon={Users}
-          iconColor="text-indigo-500"
-          iconBgColor="bg-indigo-50 dark:bg-indigo-500/10"
-        />
-        <StatCard
-          title="Proyectos Activos"
-          value={activeProjects}
-          icon={FolderOpen}
-          iconColor="text-emerald-500"
-          iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
-          trend={
-            activeProjects > 0
-              ? { value: "En progreso", isPositive: true }
-              : undefined
-          }
-        />
-        <StatCard
-          title="Completados"
-          value={completedProjects}
-          icon={TrendingUp}
-          iconColor="text-blue-500"
-          iconBgColor="bg-blue-50 dark:bg-blue-500/10"
-        />
-        <StatCard
-          title="Catálogo Skills"
-          value={skills.length}
-          icon={Award}
-          iconColor="text-purple-500"
-          iconBgColor="bg-purple-50 dark:bg-purple-500/10"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Miembros */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <Users className="text-primary" size={20} />
-                Miembros
-                <Badge variant="default">{members.length}</Badge>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(ROUTES.USERS)}
-              >
-                Ver todos
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          {members.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              No se encontraron miembros
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {members.slice(0, 15).map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:bg-slate-100 dark:hover:bg-[#1a2632] transition-colors"
-                >
-                  <Avatar name={member.fullName} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 dark:text-white truncate">
-                      {member.fullName}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {member.email}
-                    </p>
-                  </div>
-                  <Badge variant="default" className="text-xs shrink-0">
-                    {member.roleName || 'Sin asignar'}
-                  </Badge>
-                  {member.isActive ? (
-                    <CheckCircle2
-                      className="text-emerald-500 shrink-0"
-                      size={16}
-                    />
-                  ) : (
-                    <XCircle className="text-slate-400 shrink-0" size={16} />
-                  )}
-                </div>
-              ))}
-              {members.length > 15 && (
-                <p className="text-xs text-center text-slate-400 pt-2">
-                  +{members.length - 15} miembros más
+    if (error || !org) {
+        return (
+            <div className="flex h-full flex-col items-center justify-center py-20">
+                <AlertCircle className="mb-4 h-10 w-10 text-rose-500" />
+                <p className="mb-2 font-semibold text-slate-700 dark:text-slate-300">
+                    {error || 'No se encontró la organización'}
                 </p>
-              )}
+                <Button variant="outline" onClick={load}>Reintentar</Button>
             </div>
-          )}
-        </Card>
+        );
+    }
 
-        {/* Distribución de Roles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="text-primary" size={20} />
-              Roles
-            </CardTitle>
-          </CardHeader>
-          <div className="space-y-3">
-            {Object.entries(roleDistribution)
-              .sort(([, a], [, b]) => Number(b) - Number(a))
-              .map(([role, count]) => {
-                const pct =
-                  members.length > 0
-                    ? Math.round((Number(count) / members.length) * 100)
-                    : 0;
-                return (
-                  <div key={role} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {role}
-                      </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {count} ({pct}%)
-                      </span>
-                    </div>
-                    <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            {Object.keys(roleDistribution).length === 0 && (
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-                Sin datos de roles
-              </p>
-            )}
-          </div>
-        </Card>
-      </div>
+    const { stats } = org;
+    const byStatus: Record<AssociateStatus, number> = {
+        1: stats.associatesByStatus.applicant,
+        2: stats.associatesByStatus.active,
+        3: stats.associatesByStatus.suspended,
+        4: stats.associatesByStatus.withdrawn,
+    };
+    const totalAssociates = Object.values(byStatus).reduce((a, b) => a + b, 0);
 
-      {/* Proyectos recientes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <FolderOpen className="text-primary" size={20} />
-              Proyectos Recientes
-              <Badge variant="default">{projects.length}</Badge>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(ROUTES.PROJECTS)}
-            >
-              Ver todos
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        {projects.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-            No hay proyectos en la organización
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {projects.slice(0, 6).map((project) => {
-              const statusVariant: Record<
-                number,
-                "success" | "warning" | "danger" | "info" | "default"
-              > = {
-                [ProjectStatus.Active]: "success",
-                [ProjectStatus.Draft]: "default",
-                [ProjectStatus.OnHold]: "warning",
-                [ProjectStatus.Completed]: "info",
-                [ProjectStatus.Cancelled]: "danger",
-              };
-              return (
-                <div
-                  key={project.id}
-                  onClick={() => navigate(`/projects/${project.id}`)}
-                  className="p-4 rounded-xl bg-slate-50 dark:bg-[#111b22] hover:bg-slate-100 dark:hover:bg-[#1a2632] border border-transparent hover:border-slate-200 dark:hover:border-[#233948] transition-all cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">
-                      {project.name}
-                    </h4>
-                    <Badge
-                      variant={statusVariant[project.status] || "default"}
-                      className="text-xs shrink-0"
-                    >
-                      {project.statusName}
-                    </Badge>
-                  </div>
-                  {project.description && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                      {project.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
-                    <Clock size={12} />
-                    <span>
-                      {new Date(project.createdAt).toLocaleDateString("es-ES")}
-                    </span>
-                    <Badge variant="default" className="text-xs">
-                      {project.complexityName}
-                    </Badge>
-                  </div>
+    return (
+        <PageContainer>
+            <PageHeader
+                icon={<Building2 size={28} className="text-primary" />}
+                title="Organización"
+                description="Datos de tu entidad solidaria y resumen de su actividad."
+                actions={isAdmin && (
+                    <Button icon={Pencil} onClick={() => setForm(toForm(org))}>
+                        Editar organización
+                    </Button>
+                )}
+            />
+
+            <Card className="mb-6">
+                <div className="flex flex-col gap-6 md:flex-row md:items-center">
+                    <div className="flex min-w-0 items-center gap-4">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-400 text-2xl font-black text-white shadow-lg">
+                            {org.name.trim().charAt(0).toUpperCase() || 'O'}
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="truncate text-xl font-black text-slate-900 dark:text-white sm:text-2xl">{org.name}</h2>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <Badge variant={org.isActive ? 'success' : 'default'} dot>
+                                    {org.isActive ? 'Activa' : 'Inactiva'}
+                                </Badge>
+                                {org.entityType ? (
+                                    <Badge variant="info">{ENTITY_TYPES[org.entityType]}</Badge>
+                                ) : (
+                                    <Undefined label="Tipo de entidad sin definir" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3 md:border-l md:border-slate-200 md:pl-6 md:dark:border-[#233948]">
+                        <Field label="Razón social">{org.legalName || <Undefined />}</Field>
+                        <Field label="NIT">{org.nit ? <span className="font-mono">{org.nit}</span> : <Undefined />}</Field>
+                        <Field label="Registrada">
+                            <span className="inline-flex items-center gap-1">
+                                <CalendarDays size={14} className="text-slate-400" />
+                                {formatDate(org.createdAt)}
+                            </span>
+                        </Field>
+                    </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-    </PageContainer>
-  );
+            </Card>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <StatLink
+                    to={ROUTES.USERS}
+                    title="Usuarios"
+                    value={stats.users}
+                    hint={`${stats.activeUsers} activos`}
+                    icon={Users}
+                    tone="bg-indigo-100 text-indigo-500 dark:bg-indigo-500/10"
+                />
+                <StatLink
+                    to={ROUTES.ASSOCIATES}
+                    title="Asociados"
+                    value={totalAssociates}
+                    hint={
+                        <div className="flex flex-wrap gap-1.5">
+                            {([1, 2, 3, 4] as AssociateStatus[]).map((s) => (
+                                <Badge key={s} variant={STATUS_VARIANTS[s]}>
+                                    {STATUS_LABELS[s]}: {byStatus[s]}
+                                </Badge>
+                            ))}
+                        </div>
+                    }
+                    icon={UserCheck}
+                    tone="bg-emerald-100 text-emerald-500 dark:bg-emerald-500/10"
+                />
+                <StatLink
+                    to={ROUTES.USERS}
+                    title="Empleados"
+                    value={stats.employees}
+                    hint="Usuarios marcados como empleados"
+                    icon={Briefcase}
+                    tone="bg-orange-100 text-orange-500 dark:bg-orange-500/10"
+                />
+                <StatLink
+                    to={ROUTES.PROJECTS}
+                    title="Proyectos"
+                    value={stats.projects}
+                    hint={`${stats.activeProjects} abiertos o en progreso`}
+                    icon={FolderOpen}
+                    tone="bg-blue-100 text-blue-500 dark:bg-blue-500/10"
+                />
+                <StatLink
+                    to={ROUTES.ORGANOS}
+                    title="Órganos de gobierno"
+                    value={stats.governingBodies}
+                    hint="Asamblea, consejo, junta y comités"
+                    icon={Landmark}
+                    tone="bg-purple-100 text-purple-500 dark:bg-purple-500/10"
+                />
+                <StatLink
+                    to={ROUTES.EDUCATION}
+                    title="Programas de educación"
+                    value={stats.educationPrograms}
+                    hint="Educación cooperativa"
+                    icon={GraduationCap}
+                    tone="bg-rose-100 text-rose-500 dark:bg-rose-500/10"
+                />
+            </div>
+
+            <Modal
+                isOpen={!!form}
+                onClose={() => setForm(null)}
+                title="Editar organización"
+                icon={<Pencil className="text-primary" size={20} />}
+                size="lg"
+                footer={
+                    <>
+                        <Button onClick={save} isLoading={isSaving} disabled={!form?.name.trim()}>Guardar</Button>
+                        <Button variant="outline" onClick={() => setForm(null)}>Cancelar</Button>
+                    </>
+                }
+            >
+                {form && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                            <Input
+                                label="Nombre *"
+                                value={form.name}
+                                maxLength={160}
+                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Input
+                                label="Razón social"
+                                value={form.legalName}
+                                maxLength={200}
+                                onChange={(e) => setForm({ ...form, legalName: e.target.value })}
+                            />
+                        </div>
+                        <Input
+                            label="NIT"
+                            value={form.nit}
+                            maxLength={30}
+                            placeholder="900123456-1"
+                            onChange={(e) => setForm({ ...form, nit: e.target.value })}
+                        />
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="org-entity-type" className="text-sm font-bold text-slate-700 dark:text-white">
+                                Tipo de entidad
+                            </label>
+                            <select
+                                id="org-entity-type"
+                                value={form.entityType}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        entityType: e.target.value ? (Number(e.target.value) as OrganizationEntityType) : '',
+                                    })
+                                }
+                                className={selectClass}
+                            >
+                                <option value="">Sin definir</option>
+                                {Object.entries(ENTITY_TYPES).map(([k, v]) => (
+                                    <option key={k} value={k}>{v}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+        </PageContainer>
+    );
 };
 
-export default OrganizationsPage;

@@ -5,7 +5,6 @@ import {
   Save,
   X,
   Calendar,
-  DollarSign,
   Loader2,
   ArrowLeft,
   Target,
@@ -23,6 +22,7 @@ import {
   Modal,
   PageContainer,
   PageHeader,
+  SELECT_CLASS,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
@@ -41,9 +41,8 @@ interface ProjectFormData {
   description: string;
   startDate: string;
   endDate: string;
-  complexity: string;
+  complexityLevel: string;
   status: string;
-  budgetEstimate: string;
 }
 
 const formatDateForInput = (dateString: string | null): string => {
@@ -67,7 +66,6 @@ export const EditProjectPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingSkill, setIsAddingSkill] = useState(false);
 
-  // Form para agregar skill
   const [newSkillId, setNewSkillId] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("3");
   const [newSkillMandatory, setNewSkillMandatory] = useState(true);
@@ -86,12 +84,10 @@ export const EditProjectPage: React.FC = () => {
     description: "",
     startDate: "",
     endDate: "",
-    complexity: "1",
-    status: "0",
-    budgetEstimate: "",
+    complexityLevel: String(ProjectComplexity.Medium),
+    status: String(ProjectStatus.Draft),
   });
 
-  // Handlers del formulario
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -101,7 +97,6 @@ export const EditProjectPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Cargar datos del proyecto
   useEffect(() => {
     if (!id) return;
 
@@ -123,9 +118,8 @@ export const EditProjectPage: React.FC = () => {
             description: p.description || "",
             startDate: formatDateForInput(p.startDate),
             endDate: formatDateForInput(p.endDate),
-            complexity: p.complexity.toString(),
+            complexityLevel: p.complexityLevel.toString(),
             status: p.status.toString(),
-            budgetEstimate: p.budgetEstimate?.toString() || "",
           });
         } else {
           showNotification({
@@ -180,11 +174,8 @@ export const EditProjectPage: React.FC = () => {
         endDate: formData.endDate
           ? new Date(formData.endDate).toISOString()
           : null,
-        complexity: parseInt(formData.complexity) as ProjectComplexity,
+        complexityLevel: parseInt(formData.complexityLevel) as ProjectComplexity,
         status: parseInt(formData.status) as ProjectStatus,
-        budgetEstimate: formData.budgetEstimate
-          ? parseFloat(formData.budgetEstimate)
-          : null,
       });
 
       if (response.success) {
@@ -227,7 +218,6 @@ export const EditProjectPage: React.FC = () => {
           type: "success",
           message: "Requisito agregado exitosamente",
         });
-        // Recargar requisitos
         const reqsRes = await projectsService.getRequirements(id);
         if (reqsRes.success && reqsRes.data) {
           setRequirements(reqsRes.data);
@@ -274,7 +264,6 @@ export const EditProjectPage: React.FC = () => {
 
   return (
     <PageContainer narrow>
-        {/* Header */}
         <PageHeader
           before={
             <button
@@ -307,7 +296,6 @@ export const EditProjectPage: React.FC = () => {
         />
 
         <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-          {/* Basic Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -332,7 +320,7 @@ export const EditProjectPage: React.FC = () => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className={`${SELECT_CLASS} w-full`}
                 >
                   {catalogs?.projectStatuses.map((status) => (
                       <option key={status.id} value={status.id}>
@@ -358,12 +346,11 @@ export const EditProjectPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Timeline & Budget */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="text-blue-500" size={24} />
-                Fechas y Presupuesto
+                Fechas y Complejidad
               </CardTitle>
             </CardHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -386,10 +373,10 @@ export const EditProjectPage: React.FC = () => {
                   Complejidad
                 </span>
                 <select
-                  name="complexity"
-                  value={formData.complexity}
+                  name="complexityLevel"
+                  value={formData.complexityLevel}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className={`${SELECT_CLASS} w-full`}
                 >
                   {catalogs?.complexityLevels.map((level) => (
                     <option key={level.id} value={level.id}>
@@ -398,20 +385,9 @@ export const EditProjectPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <Input
-                label="Presupuesto Estimado"
-                type="number"
-                name="budgetEstimate"
-                value={formData.budgetEstimate}
-                onChange={handleChange}
-                placeholder="50000"
-                icon={DollarSign}
-                hint="En USD (opcional)"
-              />
             </div>
           </Card>
 
-          {/* Skill Requirements */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between w-full">
@@ -509,7 +485,6 @@ export const EditProjectPage: React.FC = () => {
           </Card>
         </form>
 
-      {/* Modal para agregar skill */}
       <Modal
         isOpen={addSkillModal.isOpen}
         onClose={addSkillModal.close}
@@ -524,7 +499,7 @@ export const EditProjectPage: React.FC = () => {
             <select
               value={newSkillId}
               onChange={(e) => setNewSkillId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              className={`${SELECT_CLASS} w-full`}
             >
               <option value="">Seleccionar habilidad...</option>
               {filteredSkills.map((skill) => (
@@ -542,7 +517,7 @@ export const EditProjectPage: React.FC = () => {
             <select
               value={newSkillLevel}
               onChange={(e) => setNewSkillLevel(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+              className={`${SELECT_CLASS} w-full`}
             >
               {catalogs?.skillLevels.map((level) => (
                 <option key={level.id} value={level.id}>
@@ -587,4 +562,3 @@ export const EditProjectPage: React.FC = () => {
   );
 };
 
-export default EditProjectPage;

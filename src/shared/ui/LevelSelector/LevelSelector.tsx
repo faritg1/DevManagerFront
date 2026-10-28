@@ -44,4 +44,3 @@ export const LevelSelector: React.FC<LevelSelectorProps> = ({
     );
 };
 
-export default LevelSelector;

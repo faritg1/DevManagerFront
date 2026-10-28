@@ -125,7 +125,6 @@ export const CertificationsSection: React.FC<Props> = ({
           </CardTitle>
         </CardHeader>
 
-        {/* Lista de certificaciones */}
         {certifications.length === 0 ? (
           <div className="text-center py-8">
             <Award
@@ -157,9 +156,7 @@ export const CertificationsSection: React.FC<Props> = ({
                   </div>
                 )}
 
-                {/* Contenido principal - responsive */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  {/* Info de la certificación */}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-slate-900 dark:text-white truncate">
                       {cert.name}
@@ -168,7 +165,6 @@ export const CertificationsSection: React.FC<Props> = ({
                       {cert.issuer}
                     </p>
                     
-                    {/* Fechas */}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1">
                         <Calendar size={12} />
@@ -199,7 +195,6 @@ export const CertificationsSection: React.FC<Props> = ({
                     </div>
                   </div>
 
-                  {/* Botones de acción */}
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       type="button"
@@ -227,7 +222,6 @@ export const CertificationsSection: React.FC<Props> = ({
         )}
       </Card>
 
-      {/* Modal */}
       <CertificationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal, Button, Input, LevelSelector } from '../../../shared/ui';
+import { Modal, Button, Input, LevelSelector, SELECT_CLASS } from '../../../shared/ui';
 import { Award, Loader2, Link as LinkIcon, Save, Plus, FileText } from 'lucide-react';
-import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse } from '../../../shared/api/types';
+import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
     isOpen: boolean;
@@ -13,7 +13,7 @@ interface Props {
     saving: boolean;
     editing?: EmployeeSkillResponse | null;
     onSave: () => void;
-    catalogs: any;
+    catalogs: AllConfigCatalogsDto | null;
 }
 
 export const SkillModal: React.FC<Props> = ({
@@ -63,7 +63,6 @@ export const SkillModal: React.FC<Props> = ({
             }
         >
             <div className="space-y-5">
-                {/* Selector de Skill */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Habilidad *
@@ -79,7 +78,7 @@ export const SkillModal: React.FC<Props> = ({
                         <select
                             value={form.skillId}
                             onChange={(e) => setForm(prev => ({ ...prev, skillId: e.target.value }))}
-                            className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                            className={`${SELECT_CLASS} w-full`}
                         >
                             <option value="">Seleccionar habilidad...</option>
                             {availableSkills.map(skill => (
@@ -91,7 +90,6 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                {/* Nivel de dominio */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Nivel de Dominio *
@@ -109,7 +107,6 @@ export const SkillModal: React.FC<Props> = ({
                     )}
                 </div>
 
-                {/* URL de evidencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Evidencia {requiresEvidence && '*'}
@@ -127,7 +124,6 @@ export const SkillModal: React.FC<Props> = ({
                     </p>
                 </div>
 
-                {/* Descripción de experiencia */}
                 <div className="flex flex-col gap-2">
                     <label className="text-slate-700 dark:text-white text-sm font-bold">
                         Descripción de Experiencia {requiresEvidence && '*'}

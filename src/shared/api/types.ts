@@ -1,24 +1,9 @@
-/**
- * API Types
- * Tipos para el API DevManager
- * Basado en: API_GUIDE.md
- */
-
 // ============ BASE API RESPONSE ============
 export interface ApiResponse<T> {
   success: boolean;
   message: string | null;
   data: T;
   timestamp: string;
-}
-
-export interface ErrorResponse {
-  success: boolean;
-  message: string | null;
-  errorCode: string | null;
-  errors: Record<string, string[]> | null;
-  timestamp: string;
-  traceId: string | null;
 }
 
 // ============ AUTH ============
@@ -52,6 +37,39 @@ export interface RegisterOrganizationResponse {
   adminUserId: string;
   adminEmail: string;
   token: string;
+}
+
+// ============ ORGANIZATIONS ============
+/** 1 CTA, 2 Ahorro y crédito, 3 Multiactiva, 4 Mutual, 5 Fondo de empleados, 6 Otra */
+export type OrganizationEntityType = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface OrganizationStatsDto {
+  users: number;
+  activeUsers: number;
+  associatesByStatus: { applicant: number; active: number; suspended: number; withdrawn: number };
+  employees: number;
+  projects: number;
+  activeProjects: number;
+  governingBodies: number;
+  educationPrograms: number;
+}
+
+export interface OrganizationDto {
+  id: string;
+  name: string;
+  legalName: string | null;
+  nit: string | null;
+  entityType: OrganizationEntityType | null;
+  isActive: boolean;
+  createdAt: string;
+  stats: OrganizationStatsDto;
+}
+
+export interface UpdateOrganizationRequest {
+  name: string;
+  legalName?: string | null;
+  nit?: string | null;
+  entityType?: OrganizationEntityType | null;
 }
 
 // ============ USERS ============
@@ -201,32 +219,45 @@ export interface ValidateSkillRequest {
 }
 
 // ============ PROJECTS ============
+// Mirrors Domain.Enums.ProjectStatus / ProjectComplexity (backend, serialized as numbers).
 export enum ProjectStatus {
-  Draft = 0,
-  Active = 1,
-  OnHold = 2,
-  Completed = 3,
-  Cancelled = 4,
+  Draft = 1,
+  Open = 2,
+  InProgress = 3,
+  Closed = 4,
+  Cancelled = 5,
 }
 
 export enum ProjectComplexity {
-  Low = 0,
-  Medium = 1,
-  High = 2,
+  Low = 1,
+  Medium = 2,
+  High = 3,
 }
+
+// Fallback labels; `satisfies` makes a missing enum value fail typecheck.
+export const PROJECT_STATUS_LABELS = {
+  [ProjectStatus.Draft]: 'Borrador',
+  [ProjectStatus.Open]: 'Abierto',
+  [ProjectStatus.InProgress]: 'En progreso',
+  [ProjectStatus.Closed]: 'Cerrado',
+  [ProjectStatus.Cancelled]: 'Cancelado',
+} satisfies Record<ProjectStatus, string>;
+
+export const PROJECT_COMPLEXITY_LABELS = {
+  [ProjectComplexity.Low]: 'Baja',
+  [ProjectComplexity.Medium]: 'Media',
+  [ProjectComplexity.High]: 'Alta',
+} satisfies Record<ProjectComplexity, string>;
 
 export interface ProjectResponse {
   id: string;
   code: string | null;
   name: string;
   description: string | null;
-  status: ProjectStatus;
-  statusName: string;
   startDate: string | null;
   endDate: string | null;
-  complexity: ProjectComplexity;
-  complexityName: string;
-  budgetEstimate?: number | null;
+  complexityLevel: ProjectComplexity;
+  status: ProjectStatus;
   createdAt: string;
 }
 
@@ -236,22 +267,17 @@ export interface CreateProjectRequest {
   description?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  complexity: ProjectComplexity;
-  budgetEstimate?: number | null;
+  complexityLevel: ProjectComplexity;
 }
 
-/**
- * Partial update - Solo se actualizan los campos enviados
- * Los campos omitidos mantienen su valor actual
- */
 export interface UpdateProjectRequest {
+  code?: string | null;
   name?: string;
   description?: string | null;
-  status?: ProjectStatus;
   startDate?: string | null;
   endDate?: string | null;
-  complexity?: ProjectComplexity;
-  budgetEstimate?: number | null;
+  complexityLevel?: ProjectComplexity;
+  status?: ProjectStatus;
 }
 
 // ============ PROJECT REQUIREMENTS ============

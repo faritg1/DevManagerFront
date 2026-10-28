@@ -23,46 +23,39 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader } from '../../../shared/ui';
-import { useModal, usePermission } from '../../../shared/hooks';
-import { useNotification, useAuth } from '../../../shared/context';
+import { Button, Card, Badge, Avatar, Modal, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
+import { useModal, usePermission, useIsAdmin } from '../../../shared/hooks';
+import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
-
-// Helpers
-const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-    });
-};
+import { formatDate, skillLevelLabel } from '../../../shared/format';
 
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const { hasPermission, isLoading: permsCheckLoading } = usePermission();
-    const { user: currentUser } = useAuth();
-    const ADMIN_ROLES = ['admin', 'administrator'];
-    const isAdmin = ADMIN_ROLES.includes((currentUser?.role ?? '').toLowerCase().trim());
+    const isAdmin = useIsAdmin();
     
-    // State
     const [users, setUsers] = useState<UserResponse[]>([]);
-    const [filteredUsers, setFilteredUsers] = useState<UserResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const query = searchQuery.trim().toLowerCase();
+    const filteredUsers = query
+        ? users.filter(user =>
+            user.fullName.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            user.roleName.toLowerCase().includes(query))
+        : users;
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-    // Modales
     const createModal = useModal();
     const editModal = useModal();
     const deleteModal = useModal();
     const rolesModal = useModal();
     const permissionsModal = useModal();
 
-    // Form states
     const [isSaving, setIsSaving] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
     const [createForm, setCreateForm] = useState<CreateUserRequest>({
@@ -75,7 +68,6 @@ export const UsersPage: React.FC = () => {
     });
     const [editForm, setEditForm] = useState<UpdateUserRequest>({});
 
-    // Roles & permissions states
     const [roles, setRoles] = useState<RoleDto[]>([]);
     const [rolesLoading, setRolesLoading] = useState(false);
     const [rolesSaving, setRolesSaving] = useState(false);
@@ -88,7 +80,6 @@ export const UsersPage: React.FC = () => {
     const [overrideIsGrant, setOverrideIsGrant] = useState(true);
     const [overrideSaving, setOverrideSaving] = useState(false);
 
-    // Skills validation
     const skillsModal = useModal();
     const [userSkills, setUserSkills] = useState<EmployeeSkillResponse[]>([]);
     const [skillsLoading, setSkillsLoading] = useState(false);
@@ -96,28 +87,10 @@ export const UsersPage: React.FC = () => {
     const [adjustingSkillId, setAdjustingSkillId] = useState<string | null>(null);
     const [adjustLevel, setAdjustLevel] = useState<number>(3);
 
-    // Cargar usuarios
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    // Filtrar por búsqueda
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredUsers(users);
-            return;
-        }
-
-        const query = searchQuery.toLowerCase();
-        const filtered = users.filter(user => 
-            user.fullName.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            user.roleName.toLowerCase().includes(query)
-        );
-        setFilteredUsers(filtered);
-    }, [searchQuery, users]);
-
-    // Cerrar dropdown al hacer click fuera
     useEffect(() => {
         const handleClickOutside = () => setActiveDropdown(null);
         document.addEventListener('click', handleClickOutside);
@@ -132,44 +105,17 @@ export const UsersPage: React.FC = () => {
             if (response.success && response.data) {
                 const usersData = response.data;
 
-                // Detect users missing roleName and try to resolve their primary role via RBAC service
-                const missingRoleUsers = usersData.filter(u => !u.roleName || !u.roleName.trim());
-
-                if (missingRoleUsers.length > 0) {
-                    try {
-                        const lookups = await Promise.allSettled(
-                            missingRoleUsers.map((u) => rbacService.getUserEffectivePermissions(u.id)),
-                        );
-
-                        lookups.forEach((res, idx) => {
-                            if (res.status === 'fulfilled' && res.value.success && res.value.data) {
-                                const effective = res.value.data;
-                                const firstRoleName = effective.roles?.[0]?.name;
-                                const userId = missingRoleUsers[idx].id;
-                                const target = usersData.find(x => x.id === userId);
-                                if (target) {
-                                    target.roleName = firstRoleName || 'Sin rol';
-                                }
-                            } else {
-                                const userId = missingRoleUsers[idx].id;
-                                const target = usersData.find(x => x.id === userId);
-                                if (target) target.roleName = 'Sin rol';
-                            }
-                        });
-                    } catch (err) {
-                        console.warn('RBAC lookup failed for users roleName population', err);
-                        // fallback: mark missing as 'Sin rol'
-                        usersData.forEach(u => {
-                            if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol';
-                        });
-                    }
-                }
-
-                // Ensure all users have a visible roleName
-                usersData.forEach(u => { if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol'; });
+                // List rows may lack roleName; resolve it from each user's effective permissions.
+                const missingRole = usersData.filter(u => !u.roleName?.trim());
+                const lookups = await Promise.allSettled(
+                    missingRole.map((u) => rbacService.getUserEffectivePermissions(u.id)),
+                );
+                lookups.forEach((res, idx) => {
+                    const name = res.status === 'fulfilled' && res.value.success ? res.value.data?.roles?.[0]?.name : undefined;
+                    missingRole[idx].roleName = name || 'Sin rol';
+                });
 
                 setUsers(usersData);
-                setFilteredUsers(usersData);
             } else {
                 setError(response.message || 'Error al cargar usuarios');
             }
@@ -181,7 +127,6 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    // Crear usuario
     const handleCreate = async () => {
         if (!createForm.email || !createForm.password || !createForm.fullName) {
             showNotification({
@@ -218,7 +163,6 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    // Abrir modal de edición
     const handleOpenEdit = (user: UserResponse) => {
         setSelectedUser(user);
         setEditForm({
@@ -231,7 +175,6 @@ export const UsersPage: React.FC = () => {
         setActiveDropdown(null);
     };
 
-    // Load roles for Manage Roles modal
     useEffect(() => {
         const loadRolesForUser = async () => {
             if (!rolesModal.isOpen || !selectedUser) return;
@@ -306,7 +249,6 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    // Load employee skills when modal opens
     useEffect(() => {
         const loadUserSkills = async () => {
             if (!skillsModal.isOpen || !selectedUser) return;
@@ -340,7 +282,6 @@ export const UsersPage: React.FC = () => {
                         ? `Skill "${skill.skillName}" validada y ajustada a nivel ${newLevel}`
                         : `Skill "${skill.skillName}" validada exitosamente`,
                 });
-                // Refresh skills list
                 const refreshed = await skillsService.getEmployeeSkills(selectedUser!.id);
                 if (refreshed.success && refreshed.data) setUserSkills(refreshed.data);
                 setAdjustingSkillId(null);
@@ -355,17 +296,11 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    const getLevelLabel = (level: number) => {
-        const labels: Record<number, string> = { 1: 'Básico', 2: 'Intermedio', 3: 'Competente', 4: 'Avanzado', 5: 'Experto' };
-        return labels[level] || `Nivel ${level}`;
-    };
-
     const findRoleIdByName = (list: RoleDto[], name: string) => {
         const r = list.find(x => x.name === name);
         return r ? r.id : undefined;
     };
 
-    // Guardar edición
     const handleSaveEdit = async () => {
         if (!selectedUser) return;
 
@@ -395,7 +330,6 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    // Toggle estado activo/inactivo
     const handleToggleStatus = async (user: UserResponse) => {
         try {
             const response = await usersService.update(user.id, { 
@@ -422,14 +356,12 @@ export const UsersPage: React.FC = () => {
         setActiveDropdown(null);
     };
 
-    // Abrir modal de eliminar
     const handleOpenDelete = (user: UserResponse) => {
         setSelectedUser(user);
         deleteModal.open();
         setActiveDropdown(null);
     };
 
-    // Confirmar eliminación
     const handleConfirmDelete = async () => {
         if (!selectedUser) return;
 
@@ -459,7 +391,6 @@ export const UsersPage: React.FC = () => {
         }
     };
 
-    // Stats
     const activeUsers = users.filter(u => u.isActive).length;
     const inactiveUsers = users.filter(u => !u.isActive).length;
 
@@ -488,7 +419,6 @@ export const UsersPage: React.FC = () => {
 
     return (
         <PageContainer>
-            {/* Header */}
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra el acceso y roles de los miembros del equipo."
@@ -499,7 +429,6 @@ export const UsersPage: React.FC = () => {
                 )}
             />
 
-            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <Card className="flex items-center gap-4">
                     <div className="p-3 bg-blue-100 dark:bg-blue-500/10 rounded-xl">
@@ -530,10 +459,9 @@ export const UsersPage: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Search */}
             <div className="mb-6">
                 <Input
-                    placeholder="Buscar por nombre, email o rol..."
+                    placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
                     icon={Search}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -541,31 +469,33 @@ export const UsersPage: React.FC = () => {
                 />
             </div>
             
-            {/* Table */}
             <Card padding="none" className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                    <table className={TABLE_CLASS}>
+                        <thead className={THEAD_CLASS}>
                             <tr>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Usuario</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Email</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Rol</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Creado</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider text-right">Acciones</th>
+                                <th className={TH_CLASS}>Usuario</th>
+                                <th className={TH_CLASS}>Email</th>
+                                <th className={TH_CLASS}>Rol</th>
+                                <th className={TH_CLASS}>Estado</th>
+                                <th className={TH_CLASS}>Creado</th>
+                                <th className={`${TH_CLASS} text-right`}>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                        <tbody className={TBODY_CLASS}>
                             {filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
-                                        {searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                                    <td colSpan={6}>
+                                        <EmptyState
+                                            title={searchQuery ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                                            description={searchQuery ? 'Prueba con otro nombre o correo.' : undefined}
+                                        />
                                     </td>
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50 transition-colors group">
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <div className="flex items-center gap-3">
                                                 <Avatar name={user.fullName} size="sm" />
                                                 <div>
@@ -578,17 +508,17 @@ export const UsersPage: React.FC = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>
                                             <div className="flex items-center gap-2">
                                                 <Mail size={14} /> {user.email}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <Badge variant="purple">
                                                 {user.roleName}
                                             </Badge>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <Badge 
                                                 variant={user.isActive ? 'success' : 'danger'} 
                                                 dot
@@ -596,14 +526,14 @@ export const UsersPage: React.FC = () => {
                                                 {user.isActive ? 'Activo' : 'Inactivo'}
                                             </Badge>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>
                                             <div className="flex items-center gap-1">
                                                 <Calendar size={14} />
                                                 {formatDate(user.createdAt)}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right relative">
-                                            <button 
+                                        <td className={`${TD_CLASS} text-right relative`}>
+                                            <button aria-label="Más acciones" 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setActiveDropdown(activeDropdown === user.id ? null : user.id);
@@ -613,7 +543,6 @@ export const UsersPage: React.FC = () => {
                                                 <MoreVertical size={18} />
                                             </button>
 
-                                            {/* Dropdown Menu */}
                                             {activeDropdown === user.id && (
                                                 <div 
                                                     className="absolute right-6 top-full mt-1 w-48 bg-white dark:bg-[#16222b] rounded-xl shadow-xl border border-slate-200 dark:border-[#233948] py-2 z-50"
@@ -637,7 +566,6 @@ export const UsersPage: React.FC = () => {
                                                     </button>
                                                     )}
 
-                                                    {/* Manage roles */}
                                                     {isAdmin && (
                                                     <button
                                                         onClick={() => {
@@ -651,7 +579,6 @@ export const UsersPage: React.FC = () => {
                                                     </button>
                                                     )}
 
-                                                    {/* View effective permissions */}
                                                     {isAdmin && (
                                                     <button
                                                         onClick={async () => {
@@ -665,7 +592,6 @@ export const UsersPage: React.FC = () => {
                                                     </button>
                                                     )}
 
-                                                    {/* View & validate skills */}
                                                     <button
                                                         onClick={() => {
                                                             setSelectedUser(user);
@@ -711,7 +637,6 @@ export const UsersPage: React.FC = () => {
                 </div>
             </Card>
 
-            {/* Modal Crear Usuario */}
             <Modal
                 isOpen={createModal.isOpen}
                 onClose={createModal.close}
@@ -770,7 +695,6 @@ export const UsersPage: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* Modal Editar Usuario */}
             <Modal
                 isOpen={editModal.isOpen}
                 onClose={editModal.close}
@@ -839,7 +763,6 @@ export const UsersPage: React.FC = () => {
                 )}
             </Modal>
 
-            {/* Modal Confirmar Eliminación */}
             <Modal
                 isOpen={deleteModal.isOpen}
                 onClose={deleteModal.close}
@@ -875,7 +798,6 @@ export const UsersPage: React.FC = () => {
                 )}
             </Modal>
 
-            {/* Manage Roles Modal */}
             <Modal
                 isOpen={rolesModal.isOpen}
                 onClose={() => {
@@ -944,7 +866,6 @@ export const UsersPage: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* Effective Permissions Modal */}
             <Modal
                 isOpen={permissionsModal.isOpen}
                 onClose={() => { permissionsModal.close(); setEffectivePerms(null); setOverridePermId(''); setOverrideIsGrant(true); }}
@@ -963,22 +884,20 @@ export const UsersPage: React.FC = () => {
                     </div>
                 ) : effectivePerms ? (
                     <div className="space-y-5">
-                        {/* Roles asignados */}
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Roles asignados</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Roles asignados</p>
                             <div className="flex flex-wrap gap-2">
                                 {effectivePerms.roles.length > 0
                                     ? effectivePerms.roles.map((r) => (
                                         <Badge key={r.name} variant="purple">{r.name}</Badge>
                                     ))
-                                    : <span className="text-sm text-slate-400">Sin roles asignados</span>
+                                    : <span className="text-sm text-slate-500 dark:text-slate-400">Sin roles asignados</span>
                                 }
                             </div>
                         </div>
 
-                        {/* Permisos efectivos */}
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Permisos efectivos</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Permisos efectivos</p>
                             {effectivePerms.effectivePermissions.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
                                     {effectivePerms.effectivePermissions.map((p) => (
@@ -989,13 +908,12 @@ export const UsersPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <span className="text-sm text-slate-400">Sin permisos efectivos</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Sin permisos efectivos</span>
                             )}
                         </div>
 
-                        {/* Overrides activos */}
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Overrides directos</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Overrides directos</p>
                             {effectivePerms.directOverrides && effectivePerms.directOverrides.length > 0 ? (
                                 <div className="space-y-1.5">
                                     {effectivePerms.directOverrides.map((o) => (
@@ -1016,21 +934,19 @@ export const UsersPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <span className="text-sm text-slate-400">Sin overrides configurados</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Sin overrides configurados</span>
                             )}
                         </div>
 
-                        {/* Agregar override */}
                         <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Agregar / modificar override</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Agregar / modificar override</p>
                             <div className="flex flex-col gap-3">
-                                {/* Selector de permiso */}
                                 <div>
                                     <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
                                     <select
                                         value={overridePermId}
                                         onChange={(e) => setOverridePermId(e.target.value)}
-                                        className="w-full text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#111b22] text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        className={`${SELECT_SM_CLASS} w-full`}
                                     >
                                         <option value="">— Selecciona un permiso —</option>
                                         {groupedPerms.map((group) => (
@@ -1043,7 +959,6 @@ export const UsersPage: React.FC = () => {
                                     </select>
                                 </div>
 
-                                {/* Toggle Grant / Deny */}
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
@@ -1071,7 +986,6 @@ export const UsersPage: React.FC = () => {
                                     </button>
                                 </div>
 
-                                {/* Botón guardar */}
                                 <Button
                                     onClick={handleAddOverride}
                                     disabled={!overridePermId || overrideSaving}
@@ -1088,7 +1002,6 @@ export const UsersPage: React.FC = () => {
                 )}
             </Modal>
 
-            {/* Skills Validation Modal */}
             <Modal
                 isOpen={skillsModal.isOpen}
                 onClose={() => { skillsModal.close(); setUserSkills([]); setAdjustingSkillId(null); }}
@@ -1104,7 +1017,7 @@ export const UsersPage: React.FC = () => {
                 {skillsLoading ? (
                     <div className="text-center py-8">
                         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                        <p className="text-sm text-slate-400 mt-2">Cargando habilidades...</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Cargando habilidades...</p>
                     </div>
                 ) : userSkills.length === 0 ? (
                     <div className="text-center py-8">
@@ -1113,7 +1026,7 @@ export const UsersPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        <p className="text-xs text-slate-400 mb-2">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                             {userSkills.length} habilidades declaradas. Puedes validar o ajustar el nivel de cada una.
                         </p>
                         {userSkills.map((skill) => (
@@ -1130,8 +1043,8 @@ export const UsersPage: React.FC = () => {
                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                                 {skill.skillName}
                                             </p>
-                                            <p className="text-xs text-slate-400">
-                                                Nivel declarado: <span className="font-medium">{skill.level} — {getLevelLabel(skill.level)}</span>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                Nivel declarado: <span className="font-medium">{skill.level} — {skillLevelLabel(skill.level)}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -1147,16 +1060,13 @@ export const UsersPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Evidence */}
                                 {skill.experienceDescription && (
                                     <p className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
                                         {skill.experienceDescription}
                                     </p>
                                 )}
 
-                                {/* Actions */}
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    {/* Validate at current level */}
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -1167,11 +1077,10 @@ export const UsersPage: React.FC = () => {
                                         Validar (nivel actual)
                                     </Button>
 
-                                    {/* Toggle adjust level */}
                                     {adjustingSkillId === skill.id ? (
                                         <div className="flex items-center gap-2">
                                             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
-                                                <button
+                                                <button aria-label="Bajar nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.max(1, prev - 1))}
                                                     className="p-0.5 hover:text-primary"
@@ -1179,9 +1088,9 @@ export const UsersPage: React.FC = () => {
                                                     <ChevronDown size={16} />
                                                 </button>
                                                 <span className="text-sm font-bold w-16 text-center text-slate-900 dark:text-white">
-                                                    {adjustLevel} — {getLevelLabel(adjustLevel)}
+                                                    {adjustLevel} — {skillLevelLabel(adjustLevel)}
                                                 </span>
-                                                <button
+                                                <button aria-label="Subir nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.min(5, prev + 1))}
                                                     className="p-0.5 hover:text-primary"
@@ -1226,4 +1135,3 @@ export const UsersPage: React.FC = () => {
     );
 };
 
-export default UsersPage;

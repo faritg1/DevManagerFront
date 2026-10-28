@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button, Card, Badge, PageContainer, PageHeader } from '../../../shared/ui';
+import { ArrowLeft } from 'lucide-react';
+import { Button, Card, Badge, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { associatesService } from '../../../shared/api';
 import type { AssociateDetailDto, AssociateStatus } from '../../../shared/api/types';
@@ -67,14 +67,14 @@ export const AssociateDetailPage: React.FC = () => {
     if (isLoading) {
         return (
             <PageContainer>
-                <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                <LoadingBlock className="py-20" />
             </PageContainer>
         );
     }
     if (!data) {
         return (
             <PageContainer className="space-y-4">
-                <p className="text-slate-500 dark:text-slate-400">No se encontró el asociado.</p>
+                <EmptyState title="No encontramos este asociado" description="Puede que se haya eliminado o que el enlace no sea correcto." />
                 {backButton}
             </PageContainer>
         );

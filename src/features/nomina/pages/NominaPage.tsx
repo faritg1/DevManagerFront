@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -11,6 +11,7 @@ import type {
     CreateCompensationRequest,
     PilaContributionDto,
 } from '../../../shared/api/types';
+import { currency, today } from '../../../shared/format';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
@@ -18,12 +19,7 @@ const MODEL_LABEL: Record<CompensationModel, string> = {
     3: 'Por proyecto',
 };
 
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-
-const today = () => new Date().toISOString().slice(0, 10);
-
-const selectClass = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
+const selectClass = SELECT_CLASS;
 
 const emptyForm = (userId = ''): CreateCompensationRequest => ({ userId, period: today(), model: 1, baseValue: 0 });
 
@@ -34,7 +30,6 @@ export const NominaPage: React.FC = () => {
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
 
-    // Compensación
     const [compUserId, setCompUserId] = useState('');
     const [compYear, setCompYear] = useState(new Date().getFullYear());
     const [compensations, setCompensations] = useState<CompensationDto[]>([]);
@@ -42,7 +37,6 @@ export const NominaPage: React.FC = () => {
     const [createOpen, setCreateOpen] = useState(false);
     const [createForm, setCreateForm] = useState<CreateCompensationRequest>(emptyForm());
 
-    // PILA (Admin)
     const [pilaYear, setPilaYear] = useState(new Date().getFullYear());
     const [pilaMonth, setPilaMonth] = useState(new Date().getMonth() + 1);
     const [sheet, setSheet] = useState<PilaContributionDto[]>([]);
@@ -170,7 +164,7 @@ export const NominaPage: React.FC = () => {
                                 {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                             </select>
                         )}
-                        <Input type="number" value={compYear} onChange={(e) => setCompYear(Number(e.target.value))} placeholder="Año" />
+                        <Input type="number" value={compYear} onChange={(e) => setCompYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
                         <Button variant="outline" onClick={loadCompensations} disabled={!compUserId || compLoading}>
                             {compLoading ? 'Cargando...' : 'Consultar'}
                         </Button>
@@ -204,8 +198,8 @@ export const NominaPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Planilla PILA</h2>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                            <Input type="number" value={pilaYear} onChange={(e) => setPilaYear(Number(e.target.value))} placeholder="Año" />
-                            <Input type="number" value={pilaMonth} onChange={(e) => setPilaMonth(Number(e.target.value))} min={1} max={12} placeholder="Mes" />
+                            <Input type="number" value={pilaYear} onChange={(e) => setPilaYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
+                            <Input type="number" value={pilaMonth} onChange={(e) => setPilaMonth(Number(e.target.value))} min={1} max={12} placeholder="Mes" aria-label="Mes" />
                             <Button variant="outline" onClick={loadSheet} disabled={pilaLoading}>
                                 {pilaLoading ? 'Cargando...' : 'Planilla'}
                             </Button>
@@ -218,10 +212,10 @@ export const NominaPage: React.FC = () => {
                                     <option value="">Asociado</option>
                                     {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                                 </select>
-                                <Input type="number" value={pilaIncome} onChange={(e) => setPilaIncome(Number(e.target.value))} placeholder="Ingreso del mes" />
+                                <Input type="number" value={pilaIncome} onChange={(e) => setPilaIncome(Number(e.target.value))} placeholder="Ingreso del mes" aria-label="Ingreso del mes" />
                             </div>
                             <div className="flex items-end gap-3">
-                                <Input type="number" value={pilaRisk} onChange={(e) => setPilaRisk(Number(e.target.value))} min={1} max={5} placeholder="Nivel riesgo ARL" />
+                                <Input type="number" value={pilaRisk} onChange={(e) => setPilaRisk(Number(e.target.value))} min={1} max={5} placeholder="Nivel riesgo ARL" aria-label="Nivel riesgo ARL" />
                                 <Button onClick={handleCalculatePila} disabled={!pilaUserId || pilaIncome <= 0}>Calcular</Button>
                             </div>
 
@@ -248,26 +242,26 @@ export const NominaPage: React.FC = () => {
             {isAdmin && sheet.length > 0 && (
                 <Card padding="none" className="overflow-hidden mt-6">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                        <table className={TABLE_CLASS}>
+                            <thead className={THEAD_CLASS}>
                                 <tr>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Asociado</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">IBC</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Salud</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Pensión</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">ARL</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Total</th>
+                                    <th className={TH_CLASS}>Asociado</th>
+                                    <th className={TH_CLASS}>IBC</th>
+                                    <th className={TH_CLASS}>Salud</th>
+                                    <th className={TH_CLASS}>Pensión</th>
+                                    <th className={TH_CLASS}>ARL</th>
+                                    <th className={TH_CLASS}>Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                            <tbody className={TBODY_CLASS}>
                                 {sheet.map(p => (
                                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{nameOf(p.userId)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.contributionBase)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.healthContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.pensionContribution)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(p.arlContribution)}</td>
-                                        <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">{currency(p.total)}</td>
+                                        <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{nameOf(p.userId)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.contributionBase)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.healthContribution)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.pensionContribution)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.arlContribution)}</td>
+                                        <td className={`${TD_CLASS} font-bold text-emerald-600 dark:text-emerald-400`}>{currency(p.total)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -326,4 +320,3 @@ export const NominaPage: React.FC = () => {
     );
 };
 
-export default NominaPage;

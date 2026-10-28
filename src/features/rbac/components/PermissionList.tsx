@@ -1,5 +1,6 @@
 import React from "react";
 import { PermissionDto } from "../../../shared/api/types";
+import { EmptyState, LoadingBlock } from "../../../shared/ui";
 
 interface PermissionListProps {
   permissions: PermissionDto[];
@@ -16,22 +17,20 @@ export const PermissionList: React.FC<PermissionListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-4 text-center text-slate-500 dark:text-slate-400">
-        Cargando permisos...
-      </div>
+      <LoadingBlock label="Cargando permisos…" />
     );
   }
 
   if (permissions.length === 0) {
     return (
-      <div className="p-8 text-center border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948] text-slate-500 dark:text-slate-400">
-        No hay permisos definidos.
+      <div className="border rounded-lg bg-slate-50 dark:bg-[#16222b] border-slate-200 dark:border-[#233948]">
+        <EmptyState title="No hay permisos definidos" />
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto border rounded-lg border-slate-200 dark:border-[#233948]">
+    <div className="overflow-x-auto border rounded-2xl border-slate-200 dark:border-[#233948]">
       <table className="w-full text-sm text-left">
         <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
           <tr>
@@ -71,7 +70,7 @@ export const PermissionList: React.FC<PermissionListProps> = ({
                 </button>
                 <button
                   onClick={() => onDelete(permission.id)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium text-xs border border-red-200 dark:border-red-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded transition-colors"
+                  className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs border border-rose-200 dark:border-rose-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-1 rounded transition-colors"
                 >
                   Eliminar
                 </button>

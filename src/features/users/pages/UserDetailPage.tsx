@@ -31,24 +31,7 @@ import type {
 import { useConfig } from "../../../shared/context";
 import { Card, Badge, Button, Avatar, PageContainer } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
-
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-const getLevelLabel = (level: number) => {
-  const labels: Record<number, string> = {
-    1: "Básico",
-    2: "Intermedio",
-    3: "Competente",
-    4: "Avanzado",
-    5: "Experto",
-  };
-  return labels[level] || `Nivel ${level}`;
-};
+import { formatDate, skillLevelLabel } from "../../../shared/format";
 
 const getLevelColor = (level: number) => {
   if (level >= 5) return "bg-amber-500";
@@ -115,13 +98,12 @@ export const UserDetailPage: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  // ─── Loading ────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="p-6 md:p-10 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Cargando perfil...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -147,7 +129,6 @@ export const UserDetailPage: React.FC = () => {
 
   return (
     <PageContainer className="space-y-6">
-      {/* Back button */}
       <button
         onClick={() => navigate(ROUTES.USERS)}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
@@ -156,9 +137,7 @@ export const UserDetailPage: React.FC = () => {
         Volver a Usuarios
       </button>
 
-      {/* ─── Header Card ───────────────────────── */}
       <Card className="relative overflow-hidden">
-        {/* Gradient top band */}
         <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-primary/20 to-blue-400/20" />
 
         <div className="relative pt-12 flex flex-col sm:flex-row items-start sm:items-end gap-4">
@@ -178,7 +157,6 @@ export const UserDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Contact info */}
         <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Mail size={14} />
@@ -198,7 +176,6 @@ export const UserDetailPage: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ─── Skills ──────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <div className="flex items-center justify-between mb-4">
@@ -217,7 +194,7 @@ export const UserDetailPage: React.FC = () => {
             {skills.length === 0 ? (
               <div className="text-center py-8">
                 <Award size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-sm text-slate-400">Sin habilidades declaradas</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Sin habilidades declaradas</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -237,7 +214,7 @@ export const UserDetailPage: React.FC = () => {
                             {skill.skillName}
                           </p>
                           {skill.experienceDescription && (
-                            <p className="text-xs text-slate-400 mt-0.5 max-w-md truncate">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-md truncate">
                               {skill.experienceDescription}
                             </p>
                           )}
@@ -253,7 +230,7 @@ export const UserDetailPage: React.FC = () => {
                               : "default"
                           }
                         >
-                          {skill.level} — {getLevelLabel(skill.level)}
+                          {skill.level} — {skillLevelLabel(skill.level)}
                         </Badge>
                         {skill.lastValidatedAt ? (
                           <span title={`Validado por ${skill.validatedByName || "manager"}`}>
@@ -272,9 +249,7 @@ export const UserDetailPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* ─── Sidebar: Roles & Permissions ─── */}
         <div className="space-y-6">
-          {/* Roles */}
           {perms && (
             <Card>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
@@ -284,7 +259,7 @@ export const UserDetailPage: React.FC = () => {
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-slate-400 uppercase font-bold mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">
                     Roles asignados
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -295,13 +270,13 @@ export const UserDetailPage: React.FC = () => {
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-400">Sin roles</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Sin roles</span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-400 uppercase font-bold mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">
                     Permisos ({perms.effectivePermissions.length})
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-1">
@@ -319,7 +294,6 @@ export const UserDetailPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Quick stats */}
           <Card>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
               <Star size={20} className="text-amber-500" />
@@ -364,4 +338,3 @@ export const UserDetailPage: React.FC = () => {
   );
 };
 
-export default UserDetailPage;

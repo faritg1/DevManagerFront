@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-    Bot, Loader2, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
+    Bot, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
     Scale, CheckCircle2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
@@ -32,23 +32,19 @@ export const AsistentePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Consultar
     const [consulta, setConsulta] = useState('');
     const [contexto, setContexto] = useState('');
     const [consultaRes, setConsultaRes] = useState<CooperativeQueryResponse | null>(null);
 
-    // Reporte
     const [reporteAnio, setReporteAnio] = useState(anioActual);
     const [incluirRec, setIncluirRec] = useState(true);
     const [reporteRes, setReporteRes] = useState<SocialBalanceReportDto | null>(null);
 
-    // Cumplimiento
     const [verificarEducacion, setVerificarEducacion] = useState(true);
     const [verificarSST, setVerificarSST] = useState(true);
     const [verificarHabeas, setVerificarHabeas] = useState(true);
     const [cumplimientoRes, setCumplimientoRes] = useState<ComplianceDto | null>(null);
 
-    // Responder
     const [pregunta, setPregunta] = useState('');
     const [tipoAsociado, setTipoAsociado] = useState('');
     const [responderRes, setResponderRes] = useState<CooperativeQueryResponse | null>(null);
@@ -164,12 +160,12 @@ export const AsistentePage: React.FC = () => {
                 <StatCard title="Asistente IA" value="Activo" icon={Bot} iconColor="text-primary" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
             </div>
 
-            {/* Tabs */}
             <div className="flex flex-wrap gap-2 mb-6">
                 {TABS.filter(t => isAdmin || !t.adminOnly).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
+                        aria-pressed={tab === t.id}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${tab === t.id
                             ? 'bg-primary text-white shadow-lg shadow-primary/25'
                             : 'bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#111b22]'}`}
@@ -187,12 +183,9 @@ export const AsistentePage: React.FC = () => {
             )}
 
             {loading && (
-                <div className="mb-6 flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <LoadingBlock className="mb-6 py-8" />
             )}
 
-            {/* Consultar */}
             {tab === 'consultar' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -222,7 +215,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Reporte */}
             {isAdmin && tab === 'reporte' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -291,7 +283,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Cumplimiento */}
             {isAdmin && tab === 'cumplimiento' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -360,7 +351,6 @@ export const AsistentePage: React.FC = () => {
                 </div>
             )}
 
-            {/* Responder */}
             {tab === 'responder' && !loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
@@ -393,4 +383,3 @@ export const AsistentePage: React.FC = () => {
     );
 };
 
-export default AsistentePage;

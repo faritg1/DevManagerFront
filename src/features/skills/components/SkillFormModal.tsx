@@ -8,7 +8,7 @@ import type {
   SkillCategoryDto,
 } from "../../../shared/api/types";
 import { useToast } from "../../../shared/context";
-import { Modal, Button, Input } from "../../../shared/ui";
+import { Modal, Button, Input, SELECT_SM_CLASS } from "../../../shared/ui";
 
 interface SkillFormModalProps {
   isOpen: boolean;
@@ -30,7 +30,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   const toast = useToast();
   const isEditing = skill !== null;
 
-  // ─── Form state ─────────────────────────────────────────
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
@@ -38,7 +37,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // ─── Populate form when editing ─────────────────────────
   useEffect(() => {
     if (isOpen) {
       if (skill) {
@@ -56,7 +54,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     }
   }, [isOpen, skill]);
 
-  // ─── Resolve all category options ───────────────────────
   const allCategories = React.useMemo(() => {
     const set = new Set<string>();
     categories.forEach((c) => set.add(c));
@@ -64,7 +61,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     return Array.from(set).sort();
   }, [categories, catalogCategories]);
 
-  // ─── Validation ─────────────────────────────────────────
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!name.trim()) {
@@ -82,7 +78,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     return Object.keys(errs).length === 0;
   };
 
-  // ─── Submit ─────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -92,7 +87,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
     setIsSaving(true);
     try {
       if (isEditing && skill) {
-        // UPDATE
         const payload: SkillDto = {
           id: skill.id,
           name: name.trim(),
@@ -108,7 +102,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           toast.error("Error al actualizar", response.message || undefined);
         }
       } else {
-        // CREATE
         const payload: CreateSkillRequest = {
           name: name.trim(),
           category: resolvedCategory || null,
@@ -153,7 +146,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Nombre */}
         <Input
           label="Nombre de la habilidad"
           placeholder="Ej: React, Docker, SAP ERP..."
@@ -164,7 +156,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           autoFocus
         />
 
-        {/* Categoría */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Categoría
@@ -172,7 +163,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 bg-white dark:bg-[#16222b] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
+            className={`${SELECT_SM_CLASS} w-full`}
           >
             <option value="">Sin categoría</option>
             {allCategories.map((cat) => (
@@ -192,7 +183,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           )}
         </div>
 
-        {/* Tipo de skill */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Tipo de habilidad
@@ -223,7 +213,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
                 >
                   Organizacional
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Específica de tu organización
                 </p>
               </div>
@@ -253,7 +243,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
                 >
                   Global
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Disponible para todos
                 </p>
               </div>
@@ -265,4 +255,3 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   );
 };
 
-export default SkillFormModal;

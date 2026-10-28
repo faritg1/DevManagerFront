@@ -31,7 +31,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         return (
             <div className={`rounded-2xl p-6 bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg ${className}`}>
                 <p className="text-white/80 text-sm font-bold uppercase tracking-wide">{title}</p>
-                <p className="text-white text-4xl font-bold mt-4">{value}</p>
+                <p className="text-white text-3xl sm:text-4xl font-bold mt-4 break-words tabular-nums">{value}</p>
                 {subtitle && (
                     <span className="text-white/80 text-sm font-semibold">{subtitle}</span>
                 )}
@@ -40,19 +40,19 @@ export const StatCard: React.FC<StatCardProps> = ({
     }
 
     return (
-        <div className={`flex flex-col gap-4 rounded-2xl p-6 bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] shadow-sm hover:shadow-md transition-shadow ${className}`}>
-            <div className="flex items-center justify-between">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">
+        <div className={`flex min-w-0 flex-col gap-4 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-[#325167] transition-all ${className}`}>
+            <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-wider">
                     {title}
                 </p>
                 {Icon && (
-                    <div className={`p-2 ${iconBgColor} rounded-lg ${iconColor}`}>
+                    <div className={`shrink-0 p-2 ${iconBgColor} rounded-lg ${iconColor}`}>
                         <Icon size={24} />
                     </div>
                 )}
             </div>
-            <div className="flex items-baseline gap-2">
-                <p className="text-slate-900 dark:text-white text-4xl font-bold leading-none">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <p className="min-w-0 break-words text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold leading-none tabular-nums">
                     {value}
                 </p>
                 {trend && (
@@ -68,4 +68,3 @@ export const StatCard: React.FC<StatCardProps> = ({
     );
 };
 
-export default StatCard;

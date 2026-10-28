@@ -8,6 +8,7 @@ import { rbacService } from "../../../shared/api";
 import { Modal } from "../../../shared/ui/Modal";
 import { Input } from "../../../shared/ui/Input";
 import { Button } from "../../../shared/ui/Button";
+import { SELECT_SM_CLASS } from "../../../shared/ui";
 
 interface PermissionFormModalProps {
   isOpen: boolean;
@@ -23,7 +24,6 @@ interface PermissionFormData {
   description: string;
 }
 
-// Acciones comunes para facilitar creación
 const COMMON_ACTIONS = [
   "read",
   "write",
@@ -95,7 +95,6 @@ const normalizeCode = (value: string) => {
 const humanizeNameFromCode = (code: string) => {
   const parts = code.split('.');
   const last = parts[parts.length - 1] || '';
-  // Capitalize and replace underscores
   return last.replace(/[_-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
@@ -266,7 +265,7 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
             <select
               value={selectedAction}
               onChange={handleActionChange}
-              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white"
+              className={`${SELECT_SM_CLASS} w-full`}
             >
               {COMMON_ACTIONS.map((a) => (
                 <option key={a} value={a} className="capitalize">
@@ -327,7 +326,7 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
         </div>
 
         {error && (
-          <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">{error}</div>
+          <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">{error}</div>
         )}
       </form>
     </Modal>

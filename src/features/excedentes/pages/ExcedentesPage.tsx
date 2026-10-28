@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Loader2, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
 import type { SurplusDistributionDto, CalculateSurplusRequest } from '../../../shared/api/types';
-
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-
-const formatDate = (s: string | null | undefined) => {
-    if (!s) return '—';
-    try { return new Date(s).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return '—'; }
-};
+import { formatDate, currency } from '../../../shared/format';
 
 const emptyCalc = (): CalculateSurplusRequest => ({ period: new Date().toISOString().slice(0, 10), totalSurplus: 0 });
 
@@ -107,43 +99,43 @@ export const ExcedentesPage: React.FC = () => {
 
             <Card padding="none" className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-slate-50 dark:bg-[#111b22] text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-[#233948]">
+                    <table className={TABLE_CLASS}>
+                        <thead className={THEAD_CLASS}>
                             <tr>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Período</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Total excedentes</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Reserva</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Educación</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Solidaridad</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Remanente</th>
-                                <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Estado</th>
-                                {isAdmin && <th className="px-6 py-4 font-bold uppercase text-xs tracking-wider">Acción</th>}
+                                <th className={TH_CLASS}>Período</th>
+                                <th className={TH_CLASS}>Total excedentes</th>
+                                <th className={TH_CLASS}>Reserva</th>
+                                <th className={TH_CLASS}>Educación</th>
+                                <th className={TH_CLASS}>Solidaridad</th>
+                                <th className={TH_CLASS}>Remanente</th>
+                                <th className={TH_CLASS}>Estado</th>
+                                {isAdmin && <th className={TH_CLASS}>Acción</th>}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#233948]">
+                        <tbody className={TBODY_CLASS}>
                             {isLoading ? (
                                 <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"><Loader2 className="inline animate-spin" /> Cargando...</td></tr>
                             ) : distributions.length === 0 ? (
-                                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No hay distribuciones de excedentes</td></tr>
+                                <tr><td colSpan={8}><EmptyState title="No hay distribuciones de excedentes" /></td></tr>
                             ) : (
                                 distributions.map(e => (
                                     <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-[#233948]/50">
-                                        <td className="px-6 py-4">
+                                        <td className={TD_CLASS}>
                                             <p className="font-bold text-slate-900 dark:text-white">{formatDate(e.period)}</p>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
                                         </td>
-                                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{currency(e.totalSurplus)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.protectionReserve)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.educationFund)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.solidarityFund)}</td>
-                                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{currency(e.remainder)}</td>
-                                        <td className="px-6 py-4">
+                                        <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{currency(e.totalSurplus)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.protectionReserve)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.educationFund)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.solidarityFund)}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.remainder)}</td>
+                                        <td className={TD_CLASS}>
                                             <Badge variant={e.approvedByAssembly ? 'success' : 'warning'} dot>
                                                 {e.approvedByAssembly ? 'Aprobada' : 'Pendiente'}
                                             </Badge>
                                         </td>
                                         {isAdmin && (
-                                            <td className="px-6 py-4">
+                                            <td className={TD_CLASS}>
                                                 {!e.approvedByAssembly && (
                                                     <Button size="sm" variant="outline" onClick={() => { setApproving(e); setRevaluation(null); setCooperativeReturn(null); }}>
                                                         Aprobar en Asamblea
@@ -204,4 +196,3 @@ export const ExcedentesPage: React.FC = () => {
     );
 };
 
-export default ExcedentesPage;

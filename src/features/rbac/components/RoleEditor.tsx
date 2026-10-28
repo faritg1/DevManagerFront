@@ -6,7 +6,7 @@ import type {
   RolePermissionsResponse,
 } from "../../../shared/api/types";
 import { ROUTES } from "../../../shared/config/constants";
-import { Button, PageContainer, PageHeader } from "../../../shared/ui";
+import { Button, PageContainer, PageHeader, LoadingBlock } from "../../../shared/ui";
 
 interface RoleEditorProps {
   roleId?: string; // si se pasa, carga permisos del rol para editar
@@ -60,7 +60,6 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
     load();
   }, [roleId]);
 
-  // Filtrado por búsqueda
   const visibleGroups = useMemo(() => {
     if (!search.trim()) return groups;
     const q = search.toLowerCase();
@@ -123,7 +122,6 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
           onSaved?.(roleId);
         }
       } else {
-        // Crear rol nuevo y asignar permisos
         const created = await rbacService.createRole({
           name: roleName,
           description: roleDescription,
@@ -143,9 +141,9 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
 
   if (isLoading)
     return (
-      <div className="p-6 md:p-10 max-w-7xl mx-auto w-full text-slate-500 dark:text-slate-400">
-        Cargando editor...
-      </div>
+      <PageContainer>
+        <LoadingBlock label="Cargando editor…" />
+      </PageContainer>
     );
 
   return (
@@ -180,26 +178,29 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
         }
       />
 
-      <div className="bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#16222b] border border-slate-200 dark:border-[#233948] rounded-2xl shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1 flex flex-col md:flex-row md:items-center gap-3">
             <input
-              className="w-full md:w-64 px-3 py-2 rounded-md border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400"
+              className="w-full md:w-64 px-3 py-2 rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
               placeholder="Buscar permisos (nombre o código)..."
+              aria-label="Buscar permisos"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
 
             <input
-              className="w-full md:w-80 px-3 py-2 rounded-md border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400"
+              className="w-full md:w-80 px-3 py-2 rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
               placeholder="Nombre del rol"
+              aria-label="Nombre del rol"
               value={roleName}
               onChange={(e) => setRoleName(e.target.value)}
             />
 
             <input
-              className="w-full md:w-96 px-3 py-2 rounded-md border border-slate-200 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400"
+              className="w-full md:w-96 px-3 py-2 rounded-xl border border-slate-300 dark:border-[#233948] bg-white dark:bg-[#111b22] text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
               placeholder="Descripción (opcional)"
+              aria-label="Descripción del rol"
               value={roleDescription}
               onChange={(e) => setRoleDescription(e.target.value)}
             />
@@ -307,4 +308,3 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
   );
 };
 
-export default RoleEditor;

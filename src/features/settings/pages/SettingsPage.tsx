@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Settings,
   Moon,
@@ -18,53 +18,28 @@ import { Card, Badge, Button, Avatar, PageContainer, PageHeader } from "../../..
 import { useAuth, useNotification } from "../../../shared/context";
 import { STORAGE_KEYS, ROUTES } from "../../../shared/config/constants";
 import { useNavigate } from "react-router-dom";
-
-type ThemeMode = "light" | "dark" | "system";
-
-const getStoredTheme = (): ThemeMode => {
-  const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-  if (stored === "light" || stored === "dark" || stored === "system") return stored;
-  return "system";
-};
-
-const applyTheme = (mode: ThemeMode) => {
-  const root = document.documentElement;
-  if (mode === "system") {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.classList.toggle("dark", prefersDark);
-  } else {
-    root.classList.toggle("dark", mode === "dark");
-  }
-};
+import { useTheme, type Theme } from "../../../shared/hooks";
 
 export const SettingsPage: React.FC = () => {
   const { user, logout } = useAuth();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
 
-  const [theme, setTheme] = useState<ThemeMode>(getStoredTheme);
+  const { theme, setTheme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true"
   );
   const [saved, setSaved] = useState(false);
 
-  // Apply theme on change
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
-
-  const handleThemeChange = (mode: ThemeMode) => {
+  const handleThemeChange = (mode: Theme) => {
     setTheme(mode);
-    localStorage.setItem(STORAGE_KEYS.THEME, mode);
-    applyTheme(mode);
     showNotification({ type: "success", message: `Tema cambiado a ${mode === "light" ? "Claro" : mode === "dark" ? "Oscuro" : "Sistema"}` });
   };
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setSidebarCollapsed(collapsed);
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(collapsed));
-    // Dispatch storage event so Sidebar picks it up
-    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.SIDEBAR_COLLAPSED }));
   };
 
   const handleLogout = () => {
@@ -72,7 +47,7 @@ export const SettingsPage: React.FC = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const themeOptions: { mode: ThemeMode; label: string; icon: React.FC<{ size?: number; className?: string }> }[] = [
+  const themeOptions: { mode: Theme; label: string; icon: React.FC<{ size?: number; className?: string }> }[] = [
     { mode: "light", label: "Claro", icon: Sun },
     { mode: "dark", label: "Oscuro", icon: Moon },
     { mode: "system", label: "Sistema", icon: Monitor },
@@ -80,14 +55,12 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <PageContainer narrow className="space-y-6">
-      {/* Header */}
       <PageHeader
         icon={<Settings size={28} className="text-primary" />}
         title="Configuración"
         description="Personaliza tu experiencia en DevManager"
       />
 
-      {/* ─── Account Info ────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <User size={20} className="text-primary" />
@@ -103,9 +76,13 @@ export const SettingsPage: React.FC = () => {
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant="purple" icon={Shield}>
-                  {user.role}
-                </Badge>
+                {user.role ? (
+                  <Badge variant="purple" icon={Shield}>
+                    {user.role}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Sin rol</span>
+                )}
                 {user.organizationName && (
                   <Badge variant="info" icon={Globe}>
                     {user.organizationName}
@@ -128,7 +105,6 @@ export const SettingsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* ─── Appearance ──────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <Moon size={20} className="text-indigo-500" />
@@ -179,7 +155,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* ─── Interface ───────────────────────── */}
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
           <HardDrive size={20} className="text-emerald-500" />
@@ -187,7 +162,6 @@ export const SettingsPage: React.FC = () => {
         </h2>
 
         <div className="space-y-4">
-          {/* Sidebar */}
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-white">
@@ -198,8 +172,12 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
             <button
+              type="button"
+              role="switch"
+              aria-checked={sidebarCollapsed}
+              aria-label="Barra lateral compacta"
               onClick={() => handleSidebarToggle(!sidebarCollapsed)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
+              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#16222b] ${
                 sidebarCollapsed
                   ? "bg-primary"
                   : "bg-slate-300 dark:bg-slate-600"
@@ -215,7 +193,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* ─── Danger Zone ─────────────────────── */}
       <Card className="border-rose-200 dark:border-rose-500/20">
         <h2 className="text-lg font-bold text-rose-500 flex items-center gap-2 mb-4">
           <LogOut size={20} />
@@ -238,4 +215,3 @@ export const SettingsPage: React.FC = () => {
   );
 };
 
-export default SettingsPage;

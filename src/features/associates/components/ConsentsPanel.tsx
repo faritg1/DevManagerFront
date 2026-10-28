@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Badge, Button } from '../../../shared/ui';
+import { Badge, Button, SELECT_CLASS } from '../../../shared/ui';
 import { consentsService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import type { ConsentDto, DataPolicyDto } from '../../../shared/api/types';
@@ -59,7 +59,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                         <select
                             value={policyId}
                             onChange={(e) => setPolicyId(e.target.value)}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3"
+                            className={SELECT_CLASS}
                         >
                             {policies.map((p) => <option key={p.id} value={p.id}>v{p.version} — {p.purpose}</option>)}
                         </select>
@@ -97,7 +97,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                                     <input
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
-                                        placeholder="Motivo de la revocación *"
+                                        placeholder="Motivo de la revocación *" aria-label="Motivo de la revocación"
                                         className="flex-1 h-10 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3 text-sm"
                                     />
                                     <Button

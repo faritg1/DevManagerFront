@@ -6,11 +6,10 @@ import {
   ConfirmProvider,
 } from "../shared/context";
 import { MainLayout, AuthLayout } from "./layouts";
-import { ProtectedRoute, PublicRoute, RoleGuard } from "./guards";
+import { ProtectedRoute, PublicRoute, AdminGuard } from "./guards";
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
 
-// Feature pages - Lazy loaded for better performance
 import {
   LoginPage,
   RegisterPage,
@@ -55,7 +54,6 @@ export const AppRouter: React.FC = () => {
           <NotificationProvider>
             <GlobalErrorListener />
             <Routes>
-              {/* Public Routes - Redirect to dashboard if already authenticated */}
               <Route element={<PublicRoute />}>
                 <Route element={<AuthLayout />}>
                   <Route path={ROUTES.LOGIN} element={<LoginPage />} />
@@ -63,93 +61,46 @@ export const AppRouter: React.FC = () => {
                 </Route>
               </Route>
 
-              {/* Protected Routes - Require authentication */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<MainLayout />}>
-                {/* Dashboard */}
-                <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+                  <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+                  <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
+                  <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
+                  <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
+                  <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />
+                  <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                  <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+                  <Route path={ROUTES.NOMINA} element={<NominaPage />} />
+                  <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
+                  <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
+                  <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
+                  <Route path={ROUTES.SST} element={<SstPage />} />
+                  <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
+                  <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
+                  <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
+                  <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
+                  <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
 
-                {/* Projects */}
-                <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
-                <Route
-                  path={ROUTES.PROJECT_DETAIL}
-                  element={<ProjectDetailPage />}
-                />
-
-                {/* Projects — Admin only */}
-                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
-                  <Route
-                    path={ROUTES.CREATE_PROJECT}
-                    element={<CreateProjectPage />}
-                  />
-                  <Route
-                    path={ROUTES.EDIT_PROJECT}
-                    element={<EditProjectPage />}
-                  />
-                </Route>
-
-                {/* Reports — Admin only */}
-                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
-                  <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
-                </Route>
-
-                {/* Agents */}
-                <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
-
-                {/* Administration — Admin only */}
-                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
-                  <Route
-                    path={ROUTES.ORGANIZATIONS}
-                    element={<OrganizationsPage />}
-                  />
-                  <Route path={ROUTES.USERS} element={<UsersPage />} />
-                  <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
-                  <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
-                  <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
-                  <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
-                  <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
-                  <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
-                </Route>
-
-                {/* Security — Roles & Permissions (Admin only) */}
-                <Route element={<RoleGuard allowedRoles={['admin', 'administrator']} />}>
-                  <Route path={ROUTES.ROLES} element={<RolesPage />} />
-                  <Route
-                    path={`${ROUTES.ROLES}/:id/permissions`}
-                    element={<RolePermissionsPage />}
-                  />
-                  <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
-                </Route>
-
-                {/* Skills Catalog */}
-                <Route path={ROUTES.SKILLS_CATALOG} element={<SkillsCatalogPage />} />
-
-                {/* User */}
-                <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-                <Route
-                  path={ROUTES.SETTINGS}
-                  element={<SettingsPage />}
-                />
-
-                {/* ===== Gestión Humana Solidaria ===== */}
-                <Route path={ROUTES.NOMINA} element={<NominaPage />} />
-                <Route path={ROUTES.ORGANOS} element={<OrganosPage />} />
-                <Route path={ROUTES.BIENESTAR} element={<BienestarPage />} />
-                <Route path={ROUTES.BALANCE_SOCIAL} element={<BalanceSocialPage />} />
-                <Route path={ROUTES.SST} element={<SstPage />} />
-                <Route path={ROUTES.EXCEDENTES} element={<ExcedentesPage />} />
-                <Route path={ROUTES.HABEAS_DATA} element={<HabeasDataPage />} />
-                <Route path={ROUTES.COMPETENCIAS} element={<CompetenciasPage />} />
-                <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
-                <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
+                  <Route element={<AdminGuard />}>
+                    <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
+                    <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
+                    <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+                    <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
+                    <Route path={ROUTES.USERS} element={<UsersPage />} />
+                    <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
+                    <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                    <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                    <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                    <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                    <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
+                    <Route path={ROUTES.ROLES} element={<RolesPage />} />
+                    <Route path={`${ROUTES.ROLES}/:id/permissions`} element={<RolePermissionsPage />} />
+                    <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+                  </Route>
                 </Route>
               </Route>
 
-              {/* Fallback */}
-              <Route
-                path="*"
-                element={<Navigate to={ROUTES.LOGIN} replace />}
-              />
+              <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
             </Routes>
           </NotificationProvider>
         </ConfirmProvider>
@@ -158,4 +109,3 @@ export const AppRouter: React.FC = () => {
   );
 };
 
-export default AppRouter;

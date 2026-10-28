@@ -1,12 +1,12 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Input } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, Input, SELECT_CLASS } from '../../../shared/ui';
 import { Briefcase } from 'lucide-react';
-import type { UpdateProfileRequest, ProfileResponse } from '../../../shared/api/types';
+import type { UpdateProfileRequest, ProfileResponse, AllConfigCatalogsDto, AvailabilityStatus } from '../../../shared/api/types';
 
 interface Props {
     profile?: ProfileResponse | null;
     form: UpdateProfileRequest;
-    catalogs: any;
+    catalogs: AllConfigCatalogsDto | null;
     isEditing: boolean;
     onChange: (partial: Partial<UpdateProfileRequest>) => void;
 }
@@ -21,7 +21,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
         </CardHeader>
 
         <div className="space-y-4">
-            {/* Años de experiencia */}
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     Años de Experiencia
@@ -42,7 +41,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 )}
             </div>
 
-            {/* Seniority & Location (new) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Seniority</label>
@@ -50,7 +48,7 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                         <select
                             value={form.seniorityLevelId ?? profile?.seniorityLevelId ?? ''}
                             onChange={(e) => onChange({ seniorityLevelId: e.target.value ? parseInt(e.target.value) : undefined })}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary transition-all"
+                            className={SELECT_CLASS}
                         >
                             <option value="">Selecciona seniority...</option>
                             {catalogs?.seniorityLevels?.map(l => (
@@ -74,7 +72,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 </div>
             </div>
 
-            {/* Timezone & Availability */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Zona horaria</label>
@@ -90,8 +87,8 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                     {isEditing ? (
                         <select
                             value={form.availability ?? profile?.availability ?? ''}
-                            onChange={(e) => onChange({ availability: (e.target.value as any) || null })}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary transition-all"
+                            onChange={(e) => onChange({ availability: (e.target.value as AvailabilityStatus) || null })}
+                            className={SELECT_CLASS}
                         >
                             <option value="">Selecciona disponibilidad...</option>
                             <option value="Available">Disponible</option>
@@ -104,7 +101,6 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                 </div>
             </div>
 
-            {/* Preferred title & Rate */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Título preferido</label>

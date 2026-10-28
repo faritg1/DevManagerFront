@@ -1,10 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { App } from './app';
+import { AppRouter } from './app/Router';
 
-/**
- * Application Entry Point
- */
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
@@ -13,6 +10,6 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-        <App />
+        <AppRouter />
     </React.StrictMode>
 );

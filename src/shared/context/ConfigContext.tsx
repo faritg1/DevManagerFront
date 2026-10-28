@@ -10,7 +10,7 @@ interface ConfigContextType {
     refreshCatalogs: () => Promise<void>;
 }
 
-export const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
+const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
 export const useConfig = () => {
     const context = useContext(ConfigContext);

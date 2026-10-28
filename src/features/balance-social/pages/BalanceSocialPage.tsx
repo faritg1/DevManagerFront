@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
 import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
-
-const currency = (n: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
+import { currency } from '../../../shared/format';
 
 const dimensionVariant = (status: string): 'success' | 'warning' | 'danger' =>
     status === 'Cumple' ? 'success' : status === 'En Progreso' ? 'warning' : 'danger';
@@ -109,7 +107,7 @@ export const BalanceSocialPage: React.FC = () => {
                 description="Indicadores de balance social calculados con la educación, participación y beneficios reales."
                 actions={<>
                 <div className="flex items-center gap-3">
-                    <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" className="w-32" />
+                    <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" aria-label="Año" className="w-32" />
                     <Button variant="outline" onClick={loadData} disabled={isLoading}>
                         {isLoading ? 'Cargando...' : 'Consultar'}
                     </Button>
@@ -135,7 +133,7 @@ export const BalanceSocialPage: React.FC = () => {
                         <select
                             value={lookupUserId}
                             onChange={(e) => setLookupUserId(e.target.value)}
-                            className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none"
+                            className={SELECT_CLASS}
                         >
                             <option value="">Seleccionar asociado</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
@@ -146,7 +144,7 @@ export const BalanceSocialPage: React.FC = () => {
                     </div>
                 )}
                 {lookupLoading ? (
-                    <div className="flex items-center justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                    <LoadingBlock className="py-6" />
                 ) : indicator ? renderIndicator(indicator) : (
                     <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicador consultado.</p>
                 )}
@@ -200,7 +198,7 @@ export const BalanceSocialPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Indicadores de la Organización</h2>
                         </div>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                            <LoadingBlock />
                         ) : indicators.length === 0 ? (
                             <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicadores para el año seleccionado.</p>
                         ) : (
@@ -214,7 +212,7 @@ export const BalanceSocialPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Asociados que No Cumplen Educación</h2>
                         </div>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                            <LoadingBlock />
                         ) : nonCompliant.length === 0 ? (
                             <p className="text-sm text-slate-500 dark:text-slate-400">Todos cumplen con las horas mínimas de educación.</p>
                         ) : (
@@ -227,4 +225,3 @@ export const BalanceSocialPage: React.FC = () => {
     );
 };
 
-export default BalanceSocialPage;

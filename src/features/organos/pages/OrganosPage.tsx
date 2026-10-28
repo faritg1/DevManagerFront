@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader } from '../../../shared/ui';
+import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -18,6 +18,7 @@ import type {
     VoteOption,
     VoteResultsDto,
 } from '../../../shared/api/types';
+import { formatDate, formatDateTime, today } from '../../../shared/format';
 
 const BODY_TYPE_LABEL: Record<GoverningBodyType, string> = {
     1: 'Asamblea General',
@@ -31,7 +32,6 @@ const BODY_TYPE_LABEL: Record<GoverningBodyType, string> = {
 const SESSION_TYPE_LABEL: Record<number, string> = { 1: 'Ordinaria', 2: 'Extraordinaria' };
 const VOTE_OPTION_LABEL: Record<VoteOption, string> = { 1: 'Aprobar', 2: 'Rechazar', 3: 'Abstención', 4: 'En blanco' };
 
-const today = () => new Date().toISOString().slice(0, 10);
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
     const d = new Date();
@@ -39,13 +39,7 @@ const nowLocal = () => {
     return d.toISOString().slice(0, 16);
 };
 
-const formatDate = (d: string | null | undefined): string =>
-    d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-
-const formatDateTime = (d: string | null | undefined): string =>
-    d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-
-const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none';
+const selectClass = `${SELECT_CLASS} w-full`;
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
 const labelClass = 'text-slate-700 dark:text-white text-sm font-bold';
 
@@ -82,12 +76,10 @@ export const OrganosPage: React.FC = () => {
     const [memberOpen, setMemberOpen] = useState(false);
     const [memberForm, setMemberForm] = useState({ userId: '', position: '', startDate: today() });
 
-    // Actas
     const [minutesOpen, setMinutesOpen] = useState(false);
     const [minutesForm, setMinutesForm] = useState<CreateMinutesRequest>(emptyMinutes(''));
     const [minutesDetail, setMinutesDetail] = useState<MinutesDto | null>(null);
 
-    // Asambleas
     const [conveneOpen, setConveneOpen] = useState(false);
     const [conveneForm, setConveneForm] = useState<ConveneAssemblyRequest>(emptyAssembly());
     const [assembly, setAssembly] = useState<AssemblyDto | null>(null);
@@ -95,7 +87,6 @@ export const OrganosPage: React.FC = () => {
     const [attendees, setAttendees] = useState('');
     const [closeResults, setCloseResults] = useState('');
 
-    // Voto
     const [voterId, setVoterId] = useState('');
     const [hasVoted, setHasVoted] = useState(false);
     const [voteOption, setVoteOption] = useState<VoteOption>(1);
@@ -201,7 +192,6 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    // ===== Actas =====
     const openMinutesDetail = async (id: string) => {
         try {
             const res = await organosService.getMinutesById(id);
@@ -236,7 +226,6 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    // ===== Asambleas =====
     const voterOf = (id: string) => id || user?.id || '';
 
     const loadVoteState = async (asambleaId: string, voter: string) => {
@@ -354,10 +343,7 @@ export const OrganosPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">Cargando órganos...</p>
-            </div>
+            <LoadingBlock label="Cargando órganos…" className="h-full py-20" />
         );
     }
 
@@ -407,7 +393,7 @@ export const OrganosPage: React.FC = () => {
                     </p>
 
                     {detailLoading ? (
-                        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div>
@@ -784,4 +770,3 @@ export const OrganosPage: React.FC = () => {
     );
 };
 
-export default OrganosPage;

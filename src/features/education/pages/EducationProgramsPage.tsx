@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
+import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, SELECT_CLASS, EmptyState } from '../../../shared/ui';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -10,7 +10,7 @@ import { educationProgramPath } from '../../../shared/config/constants';
 import { errorText, formatDate, needsLocalToast } from '../../associates/labels';
 import { PROGRAM_TYPE_LABELS } from '../labels';
 
-const selectCls = 'h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-3';
+const selectCls = SELECT_CLASS;
 
 export const EducationProgramsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -101,9 +101,9 @@ export const EducationProgramsPage: React.FC = () => {
 
             <Card padding="md">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    <LoadingBlock />
                 ) : items.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Aún no hay programas.</p>
+                    <EmptyState title="Aún no hay programas" description="Crea un programa de educación cooperativa para empezar a inscribir asociados." />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>

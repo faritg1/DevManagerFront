@@ -20,7 +20,6 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
         </CardHeader>
 
         <div className="space-y-4">
-            {/* LinkedIn */}
             <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10">
                     <Linkedin className="text-blue-600" size={20} />
@@ -42,11 +41,10 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.linkedinUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
 
-            {/* GitHub */}
             <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-500/10">
                     <Github className="text-slate-700 dark:text-slate-300" size={20} />
@@ -68,11 +66,10 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.githubUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
 
-            {/* Portfolio */}
             <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/10">
                     <Globe className="text-purple-500" size={20} />
@@ -94,7 +91,7 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.portfolioUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
         </div>

@@ -25,7 +25,6 @@ export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps>
 
   const getStatusConfig = (status: number) => {
     const label = catalogs?.assignmentStatuses.find((s) => s.id === status)?.name || "Desconocido";
-    // 1=Active, 2=Removed, 3=Completed
     const variant: "success" | "danger" | "info" =
       status === 1 ? "success" : status === 2 ? "danger" : "info";
     return { variant, label };

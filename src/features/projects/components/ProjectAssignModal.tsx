@@ -47,7 +47,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   const [isAssigning, setIsAssigning] = useState(false);
   const [userSearch, setUserSearch] = useState("");
 
-  // Load users when modal opens
   React.useEffect(() => {
     if (!isOpen) return;
     setSelectedUserId("");
@@ -157,7 +156,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     >
       <div className="space-y-5">
         <Input
-          placeholder="Buscar por nombre, email o rol..."
+          placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
           value={userSearch}
           onChange={(e) => setUserSearch(e.target.value)}
         />

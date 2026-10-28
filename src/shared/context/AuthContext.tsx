@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { authService, rbacService } from '../api';
+import { authService, organizationsService, rbacService } from '../api';
 import { STORAGE_KEYS } from '../config/constants';
 
-// Types
 export interface User {
     id: string;
     name: string;
@@ -35,7 +34,6 @@ interface RegisterData {
     entityType?: number;
 }
 
-// Initial state
 const initialState: AuthState = {
     user: null,
     token: null,
@@ -43,16 +41,13 @@ const initialState: AuthState = {
     isLoading: true,
 };
 
-// Context
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Provider
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, setState] = useState<AuthState>(initialState);
 
-    // Initialize auth state from storage
     useEffect(() => {
-        const initAuth = async () => {
+        const initAuth = () => {
             // Solo leer las keys propias del app (auth_token / auth_user).
             // NO hacer fallback a keys heredadas de otros sistemas: pueden tener
             // tokens expirados que causarían bucles de 401 → login → dashboard → 401.
@@ -123,12 +118,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 // Si falla, continuamos sin rol (el usuario podrá ver contenido básico)
             }
 
+            // El login tampoco devuelve el nombre de la organización
+            let organizationName: string | undefined;
+            try {
+                const orgResp = await organizationsService.getCurrent();
+                if (orgResp.success && orgResp.data) organizationName = orgResp.data.name;
+            } catch {
+                // Sin nombre: las vistas muestran "Sin definir"
+            }
+
             const user: User = {
                 id: userId,
                 name: fullName,
                 email,
                 role,
                 organizationId,
+                organizationName,
             };
 
             localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
@@ -166,6 +171,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 organizationName: organizationName,
             };
 
+            localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
             setState({
                 user,
                 token,
@@ -209,7 +215,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
-// Hook
 export const useAuth = (): AuthContextValue => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -218,4 +223,3 @@ export const useAuth = (): AuthContextValue => {
     return context;
 };
 
-export default AuthContext;

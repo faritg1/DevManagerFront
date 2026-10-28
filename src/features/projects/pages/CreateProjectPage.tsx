@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Info, Users, Save, X, Calendar, DollarSign, Loader2 } from 'lucide-react';
-import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader } from '../../../shared/ui';
-import { useForm } from '../../../shared/hooks';
+import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
+import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader, SELECT_CLASS } from '../../../shared/ui';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
@@ -14,8 +13,7 @@ interface ProjectFormData {
     description: string;
     startDate: string;
     endDate: string;
-    complexity: string;
-    budgetEstimate: string;
+    complexityLevel: string;
 }
 
 export const CreateProjectPage: React.FC = () => {
@@ -24,15 +22,17 @@ export const CreateProjectPage: React.FC = () => {
     const { catalogs } = useConfig();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const { values, handleChange, handleBlur } = useForm<ProjectFormData>({
+    const [values, setValues] = useState<ProjectFormData>({
         name: '',
         code: '',
         description: '',
         startDate: '',
         endDate: '',
-        complexity: '1', // Medium by default
-        budgetEstimate: '',
+        complexityLevel: String(ProjectComplexity.Medium),
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+        setValues(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,8 +51,7 @@ export const CreateProjectPage: React.FC = () => {
                 description: values.description || undefined,
                 startDate: values.startDate ? new Date(values.startDate).toISOString() : undefined,
                 endDate: values.endDate ? new Date(values.endDate).toISOString() : undefined,
-                complexity: parseInt(values.complexity) as ProjectComplexity,
-                budgetEstimate: values.budgetEstimate ? parseFloat(values.budgetEstimate) : undefined,
+                complexityLevel: parseInt(values.complexityLevel) as ProjectComplexity,
             });
 
             if (response.success) {
@@ -71,7 +70,6 @@ export const CreateProjectPage: React.FC = () => {
 
     return (
         <PageContainer narrow>
-            {/* Header */}
             <PageHeader
                 title="Crear Nuevo Proyecto"
                 description="Define los detalles del proyecto, alcance y asigna el equipo."
@@ -95,7 +93,6 @@ export const CreateProjectPage: React.FC = () => {
             />
                 
                 <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-                    {/* Basic Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -109,7 +106,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="name"
                                 value={values.name}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                                 placeholder="Ej: Sistema de Gestión Hospitalaria"
                                 required
                             />
@@ -118,7 +114,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="code"
                                 value={values.code}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                                 placeholder="Ej: SIST-HOSP-001"
                                 hint="Identificador único (opcional)"
                             />
@@ -128,7 +123,7 @@ export const CreateProjectPage: React.FC = () => {
                                     <textarea 
                                         name="description"
                                         value={values.description}
-                                        onChange={handleChange as React.ChangeEventHandler<HTMLTextAreaElement>}
+                                        onChange={handleChange}
                                         className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
                                         placeholder="Describe los objetivos y alcance del proyecto..."
                                     />
@@ -137,7 +132,6 @@ export const CreateProjectPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    {/* Timeline & Budget */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -152,7 +146,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="startDate"
                                 value={values.startDate}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                             />
                             <Input
                                 label="Fecha de Fin"
@@ -160,15 +153,14 @@ export const CreateProjectPage: React.FC = () => {
                                 name="endDate"
                                 value={values.endDate}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                             />
                             <div className="flex flex-col gap-2">
                                 <span className="text-slate-700 dark:text-white text-sm font-bold">Complejidad</span>
                                 <select
-                                    name="complexity"
-                                    value={values.complexity}
-                                    onChange={handleChange as React.ChangeEventHandler<HTMLSelectElement>}
-                                    className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    name="complexityLevel"
+                                    value={values.complexityLevel}
+                                    onChange={handleChange}
+                                    className={`${SELECT_CLASS} w-full`}
                                 >
                                     {catalogs?.complexityLevels.map(level => (
                                         <option key={level.id} value={level.id}>
@@ -177,17 +169,6 @@ export const CreateProjectPage: React.FC = () => {
                                     ))}
                                 </select>
                             </div>
-                            <Input
-                                label="Presupuesto Estimado"
-                                type="number"
-                                name="budgetEstimate"
-                                value={values.budgetEstimate}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                placeholder="50000"
-                                icon={DollarSign}
-                                hint="En USD (opcional)"
-                            />
                         </div>
                     </Card>
                 </form>
@@ -195,4 +176,3 @@ export const CreateProjectPage: React.FC = () => {
     );
 };
 
-export default CreateProjectPage;

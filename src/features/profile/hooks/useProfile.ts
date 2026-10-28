@@ -6,7 +6,11 @@ import type {
   EffectivePermissionsResponse,
   RoleDto,
 } from "../../../shared/api/types";
+import type { ApiError } from "../../../shared/api";
 import { useAuth } from "../../../shared/context";
+
+const formatErrors = (errors: Record<string, string[]>): string =>
+  Object.entries(errors).map(([field, msgs]) => `${field}: ${msgs.join(', ')}`).join('; ');
 
 interface UseProfileResult {
   profile: ProfileResponse | null;
@@ -51,17 +55,13 @@ export function useProfile(): UseProfileResult {
   const [rolesLoading, setRolesLoading] = useState(false);
   const [requestingRoleId, setRequestingRoleId] = useState<string | null>(null);
 
-  // function to load profile (reusable)
   const fetchProfile = async () => {
     setIsLoading(true);
     setError(null);
-    console.log('[Profile] Iniciando carga de perfil...');
     try {
       const response = await profileService.getMyProfile();
-      console.log('[Profile] Respuesta getMyProfile:', response);
 
       if (response.success && response.data) {
-        console.log('[Profile] Perfil encontrado:', response.data);
         setProfile(response.data);
         setProfileForm({
           bio: response.data.bio || "",
@@ -77,12 +77,10 @@ export function useProfile(): UseProfileResult {
           hourlyRate: response.data.hourlyRate ?? undefined,
         });
       } else {
-        console.log('[Profile] No se encontró perfil (respuesta sin datos)');
         setProfile(null);
         setProfileForm({});
       }
 
-      // load perms regardless
       if (user?.id) {
         setPermsLoading(true);
         try {
@@ -98,12 +96,8 @@ export function useProfile(): UseProfileResult {
           setPermsLoading(false);
         }
       }
-    } catch (err: any) {
-      console.error('[Profile] Error fetching profile:', err);
-      // Verificar si es error 404
-      const status = err?.status || err?.response?.status;
-      if (status === 404) {
-        console.log('[Profile] Perfil no encontrado (404)');
+    } catch (err) {
+      if ((err as ApiError)?.status === 404) {
         setProfile(null);
         setProfileForm({});
       } else {
@@ -111,11 +105,9 @@ export function useProfile(): UseProfileResult {
       }
     } finally {
       setIsLoading(false);
-      console.log('[Profile] Carga de perfil finalizada');
     }
   };
 
-  // load profile on mount / user change
   useEffect(() => {
     fetchProfile();
   }, [user?.id]);
@@ -123,21 +115,17 @@ export function useProfile(): UseProfileResult {
   const startEditing = () => setIsEditing(true);
   const cancelEditing = () => setIsEditing(false);
 
-  // Función para limpiar y preparar datos del perfil antes de enviar
   const cleanProfileData = (data: UpdateProfileRequest): UpdateProfileRequest => {
     const cleaned: UpdateProfileRequest = {};
     
-    // Bio - texto libre
     if (data.bio && data.bio.trim()) {
       cleaned.bio = data.bio.trim();
     }
     
-    // Years experience - número positivo
     if (data.yearsExperience !== undefined && data.yearsExperience !== null && data.yearsExperience >= 0) {
       cleaned.yearsExperience = data.yearsExperience;
     }
     
-    // URLs - solo enviar si son válidas o vacías
     const isValidUrl = (url: string | null | undefined): boolean => {
       if (!url || url.trim() === '') return false;
       try {
@@ -158,7 +146,6 @@ export function useProfile(): UseProfileResult {
       cleaned.portfolioUrl = data.portfolioUrl;
     }
     
-    // Otros campos opcionales
     if (data.seniorityLevelId !== undefined) cleaned.seniorityLevelId = data.seniorityLevelId;
     if (data.location) cleaned.location = data.location;
     if (data.timezone) cleaned.timezone = data.timezone;
@@ -166,7 +153,6 @@ export function useProfile(): UseProfileResult {
     if (data.preferredTitle) cleaned.preferredTitle = data.preferredTitle;
     if (data.hourlyRate !== undefined) cleaned.hourlyRate = data.hourlyRate;
     
-    console.log('[Profile] Datos limpiados:', cleaned);
     return cleaned;
   };
 
@@ -175,84 +161,52 @@ export function useProfile(): UseProfileResult {
     message?: string;
   }> => {
     setIsSaving(true);
-    console.log('[Profile] Iniciando guardado...', { profileExists: !!profile, formData: profileForm });
     
     try {
-      // Limpiar y validar datos antes de enviar
       const cleanedData = cleanProfileData(profileForm);
       
       let response;
       
       if (!profile) {
-        // No existe perfil -> Usar POST para crear nuevo
-        // POST reactiva el perfil si fue soft-deleted
-        console.log('[Profile] No existe perfil, usando POST (crear) /api/profile/me...');
-        
+        // POST also reactivates a soft-deleted profile.
         try {
           response = await profileService.createMyProfile(cleanedData);
-          console.log('[Profile] Respuesta createMyProfile (POST):', response);
-        } catch (postError: any) {
-          // Si POST retorna 409 (perfil ya existe), intentamos con PUT
-          console.log('[Profile] POST lanzó error:', postError);
-          if (postError?.status === 409) {
-            console.log('[Profile] POST retornó 409, intentando con PUT...');
+        } catch (postError) {
+          // 409: the profile already exists, fall back to PUT.
+          if ((postError as ApiError)?.status === 409) {
             response = await profileService.updateMyProfile(cleanedData);
-            console.log('[Profile] Respuesta updateMyProfile (fallback PUT):', response);
           } else {
-            // Rethrow si no es 409
             throw postError;
           }
         }
       } else {
-        // Existe perfil -> Usar PUT para actualizar
-        console.log('[Profile] Perfil existe, usando PUT (actualizar) /api/profile/me...');
         response = await profileService.updateMyProfile(cleanedData);
-        console.log('[Profile] Respuesta updateMyProfile (PUT):', response);
       }
 
       if (response.success) {
-        console.log('[Profile] Guardado exitoso, recargando perfil...');
         await fetchProfile();
         setIsEditing(false);
-        console.log('[Profile] Perfil guardado exitosamente');
         return { success: true, message: response.message || 'Perfil guardado exitosamente' };
-      } else {
-        // Mostrar errores de validación del servidor
-        const validationErrors = (response as any).errors ? 
-          Object.entries((response as any).errors).map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`).join('; ') 
-          : response.message;
-        console.warn('[Profile] Guardado falló:', validationErrors);
-        return { success: false, message: validationErrors || 'Error al guardar perfil' };
       }
-    } catch (err: any) {
-      console.error('[Profile] Excepción durante guardado:', err);
-      
-      // Manejar errores de validación (400 con errors)
-      if (err?.errors) {
-        const validationErrors = Object.entries(err.errors)
-          .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
-          .join('; ');
-        console.error('[Profile] Errores de validación:', validationErrors);
-        return { success: false, message: validationErrors };
+      const errors = (response as { errors?: ApiError['errors'] }).errors;
+      return { success: false, message: (errors ? formatErrors(errors) : response.message) || 'Error al guardar perfil' };
+    } catch (err) {
+      const apiError = err as ApiError;
+      if (apiError?.errors) {
+        return { success: false, message: formatErrors(apiError.errors) };
       }
-      
-      const errorMessage = err?.message || 'Error de conexión al guardar perfil';
-      return { success: false, message: errorMessage };
+      return { success: false, message: apiError?.message || 'Error de conexión al guardar perfil' };
     } finally {
       setIsSaving(false);
-      console.log('[Profile] Guardado finalizado');
     }
   };
 
   const deleteProfile = async (): Promise<boolean> => {
     setIsDeleting(true);
     try {
-      const resp = await profileService.deleteMyProfile();
-      if (resp.success) {
-        // nothing additional
-      }
-    } catch (err) {
-      console.warn("deleteMyProfile failed or not implemented", err);
+      await profileService.deleteMyProfile();
+    } catch {
+      // Local state is cleared even if the backend delete fails.
     } finally {
       setProfile(null);
       setProfileForm({});
@@ -279,7 +233,6 @@ export function useProfile(): UseProfileResult {
     try {
       const resp = await usersService.update(user.id, { roleId });
       if (resp.success) {
-        // refresh perms
         const permResp = await rbacService.getUserEffectivePermissions(user.id);
         if (permResp.success && permResp.data) setEffectivePerms(permResp.data);
         return true;
@@ -311,7 +264,6 @@ export function useProfile(): UseProfileResult {
     deleteProfile,
     loadAvailableRoles,
     requestRoleChange,
-    // allow consumer to refetch
     reload: fetchProfile,
   };
 }

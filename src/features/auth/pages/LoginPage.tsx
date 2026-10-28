@@ -36,14 +36,12 @@ export const LoginPage: React.FC = () => {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#325167] blur-[100px]" />
       </div>
 
       <div className="w-full max-w-[460px] relative z-10">
-        {/* Header */}
         <div className="mb-8 text-center sm:text-left flex flex-col gap-4">
           <div className="size-12 text-primary mx-auto sm:mx-0">
             <Hexagon fill="currentColor" className="w-full h-full" />
@@ -58,11 +56,10 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Form Card */}
         <div className="bg-white dark:bg-[#192833] rounded-2xl shadow-xl border border-slate-200 dark:border-[#233948] p-6 sm:p-8 backdrop-blur-sm">
           <form className="flex flex-col gap-5" onSubmit={handleLogin}>
             {error && (
-              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
+              <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
                 {error}
               </div>
             )}
@@ -95,7 +92,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   required
                 />
-                <button
+                <button aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
@@ -116,7 +113,6 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          {/* Register Link */}
           <div className="mt-6 text-center">
             <Link
               to={ROUTES.REGISTER}
@@ -134,4 +130,3 @@ export const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;

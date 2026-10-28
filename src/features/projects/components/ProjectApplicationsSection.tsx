@@ -150,7 +150,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {formatApplicationDate(app.appliedAt)}
                         {app.message && (
-                          <span className="ml-2 text-slate-400">• "{app.message}"</span>
+                          <span className="ml-2 text-slate-500 dark:text-slate-400">• "{app.message}"</span>
                         )}
                       </p>
                     </div>
@@ -186,7 +186,6 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
         )}
       </Card>
 
-      {/* Modal Revisar Postulación */}
       <Modal
         isOpen={reviewModal.isOpen}
         onClose={reviewModal.close}

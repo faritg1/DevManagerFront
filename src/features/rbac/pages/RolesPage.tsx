@@ -29,7 +29,6 @@ export const RolesPage: React.FC = () => {
       const rolesData = rolesResp.data || [];
 
       // Use userCount from API directly (backend provides accurate count)
-      // Fallback to 0 if not provided
       const enriched = rolesData.map((r) => ({
         ...r,
         userCount: r.userCount ?? 0,

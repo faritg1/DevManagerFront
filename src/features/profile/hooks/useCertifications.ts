@@ -30,15 +30,12 @@ export function useCertifications(): UseCertificationsResult {
   const loadCertifications = async () => {
     setIsLoading(true);
     setError(null);
-    console.log('[Certifications] Cargando certificaciones...');
     try {
       const resp = await certificationService.getMyCertifications();
-      console.log('[Certifications] Respuesta:', resp);
       if (resp.success && resp.data) {
         setCertifications(resp.data);
-        console.log('[Certifications] Certificaciones cargadas:', resp.data.length);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[Certifications] Error:', err);
       setError('No se pudieron cargar las certificaciones');
     } finally {
@@ -51,7 +48,6 @@ export function useCertifications(): UseCertificationsResult {
     id?: string,
   ): Promise<boolean> => {
     setOpLoading(true);
-    console.log('[Certifications] Guardando:', { id, payload });
     try {
       let resp;
       if (id) {
@@ -62,7 +58,6 @@ export function useCertifications(): UseCertificationsResult {
       } else {
         resp = await certificationService.createMyCertification(payload);
       }
-      console.log('[Certifications] Respuesta save:', resp);
 
       if (resp.success) {
         await loadCertifications();
@@ -80,10 +75,8 @@ export function useCertifications(): UseCertificationsResult {
     cert: CertificationResponse,
   ): Promise<boolean> => {
     setOpLoading(true);
-    console.log('[Certifications] Eliminando:', cert.id);
     try {
       const resp = await certificationService.deleteMyCertification(cert.id);
-      console.log('[Certifications] Respuesta delete:', resp);
       if (resp.success) {
         setCertifications((prev) => prev.filter((c) => c.id !== cert.id));
         return true;

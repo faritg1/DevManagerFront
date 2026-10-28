@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button } from '../../../shared/ui';
+import { Modal, Button, SELECT_CLASS } from '../../../shared/ui';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import type { RoleDto } from '../../../shared/api/types';
 
@@ -44,7 +44,7 @@ export const RequestRoleModal: React.FC<Props> = ({
             {loading ? (
                 <div className="text-center py-4"><Loader2 className="animate-spin text-primary" /></div>
             ) : (
-                <select className="w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] px-4 text-slate-900" value={selectedRoleId ?? ''} onChange={(e) => setSelectedRoleId(e.target.value || null)}>
+                <select className={`${SELECT_CLASS} w-full`} value={selectedRoleId ?? ''} onChange={(e) => setSelectedRoleId(e.target.value || null)}>
                     <option value="">Selecciona un rol...</option>
                     {availableRoles.map(r => (
                         <option key={r.id} value={r.id}>{r.name} ({r.permissionCount} permisos)</option>

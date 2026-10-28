@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -24,8 +24,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     iconPosition = 'left',
     inputSize = 'md',
     className = '',
+    id,
     ...props
 }, ref) => {
+    const autoId = useId();
+    const inputId = id ?? autoId;
     const hasIcon = !!Icon;
     const paddingLeft = hasIcon && iconPosition === 'left' ? 'pl-11' : 'pl-4';
     const paddingRight = hasIcon && iconPosition === 'right' ? 'pr-11' : 'pr-4';
@@ -33,13 +36,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     return (
         <div className="flex flex-col gap-2 w-full">
             {label && (
-                <label className="text-slate-700 dark:text-white text-sm font-bold">
+                <label htmlFor={inputId} className="text-slate-700 dark:text-white text-sm font-bold">
                     {label}
                 </label>
             )}
             <div className="relative group">
                 <input
                     ref={ref}
+                    id={inputId}
+                    aria-invalid={error ? true : undefined}
                     className={`
                         w-full rounded-xl border 
                         ${error 
@@ -79,4 +84,3 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
 Input.displayName = 'Input';
 
-export default Input;

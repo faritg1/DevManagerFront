@@ -1,15 +1,15 @@
 import React from 'react';
 import { Edit, Save, X, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import { Avatar, Button, Badge } from '../../../shared/ui';
-import type { ProfileResponse } from '../../../shared/api/types';
+import type { ProfileResponse, UpdateProfileRequest, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
     userName?: string;
     userEmail?: string;
     userRole?: string;
     profile?: ProfileResponse | null;
-    profileForm: any;
-    catalogs: any;
+    profileForm: UpdateProfileRequest;
+    catalogs: AllConfigCatalogsDto | null;
     isEditing: boolean;
     isSaving: boolean;
     isDeleting?: boolean;

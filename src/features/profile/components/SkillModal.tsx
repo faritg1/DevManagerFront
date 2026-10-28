@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button, Input, LevelSelector } from '../../../shared/ui';
 import { Award, Loader2, Link as LinkIcon, Save, Plus, FileText } from 'lucide-react';
-import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse } from '../../../shared/api/types';
+import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
     isOpen: boolean;
@@ -13,7 +13,7 @@ interface Props {
     saving: boolean;
     editing?: EmployeeSkillResponse | null;
     onSave: () => void;
-    catalogs: any;
+    catalogs: AllConfigCatalogsDto | null;
 }
 
 export const SkillModal: React.FC<Props> = ({

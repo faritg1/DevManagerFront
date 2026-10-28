@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
 import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader } from '../../../shared/ui';
-import { useForm } from '../../../shared/hooks';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
@@ -23,7 +22,7 @@ export const CreateProjectPage: React.FC = () => {
     const { catalogs } = useConfig();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const { values, handleChange, handleBlur } = useForm<ProjectFormData>({
+    const [values, setValues] = useState<ProjectFormData>({
         name: '',
         code: '',
         description: '',
@@ -31,6 +30,9 @@ export const CreateProjectPage: React.FC = () => {
         endDate: '',
         complexityLevel: String(ProjectComplexity.Medium),
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+        setValues(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,7 +106,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="name"
                                 value={values.name}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                                 placeholder="Ej: Sistema de Gestión Hospitalaria"
                                 required
                             />
@@ -113,7 +114,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="code"
                                 value={values.code}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                                 placeholder="Ej: SIST-HOSP-001"
                                 hint="Identificador único (opcional)"
                             />
@@ -123,7 +123,7 @@ export const CreateProjectPage: React.FC = () => {
                                     <textarea 
                                         name="description"
                                         value={values.description}
-                                        onChange={handleChange as React.ChangeEventHandler<HTMLTextAreaElement>}
+                                        onChange={handleChange}
                                         className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
                                         placeholder="Describe los objetivos y alcance del proyecto..."
                                     />
@@ -146,7 +146,6 @@ export const CreateProjectPage: React.FC = () => {
                                 name="startDate"
                                 value={values.startDate}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                             />
                             <Input
                                 label="Fecha de Fin"
@@ -154,14 +153,13 @@ export const CreateProjectPage: React.FC = () => {
                                 name="endDate"
                                 value={values.endDate}
                                 onChange={handleChange}
-                                onBlur={handleBlur}
                             />
                             <div className="flex flex-col gap-2">
                                 <span className="text-slate-700 dark:text-white text-sm font-bold">Complejidad</span>
                                 <select
                                     name="complexityLevel"
                                     value={values.complexityLevel}
-                                    onChange={handleChange as React.ChangeEventHandler<HTMLSelectElement>}
+                                    onChange={handleChange}
                                     className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 >
                                     {catalogs?.complexityLevels.map(level => (

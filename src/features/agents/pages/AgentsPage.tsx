@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Bot, Cpu, Activity, Send, Loader2, Sparkles, AlertCircle, CheckCircle2, XCircle, ShieldCheck, ShieldX, ToggleLeft, ToggleRight, Wrench, Trash2 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, PageContainer } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { agentService } from '../../../shared/api';
+import { agentService, type ApiError } from '../../../shared/api';
 
 interface ChatMessage {
     id: string;
@@ -37,7 +37,7 @@ const loadMessagesFromStorage = (): ChatMessage[] => {
         const stored = localStorage.getItem(CHAT_STORAGE_KEY);
         if (stored) {
             const parsed = JSON.parse(stored);
-            return parsed.map((msg: any) => ({
+            return (parsed as Array<ChatMessage & { timestamp: string }>).map((msg) => ({
                 ...msg,
                 timestamp: new Date(msg.timestamp)
             }));
@@ -122,7 +122,8 @@ export const AgentsPage: React.FC = () => {
                     message: response.message || 'Error al consultar el agente'
                 });
             }
-        } catch (err: any) {
+        } catch (e) {
+            const err = e as ApiError;
             console.error('Error querying agent:', err);
             
             let errorContent = 'Lo siento, hubo un error de conexión.';

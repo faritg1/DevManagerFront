@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     </Link>
                     {breadcrumbs.map((crumb, index) => {
                         const isRoleIdPath = /^\/roles\/[^\/]+$/.test(crumb.path);
-                        const displayName = isRoleIdPath ? (location.state as any)?.roleName ?? 'Rol' : crumb.name;
+                        const displayName = isRoleIdPath ? (location.state as { roleName?: string } | null)?.roleName ?? 'Rol' : crumb.name;
                         const linkTo = isRoleIdPath ? ROUTES.ROLES : crumb.path;
 
                         return (

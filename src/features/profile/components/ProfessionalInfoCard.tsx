@@ -1,12 +1,12 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, Input } from '../../../shared/ui';
 import { Briefcase } from 'lucide-react';
-import type { UpdateProfileRequest, ProfileResponse } from '../../../shared/api/types';
+import type { UpdateProfileRequest, ProfileResponse, AllConfigCatalogsDto, AvailabilityStatus } from '../../../shared/api/types';
 
 interface Props {
     profile?: ProfileResponse | null;
     form: UpdateProfileRequest;
-    catalogs: any;
+    catalogs: AllConfigCatalogsDto | null;
     isEditing: boolean;
     onChange: (partial: Partial<UpdateProfileRequest>) => void;
 }
@@ -87,7 +87,7 @@ export const ProfessionalInfoCard: React.FC<Props> = ({ profile, form, catalogs,
                     {isEditing ? (
                         <select
                             value={form.availability ?? profile?.availability ?? ''}
-                            onChange={(e) => onChange({ availability: (e.target.value as any) || null })}
+                            onChange={(e) => onChange({ availability: (e.target.value as AvailabilityStatus) || null })}
                             className="h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none focus:ring-1 focus:ring-primary transition-all"
                         >
                             <option value="">Selecciona disponibilidad...</option>

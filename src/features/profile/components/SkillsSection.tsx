@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
 import { Award, Loader2, Plus, Edit, Trash2, CheckCircle2, Clock, Sparkles, FileText, ExternalLink } from 'lucide-react';
-import type { EmployeeSkillResponse } from '../../../shared/api/types';
+import type { EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
     skills: EmployeeSkillResponse[];
@@ -12,7 +12,7 @@ interface Props {
     onEdit: (skill: EmployeeSkillResponse) => void;
     onDelete: (skill: EmployeeSkillResponse) => void;
     onValidateAI?: (skill: EmployeeSkillResponse) => void;
-    catalogs: any;
+    catalogs: AllConfigCatalogsDto | null;
 }
 
 const getLevelColor = (level: number): string => {

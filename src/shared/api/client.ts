@@ -350,4 +350,3 @@ if (import.meta.env.MODE === "development") {
   });
 }
 
-export default ApiClient;

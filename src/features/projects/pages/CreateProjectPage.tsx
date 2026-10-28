@@ -181,4 +181,3 @@ export const CreateProjectPage: React.FC = () => {
     );
 };
 
-export default CreateProjectPage;

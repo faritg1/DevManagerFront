@@ -570,4 +570,3 @@ export const EditProjectPage: React.FC = () => {
   );
 };
 
-export default EditProjectPage;

@@ -249,4 +249,3 @@ export const ReportesSupersolidariaPage: React.FC = () => {
     );
 };
 
-export default ReportesSupersolidariaPage;

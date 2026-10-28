@@ -265,4 +265,3 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   );
 };
 
-export default SkillFormModal;

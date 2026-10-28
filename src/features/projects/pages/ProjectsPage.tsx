@@ -290,4 +290,3 @@ export const ProjectsPage: React.FC = () => {
     );
 };
 
-export default ProjectsPage;

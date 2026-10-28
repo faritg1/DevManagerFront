@@ -56,4 +56,3 @@ export const sstService = {
   createRisk: (data: CreateRiskRequest): Promise<ApiResponse<RiskDto>> => apiClient.post(E.RIESGOS, data),
 };
 
-export default sstService;

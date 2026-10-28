@@ -25,4 +25,3 @@ export const useLoading = (initialState = false): UseLoadingReturn => {
     return { isLoading, startLoading, stopLoading, withLoading };
 };
 
-export default useLoading;

@@ -364,4 +364,3 @@ export const UserDetailPage: React.FC = () => {
   );
 };
 
-export default UserDetailPage;

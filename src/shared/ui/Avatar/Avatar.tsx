@@ -105,4 +105,3 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
     );
 };
 
-export default Avatar;

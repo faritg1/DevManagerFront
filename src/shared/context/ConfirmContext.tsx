@@ -58,4 +58,3 @@ export const useConfirm = (): ConfirmContextValue => {
     return context;
 };
 
-export default ConfirmContext;

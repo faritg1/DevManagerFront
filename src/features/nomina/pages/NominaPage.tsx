@@ -326,4 +326,3 @@ export const NominaPage: React.FC = () => {
     );
 };
 
-export default NominaPage;

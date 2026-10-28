@@ -784,4 +784,3 @@ export const OrganosPage: React.FC = () => {
     );
 };
 
-export default OrganosPage;

@@ -120,4 +120,3 @@ export const useForm = <T extends FormValues>(
     };
 };
 
-export default useForm;

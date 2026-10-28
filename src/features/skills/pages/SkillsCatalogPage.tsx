@@ -405,4 +405,3 @@ export const SkillsCatalogPage: React.FC = () => {
   );
 };
 
-export default SkillsCatalogPage;

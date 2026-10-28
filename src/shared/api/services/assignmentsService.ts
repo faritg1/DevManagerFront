@@ -61,4 +61,3 @@ export const assignmentsService = {
   },
 };
 
-export default assignmentsService;

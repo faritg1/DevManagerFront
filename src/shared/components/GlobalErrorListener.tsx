@@ -41,4 +41,3 @@ export const GlobalErrorListener: React.FC = () => {
   return null; // Este componente no renderiza nada visual, solo escucha eventos
 };
 
-export default GlobalErrorListener;

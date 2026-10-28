@@ -52,4 +52,3 @@ export const profileService = {
   },
 };
 
-export default profileService;

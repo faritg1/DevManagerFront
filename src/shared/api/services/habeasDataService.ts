@@ -35,4 +35,3 @@ export const habeasDataService = {
   },
 };
 
-export default habeasDataService;

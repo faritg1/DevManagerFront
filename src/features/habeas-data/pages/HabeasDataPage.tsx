@@ -231,4 +231,3 @@ export const HabeasDataPage: React.FC = () => {
     );
 };
 
-export default HabeasDataPage;

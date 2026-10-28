@@ -134,4 +134,3 @@ export const projectsService = {
   },
 };
 
-export default projectsService;

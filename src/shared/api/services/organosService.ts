@@ -58,4 +58,3 @@ export const organosService = {
   hasVoted: (asambleaId: string, userId: string): Promise<ApiResponse<boolean>> => apiClient.get(E.VOTOS_HA_VOTADO(asambleaId, userId)),
 };
 
-export default organosService;

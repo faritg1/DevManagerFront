@@ -34,4 +34,3 @@ export const asistenteService = {
     apiClient.post(E.VERIFICAR_CUMPLIMIENTO, data),
 };
 
-export default asistenteService;

@@ -28,4 +28,3 @@ export const balanceSocialService = {
     apiClient.get(E.REPORTE(year), { incluirRecomendaciones: includeRecommendations }),
 };
 
-export default balanceSocialService;

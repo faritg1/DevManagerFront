@@ -634,4 +634,3 @@ export const AgentsPage: React.FC = () => {
     );
 };
 
-export default AgentsPage;

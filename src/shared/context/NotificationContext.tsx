@@ -100,4 +100,3 @@ export const useToast = () => {
     };
 };
 
-export default NotificationContext;

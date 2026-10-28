@@ -39,4 +39,3 @@ export const consentsService = {
   },
 };
 
-export default consentsService;

@@ -307,4 +307,3 @@ export const RoleEditor: React.FC<RoleEditorProps> = ({ roleId, onSaved }) => {
   );
 };
 
-export default RoleEditor;

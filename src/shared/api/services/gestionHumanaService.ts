@@ -25,4 +25,3 @@ export const gestionHumanaService = {
     apiClient.patch(E.COMPETENCIA_DISPONIBILIDAD(id), { isAvailable }),
 };
 
-export default gestionHumanaService;

@@ -34,4 +34,3 @@ export const nominaService = {
     apiClient.post(E.PILA_CALCULAR, data),
 };
 
-export default nominaService;

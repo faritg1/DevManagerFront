@@ -256,4 +256,3 @@ export const CompetenciasPage: React.FC = () => {
     );
 };
 
-export default CompetenciasPage;

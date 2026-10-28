@@ -66,4 +66,3 @@ export const certificationService = {
   },
 };
 
-export default certificationService;

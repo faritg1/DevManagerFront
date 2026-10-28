@@ -107,4 +107,3 @@ export const skillsService = {
 
 };
 
-export default skillsService;

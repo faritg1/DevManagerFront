@@ -42,4 +42,3 @@ export const educationService = {
   },
 };
 
-export default educationService;

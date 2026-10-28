@@ -227,4 +227,3 @@ export const BalanceSocialPage: React.FC = () => {
     );
 };
 
-export default BalanceSocialPage;

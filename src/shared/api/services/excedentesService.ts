@@ -29,4 +29,3 @@ export const excedentesService = {
   approve: (id: string, data: ApproveSurplusRequest): Promise<ApiResponse<SurplusDistributionDto>> => apiClient.post(E.APROBAR(id), data),
 };
 
-export default excedentesService;

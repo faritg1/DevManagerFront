@@ -393,4 +393,3 @@ export const AsistentePage: React.FC = () => {
     );
 };
 
-export default AsistentePage;

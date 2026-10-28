@@ -541,4 +541,3 @@ export const BienestarPage: React.FC = () => {
     );
 };
 
-export default BienestarPage;

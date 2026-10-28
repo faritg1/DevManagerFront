@@ -406,4 +406,3 @@ export const ProjectDetailPage: React.FC = () => {
     );
 };
 
-export default ProjectDetailPage;

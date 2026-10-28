@@ -538,4 +538,3 @@ export const SstPage: React.FC = () => {
     );
 };
 
-export default SstPage;

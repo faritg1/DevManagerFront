@@ -6,4 +6,3 @@ export {
     CardFooter,
     type CardProps 
 } from './Card';
-export { default } from './Card';

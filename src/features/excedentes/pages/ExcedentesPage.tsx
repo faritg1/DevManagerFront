@@ -204,4 +204,3 @@ export const ExcedentesPage: React.FC = () => {
     );
 };
 
-export default ExcedentesPage;

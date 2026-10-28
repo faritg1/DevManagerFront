@@ -17,4 +17,3 @@ export const useModal = (initialState = false): UseModalReturn => {
     return { isOpen, open, close, toggle };
 };
 
-export default useModal;

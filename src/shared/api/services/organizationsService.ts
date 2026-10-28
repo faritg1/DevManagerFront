@@ -17,4 +17,3 @@ export const organizationsService = {
   updateCurrent: (data: UpdateOrganizationRequest): Promise<ApiResponse<OrganizationDto>> => apiClient.put(E.ME, data),
 };
 
-export default organizationsService;

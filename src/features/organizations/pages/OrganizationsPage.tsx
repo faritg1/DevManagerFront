@@ -335,4 +335,3 @@ export const OrganizationsPage: React.FC = () => {
     );
 };
 
-export default OrganizationsPage;

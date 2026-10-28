@@ -154,4 +154,3 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     );
 };
 
-export default Header;

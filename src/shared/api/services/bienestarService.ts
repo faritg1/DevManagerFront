@@ -57,4 +57,3 @@ export const bienestarService = {
   getAidsByUser: (userId: string): Promise<ApiResponse<WelfareAidDto[]>> => apiClient.get(E.AUXILIOS_BY_USER(userId)),
 };
 
-export default bienestarService;

@@ -29,4 +29,3 @@ export const reportesSupersolidariaService = {
   markSent: (id: string): Promise<ApiResponse<SupersolidariaReportDto>> => apiClient.post(E.ENVIAR(id)),
 };
 
-export default reportesSupersolidariaService;

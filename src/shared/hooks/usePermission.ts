@@ -95,4 +95,3 @@ export const usePermission = (): UsePermissionReturn => {
     };
 };
 
-export default usePermission;

@@ -52,4 +52,3 @@ export const associatesService = {
   },
 };
 
-export default associatesService;

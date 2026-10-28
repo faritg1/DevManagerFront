@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { authService, rbacService } from '../api';
+import { authService, organizationsService, rbacService } from '../api';
 import { STORAGE_KEYS } from '../config/constants';
 
 // Types
@@ -123,12 +123,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 // Si falla, continuamos sin rol (el usuario podrá ver contenido básico)
             }
 
+            // El login tampoco devuelve el nombre de la organización
+            let organizationName: string | undefined;
+            try {
+                const orgResp = await organizationsService.getCurrent();
+                if (orgResp.success && orgResp.data) organizationName = orgResp.data.name;
+            } catch {
+                // Sin nombre: las vistas muestran "Sin definir"
+            }
+
             const user: User = {
                 id: userId,
                 name: fullName,
                 email,
                 role,
                 organizationId,
+                organizationName,
             };
 
             localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));

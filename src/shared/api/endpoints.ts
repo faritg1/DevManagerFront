@@ -11,6 +11,11 @@ export const API_ENDPOINTS = {
     REGISTER_ORGANIZATION: "/auth/register-organization",
   },
 
+  // Organización del usuario (la del token)
+  ORGANIZATIONS: {
+    ME: "/organizations/me",
+  },
+
   // Users
   USERS: {
     BASE: "/users",

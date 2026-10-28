@@ -103,9 +103,13 @@ export const SettingsPage: React.FC = () => {
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant="purple" icon={Shield}>
-                  {user.role}
-                </Badge>
+                {user.role ? (
+                  <Badge variant="purple" icon={Shield}>
+                    {user.role}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-slate-400 dark:text-slate-500">Sin rol</span>
+                )}
                 {user.organizationName && (
                   <Badge variant="info" icon={Globe}>
                     {user.organizationName}

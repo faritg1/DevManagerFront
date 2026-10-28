@@ -40,4 +40,5 @@ export {
   organosService,
   reportesSupersolidariaService,
   asistenteService,
+  organizationsService,
 } from "./services";

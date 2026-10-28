@@ -54,6 +54,39 @@ export interface RegisterOrganizationResponse {
   token: string;
 }
 
+// ============ ORGANIZATIONS ============
+/** 1 CTA, 2 Ahorro y crédito, 3 Multiactiva, 4 Mutual, 5 Fondo de empleados, 6 Otra */
+export type OrganizationEntityType = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface OrganizationStatsDto {
+  users: number;
+  activeUsers: number;
+  associatesByStatus: { applicant: number; active: number; suspended: number; withdrawn: number };
+  employees: number;
+  projects: number;
+  activeProjects: number;
+  governingBodies: number;
+  educationPrograms: number;
+}
+
+export interface OrganizationDto {
+  id: string;
+  name: string;
+  legalName: string | null;
+  nit: string | null;
+  entityType: OrganizationEntityType | null;
+  isActive: boolean;
+  createdAt: string;
+  stats: OrganizationStatsDto;
+}
+
+export interface UpdateOrganizationRequest {
+  name: string;
+  legalName?: string | null;
+  nit?: string | null;
+  entityType?: OrganizationEntityType | null;
+}
+
 // ============ USERS ============
 export interface UserResponse {
   id: string;

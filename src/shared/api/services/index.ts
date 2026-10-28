@@ -29,3 +29,4 @@ export { habeasDataService } from "./habeasDataService";
 export { organosService } from "./organosService";
 export { reportesSupersolidariaService } from "./reportesSupersolidariaService";
 export { asistenteService } from "./asistenteService";
+export { organizationsService } from "./organizationsService";

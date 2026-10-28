@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [state, setState] = useState<AuthState>(initialState);
 
     useEffect(() => {
-        const initAuth = async () => {
+        const initAuth = () => {
             // Solo leer las keys propias del app (auth_token / auth_user).
             // NO hacer fallback a keys heredadas de otros sistemas: pueden tener
             // tokens expirados que causarían bucles de 401 → login → dashboard → 401.
@@ -171,6 +171,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 organizationName: organizationName,
             };
 
+            localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
             setState({
                 user,
                 token,

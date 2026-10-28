@@ -7,36 +7,22 @@ export const GlobalErrorListener: React.FC = () => {
 
   useEffect(() => {
     const handleApiError = (event: Event) => {
-      const customEvent = event as CustomEvent<ApiError>;
-      const error = customEvent.detail;
-
-      let message =
-        error.message ||
-        "Ha ocurrido un error inesperado al procesar la solicitud.";
-
-      // Si hay errores de validación (400 Bad Request), los formateamos
-      if (error.errors && Object.keys(error.errors).length > 0) {
-        const errorMessages = Object.entries(error.errors)
-          .map(([field, msgs]) => msgs.join(". "))
-          .join(" | ");
-        message = errorMessages;
-      }
+      const error = (event as CustomEvent<ApiError>).detail;
+      const validation = Object.values(error.errors ?? {});
 
       showNotification({
         type: "error",
         title: `Error en Servidor (${error.status})`,
-        message: message,
-        duration: 8000, // Dar más tiempo para leer errores largos
+        message: validation.length
+          ? validation.map((msgs) => msgs.join(". ")).join(" | ")
+          : error.message || "Ha ocurrido un error inesperado al procesar la solicitud.",
+        duration: 8000,
       });
     };
 
     window.addEventListener("DevManagerApiError", handleApiError);
-
-    return () => {
-      window.removeEventListener("DevManagerApiError", handleApiError);
-    };
+    return () => window.removeEventListener("DevManagerApiError", handleApiError);
   }, [showNotification]);
 
-  return null; // Este componente no renderiza nada visual, solo escucha eventos
+  return null;
 };
-

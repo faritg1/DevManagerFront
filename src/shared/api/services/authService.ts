@@ -33,15 +33,6 @@ export const authService = {
 
     if (response.success && response.data?.token) {
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.data.token);
-      localStorage.setItem(
-        STORAGE_KEYS.AUTH_USER,
-        JSON.stringify({
-          id: response.data.adminUserId,
-          email: response.data.adminEmail,
-          organizationId: response.data.organizationId,
-          organizationName: response.data.organizationName,
-        }),
-      );
     }
 
     return response;
@@ -51,31 +42,6 @@ export const authService = {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
     window.location.hash = "#/";
-  },
-
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-  },
-
-  getCurrentUser(): {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    organizationId: string;
-    organizationName: string;
-  } | null {
-    const userStr = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
-  },
-
-  getToken(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   },
 };
 

@@ -251,7 +251,7 @@ export const ProjectDetailPage: React.FC = () => {
                                     </Badge>
                                 </div>
                                 {project.code && (
-                                    <p className="text-slate-400 dark:text-slate-500 font-mono text-sm mb-2">
+                                    <p className="text-slate-500 dark:text-slate-400 font-mono text-sm mb-2">
                                         {project.code}
                                     </p>
                                 )}

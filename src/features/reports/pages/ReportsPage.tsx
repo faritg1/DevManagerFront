@@ -296,7 +296,7 @@ export const ReportsPage: React.FC = () => {
         {expandedSections.distribution && (
           <div className="mt-4 space-y-3">
             {skillDistribution.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">
                 No hay habilidades declaradas aún
               </p>
             ) : (
@@ -344,7 +344,7 @@ export const ReportsPage: React.FC = () => {
                 ))}
 
                 {skillDistribution.length > 15 && (
-                  <p className="text-xs text-slate-400 text-center pt-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-center pt-2">
                     Mostrando top 15 de {skillDistribution.length} skills
                   </p>
                 )}
@@ -364,7 +364,7 @@ export const ReportsPage: React.FC = () => {
         {expandedSections.projects && (
           <div className="mt-4 space-y-3">
             {projectMetrics.mostDemandedSkills.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">
                 No hay requisitos de habilidades en proyectos activos
               </p>
             ) : (
@@ -374,7 +374,7 @@ export const ReportsPage: React.FC = () => {
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {skill.skillName}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {skill.requiredInProjects} proyecto(s)
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export const ReportsPage: React.FC = () => {
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         {row.label}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         {row.count} ({percentage}%)
                       </span>
                     </div>

@@ -25,7 +25,7 @@ const selectClass = SELECT_CLASS;
 
 /** Valor ausente: texto atenuado en lugar de una etiqueta vacía. */
 const Undefined: React.FC<{ label?: string }> = ({ label = 'Sin definir' }) => (
-    <span className="text-sm italic text-slate-400 dark:text-slate-500">{label}</span>
+    <span className="text-sm italic text-slate-500 dark:text-slate-400">{label}</span>
 );
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (

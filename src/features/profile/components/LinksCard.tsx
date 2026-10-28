@@ -41,7 +41,7 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.linkedinUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
 
@@ -66,7 +66,7 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.githubUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
 
@@ -91,7 +91,7 @@ export const LinksCard: React.FC<Props> = ({ profile, form, isEditing, onChange 
                         {profile.portfolioUrl}
                     </a>
                 ) : (
-                    <span className="text-slate-400">No configurado</span>
+                    <span className="text-slate-500 dark:text-slate-400">No configurado</span>
                 )}
             </div>
         </div>

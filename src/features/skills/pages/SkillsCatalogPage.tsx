@@ -326,7 +326,7 @@ export const SkillsCatalogPage: React.FC = () => {
                           {skill.category}
                         </Badge>
                       ) : (
-                        <span className="text-xs text-slate-400 italic">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 italic">
                           Sin categoría
                         </span>
                       )}

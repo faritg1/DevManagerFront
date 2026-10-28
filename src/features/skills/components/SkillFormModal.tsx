@@ -213,7 +213,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
                 >
                   Organizacional
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Específica de tu organización
                 </p>
               </div>
@@ -243,7 +243,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
                 >
                   Global
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Disponible para todos
                 </p>
               </div>

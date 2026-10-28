@@ -74,7 +74,7 @@ const NavSection: React.FC<NavSectionProps> = ({ title, children }) => {
         {collapsed ? (
             <div className="mx-3 my-2 border-t border-slate-200 dark:border-[#233948]" role="separator" aria-label={title} />
         ) : (
-            <div className="px-3 py-2 text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">
+            <div className="px-3 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
                 {title}
             </div>
         )}

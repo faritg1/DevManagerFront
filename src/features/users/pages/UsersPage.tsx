@@ -885,19 +885,19 @@ export const UsersPage: React.FC = () => {
                 ) : effectivePerms ? (
                     <div className="space-y-5">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Roles asignados</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Roles asignados</p>
                             <div className="flex flex-wrap gap-2">
                                 {effectivePerms.roles.length > 0
                                     ? effectivePerms.roles.map((r) => (
                                         <Badge key={r.name} variant="purple">{r.name}</Badge>
                                     ))
-                                    : <span className="text-sm text-slate-400">Sin roles asignados</span>
+                                    : <span className="text-sm text-slate-500 dark:text-slate-400">Sin roles asignados</span>
                                 }
                             </div>
                         </div>
 
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Permisos efectivos</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Permisos efectivos</p>
                             {effectivePerms.effectivePermissions.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
                                     {effectivePerms.effectivePermissions.map((p) => (
@@ -908,12 +908,12 @@ export const UsersPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <span className="text-sm text-slate-400">Sin permisos efectivos</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Sin permisos efectivos</span>
                             )}
                         </div>
 
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Overrides directos</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Overrides directos</p>
                             {effectivePerms.directOverrides && effectivePerms.directOverrides.length > 0 ? (
                                 <div className="space-y-1.5">
                                     {effectivePerms.directOverrides.map((o) => (
@@ -934,12 +934,12 @@ export const UsersPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <span className="text-sm text-slate-400">Sin overrides configurados</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Sin overrides configurados</span>
                             )}
                         </div>
 
                         <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Agregar / modificar override</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Agregar / modificar override</p>
                             <div className="flex flex-col gap-3">
                                 <div>
                                     <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
@@ -1017,7 +1017,7 @@ export const UsersPage: React.FC = () => {
                 {skillsLoading ? (
                     <div className="text-center py-8">
                         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                        <p className="text-sm text-slate-400 mt-2">Cargando habilidades...</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Cargando habilidades...</p>
                     </div>
                 ) : userSkills.length === 0 ? (
                     <div className="text-center py-8">
@@ -1026,7 +1026,7 @@ export const UsersPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        <p className="text-xs text-slate-400 mb-2">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                             {userSkills.length} habilidades declaradas. Puedes validar o ajustar el nivel de cada una.
                         </p>
                         {userSkills.map((skill) => (
@@ -1043,7 +1043,7 @@ export const UsersPage: React.FC = () => {
                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                                 {skill.skillName}
                                             </p>
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                                 Nivel declarado: <span className="font-medium">{skill.level} — {skillLevelLabel(skill.level)}</span>
                                             </p>
                                         </div>

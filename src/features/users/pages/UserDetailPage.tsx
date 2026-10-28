@@ -103,7 +103,7 @@ export const UserDetailPage: React.FC = () => {
       <div className="p-6 md:p-10 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Cargando perfil...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -194,7 +194,7 @@ export const UserDetailPage: React.FC = () => {
             {skills.length === 0 ? (
               <div className="text-center py-8">
                 <Award size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-sm text-slate-400">Sin habilidades declaradas</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Sin habilidades declaradas</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -214,7 +214,7 @@ export const UserDetailPage: React.FC = () => {
                             {skill.skillName}
                           </p>
                           {skill.experienceDescription && (
-                            <p className="text-xs text-slate-400 mt-0.5 max-w-md truncate">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-md truncate">
                               {skill.experienceDescription}
                             </p>
                           )}
@@ -259,7 +259,7 @@ export const UserDetailPage: React.FC = () => {
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-slate-400 uppercase font-bold mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">
                     Roles asignados
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -270,13 +270,13 @@ export const UserDetailPage: React.FC = () => {
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-400">Sin roles</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Sin roles</span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-400 uppercase font-bold mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">
                     Permisos ({perms.effectivePermissions.length})
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-1">

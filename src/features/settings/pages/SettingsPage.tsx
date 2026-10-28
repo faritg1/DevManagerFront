@@ -81,7 +81,7 @@ export const SettingsPage: React.FC = () => {
                     {user.role}
                   </Badge>
                 ) : (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">Sin rol</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Sin rol</span>
                 )}
                 {user.organizationName && (
                   <Badge variant="info" icon={Globe}>

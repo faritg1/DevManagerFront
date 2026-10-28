@@ -70,11 +70,17 @@ const STATUS_TABS = [
 export const ProjectsPage: React.FC = () => {
     const navigate = useNavigate();
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
-    const [filteredProjects, setFilteredProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<ProjectStatus | undefined>(undefined);
+    const query = searchQuery.trim().toLowerCase();
+    const filteredProjects = query
+        ? projects.filter(project =>
+            project.name.toLowerCase().includes(query) ||
+            project.code?.toLowerCase().includes(query) ||
+            project.description?.toLowerCase().includes(query))
+        : projects;
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -84,7 +90,6 @@ export const ProjectsPage: React.FC = () => {
                 const response = await projectsService.getAll(activeTab);
                 if (response.success && response.data) {
                     setProjects(response.data);
-                    setFilteredProjects(response.data);
                 } else {
                     setError(response.message || 'Error al cargar proyectos');
                 }
@@ -98,21 +103,6 @@ export const ProjectsPage: React.FC = () => {
 
         fetchProjects();
     }, [activeTab]);
-
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredProjects(projects);
-            return;
-        }
-
-        const query = searchQuery.toLowerCase();
-        const filtered = projects.filter(project => 
-            project.name.toLowerCase().includes(query) ||
-            project.code?.toLowerCase().includes(query) ||
-            project.description?.toLowerCase().includes(query)
-        );
-        setFilteredProjects(filtered);
-    }, [searchQuery, projects]);
 
     return (
         <PageContainer>

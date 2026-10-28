@@ -5,16 +5,7 @@ import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
 import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../../../shared/api/types';
-import { formatDate } from '../../../shared/format';
-
-const LEVELS = [
-    { id: 1, name: 'Básico' },
-    { id: 2, name: 'Intermedio' },
-    { id: 3, name: 'Competente' },
-    { id: 4, name: 'Avanzado' },
-    { id: 5, name: 'Experto' },
-];
-const levelName = (level: number) => LEVELS.find(l => l.id === level)?.name ?? `Nivel ${level}`;
+import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
 
 const selectClass = 'w-full h-12 rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 outline-none mt-2';
 const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
@@ -146,7 +137,7 @@ export const CompetenciasPage: React.FC = () => {
                                 <p className="font-bold">{c.name}</p>
                                 {c.notes && <p className="text-xs text-slate-500 whitespace-normal dark:text-slate-400">{c.notes}</p>}
                             </td>
-                            <td className="px-6 py-4"><Badge variant="purple">{levelName(c.level)}</Badge></td>
+                            <td className="px-6 py-4"><Badge variant="purple">{skillLevelLabel(c.level)}</Badge></td>
                             <td className="px-6 py-4">{availabilityCell(c)}</td>
                             <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(c.updatedAt)}</td>
                         </tr>
@@ -239,7 +230,7 @@ export const CompetenciasPage: React.FC = () => {
                     <Input label="Competencia *" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
                     <div>
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</label>
-                        <LevelSelector levels={LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
+                        <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
                     <div>
                         <label className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>

@@ -31,18 +31,7 @@ import type {
 import { useConfig } from "../../../shared/context";
 import { Card, Badge, Button, Avatar, PageContainer } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
-import { formatDate } from "../../../shared/format";
-
-const getLevelLabel = (level: number) => {
-  const labels: Record<number, string> = {
-    1: "Básico",
-    2: "Intermedio",
-    3: "Competente",
-    4: "Avanzado",
-    5: "Experto",
-  };
-  return labels[level] || `Nivel ${level}`;
-};
+import { formatDate, skillLevelLabel } from "../../../shared/format";
 
 const getLevelColor = (level: number) => {
   if (level >= 5) return "bg-amber-500";
@@ -241,7 +230,7 @@ export const UserDetailPage: React.FC = () => {
                               : "default"
                           }
                         >
-                          {skill.level} — {getLevelLabel(skill.level)}
+                          {skill.level} — {skillLevelLabel(skill.level)}
                         </Badge>
                         {skill.lastValidatedAt ? (
                           <span title={`Validado por ${skill.validatedByName || "manager"}`}>

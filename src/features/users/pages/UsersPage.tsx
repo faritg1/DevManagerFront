@@ -29,7 +29,7 @@ import { useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
-import { formatDate } from '../../../shared/format';
+import { formatDate, skillLevelLabel } from '../../../shared/format';
 
 export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
@@ -38,10 +38,16 @@ export const UsersPage: React.FC = () => {
     const isAdmin = useIsAdmin();
     
     const [users, setUsers] = useState<UserResponse[]>([]);
-    const [filteredUsers, setFilteredUsers] = useState<UserResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const query = searchQuery.trim().toLowerCase();
+    const filteredUsers = query
+        ? users.filter(user =>
+            user.fullName.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            user.roleName.toLowerCase().includes(query))
+        : users;
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
     const createModal = useModal();
@@ -86,21 +92,6 @@ export const UsersPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredUsers(users);
-            return;
-        }
-
-        const query = searchQuery.toLowerCase();
-        const filtered = users.filter(user => 
-            user.fullName.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            user.roleName.toLowerCase().includes(query)
-        );
-        setFilteredUsers(filtered);
-    }, [searchQuery, users]);
-
-    useEffect(() => {
         const handleClickOutside = () => setActiveDropdown(null);
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
@@ -114,43 +105,17 @@ export const UsersPage: React.FC = () => {
             if (response.success && response.data) {
                 const usersData = response.data;
 
-                // Detect users missing roleName and try to resolve their primary role via RBAC service
-                const missingRoleUsers = usersData.filter(u => !u.roleName || !u.roleName.trim());
-
-                if (missingRoleUsers.length > 0) {
-                    try {
-                        const lookups = await Promise.allSettled(
-                            missingRoleUsers.map((u) => rbacService.getUserEffectivePermissions(u.id)),
-                        );
-
-                        lookups.forEach((res, idx) => {
-                            if (res.status === 'fulfilled' && res.value.success && res.value.data) {
-                                const effective = res.value.data;
-                                const firstRoleName = effective.roles?.[0]?.name;
-                                const userId = missingRoleUsers[idx].id;
-                                const target = usersData.find(x => x.id === userId);
-                                if (target) {
-                                    target.roleName = firstRoleName || 'Sin rol';
-                                }
-                            } else {
-                                const userId = missingRoleUsers[idx].id;
-                                const target = usersData.find(x => x.id === userId);
-                                if (target) target.roleName = 'Sin rol';
-                            }
-                        });
-                    } catch (err) {
-                        console.warn('RBAC lookup failed for users roleName population', err);
-                        usersData.forEach(u => {
-                            if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol';
-                        });
-                    }
-                }
-
-                // Ensure all users have a visible roleName
-                usersData.forEach(u => { if (!u.roleName || !u.roleName.trim()) u.roleName = 'Sin rol'; });
+                // List rows may lack roleName; resolve it from each user's effective permissions.
+                const missingRole = usersData.filter(u => !u.roleName?.trim());
+                const lookups = await Promise.allSettled(
+                    missingRole.map((u) => rbacService.getUserEffectivePermissions(u.id)),
+                );
+                lookups.forEach((res, idx) => {
+                    const name = res.status === 'fulfilled' && res.value.success ? res.value.data?.roles?.[0]?.name : undefined;
+                    missingRole[idx].roleName = name || 'Sin rol';
+                });
 
                 setUsers(usersData);
-                setFilteredUsers(usersData);
             } else {
                 setError(response.message || 'Error al cargar usuarios');
             }
@@ -329,11 +294,6 @@ export const UsersPage: React.FC = () => {
         } finally {
             setValidatingSkillId(null);
         }
-    };
-
-    const getLevelLabel = (level: number) => {
-        const labels: Record<number, string> = { 1: 'Básico', 2: 'Intermedio', 3: 'Competente', 4: 'Avanzado', 5: 'Experto' };
-        return labels[level] || `Nivel ${level}`;
     };
 
     const findRoleIdByName = (list: RoleDto[], name: string) => {
@@ -1081,7 +1041,7 @@ export const UsersPage: React.FC = () => {
                                                 {skill.skillName}
                                             </p>
                                             <p className="text-xs text-slate-400">
-                                                Nivel declarado: <span className="font-medium">{skill.level} — {getLevelLabel(skill.level)}</span>
+                                                Nivel declarado: <span className="font-medium">{skill.level} — {skillLevelLabel(skill.level)}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -1125,7 +1085,7 @@ export const UsersPage: React.FC = () => {
                                                     <ChevronDown size={16} />
                                                 </button>
                                                 <span className="text-sm font-bold w-16 text-center text-slate-900 dark:text-white">
-                                                    {adjustLevel} — {getLevelLabel(adjustLevel)}
+                                                    {adjustLevel} — {skillLevelLabel(adjustLevel)}
                                                 </span>
                                                 <button
                                                     type="button"

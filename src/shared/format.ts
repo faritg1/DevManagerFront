@@ -11,3 +11,7 @@ export const currency = (n: number): string => COP.format(n);
 
 /** Today as yyyy-MM-dd (UTC), the format date inputs expect. */
 export const today = (): string => new Date().toISOString().slice(0, 10);
+
+export const SKILL_LEVELS = ['Básico', 'Intermedio', 'Competente', 'Avanzado', 'Experto'].map((name, i) => ({ id: i + 1, name }));
+
+export const skillLevelLabel = (level: number): string => SKILL_LEVELS[level - 1]?.name ?? `Nivel ${level}`;

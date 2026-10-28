@@ -12,15 +12,6 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-export interface ErrorResponse {
-  success: boolean;
-  message: string | null;
-  errorCode: string | null;
-  errors: Record<string, string[]> | null;
-  timestamp: string;
-  traceId: string | null;
-}
-
 // ============ AUTH ============
 export interface LoginRequest {
   email: string;

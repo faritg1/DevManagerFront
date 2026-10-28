@@ -255,5 +255,3 @@ export const API_ENDPOINTS = {
       RESPONDER: "/asistente/responder",
     },
   } as const;
-
-export type ApiEndpoints = typeof API_ENDPOINTS;

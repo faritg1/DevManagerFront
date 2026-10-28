@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FileLock2, Loader2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
+import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -138,7 +138,7 @@ export const HabeasDataPage: React.FC = () => {
                     </h2>
                 </div>
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    <LoadingBlock />
                 ) : requests.length === 0 ? (
                     <p className="text-sm text-slate-500 dark:text-slate-400">Sin solicitudes ARCO.</p>
                 ) : (

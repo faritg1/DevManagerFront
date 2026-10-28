@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Loader2, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader } from '../../../shared/ui';
+import { Award, Plus, Search, UserRound } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -198,7 +198,7 @@ export const CompetenciasPage: React.FC = () => {
                     </select>
                 )}
                 {ownedLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    <LoadingBlock />
                 ) : !targetUserId ? (
                     <p className="text-sm text-slate-500 dark:text-slate-400">Seleccione un asociado para ver sus competencias.</p>
                 ) : owned.length === 0 ? (

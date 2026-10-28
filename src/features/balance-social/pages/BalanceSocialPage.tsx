@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, Loader2, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
@@ -198,7 +198,7 @@ export const BalanceSocialPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Indicadores de la Organización</h2>
                         </div>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                            <LoadingBlock />
                         ) : indicators.length === 0 ? (
                             <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicadores para el año seleccionado.</p>
                         ) : (
@@ -212,7 +212,7 @@ export const BalanceSocialPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Asociados que No Cumplen Educación</h2>
                         </div>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                            <LoadingBlock />
                         ) : nonCompliant.length === 0 ? (
                             <p className="text-sm text-slate-500 dark:text-slate-400">Todos cumplen con las horas mínimas de educación.</p>
                         ) : (

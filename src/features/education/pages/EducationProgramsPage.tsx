@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Loader2, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
+import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
+import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD } from '../../../shared/ui';
 import { useModal, useConfirm } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -101,7 +101,7 @@ export const EducationProgramsPage: React.FC = () => {
 
             <Card padding="md">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                    <LoadingBlock />
                 ) : items.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Aún no hay programas.</p>
                 ) : (

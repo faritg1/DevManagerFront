@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Loader2, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader } from '../../../shared/ui';
+import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
+import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -251,7 +251,7 @@ export const SstPage: React.FC = () => {
                         </select>
                     )}
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : exams.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin exámenes.</p>
                     ) : (
@@ -288,7 +288,7 @@ export const SstPage: React.FC = () => {
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Matriz de Riesgos</h2>
                     </div>
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : risks.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin riesgos registrados.</p>
                     ) : (
@@ -321,7 +321,7 @@ export const SstPage: React.FC = () => {
                         </label>
                     </div>
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                        <LoadingBlock />
                     ) : accidents.length === 0 ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
                     ) : (

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FilePlus, Loader2 } from 'lucide-react';
-import { Button, Card, Modal, Input, PageContainer, PageHeader } from '../../../shared/ui';
+import { FilePlus } from 'lucide-react';
+import { Button, Card, Modal, Input, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
@@ -63,7 +63,7 @@ export const DataPoliciesPage: React.FC = () => {
             />
 
             {isLoading ? (
-                <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                <LoadingBlock />
             ) : items.length === 0 ? (
                 <Card padding="md"><p className="text-sm text-slate-500 dark:text-slate-400 text-center">No hay políticas publicadas.</p></Card>
             ) : (

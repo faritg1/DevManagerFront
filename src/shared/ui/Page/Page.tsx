@@ -1,4 +1,5 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface PageContainerProps {
     children: React.ReactNode;
@@ -60,4 +61,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
         </div>
     </div>
+);
+
+export const LoadingBlock: React.FC = () => (
+    <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
 );

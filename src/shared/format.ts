@@ -19,9 +19,10 @@ export const skillLevelLabel = (level: number): string => SKILL_LEVELS[level - 1
 const RTF = new Intl.RelativeTimeFormat('es', { numeric: 'auto', style: 'short' });
 const RTF_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]];
 
-/** "hace 5 min", "ayer"… relative to now. */
+/** "hace 5 min", "ayer"… relative to now. The API sends UTC timestamps without offset, so a bare one is read as UTC. */
 export const timeAgo = (d: string): string => {
-    const seconds = (new Date(d).getTime() - Date.now()) / 1000;
+    const utc = /(?:[zZ]|[+-]\d\d:?\d\d)$/.test(d) ? d : `${d}Z`;
+    const seconds = (new Date(utc).getTime() - Date.now()) / 1000;
     const unit = RTF_UNITS.find(([, s]) => Math.abs(seconds) >= s);
     return unit ? RTF.format(Math.round(seconds / unit[1]), unit[0]) : 'ahora';
 };

@@ -250,7 +250,7 @@ export const ProjectDetailPage: React.FC = () => {
                                 icon={isDeleting ? Loader2 : Trash2}
                                 onClick={handleDeleteProject}
                                 disabled={isDeleting}
-                                className={`border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
+                                className={`border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
                             >
                                 {isDeleting ? 'Eliminando...' : 'Eliminar'}
                             </Button>

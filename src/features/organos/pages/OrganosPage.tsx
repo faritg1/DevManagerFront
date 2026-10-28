@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, IconButton, Input, Modal, ProgressBar, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -411,9 +411,7 @@ export const OrganosPage: React.FC = () => {
                                                 <Badge variant={m.isActive ? 'success' : 'default'}>{m.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                             </div>
                                             {isAdmin && (
-                                                <button onClick={() => handleRemoveMember(m)} className="p-1 text-slate-400 hover:text-rose-500" aria-label="Retirar miembro">
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                <IconButton icon={Trash2} label={`Retirar a ${m.fullName}`} variant="danger" onClick={() => handleRemoveMember(m)} />
                                             )}
                                         </div>
                                     ))}

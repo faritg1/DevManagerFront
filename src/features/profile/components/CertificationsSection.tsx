@@ -5,11 +5,13 @@ import {
   CardTitle,
   Button,
   Badge,
+  IconButton,
 } from "../../../shared/ui";
 import {
   Award,
   Loader2,
   Plus,
+  Pencil,
   Trash2,
   Calendar,
   ExternalLink,
@@ -172,7 +174,7 @@ export const CertificationsSection: React.FC<Props> = ({
                       </div>
                       
                       {cert.expirationDate && (
-                        <div className={`flex items-center gap-1 ${isExpired(cert.expirationDate) ? 'text-red-500' : ''}`}>
+                        <div className={`flex items-center gap-1 ${isExpired(cert.expirationDate) ? 'text-rose-500' : ''}`}>
                           <Calendar size={12} />
                           <span>
                             Expira: {formatDate(cert.expirationDate)}
@@ -196,24 +198,8 @@ export const CertificationsSection: React.FC<Props> = ({
                   </div>
 
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(cert)}
-                      title="Editar"
-                      className="p-1.5 sm:p-2 rounded hover:bg-slate-200 dark:hover:bg-[#233948]"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(cert)}
-                      title="Eliminar"
-                      className="p-1.5 sm:p-2 rounded hover:bg-red-100 dark:hover:bg-red-500/20 text-red-500"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <IconButton icon={Pencil} label={`Editar ${cert.name}`} onClick={() => handleOpenEdit(cert)} />
+                    <IconButton icon={Trash2} label={`Eliminar ${cert.name}`} variant="danger" onClick={() => handleDelete(cert)} />
                   </div>
                 </div>
               </div>

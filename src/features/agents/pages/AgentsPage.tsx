@@ -416,13 +416,13 @@ export const AgentsPage: React.FC = () => {
                                                 <div key={idx} className={`p-3 rounded-xl border-l-4 shadow-sm ${
                                                     tool.success 
                                                         ? 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-500'
-                                                        : 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-500'
+                                                        : 'bg-gradient-to-br bg-rose-50 dark:bg-rose-950/30 border-rose-500'
                                                 }`}>
                                                     <div className="flex items-center gap-2 mb-2">
                                                         {tool.success ? (
                                                             <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" size={14} />
                                                         ) : (
-                                                            <XCircle className="text-red-600 dark:text-red-400" size={14} />
+                                                            <XCircle className="text-rose-600 dark:text-rose-400" size={14} />
                                                         )}
                                                         <span className="font-bold text-slate-800 dark:text-slate-200">{tool.tool_name}</span>
                                                     </div>
@@ -451,7 +451,7 @@ export const AgentsPage: React.FC = () => {
                                             variant="outline"
                                             icon={ShieldX}
                                             onClick={() => setRejectModal({ open: true, messageId: message.id, actionId: message.actionId! })}
-                                            className="border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs"
+                                            className="border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs"
                                         >
                                             Rechazar
                                         </Button>
@@ -459,7 +459,7 @@ export const AgentsPage: React.FC = () => {
                                 )}
 
                                 {message.hitlStatus === 'rejected' && message.hitlNote && (
-                                    <p className="text-xs text-red-500 dark:text-red-400 px-2 italic">
+                                    <p className="text-xs text-rose-500 dark:text-rose-400 px-2 italic">
                                         Motivo: {message.hitlNote}
                                     </p>
                                 )}
@@ -568,7 +568,7 @@ export const AgentsPage: React.FC = () => {
                 isOpen={rejectModal.open}
                 onClose={() => { setRejectModal({ open: false, messageId: '', actionId: '' }); setRejectReason(''); }}
                 title="Rechazar Acción del Agente"
-                icon={<ShieldX className="text-red-500" size={20} />}
+                icon={<ShieldX className="text-rose-500" size={20} />}
                 size="sm"
             >
                 <div className="space-y-4">
@@ -590,7 +590,7 @@ export const AgentsPage: React.FC = () => {
                             onClick={handleRejectAction}
                             disabled={!rejectReason.trim() || isRejecting}
                             icon={isRejecting ? Loader2 : ShieldX}
-                            className={`bg-red-500 hover:bg-red-600 text-white ${isRejecting ? '[&_svg]:animate-spin' : ''}`}
+                            className={`bg-rose-500 hover:bg-rose-600 text-white ${isRejecting ? '[&_svg]:animate-spin' : ''}`}
                         >
                             {isRejecting ? 'Rechazando...' : 'Confirmar Rechazo'}
                         </Button>

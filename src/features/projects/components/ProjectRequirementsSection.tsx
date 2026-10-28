@@ -190,7 +190,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
       >
         <div className="space-y-5">
           <div className="flex flex-col gap-2">
-            <label className="text-slate-700 dark:text-white text-sm font-bold">Habilidad *</label>
+            <label htmlFor="requirement-skill" className="text-slate-700 dark:text-white text-sm font-bold">Habilidad *</label>
             {loadingSkills ? (
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                 <Loader2 className="animate-spin" size={16} />
@@ -198,6 +198,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
               </div>
             ) : (
               <select
+                id="requirement-skill"
                 value={requirementForm.skillId}
                 onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
                 className={`${SELECT_CLASS} w-full`}
@@ -217,8 +218,8 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel Requerido *</label>
+          <div className="flex flex-col gap-2" role="group" aria-labelledby="requirement-level">
+            <p id="requirement-level" className="text-slate-700 dark:text-white text-sm font-bold">Nivel Requerido *</p>
             <LevelSelector
               levels={catalogs?.skillLevels || []}
               selectedId={requirementForm.requiredLevel}
@@ -226,8 +227,8 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de Requisito</label>
+          <div className="flex flex-col gap-2" role="group" aria-labelledby="requirement-type">
+            <p id="requirement-type" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de Requisito</p>
             <div className="flex gap-3">
               <button
                 type="button"

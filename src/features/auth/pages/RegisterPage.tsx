@@ -97,8 +97,8 @@ export const RegisterPage: React.FC = () => {
                         />
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de entidad (opcional)</label>
-                            <select
+                            <label htmlFor="register-tipo-de-entidad" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de entidad (opcional)</label>
+                            <select id="register-tipo-de-entidad"
                                 value={formData.entityType}
                                 onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
                                 className={SELECT_CLASS}

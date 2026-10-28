@@ -251,8 +251,8 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="col-span-1 md:col-span-1">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Módulo</label>
-            <Input
+            <label htmlFor="permission-form-modulo" className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Módulo</label>
+            <Input id="permission-form-modulo"
               name="module"
               value={formData.module}
               onChange={handleChange}
@@ -261,8 +261,8 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
           </div>
 
           <div className="col-span-1 md:col-span-1">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Acción</label>
-            <select
+            <label htmlFor="permission-form-accion" className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Acción</label>
+            <select id="permission-form-accion"
               value={selectedAction}
               onChange={handleActionChange}
               className={`${SELECT_SM_CLASS} w-full`}
@@ -276,8 +276,8 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
           </div>
 
           <div className="col-span-1 md:col-span-1">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Código</label>
-            <Input
+            <label htmlFor="permission-form-codigo" className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Código</label>
+            <Input id="permission-form-codigo"
               name="code"
               value={formData.code}
               onChange={handleChange}
@@ -289,8 +289,8 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Nombre</label>
-          <Input
+          <label htmlFor="permission-form-nombre" className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Nombre</label>
+          <Input id="permission-form-nombre"
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -300,8 +300,8 @@ export const PermissionFormModal: React.FC<PermissionFormModalProps> = ({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Descripción</label>
-          <Input
+          <label htmlFor="permission-form-descripcion" className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block">Descripción</label>
+          <Input id="permission-form-descripcion"
             name="description"
             value={formData.description}
             onChange={handleChange}

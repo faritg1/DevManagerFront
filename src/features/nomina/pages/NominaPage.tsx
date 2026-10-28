@@ -290,8 +290,8 @@ export const NominaPage: React.FC = () => {
                     </select>
                     <Input type="date" label="Período *" value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Modelo *</label>
-                        <select
+                        <label htmlFor="nomina-modelo" className="text-slate-700 dark:text-white text-sm font-bold">Modelo *</label>
+                        <select id="nomina-modelo"
                             value={createForm.model}
                             onChange={(e) => setCreateForm(f => ({ ...f, model: Number(e.target.value) as CompensationModel }))}
                             className={`w-full mt-2 ${selectClass}`}

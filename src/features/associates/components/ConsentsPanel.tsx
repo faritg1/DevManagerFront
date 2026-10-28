@@ -55,8 +55,8 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
             {!hasActive && (
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
                     <div className="flex flex-col gap-2 flex-1">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Política vigente a aceptar</label>
-                        <select
+                        <label htmlFor="consents-politica-vigente-a" className="text-slate-700 dark:text-white text-sm font-bold">Política vigente a aceptar</label>
+                        <select id="consents-politica-vigente-a"
                             value={policyId}
                             onChange={(e) => setPolicyId(e.target.value)}
                             className={SELECT_CLASS}

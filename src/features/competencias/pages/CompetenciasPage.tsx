@@ -221,20 +221,20 @@ export const CompetenciasPage: React.FC = () => {
             >
                 <div className="grid grid-cols-1 gap-4">
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
+                        <label htmlFor="competencias-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
+                        <select id="competencias-asociado" value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
                             <option value="">Seleccione un asociado</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </select>
                     </div>
                     <Input label="Competencia *" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
-                    <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</label>
+                    <div role="group" aria-labelledby="competencias-nivel">
+                        <p id="competencias-nivel" className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</p>
                         <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>
-                        <textarea value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
+                        <label htmlFor="competencias-notas" className="text-slate-700 dark:text-white text-sm font-bold">Notas</label>
+                        <textarea id="competencias-notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} className={textareaClass} rows={2} />
                     </div>
                 </div>
             </Modal>

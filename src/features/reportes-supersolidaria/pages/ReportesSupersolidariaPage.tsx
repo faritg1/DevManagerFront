@@ -177,8 +177,8 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                     <Input type="date" label="Inicio del período *" value={genForm.period} onChange={(e) => setGenForm(f => ({ ...f, period: e.target.value }))} />
                     <p className="text-xs text-slate-500 -mt-2 dark:text-slate-400">Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero.</p>
                     <div>
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo de reporte</label>
-                        <select
+                        <label htmlFor="reportes-supersolidaria-tipo-de-reporte" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de reporte</label>
+                        <select id="reportes-supersolidaria-tipo-de-reporte"
                             value={genForm.reportType}
                             onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
                             className={`${SELECT_CLASS} w-full mt-2`}

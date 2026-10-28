@@ -155,8 +155,8 @@ export const EducationProgramsPage: React.FC = () => {
                 <div className="space-y-4">
                     <Input label="Nombre *" value={name} onChange={(e) => setName(e.target.value)} />
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
-                        <select value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)} className={selectCls}>
+                        <label htmlFor="education-programs-tipo" className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
+                        <select id="education-programs-tipo" value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)} className={selectCls}>
                             {Object.entries(PROGRAM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                     </div>

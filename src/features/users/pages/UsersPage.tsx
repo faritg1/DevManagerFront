@@ -963,8 +963,8 @@ export const UsersPage: React.FC = () => {
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Agregar / modificar override</p>
                             <div className="flex flex-col gap-3">
                                 <div>
-                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
-                                    <select
+                                    <label htmlFor="users-permiso" className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Permiso</label>
+                                    <select id="users-permiso"
                                         value={overridePermId}
                                         onChange={(e) => setOverridePermId(e.target.value)}
                                         className={`${SELECT_SM_CLASS} w-full`}

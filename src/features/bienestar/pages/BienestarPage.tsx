@@ -441,8 +441,8 @@ export const BienestarPage: React.FC = () => {
                         <Input label="Nombre *" value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
                     <div className="sm:col-span-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Descripción</label>
-                        <textarea
+                        <label htmlFor="bienestar-descripcion" className="text-slate-700 dark:text-white text-sm font-bold">Descripción</label>
+                        <textarea id="bienestar-descripcion"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
                             className="w-full rounded-xl border border-slate-300 dark:border-[#233948] bg-slate-50 dark:bg-[#111b22] text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2"

@@ -52,8 +52,8 @@ export const DocumentForm: React.FC<Props> = ({ userId, documentType, documentNu
             )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">Tipo</label>
-                    <select
+                    <label htmlFor="document-tipo" className="text-slate-700 dark:text-white text-sm font-bold">Tipo</label>
+                    <select id="document-tipo"
                         value={type}
                         onChange={(e) => setType(Number(e.target.value))}
                         className={SELECT_CLASS}

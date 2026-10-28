@@ -52,16 +52,16 @@ export const EnrollmentHoursForm: React.FC<Props> = ({ enrollment, associates, i
             <div className="space-y-4">
                 {!enrollment && (
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        <select value={userId} onChange={(e) => setUserId(e.target.value)} className={selectCls}>
+                        <label htmlFor="enrollment-hours-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
+                        <select id="enrollment-hours-asociado" value={userId} onChange={(e) => setUserId(e.target.value)} className={selectCls}>
                             <option value="">— Selecciona un asociado —</option>
                             {associates.map((a) => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </select>
                     </div>
                 )}
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">Estado *</label>
-                    <select value={status} onChange={(e) => setStatus(Number(e.target.value) as EnrollmentStatus)} className={selectCls}>
+                    <label htmlFor="enrollment-hours-estado" className="text-slate-700 dark:text-white text-sm font-bold">Estado *</label>
+                    <select id="enrollment-hours-estado" value={status} onChange={(e) => setStatus(Number(e.target.value) as EnrollmentStatus)} className={selectCls}>
                         {Object.entries(ENROLLMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
                 </div>

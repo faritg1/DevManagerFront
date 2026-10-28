@@ -136,8 +136,8 @@ export const AssociatesPage: React.FC = () => {
             >
                 <div className="space-y-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">Usuario existente *</label>
-                        <select
+                        <label htmlFor="associates-usuario-existente" className="text-slate-700 dark:text-white text-sm font-bold">Usuario existente *</label>
+                        <select id="associates-usuario-existente"
                             value={userId}
                             onChange={(e) => setUserId(e.target.value)}
                             className={SELECT_CLASS}

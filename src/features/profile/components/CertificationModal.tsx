@@ -100,10 +100,10 @@ export const CertificationModal: React.FC<Props> = ({
         >
             <div className="space-y-5">
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="certification-modal-nombre-de-la" className="text-slate-700 dark:text-white text-sm font-bold">
                         Nombre de la certificación *
                     </label>
-                    <Input
+                    <Input id="certification-modal-nombre-de-la"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Ej: AWS Certified Solutions Architect"
@@ -111,10 +111,10 @@ export const CertificationModal: React.FC<Props> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="certification-modal-emisor" className="text-slate-700 dark:text-white text-sm font-bold">
                         Emisor *
                     </label>
-                    <Input
+                    <Input id="certification-modal-emisor"
                         value={formData.issuer}
                         onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
                         placeholder="Ej: Amazon Web Services"
@@ -123,20 +123,20 @@ export const CertificationModal: React.FC<Props> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">
+                        <label htmlFor="certification-modal-fecha-de-emision" className="text-slate-700 dark:text-white text-sm font-bold">
                             Fecha de emisión *
                         </label>
-                        <Input
+                        <Input id="certification-modal-fecha-de-emision"
                             type="date"
                             value={formData.issueDate}
                             onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
-                        <label className="text-slate-700 dark:text-white text-sm font-bold">
+                        <label htmlFor="certification-modal-fecha-de-expiracion" className="text-slate-700 dark:text-white text-sm font-bold">
                             Fecha de expiración
                         </label>
-                        <Input
+                        <Input id="certification-modal-fecha-de-expiracion"
                             type="date"
                             value={formData.expirationDate}
                             onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
@@ -145,10 +145,10 @@ export const CertificationModal: React.FC<Props> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-slate-700 dark:text-white text-sm font-bold">
+                    <label htmlFor="certification-modal-url-de-evidencia" className="text-slate-700 dark:text-white text-sm font-bold">
                         URL de evidencia (opcional)
                     </label>
-                    <Input
+                    <Input id="certification-modal-url-de-evidencia"
                         value={formData.evidenceUrl}
                         onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
                         placeholder="https://..."

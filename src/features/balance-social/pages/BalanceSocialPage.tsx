@@ -6,6 +6,7 @@ import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
 import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const dimensionVariant = (status: string): 'success' | 'warning' | 'danger' =>
     status === 'Cumple' ? 'success' : status === 'En Progreso' ? 'warning' : 'danger';
@@ -105,7 +106,7 @@ export const BalanceSocialPage: React.FC = () => {
             <PageHeader
                 title="Balance Social"
                 description="Indicadores de balance social calculados con la educación, participación y beneficios reales."
-                actions={<>
+                actions={<><AskAiButton moduleKey="social_balance" />
                 <div className="flex items-center gap-3">
                     <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" aria-label="Año" className="w-32" />
                     <Button variant="outline" onClick={loadData} isLoading={isLoading}>

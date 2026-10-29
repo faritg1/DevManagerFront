@@ -7,6 +7,7 @@ import { projectsService } from '../../../shared/api';
 import { ProjectStatus, type ProjectResponse } from '../../../shared/api/types';
 import { useIsAdmin } from '../../../shared/hooks';
 import { ProjectCard, NewProjectTile } from '../components/ProjectCard';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
@@ -59,8 +60,7 @@ export const ProjectsPage: React.FC = () => {
             <PageHeader
                 title="Proyectos"
                 description="Gestiona y monitorea todos los proyectos de la organización."
-                actions={
-                    <div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+                actions={<><AskAiButton moduleKey="projects" /><div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <Input
                                 placeholder="Buscar proyectos..." aria-label="Buscar proyectos"
@@ -76,8 +76,7 @@ export const ProjectsPage: React.FC = () => {
                                 </Button>
                             </Link>
                         )}
-                    </div>
-                }
+                    </div></>}
             />
             <div className="flex flex-col gap-8">
                 <div className="flex gap-2 overflow-x-auto pb-2">

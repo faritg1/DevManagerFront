@@ -6,6 +6,7 @@ import { useIsAdmin } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
 import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../../../shared/api/types';
 import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 
 const emptyForm = (): CreateCompetencyRequest => ({ userId: '', name: '', level: 1 });
@@ -154,11 +155,11 @@ export const CompetenciasPage: React.FC = () => {
             <PageHeader
                 title="Competencias"
                 description="Competencias cooperativas de los asociados disponibles para el servicio solidario."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="competencies" />{isAdmin && (
                     <Button icon={Plus} onClick={() => { setForm({ ...emptyForm(), userId: ownerId }); setCreateOpen(true); }}>
                         Registrar Competencia
                     </Button>
-                )}
+                )}</>}
             />
 
             <Card className="mb-6">

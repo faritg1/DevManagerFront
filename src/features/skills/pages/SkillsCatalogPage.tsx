@@ -17,6 +17,7 @@ import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm, usePagedFilter } from "../../../shared/hooks";
 import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState, Pager } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
+import { AskAiButton } from "../../ai/AskAiButton";
 
 type FilterType = "all" | "global" | "organizational";
 
@@ -186,11 +187,9 @@ export const SkillsCatalogPage: React.FC = () => {
         icon={<Code2 size={28} className="text-primary" />}
         title="Catálogo de Habilidades"
         description="Gestiona las habilidades globales y organizacionales"
-        actions={
-        <Button icon={Plus} onClick={handleCreate}>
+        actions={<><AskAiButton moduleKey="skills" /><Button icon={Plus} onClick={handleCreate}>
           Nueva Habilidad
-        </Button>
-        }
+        </Button></>}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

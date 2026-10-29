@@ -8,6 +8,7 @@ import { habeasDataService, associatesService } from '../../../shared/api';
 import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
     1: 'Acceso',
@@ -119,7 +120,7 @@ export const HabeasDataPage: React.FC = () => {
             <PageHeader
                 title="Habeas Data (ARCO)"
                 description="Solicitudes de acceso, rectificación, cancelación y oposición (Ley 1581/2012)."
-                actions={<>
+                actions={<><AskAiButton moduleKey="habeas_data" />
                 <Button icon={FileText} onClick={() => { setArcoForm({ type: 1, description: '' }); setArcoOpen(true); }}>
                     Crear Solicitud ARCO
                 </Button>

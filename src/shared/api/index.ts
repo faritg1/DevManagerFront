@@ -29,4 +29,5 @@ export {
   asistenteService,
   organizationsService,
   notificationsService,
+  aiService,
 } from "./services";

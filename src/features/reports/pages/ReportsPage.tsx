@@ -24,6 +24,7 @@ import type {
 } from "../../../shared/api/types";
 import { Card, Badge, Button, StatCard, PageContainer, PageHeader, LoadingBlock } from "../../../shared/ui";
 import { EducationCoverageCard } from "../components/EducationCoverageCard";
+import { AskAiButton } from '../../ai/AskAiButton';
 
 export const ReportsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -182,11 +183,9 @@ export const ReportsPage: React.FC = () => {
         icon={<BarChart2 size={28} className="text-primary" />}
         title="Reportes y Analítica"
         description="Análisis de habilidades, proyectos y métricas de equipo"
-        actions={
-        <Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
+        actions={<><AskAiButton moduleKey="reports" /><Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
           Actualizar datos
-        </Button>
-        }
+        </Button></>}
       />
 
       <EducationCoverageCard />

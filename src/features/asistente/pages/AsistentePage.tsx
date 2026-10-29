@@ -1,29 +1,27 @@
 import React, { useState } from 'react';
 import {
-    Bot, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, MessageSquare,
-    Scale, CheckCircle2,
+    Bot, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, CheckCircle2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, Textarea, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 
 /** Runs a handler on submit without the browser's page reload. */
 const submit = (fn: () => void) => (e: React.FormEvent) => { e.preventDefault(); fn(); };
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
+import { AiChatPanel } from '../../ai';
 import type {
-    CooperativeQueryResponse,
     SocialBalanceReportDto,
     ComplianceDto,
 } from '../../../shared/api/types';
 
-type Tab = 'consultar' | 'reporte' | 'cumplimiento' | 'responder';
+type Tab = 'consultar' | 'reporte' | 'cumplimiento';
 
 const TABS: { id: Tab; label: string; adminOnly?: boolean; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
     { id: 'consultar', label: 'Consultar Normatividad', icon: BookOpen },
     { id: 'reporte', label: 'Generar Balance Social', icon: FileBarChart2, adminOnly: true },
     { id: 'cumplimiento', label: 'Verificar Cumplimiento', icon: ShieldCheck, adminOnly: true },
-    { id: 'responder', label: 'Responder Duda', icon: MessageSquare },
 ];
 
 export const AsistentePage: React.FC = () => {
@@ -35,10 +33,6 @@ export const AsistentePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [consulta, setConsulta] = useState('');
-    const [contexto, setContexto] = useState('');
-    const [consultaRes, setConsultaRes] = useState<CooperativeQueryResponse | null>(null);
-
     const [reporteAnio, setReporteAnio] = useState(anioActual);
     const [incluirRec, setIncluirRec] = useState(true);
     const [reporteRes, setReporteRes] = useState<SocialBalanceReportDto | null>(null);
@@ -47,10 +41,6 @@ export const AsistentePage: React.FC = () => {
     const [verificarSST, setVerificarSST] = useState(true);
     const [verificarHabeas, setVerificarHabeas] = useState(true);
     const [cumplimientoRes, setCumplimientoRes] = useState<ComplianceDto | null>(null);
-
-    const [pregunta, setPregunta] = useState('');
-    const [tipoAsociado, setTipoAsociado] = useState('');
-    const [responderRes, setResponderRes] = useState<CooperativeQueryResponse | null>(null);
 
     const run = async (fn: () => Promise<boolean>) => {
         setLoading(true);
@@ -63,15 +53,6 @@ export const AsistentePage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleConsultar = () => {
-        if (!consulta.trim()) return;
-        run(async () => {
-            const res = await asistenteService.query(consulta.trim(), contexto.trim() || undefined);
-            if (res.success && res.data) { setConsultaRes(res.data); return true; }
-            return false;
-        });
     };
 
     const handleGenerarReporte = () => {
@@ -93,61 +74,6 @@ export const AsistentePage: React.FC = () => {
             return false;
         });
     };
-
-    const handleResponder = () => {
-        if (!pregunta.trim()) return;
-        run(async () => {
-            const res = await asistenteService.answer(pregunta.trim(), tipoAsociado.trim() || undefined);
-            if (res.success && res.data) { setResponderRes(res.data); return true; }
-            return false;
-        });
-    };
-
-    const renderCitations = (r: CooperativeQueryResponse) => (
-        r.citations.length > 0 && (
-            <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 dark:text-slate-400">Citaciones normativas</p>
-                <div className="space-y-2">
-                    {r.citations.map((c, i) => (
-                        <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
-                            <p className="font-bold text-slate-900 dark:text-white text-sm">
-                                <Scale size={14} className="inline mr-1 text-primary" />
-                                {c.rule} — {c.article}
-                            </p>
-                            {c.description && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{c.description}</p>}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    );
-
-    const renderAcciones = (r: CooperativeQueryResponse) => (
-        r.suggestedActions.length > 0 && (
-            <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 dark:text-slate-400">Acciones sugeridas</p>
-                <ul className="space-y-1.5">
-                    {r.suggestedActions.map((a, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                            <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 shrink-0" />
-                            {a}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        )
-    );
-
-    const renderRespuesta = (r: CooperativeQueryResponse) => (
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark">
-            <div className="prose prose-sm dark:prose-invert max-w-none break-words">
-                <ReactMarkdown>{r.answer}</ReactMarkdown>
-            </div>
-            <Badge variant={r.generatedByAi ? 'purple' : 'default'} className="mt-2">{r.generatedByAi ? 'Generado con IA' : 'Respuesta normativa base'}</Badge>
-            {renderCitations(r)}
-            {renderAcciones(r)}
-        </div>
-    );
 
     return (
         <PageContainer>
@@ -189,32 +115,9 @@ export const AsistentePage: React.FC = () => {
                 <LoadingBlock className="mb-6 py-8" />
             )}
 
-            {tab === 'consultar' && !loading && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                        <div className="flex items-center gap-2 mb-4">
-                            <BookOpen className="text-blue-500" size={20} />
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Consulta Normativa</h2>
-                        </div>
-                        <form className="grid grid-cols-1 gap-4" onSubmit={submit(handleConsultar)}>
-                            <Textarea
-                                label="Consulta *"
-                                required
-                                value={consulta}
-                                onChange={(e) => setConsulta(e.target.value)}
-                                rows={4}
-                                placeholder="Ej: ¿Cómo se distribuyen los excedentes?"
-                            />
-                            <Input label="Contexto (opcional)" value={contexto} onChange={(e) => setContexto(e.target.value)} placeholder="Ej: cooperativa de transporte de 200 asociados" />
-                            <Button type="submit" icon={Bot} className="self-start">
-                                Consultar
-                            </Button>
-                        </form>
-                    </Card>
-                    <Card>
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Respuesta</h2>
-                        {consultaRes ? renderRespuesta(consultaRes) : <p className="text-sm text-slate-500 dark:text-slate-400">Realiza una consulta para ver la respuesta.</p>}
-                    </Card>
+            {tab === 'consultar' && (
+                <div className="flex h-[min(42rem,calc(100dvh-12rem))] min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark">
+                    <AiChatPanel moduleKey="regulations" />
                 </div>
             )}
 
@@ -350,35 +253,6 @@ export const AsistentePage: React.FC = () => {
                         ) : (
                             <p className="text-sm text-slate-500 dark:text-slate-400">Verifica el cumplimiento para ver los resultados.</p>
                         )}
-                    </Card>
-                </div>
-            )}
-
-            {tab === 'responder' && !loading && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                        <div className="flex items-center gap-2 mb-4">
-                            <MessageSquare className="text-primary" size={20} />
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Responder Duda de Asociado</h2>
-                        </div>
-                        <form className="grid grid-cols-1 gap-4" onSubmit={submit(handleResponder)}>
-                            <Textarea
-                                label="Pregunta *"
-                                required
-                                value={pregunta}
-                                onChange={(e) => setPregunta(e.target.value)}
-                                rows={4}
-                                placeholder="Ej: ¿Cómo me afilio a la cooperativa?"
-                            />
-                            <Input label="Tipo de asociado (opcional)" value={tipoAsociado} onChange={(e) => setTipoAsociado(e.target.value)} placeholder="Ej: nuevo" />
-                            <Button type="submit" icon={MessageSquare} className="self-start">
-                                Responder
-                            </Button>
-                        </form>
-                    </Card>
-                    <Card>
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Respuesta</h2>
-                        {responderRes ? renderRespuesta(responderRes) : <p className="text-sm text-slate-500 dark:text-slate-400">Formula una pregunta para ver la respuesta.</p>}
                     </Card>
                 </div>
             )}

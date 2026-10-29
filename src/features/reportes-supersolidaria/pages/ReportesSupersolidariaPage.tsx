@@ -12,6 +12,7 @@ import type {
     SupersolidariaReportType,
 } from '../../../shared/api/types';
 import { formatDate } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const REPORT_TYPE_LABEL: Record<SupersolidariaReportType, string> = { 1: 'Trimestral', 2: 'Anual' };
 
@@ -110,11 +111,11 @@ export const ReportesSupersolidariaPage: React.FC = () => {
             <PageHeader
                 title="Reportes Supersolidaria"
                 description="Reportes integrales para la Superintendencia de la Economía Solidaria."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="supersolidaria" />{isAdmin && (
                     <Button icon={Plus} onClick={() => { setGenForm(emptyForm()); setGenOpen(true); }}>
                         Generar Reporte
                     </Button>
-                )}
+                )}</>}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

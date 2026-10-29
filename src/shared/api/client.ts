@@ -11,48 +11,56 @@ export interface ApiError {
 
 const TIMEOUT_MS = 30000;
 
+export const API_URL: string = import.meta.env.VITE_API_URL || "https://devmanagerapi.runasp.net/api";
+
+/** JSON headers plus the bearer token of the signed-in user. */
+export const buildHeaders = (): Headers => {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  });
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  return headers;
+};
+
+/** Reads a non-2xx response into an ApiError. A 401 signs out; other errors (but 404) raise the global toast unless `notify` is false. */
+export const readApiError = async (response: Response, notify = true): Promise<ApiError> => {
+  const error: ApiError = {
+    status: response.status,
+    message: response.statusText,
+  };
+
+  try {
+    const errorBody = await response.json();
+    error.message = errorBody.message || error.message;
+    error.errors = errorBody.errors;
+    error.errorCode = errorBody.errorCode;
+    error.traceId = errorBody.traceId;
+  } catch {
+    // Response body is not JSON
+  }
+
+  if (response.status === 401) {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    // Event instead of window.location: a redirect loops under HashRouter.
+    window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+  } else if (notify && response.status !== 404) {
+    window.dispatchEvent(new CustomEvent("DevManagerApiError", { detail: error }));
+  }
+
+  return error;
+};
+
 class ApiClient {
   constructor(private baseUrl: string) {}
 
-  private buildHeaders(): Headers {
-    const headers = new Headers({
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    });
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
-    return headers;
-  }
-
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     if (!response.ok) {
-      const error: ApiError = {
-        status: response.status,
-        message: response.statusText,
-      };
-
-      try {
-        const errorBody = await response.json();
-        error.message = errorBody.message || error.message;
-        error.errors = errorBody.errors;
-        error.errorCode = errorBody.errorCode;
-        error.traceId = errorBody.traceId;
-      } catch {
-        // Response body is not JSON
-      }
-
-      if (response.status === 401) {
-        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
-        // Event instead of window.location: a redirect loops under HashRouter.
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-      } else if (response.status !== 404) {
-        window.dispatchEvent(new CustomEvent("DevManagerApiError", { detail: error }));
-      }
-
-      throw error;
+      throw await readApiError(response);
     }
 
     if (response.status === 204) {
@@ -75,7 +83,7 @@ class ApiClient {
     try {
       response = await fetch(url, {
         method,
-        headers: this.buildHeaders(),
+        headers: buildHeaders(),
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
@@ -112,9 +120,7 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(
-  import.meta.env.VITE_API_URL || "https://devmanagerapi.runasp.net/api",
-);
+export const apiClient = new ApiClient(API_URL);
 
 // Agent endpoints live outside the /api prefix.
 export const agentClient = new ApiClient(

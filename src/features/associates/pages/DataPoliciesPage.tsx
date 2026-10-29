@@ -6,6 +6,7 @@ import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
 import type { DataPolicyDto } from '../../../shared/api/types';
 import { errorText, formatDate, needsLocalToast, versionLabel } from '../labels';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const EMPTY = { version: '', purpose: '', text: '', effectiveFrom: '' };
 
@@ -60,7 +61,7 @@ export const DataPoliciesPage: React.FC = () => {
             <PageHeader
                 title="Políticas de datos"
                 description="Las versiones publicadas son inmutables; para cambiar el texto publica una nueva versión."
-                actions={<Button icon={FilePlus} onClick={modal.open}>Publicar nueva versión</Button>}
+                actions={<><AskAiButton moduleKey="data_policies" /><Button icon={FilePlus} onClick={modal.open}>Publicar nueva versión</Button></>}
             />
 
             {isLoading ? (

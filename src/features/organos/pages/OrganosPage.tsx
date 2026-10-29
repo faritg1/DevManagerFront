@@ -19,6 +19,7 @@ import type {
     VoteResultsDto,
 } from '../../../shared/api/types';
 import { formatDate, formatDateTime, today } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const BODY_TYPE_LABEL: Record<GoverningBodyType, string> = {
     1: 'Asamblea General',
@@ -380,11 +381,11 @@ export const OrganosPage: React.FC = () => {
             <PageHeader
                 title="Órganos"
                 description="Órganos de administración y control, miembros, actas, asambleas y votos."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="governing_bodies" />{isAdmin && (
                     <Button icon={Plus} onClick={() => setCreateOpen(true)}>
                         Crear Órgano
                     </Button>
-                )}
+                )}</>}
             />
 
             {selected ? (

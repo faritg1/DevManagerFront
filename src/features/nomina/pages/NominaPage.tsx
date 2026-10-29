@@ -12,6 +12,7 @@ import type {
     PilaContributionDto,
 } from '../../../shared/api/types';
 import { currency, formatDate, today } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
@@ -148,11 +149,11 @@ export const NominaPage: React.FC = () => {
             <PageHeader
                 title="Nómina Solidaria"
                 description="Compensación de asociados (CTAs) y aportes PILA."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="payroll" />{isAdmin && (
                     <Button icon={Plus} onClick={() => { setCreateForm(emptyForm(compUserId)); setCreateOpen(true); }}>
                         Nueva Compensación
                     </Button>
-                )}
+                )}</>}
             />
 
             <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-2' : ''} gap-6`}>

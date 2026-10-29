@@ -9,6 +9,7 @@ import type { EducationProgramDto, ProgramType } from '../../../shared/api/types
 import { educationProgramPath } from '../../../shared/config/constants';
 import { errorText, formatDate, needsLocalToast } from '../../associates/labels';
 import { PROGRAM_TYPE_LABELS } from '../labels';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 export const EducationProgramsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -96,7 +97,7 @@ export const EducationProgramsPage: React.FC = () => {
             <PageHeader
                 title="Educación cooperativa"
                 description="Programas de formación e inscripción de asociados."
-                actions={<Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button>}
+                actions={<><AskAiButton moduleKey="education" /><Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button></>}
             />
 
             <Card padding="none" className="overflow-hidden">

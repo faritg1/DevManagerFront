@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
-    AlertCircle, ArrowLeft, Bot, CheckCircle2, History, Loader2, Lock, MessageSquarePlus, Send, Sparkles, Square, Trash2, XCircle,
+    AlertCircle, ArrowDown, ArrowLeft, Bot, CheckCircle2, History, Loader2, Lock, MessageSquarePlus, Send, Sparkles, Square, Trash2, XCircle,
 } from 'lucide-react';
 import { aiService, type AiCapabilities, type AiConversation, type AiUsageSummary } from '../../shared/api';
 import { useConfirm, usePermission } from '../../shared/hooks';
@@ -20,9 +21,12 @@ const markdownComponents: Components = {
     a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
 };
 
+// GFM: the model answers with tables, autolinks and strikethrough.
+const REMARK_PLUGINS = [remarkGfm];
+
 const Markdown: React.FC<{ text: string }> = ({ text }) => (
-    <div className="prose prose-sm dark:prose-invert max-w-none break-words prose-p:my-2 prose-pre:overflow-x-auto prose-table:block prose-table:overflow-x-auto prose-a:text-primary">
-        <ReactMarkdown disallowedElements={['img']} unwrapDisallowed urlTransform={safeUrl} components={markdownComponents}>
+    <div className="prose prose-sm dark:prose-invert max-w-none break-words prose-p:my-2 prose-pre:overflow-x-auto prose-table:block prose-table:overflow-x-auto prose-th:whitespace-nowrap prose-td:align-top [&_td]:min-w-[6.5rem] prose-a:text-primary">
+        <ReactMarkdown remarkPlugins={REMARK_PLUGINS} disallowedElements={['img']} unwrapDisallowed urlTransform={safeUrl} components={markdownComponents}>
             {text}
         </ReactMarkdown>
     </div>
@@ -134,13 +138,26 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
     // A new conversation id means the server just created it: refresh the list so it shows up.
     useEffect(refreshConversations, [refreshConversations, conversationId]);
 
-    useEffect(() => {
+    // Follows the stream only while the reader is at the bottom: scrolling up to read stops the auto-scroll.
+    const [atBottom, setAtBottom] = useState(true);
+    const atBottomRef = useRef(true);
+    const onLogScroll = () => {
+        const el = logRef.current!;
+        const near = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+        atBottomRef.current = near;
+        setAtBottom(near);
+    };
+    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
         const el = logRef.current;
-        if (el) el.scrollTop = el.scrollHeight;
+        if (el) el.scrollTo({ top: el.scrollHeight, behavior });
+    };
+    useEffect(() => {
+        if (atBottomRef.current) scrollToBottom();
     }, [turns]);
 
     const submit = (text = input) => {
         if (!text.trim() || streaming) return;
+        atBottomRef.current = true;
         send(text.slice(0, MAX_LENGTH));
         setInput('');
         inputRef.current?.focus();
@@ -233,7 +250,8 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
                     </Button>
                 </div>
 
-                <div ref={logRef} role="log" aria-live="polite" aria-busy={streaming} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-5">
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                <div ref={logRef} onScroll={onLogScroll} role="log" aria-live="polite" aria-busy={streaming} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-5">
                     {loadingHistory ? <LoadingBlock /> : turns.length === 0 ? (
                         caps && caps.allowed.length === 0 ? (
                             <EmptyState icon={Lock} title="El asistente no tiene módulos habilitados para ti" description="Pide acceso a un administrador." />
@@ -260,6 +278,16 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
                             </div>
                         )
                     ) : turns.map(t => <Turn key={t.id} t={t} caps={caps} />)}
+                </div>
+                {!atBottom && turns.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => scrollToBottom('smooth')}
+                        className="absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-lg hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-border-dark dark:bg-card-dark dark:text-slate-200"
+                    >
+                        <ArrowDown size={14} aria-hidden="true" /> Ir al final
+                    </button>
+                )}
                 </div>
 
                 <form
@@ -290,14 +318,14 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
                             </Button>
                         )}
                     </div>
-                    <p id={counterId} className="mt-1 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <p id={counterId} className="mt-1 flex flex-wrap justify-between gap-x-3 text-xs text-slate-500 dark:text-slate-400">
                         <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nueva línea</span>
                         {usage && (
                             <span className={`ml-auto ${usage.percent >= 80 ? 'font-semibold text-orange-600 dark:text-orange-400' : ''}`}>
                                 Cuota de IA: {formatNumber(usage.remaining, 0)} tokens disponibles ({formatNumber(usage.percent)} % usado)
                             </span>
                         )}
-                        <span className={usage ? 'ml-3' : 'ml-auto'}>{input.length}/{MAX_LENGTH}</span>
+                        <span className={usage ? "" : "ml-auto"}>{input.length}/{MAX_LENGTH}</span>
                     </p>
                 </form>
             </section>

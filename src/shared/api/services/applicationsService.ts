@@ -15,5 +15,10 @@ export const applicationsService = {
       data,
     );
   },
+
+  /** Postulaciones pendientes (Applied) de la organización del JWT. */
+  pendingCount(): Promise<ApiResponse<{ count: number }>> {
+    return apiClient.get<{ count: number }>(API_ENDPOINTS.APPLICATIONS.PENDING_COUNT);
+  },
 };
 

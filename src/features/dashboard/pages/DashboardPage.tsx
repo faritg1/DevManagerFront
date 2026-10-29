@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
 import { StatCard, Badge, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
-import { projectsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
+import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
-import { ApplicationStatus, ProjectStatus, type ApiResponse, type ProjectResponse } from '../../../shared/api/types';
+import { ProjectStatus, type ApiResponse, type ProjectResponse } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
 import { ProjectCard, NewProjectTile } from '../../projects/components/ProjectCard';
 
@@ -51,17 +51,8 @@ export const DashboardPage: React.FC = () => {
     const [welfarePrograms, setWelfarePrograms] = useState<Kpi<number>>(undefined);
 
     useEffect(() => {
-        settle(projectsService.getAll()).then(async list => {
-            setProjects(list);
-            if (!list) return setPendingApplications(null);
-            // ponytail: only the first 10 active projects are scanned (one request each); needs a backend count to be exact.
-            const active = list.filter(p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress).slice(0, 10);
-            const apps = await Promise.all(active.map(p => settle(projectsService.getApplications(p.id))));
-            const loaded = apps.filter(a => a !== null);
-            setPendingApplications(active.length > 0 && loaded.length === 0
-                ? null
-                : loaded.flat().filter(a => a.status === ApplicationStatus.Pending).length);
-        });
+        settle(projectsService.getAll()).then(setProjects);
+        settle(applicationsService.pendingCount()).then(r => setPendingApplications(r && r.count));
         settle(usersService.getAll()).then(list => setMembers(list && { active: list.filter(u => u.isActive).length, total: list.length }));
         settle(skillsService.getAll()).then(list => setTotalSkills(list && list.length));
     }, []);

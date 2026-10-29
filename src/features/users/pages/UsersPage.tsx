@@ -57,6 +57,7 @@ export const UsersPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
     const [createForm, setCreateForm] = useState<CreateUserRequest>(EMPTY_CREATE_FORM);
+    const [createRoleId, setCreateRoleId] = useState('');
     const [editForm, setEditForm] = useState<UpdateUserRequest>({ firstName: '', lastName: '' });
 
     const [roles, setRoles] = useState<RoleDto[]>([]);
@@ -129,12 +130,15 @@ export const UsersPage: React.FC = () => {
         try {
             const response = await usersService.create(createForm);
             if (response.success) {
-                showNotification({
-                    type: 'success',
-                    message: 'Usuario creado exitosamente'
-                });
+                const userId = response.data?.id;
+                const roleAssigned = !createRoleId || !userId
+                    || await rbacService.assignRoleToUser({ userId, roleId: createRoleId }).then(r => r.success, () => false);
+                showNotification(roleAssigned
+                    ? { type: 'success', message: 'Usuario creado exitosamente' }
+                    : { type: 'warning', message: 'Usuario creado, pero no se pudo asignar el rol. Asígnalo desde "Gestionar roles".' });
                 createModal.close();
                 setCreateForm(EMPTY_CREATE_FORM);
+                setCreateRoleId('');
                 fetchUsers();
             } else {
                 showNotification({
@@ -190,6 +194,12 @@ export const UsersPage: React.FC = () => {
 
         loadRolesForUser();
     }, [rolesModal.isOpen, selectedUser]);
+
+    // Roles for the optional role picker of the create modal.
+    useEffect(() => {
+        if (!createModal.isOpen || roles.length > 0) return;
+        rbacService.getRoles().then(r => { if (r.success && r.data) setRoles(r.data); }, () => {});
+    }, [createModal.isOpen]);
 
     // Load effective permissions when permissions modal opens
     useEffect(() => {
@@ -624,9 +634,15 @@ export const UsersPage: React.FC = () => {
                         <input type="checkbox" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
                         Es empleado (vinculación laboral)
                     </label>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        * El rol se asigna automáticamente como "Empleado". Un administrador puede cambiarlo posteriormente.
-                    </p>
+                    <Select
+                        label="Rol"
+                        value={createRoleId}
+                        onChange={(e) => setCreateRoleId(e.target.value)}
+                        hint="Si no eliges un rol, el usuario solo verá su perfil hasta que se le asigne uno."
+                    >
+                        <option value="">Sin asignar</option>
+                        {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    </Select>
                 </div>
             </Modal>
 

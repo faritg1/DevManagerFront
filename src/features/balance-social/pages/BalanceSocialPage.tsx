@@ -172,7 +172,7 @@ export const BalanceSocialPage: React.FC = () => {
                                 <ul className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                                     {d.indicators.map(ind => (
                                         <li key={ind.name}>
-                                            {ind.name}: <span className="font-bold">{ind.currentValue}{ind.unit ? ` ${ind.unit}` : ''}</span>
+                                            {ind.name}: <span className="font-bold">{ind.unit === 'COP' ? currency(ind.currentValue) : `${ind.currentValue}${ind.unit ? ` ${ind.unit}` : ''}`}</span>
                                             {ind.targetValue > 0 && <> / meta {ind.targetValue}{ind.coverage != null ? ` (${ind.coverage}%)` : ''}</>}
                                         </li>
                                     ))}

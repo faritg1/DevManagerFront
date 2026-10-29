@@ -9,7 +9,7 @@ import {
     AlertCircle,
     Sparkles,
 } from 'lucide-react';
-import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBlock, ActionMenu } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -214,41 +214,24 @@ export const ProjectDetailPage: React.FC = () => {
                 }
                 actions={<>
                     {isAdmin && (
-                        <>
-                            <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
-                                Editar
-                            </Button>
-                            <Button 
-                                variant="outline"
-                                icon={Trash2}
-                                onClick={handleDeleteProject}
-                                isLoading={isDeleting}
-                                className="border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10"
-                            >
-                                Eliminar
-                            </Button>
-                            <Button 
-                                variant="outline"
-                                icon={Sparkles}
-                                onClick={matchingModal.open}
-                                className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                            >
-                                Buscar Candidatos IA
-                            </Button>
-                            <Button
-                                variant="outline"
-                                icon={UserPlus}
-                                onClick={() => { setEditingAssignment(null); assignModal.open(); }}
-                                className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                            >
-                                Asignar Miembro
-                            </Button>
-                        </>
+                        <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
+                            Editar
+                        </Button>
                     )}
                     {!hasAlreadyApplied && (
                         <Button icon={UserPlus} onClick={handleApply}>
                             Postularme
                         </Button>
+                    )}
+                    {isAdmin && (
+                        <ActionMenu
+                            label="Más acciones"
+                            items={[
+                                { label: 'Buscar Candidatos IA', icon: Sparkles, onSelect: matchingModal.open },
+                                { label: 'Asignar Miembro', icon: UserPlus, onSelect: () => { setEditingAssignment(null); assignModal.open(); } },
+                                { label: isDeleting ? 'Eliminando…' : 'Eliminar', icon: Trash2, onSelect: handleDeleteProject, danger: true, separated: true },
+                            ]}
+                        />
                     )}
                 </>}
             />

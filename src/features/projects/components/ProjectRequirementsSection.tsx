@@ -94,9 +94,9 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between w-full">
+          <CardTitle className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2">
-              <Target className="text-primary" size={20} />
+              <Target className="text-primary shrink-0" size={20} />
               Requisitos de Habilidades
               <Badge variant="default">{requirements.length}</Badge>
             </div>
@@ -175,7 +175,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         onClose={requirementModal.close}
         onSubmit={handleSave}
         title="Agregar Requisito de Habilidad"
-        icon={<Target className="text-primary" size={20} />}
+        icon={<Target className="text-primary shrink-0" size={20} />}
         size="md"
         footer={
           <>

@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import {
     AlertCircle, ArrowDown, ArrowLeft, Bot, CheckCircle2, History, Loader2, Lock, MessageSquarePlus, Send, Sparkles, Square, Trash2, XCircle,
 } from 'lucide-react';
@@ -8,29 +6,12 @@ import { aiService, type AiCapabilities, type AiConversation, type AiUsageSummar
 import { useConfirm, usePermission } from '../../shared/hooks';
 import { useNotification } from '../../shared/context';
 import { formatNumber, timeAgo } from '../../shared/format';
-import { Button, EmptyState, IconButton, LoadingBlock } from '../../shared/ui';
+import { Button, EmptyState, IconButton, LoadingBlock, Markdown } from '../../shared/ui';
 import { useAiCapabilities, useAiChat, type ChatTurn, type ToolChip } from './useAiChat';
 
 const MAX_LENGTH = 2000;
 /** Backend AiController.UsagePermission */
 const AI_USAGE_PERMISSION = 'menu.platform.ai_usage';
-
-// Model output is untrusted: no images (tracking pixels) and only http(s) links, opened in a new tab.
-const safeUrl = (url: string) => (/^https?:\/\//i.test(url) ? url : '');
-const markdownComponents: Components = {
-    a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
-};
-
-// GFM: the model answers with tables, autolinks and strikethrough.
-const REMARK_PLUGINS = [remarkGfm];
-
-const Markdown: React.FC<{ text: string }> = ({ text }) => (
-    <div className="prose prose-sm dark:prose-invert max-w-none break-words prose-p:my-2 prose-pre:overflow-x-auto prose-table:block prose-table:overflow-x-auto prose-th:whitespace-nowrap prose-td:align-top [&_td]:min-w-[6.5rem] prose-a:text-primary">
-        <ReactMarkdown remarkPlugins={REMARK_PLUGINS} disallowedElements={['img']} unwrapDisallowed urlTransform={safeUrl} components={markdownComponents}>
-            {text}
-        </ReactMarkdown>
-    </div>
-);
 
 // The quota hint is optional: any unexpected /ai/usage shape (null, [], partial) just hides it.
 const isUsageSummary = (u: unknown): u is AiUsageSummary =>

@@ -3,12 +3,15 @@ import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-
 import { Link } from 'react-router-dom';
 import { Card, Badge, Button, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePermission } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
 import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+
+/** Backend ArcoNotifier.HabeasDataManagePermission */
+const ARCO_MANAGE_PERMISSION = 'menu.solidarity.habeas_data_manage';
 
 const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
     1: 'Acceso',
@@ -28,6 +31,9 @@ export const HabeasDataPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    // Handlers see the organization's pending list and answer it; everyone else sees their own requests
+    const canManage = isAdmin || has(ARCO_MANAGE_PERMISSION);
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
     const [requests, setRequests] = useState<ArcoRequestDto[]>([]);
@@ -55,7 +61,7 @@ export const HabeasDataPage: React.FC = () => {
         if (!user?.id) return;
         setIsLoading(true);
         try {
-            const res = isAdmin
+            const res = canManage
                 ? await habeasDataService.getPendingArco()
                 : await habeasDataService.getArcoByUser(user.id);
             setRequests(res.success && res.data ? res.data : []);
@@ -64,7 +70,7 @@ export const HabeasDataPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [isAdmin, user?.id]);
+    }, [canManage, user?.id]);
 
     useEffect(() => {
         if (isAdmin) {
@@ -128,7 +134,7 @@ export const HabeasDataPage: React.FC = () => {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <StatCard title={isAdmin ? 'ARCO pendientes' : 'Mis solicitudes pendientes'} value={pendingCount} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
+                <StatCard title={canManage ? 'ARCO pendientes' : 'Mis solicitudes pendientes'} value={pendingCount} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
                 <Card>
                     <div className="flex items-center gap-2">
                         <ShieldCheck className="text-emerald-500" size={20} />
@@ -144,7 +150,7 @@ export const HabeasDataPage: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                     <FileLock2 className="text-orange-500" size={20} />
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                        {isAdmin ? 'Solicitudes ARCO Pendientes' : 'Mis Solicitudes ARCO'}
+                        {canManage ? 'Solicitudes ARCO Pendientes' : 'Mis Solicitudes ARCO'}
                     </h2>
                 </div>
                 {isLoading ? (
@@ -166,7 +172,7 @@ export const HabeasDataPage: React.FC = () => {
                                 {r.response && (
                                     <p className="text-sm text-slate-500 mt-1 dark:text-slate-400"><span className="font-bold">Respuesta:</span> {r.response} ({formatDate(r.respondedAt)})</p>
                                 )}
-                                {isAdmin && r.status === 1 && (
+                                {canManage && r.status === 1 && (
                                     <div className="flex gap-2 mt-2">
                                         <Button size="sm" onClick={() => { setAnswering(r); setAnswerAction('atender'); setAnswer(''); }}>
                                             <CheckCircle2 size={14} /> Atender

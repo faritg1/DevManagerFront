@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
-const normalize = (v: unknown) =>
+/** Accent- and case-insensitive form of a value, for search matching. */
+export const normalizeSearch = (v: unknown): string =>
     String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 interface Options<T> {
@@ -30,9 +31,9 @@ export function usePagedFilter<T>(items: T[], { pageSize = 10, searchFields }: O
     const [page, setPage] = useState(1);
 
     const filtered = useMemo(() => {
-        const q = normalize(query.trim());
+        const q = normalizeSearch(query.trim());
         if (!q || !searchFields) return items;
-        return items.filter(item => searchFields(item).some(v => normalize(v).includes(q)));
+        return items.filter(item => searchFields(item).some(v => normalizeSearch(v).includes(q)));
         // searchFields is usually an inline lambda, so it is left out of the deps on purpose.
     }, [items, query]);
 

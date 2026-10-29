@@ -52,6 +52,7 @@ export const PermissionAuditTable: React.FC<{ roleId?: string }> = ({ roleId }) 
     page: data.page,
     setPage,
     pageItems: data.items,
+    filtered: data.items,
     total: data.total,
     pageCount: Math.max(1, Math.ceil(data.total / data.pageSize)),
     pageSize: data.pageSize,

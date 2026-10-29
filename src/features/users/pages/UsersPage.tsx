@@ -21,7 +21,7 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, type ActionMenuItem } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, ExportButton, type ActionMenuItem } from '../../../shared/ui';
 import { useModal, useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useAuth, useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
@@ -29,6 +29,16 @@ import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, Effec
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate, skillLevelLabel } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const EXPORT_COLUMNS: CsvColumn<UserResponse>[] = [
+    { header: 'Nombre', value: (u) => u.fullName },
+    { header: 'Email', value: (u) => u.email },
+    { header: 'Teléfono', value: (u) => u.phoneNumber },
+    { header: 'Rol', value: (u) => u.roleName },
+    { header: 'Estado', value: (u) => (u.isActive ? 'Activo' : 'Inactivo') },
+    { header: 'Creado', value: (u) => formatDate(u.createdAt, undefined, '') },
+];
 
 const EMPTY_CREATE_FORM: CreateUserRequest = {
     firstName: '',
@@ -487,14 +497,16 @@ export const UsersPage: React.FC = () => {
                 </Card>
             </div>
 
-            <div className="mb-6">
-                <Input
-                    placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
-                    icon={Search}
-                    value={pager.query}
-                    onChange={(e) => pager.setQuery(e.target.value)}
-                    className="max-w-md"
-                />
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="w-full max-w-md">
+                    <Input
+                        placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
+                        icon={Search}
+                        value={pager.query}
+                        onChange={(e) => pager.setQuery(e.target.value)}
+                    />
+                </div>
+                <div className="sm:ml-auto"><ExportButton rows={pager.filtered} columns={EXPORT_COLUMNS} filename="usuarios" /></div>
             </div>
             
             <Card padding="none" className="overflow-hidden">

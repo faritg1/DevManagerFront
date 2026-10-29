@@ -19,3 +19,15 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [role="button"]:fo
     outline: 2px solid #1392ec;
     outline-offset: 2px;
 }
+
+/* Print / "Guardar como PDF": only the page content, light colors, full-width readable tables. */
+@media print {
+    @page { margin: 12mm; }
+    html, body { background: #fff !important; }
+    .overflow-x-auto, .overflow-y-auto, .overflow-hidden { overflow: visible !important; }
+    button, [role="menu"], [role="dialog"] { display: none !important; }
+    table { width: 100%; white-space: normal !important; font-size: 10pt; }
+    thead { position: static !important; display: table-header-group; }
+    tr { break-inside: avoid; }
+    th, td { padding: 4pt 6pt !important; }
+}

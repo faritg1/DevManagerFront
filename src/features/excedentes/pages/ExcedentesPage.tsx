@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
 import type { SurplusDistributionDto, CalculateSurplusRequest } from '../../../shared/api/types';
 import { formatDate, currency } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const EXPORT_COLUMNS: CsvColumn<SurplusDistributionDto>[] = [
+    { header: 'Período', value: (e) => formatDate(e.period, undefined, '') },
+    { header: 'Total excedentes', value: (e) => e.totalSurplus },
+    { header: 'Reserva', value: (e) => e.protectionReserve },
+    { header: 'Educación', value: (e) => e.educationFund },
+    { header: 'Solidaridad', value: (e) => e.solidarityFund },
+    { header: 'Remanente', value: (e) => e.remainder },
+    { header: 'Estado', value: (e) => (e.approvedByAssembly ? 'Aprobada' : 'Pendiente') },
+    { header: 'Notas', value: (e) => e.notes },
+];
 
 const emptyCalc = (): CalculateSurplusRequest => ({ period: new Date().toISOString().slice(0, 10), totalSurplus: 0 });
 
@@ -114,8 +126,9 @@ export const ExcedentesPage: React.FC = () => {
             </div>
 
             <Card padding="none" className="overflow-hidden">
-                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3`}>
                     <SearchInput pager={pager} label="Buscar por período o estado" />
+                    <ExportButton rows={pager.filtered} columns={EXPORT_COLUMNS} filename="excedentes" />
                 </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>

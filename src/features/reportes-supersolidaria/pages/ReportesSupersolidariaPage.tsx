@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -13,8 +13,18 @@ import type {
 } from '../../../shared/api/types';
 import { formatDate } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
 
 const REPORT_TYPE_LABEL: Record<SupersolidariaReportType, string> = { 1: 'Trimestral', 2: 'Anual' };
+
+const EXPORT_COLUMNS: CsvColumn<SupersolidariaReportDto>[] = [
+    { header: 'Inicio del período', value: (r) => formatDate(r.period, undefined, '') },
+    { header: 'Fin del período', value: (r) => formatDate(r.periodEnd, undefined, '') },
+    { header: 'Tipo', value: (r) => REPORT_TYPE_LABEL[r.reportType] ?? r.reportType },
+    { header: 'Creado', value: (r) => formatDate(r.createdAt, undefined, '') },
+    { header: 'Estado', value: (r) => (r.isSent ? 'Enviado' : 'Pendiente') },
+    { header: 'Fecha envío', value: (r) => formatDate(r.sentAt, undefined, '') },
+];
 
 /** Secciones congeladas (JSON camelCase) al generar el reporte. */
 interface AssociatesSection {
@@ -124,8 +134,9 @@ export const ReportesSupersolidariaPage: React.FC = () => {
             </div>
 
             <Card padding="none" className="overflow-hidden">
-                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3`}>
                     <SearchInput pager={pager} label="Buscar por período, tipo o estado" />
+                    <ExportButton rows={pager.filtered} columns={EXPORT_COLUMNS} filename="reportes-supersolidaria" />
                 </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>

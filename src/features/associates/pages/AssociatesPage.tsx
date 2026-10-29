@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState, ExportButton } from '../../../shared/ui';
 import { useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -9,6 +9,16 @@ import type { AssociateDto, AssociateStatus, UserResponse } from '../../../share
 import { associateDetailPath } from '../../../shared/config/constants';
 import { DOCUMENT_TYPES, ROLE_LABELS, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate, needsLocalToast } from '../labels';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const EXPORT_COLUMNS: CsvColumn<AssociateDto>[] = [
+    { header: 'Nombre', value: (a) => a.fullName },
+    { header: 'Tipo de documento', value: (a) => (a.documentNumber ? DOCUMENT_TYPES[a.documentType ?? 0] : '') },
+    { header: 'Documento', value: (a) => a.documentNumber },
+    { header: 'Estado', value: (a) => STATUS_LABELS[a.status] },
+    { header: 'Rol', value: (a) => ROLE_LABELS[a.role] },
+    { header: 'Ingreso vigente', value: (a) => (a.currentAdmissionDate ? formatDate(a.currentAdmissionDate) : '') },
+];
 
 export const AssociatesPage: React.FC = () => {
     const canCreate = usePermission().has('menu.solidarity.associates.create');
@@ -89,6 +99,7 @@ export const AssociatesPage: React.FC = () => {
                         <option value="">Todos los estados</option>
                         {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
+                    <ExportButton rows={pager.filtered} columns={EXPORT_COLUMNS} filename="asociados" />
                 </div>
                 {isLoading ? (
                     <LoadingBlock />

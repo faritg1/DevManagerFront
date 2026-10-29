@@ -303,7 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     return (
         <>
             {/* ── Desktop Sidebar ── visible md+ ── */}
-            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
+            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex-col hidden md:flex print:hidden shrink-0 h-screen sticky top-0`}>
                 {renderContent(collapsed, 'sidebar')}
             </aside>
 

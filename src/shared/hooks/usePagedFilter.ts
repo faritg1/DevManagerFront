@@ -15,6 +15,8 @@ export interface PagedFilter<T> {
     page: number;
     setPage: (p: number) => void;
     pageItems: T[];
+    /** Every item that passes the search filter (all pages), e.g. for export. */
+    filtered: T[];
     /** Items after the search filter, before paging. */
     total: number;
     pageCount: number;
@@ -42,6 +44,7 @@ export function usePagedFilter<T>(items: T[], { pageSize = 10, searchFields }: O
         setQuery: (q) => { setQueryState(q); setPage(1); },
         page: current,
         setPage,
+        filtered,
         pageItems: filtered.slice((current - 1) * pageSize, current * pageSize),
         total: filtered.length,
         pageCount,

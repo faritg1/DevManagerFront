@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Select, Modal, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS } from '../../../shared/ui';
+import { Card, Button, Input, Select, Modal, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -13,6 +13,7 @@ import type {
 } from '../../../shared/api/types';
 import { currency, formatDate, today } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
@@ -65,6 +66,15 @@ export const NominaPage: React.FC = () => {
     }, [isAdmin, canCreate, canPila, user?.id]);
 
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || 'Asociado no disponible';
+    const sheetColumns: CsvColumn<PilaContributionDto>[] = [
+        { header: 'Asociado', value: (p) => nameOf(p.userId) },
+        { header: 'Período', value: (p) => formatDate(p.period, undefined, '') },
+        { header: 'IBC', value: (p) => p.contributionBase },
+        { header: 'Salud', value: (p) => p.healthContribution },
+        { header: 'Pensión', value: (p) => p.pensionContribution },
+        { header: 'ARL', value: (p) => p.arlContribution },
+        { header: 'Total', value: (p) => p.total },
+    ];
     const sheetPager = usePagedFilter(sheet, { searchFields: p => [nameOf(p.userId)] });
 
     const loadCompensations = async () => {
@@ -250,7 +260,10 @@ export const NominaPage: React.FC = () => {
                 <Card padding="none" className="overflow-hidden mt-6">
                     <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Planilla {pilaMonth}/{pilaYear}</h2>
-                        <SearchInput pager={sheetPager} label="Buscar asociado" />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <SearchInput pager={sheetPager} label="Buscar asociado" />
+                            <ExportButton rows={sheetPager.filtered} columns={sheetColumns} filename={`planilla-pila-${pilaYear}-${pilaMonth}`} />
+                        </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>

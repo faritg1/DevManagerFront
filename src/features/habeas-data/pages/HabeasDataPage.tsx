@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePermission } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -9,6 +9,7 @@ import type { ArcoRequestDto, ArcoType, AssociateDto, CreateArcoRequest } from '
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
 
 /** Backend ArcoNotifier.HabeasDataAttendPermission: action under the Habeas Data item */
 const ARCO_ATTEND_PERMISSION = 'menu.solidarity.habeas_data.attend';
@@ -56,6 +57,16 @@ export const HabeasDataPage: React.FC = () => {
 
     const nameOf = (userId: string) =>
         associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
+    const exportColumns: CsvColumn<ArcoRequestDto>[] = [
+        { header: 'Radicado', value: (r) => r.filingNumber },
+        { header: 'Tipo', value: (r) => ARCO_TYPE_LABEL[r.type] },
+        { header: 'Estado', value: (r) => ARCO_STATUS[r.status]?.label ?? r.status },
+        { header: 'Titular', value: (r) => nameOf(r.userId) },
+        { header: 'Fecha de solicitud', value: (r) => formatDate(r.requestedAt, undefined, '') },
+        { header: 'Descripción', value: (r) => r.description },
+        { header: 'Respuesta', value: (r) => r.response },
+        { header: 'Fecha de respuesta', value: (r) => formatDate(r.respondedAt, undefined, '') },
+    ];
 
     const loadRequests = useCallback(async () => {
         if (!user?.id) return;
@@ -147,11 +158,12 @@ export const HabeasDataPage: React.FC = () => {
             </div>
 
             <Card>
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-4">
                     <FileLock2 className="text-orange-500" size={20} />
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                         {canManage ? 'Solicitudes ARCO Pendientes' : 'Mis Solicitudes ARCO'}
                     </h2>
+                    <div className="ml-auto"><ExportButton rows={requests} columns={exportColumns} filename="solicitudes-arco" /></div>
                 </div>
                 {isLoading ? (
                     <LoadingBlock />

@@ -61,7 +61,7 @@ export const NominaPage: React.FC = () => {
         }).catch(() => setAssociates([]));
     }, [isAdmin, user?.id]);
 
-    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || userId;
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || 'Asociado no disponible';
     const sheetPager = usePagedFilter(sheet, { searchFields: p => [nameOf(p.userId)] });
 
     const loadCompensations = async () => {

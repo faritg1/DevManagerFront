@@ -77,7 +77,7 @@ export const SstPage: React.FC = () => {
         try { await fn(); } finally { setSaving(false); }
     };
 
-    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
 
     const loadAll = async () => {
         if (!user?.id) return;

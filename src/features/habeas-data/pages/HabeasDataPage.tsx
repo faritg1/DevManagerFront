@@ -48,7 +48,7 @@ export const HabeasDataPage: React.FC = () => {
     };
 
     const nameOf = (userId: string) =>
-        associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
+        associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
 
     const loadRequests = useCallback(async () => {
         if (!user?.id) return;

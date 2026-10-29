@@ -17,6 +17,7 @@ import type {
     WorkAccidentDto,
 } from '../../../shared/api/types';
 import { formatDate, today } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
@@ -229,7 +230,7 @@ export const SstPage: React.FC = () => {
             <PageHeader
                 title="Seguridad y Salud en el Trabajo (SST)"
                 description="Exámenes médicos, matriz de riesgos y accidentes de trabajo (FURAT)."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="sst" />{isAdmin && (
                     <div className="flex flex-wrap gap-2">
                         <Button icon={CalendarPlus} variant="outline" onClick={() => { setScheduleForm(emptySchedule()); setScheduleOpen(true); }}>
                             Programar Examen
@@ -241,7 +242,7 @@ export const SstPage: React.FC = () => {
                             Agregar Riesgo
                         </Button>
                     </div>
-                )}
+                )}</>}
             />
 
             <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>

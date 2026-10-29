@@ -28,6 +28,7 @@ import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 import { formatDate, skillLevelLabel } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const EMPTY_CREATE_FORM: CreateUserRequest = {
     firstName: '',
@@ -446,11 +447,11 @@ export const UsersPage: React.FC = () => {
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administra el acceso y roles de los miembros del equipo."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="admin" />{isAdmin && (
                     <Button icon={UserPlus} onClick={createModal.open}>
                         Invitar Usuario
                     </Button>
-                )}
+                )}</>}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

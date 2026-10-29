@@ -15,6 +15,7 @@ import type {
     WelfareRequestDto,
 } from '../../../shared/api/types';
 import { formatDate, currency, today } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const AID_TYPE_LABEL: Record<AidType, string> = {
     1: 'Auxilio económico',
@@ -282,7 +283,7 @@ export const BienestarPage: React.FC = () => {
             <PageHeader
                 title="Bienestar Cooperativo"
                 description="Programas de bienestar, solicitudes, auxilios y fondo de solidaridad."
-                actions={<>
+                actions={<><AskAiButton moduleKey="welfare" />
                 <div className="flex gap-3">
                     <Button variant="outline" icon={HandCoins} onClick={() => { setRequestForm(emptyRequest()); setRequestOpen(true); }}>
                         Nueva Solicitud

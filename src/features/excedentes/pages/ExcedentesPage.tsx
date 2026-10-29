@@ -6,6 +6,7 @@ import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
 import type { SurplusDistributionDto, CalculateSurplusRequest } from '../../../shared/api/types';
 import { formatDate, currency } from '../../../shared/format';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 const emptyCalc = (): CalculateSurplusRequest => ({ period: new Date().toISOString().slice(0, 10), totalSurplus: 0 });
 
@@ -98,11 +99,11 @@ export const ExcedentesPage: React.FC = () => {
             <PageHeader
                 title="Excedentes Cooperativos"
                 description="Distribución de excedentes según Ley 79 (reserva, educación y solidaridad)."
-                actions={isAdmin && (
+                actions={<><AskAiButton moduleKey="surplus" />{isAdmin && (
                     <Button icon={Calculator} onClick={() => { setCalcForm(emptyCalc()); setCalcOpen(true); }}>
                         Calcular Distribución
                     </Button>
-                )}
+                )}</>}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

@@ -8,6 +8,7 @@ import { associatesService, usersService } from '../../../shared/api';
 import type { AssociateDto, AssociateStatus, UserResponse } from '../../../shared/api/types';
 import { associateDetailPath } from '../../../shared/config/constants';
 import { DOCUMENT_TYPES, ROLE_LABELS, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate, needsLocalToast } from '../labels';
+import { AskAiButton } from '../../ai/AskAiButton';
 
 export const AssociatesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -72,7 +73,7 @@ export const AssociatesPage: React.FC = () => {
             <PageHeader
                 title="Asociados"
                 description="Ciclo de vida de membresía y consentimiento de datos."
-                actions={<Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>}
+                actions={<><AskAiButton moduleKey="associates" /><Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button></>}
             />
 
             <Card padding="none" className="overflow-hidden">

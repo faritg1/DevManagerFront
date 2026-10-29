@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
-import { useModal, usePagedFilter } from '../../../shared/hooks';
+import { useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
 import type { AssociateDto, AssociateStatus, UserResponse } from '../../../shared/api/types';
@@ -11,6 +11,7 @@ import { DOCUMENT_TYPES, ROLE_LABELS, STATUS_LABELS, STATUS_VARIANTS, errorText,
 import { AskAiButton } from '../../ai/AskAiButton';
 
 export const AssociatesPage: React.FC = () => {
+    const canCreate = usePermission().has('menu.solidarity.associates.create');
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const createModal = useModal();
@@ -73,7 +74,7 @@ export const AssociatesPage: React.FC = () => {
             <PageHeader
                 title="Asociados"
                 description="Ciclo de vida de membresía y consentimiento de datos."
-                actions={<><AskAiButton moduleKey="associates" /><Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button></>}
+                actions={<><AskAiButton moduleKey="associates" />{canCreate && <Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>}</>}
             />
 
             <Card padding="none" className="overflow-hidden">

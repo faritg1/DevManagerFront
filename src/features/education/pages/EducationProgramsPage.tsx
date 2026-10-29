@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
 import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState } from '../../../shared/ui';
-import { useModal, useConfirm, usePagedFilter } from '../../../shared/hooks';
+import { useModal, useConfirm, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
 import type { EducationProgramDto, ProgramType } from '../../../shared/api/types';
@@ -12,6 +12,7 @@ import { PROGRAM_TYPE_LABELS } from '../labels';
 import { AskAiButton } from '../../ai/AskAiButton';
 
 export const EducationProgramsPage: React.FC = () => {
+    const { has } = usePermission();
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const { confirm } = useConfirm();
@@ -97,7 +98,7 @@ export const EducationProgramsPage: React.FC = () => {
             <PageHeader
                 title="Educación cooperativa"
                 description="Programas de formación e inscripción de asociados."
-                actions={<><AskAiButton moduleKey="education" /><Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button></>}
+                actions={<><AskAiButton moduleKey="education" />{has('menu.solidarity.education.create') && <Button icon={GraduationCap} onClick={() => openForm(null)}>Nuevo programa</Button>}</>}
             />
 
             <Card padding="none" className="overflow-hidden">
@@ -138,8 +139,8 @@ export const EducationProgramsPage: React.FC = () => {
                                         <td className={TD}>{formatDate(p.startDate)}</td>
                                         <td className={TD}>{formatDate(p.endDate)}</td>
                                         <TableActions>
-                                            <IconButton icon={Pencil} label={`Editar ${p.name}`} onClick={() => openForm(p)} />
-                                            <IconButton icon={Trash2} label={`Eliminar ${p.name}`} variant="danger" onClick={() => remove(p)} />
+                                            {has('menu.solidarity.education.edit') && <IconButton icon={Pencil} label={`Editar ${p.name}`} onClick={() => openForm(p)} />}
+                                            {has('menu.solidarity.education.delete') && <IconButton icon={Trash2} label={`Eliminar ${p.name}`} variant="danger" onClick={() => remove(p)} />}
                                         </TableActions>
                                     </tr>
                                 ))}

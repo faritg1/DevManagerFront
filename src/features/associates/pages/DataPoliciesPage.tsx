@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FilePlus } from 'lucide-react';
 import { Button, Card, Modal, Input, Textarea, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
-import { useModal } from '../../../shared/hooks';
+import { useModal, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
 import type { DataPolicyDto } from '../../../shared/api/types';
@@ -11,6 +11,7 @@ import { AskAiButton } from '../../ai/AskAiButton';
 const EMPTY = { version: '', purpose: '', text: '', effectiveFrom: '' };
 
 export const DataPoliciesPage: React.FC = () => {
+    const canCreate = usePermission().has('menu.solidarity.data_policies.create');
     const { showNotification } = useNotification();
     const modal = useModal();
     const [items, setItems] = useState<DataPolicyDto[]>([]);
@@ -61,7 +62,7 @@ export const DataPoliciesPage: React.FC = () => {
             <PageHeader
                 title="Políticas de datos"
                 description="Las versiones publicadas son inmutables; para cambiar el texto publica una nueva versión."
-                actions={<><AskAiButton moduleKey="data_policies" /><Button icon={FilePlus} onClick={modal.open}>Publicar nueva versión</Button></>}
+                actions={<><AskAiButton moduleKey="data_policies" />{canCreate && <Button icon={FilePlus} onClick={modal.open}>Publicar nueva versión</Button>}</>}
             />
 
             {isLoading ? (

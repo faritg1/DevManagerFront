@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Badge, Button, SELECT_CLASS } from '../../../shared/ui';
 import { consentsService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
+import { usePermission } from '../../../shared/hooks';
 import type { ConsentDto, DataPolicyDto } from '../../../shared/api/types';
 import { errorText, formatDateTime, needsLocalToast, versionLabel } from '../labels';
 
@@ -12,6 +13,7 @@ interface Props {
 
 export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
     const { showNotification } = useNotification();
+    const canManage = usePermission().has('menu.solidarity.data_policies.consents');
     const [consents, setConsents] = useState<ConsentDto[]>([]);
     const [policies, setPolicies] = useState<DataPolicyDto[]>([]);
     const [policyId, setPolicyId] = useState('');
@@ -52,7 +54,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
 
     return (
         <div className="space-y-4">
-            {!hasActive && (
+            {canManage && !hasActive && (
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
                     <div className="flex flex-col gap-2 flex-1">
                         <label htmlFor="consents-politica-vigente-a" className="text-slate-700 dark:text-white text-sm font-bold">Política vigente a aceptar</label>
@@ -92,7 +94,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                                     Revocado: {formatDateTime(c.revokedAt)}{c.revocationReason ? ` — ${c.revocationReason}` : ''}
                                 </p>
                             )}
-                            {c.isActive && (revokingId === c.id ? (
+                            {canManage && c.isActive && (revokingId === c.id ? (
                                 <div className="mt-3 flex flex-col sm:flex-row gap-2">
                                     <input
                                         value={reason}

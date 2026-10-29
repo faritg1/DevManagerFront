@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, UserPlus } from 'lucide-react';
 import { BackButton, Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState, Pager, SearchInput } from '../../../shared/ui';
-import { usePagedFilter } from '../../../shared/hooks';
+import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -12,6 +12,7 @@ import { ENROLLMENT_STATUS_LABELS, ENROLLMENT_STATUS_VARIANTS, PROGRAM_TYPE_LABE
 import { EnrollmentHoursForm, type EnrollmentFormValue } from '../components/EnrollmentHoursForm';
 
 export const ProgramDetailPage: React.FC = () => {
+    const canEnroll = usePermission().has('menu.solidarity.education.enroll');
     const { programId = '' } = useParams<{ programId: string }>();
     const { showNotification } = useNotification();
     const [program, setProgram] = useState<EducationProgramDto | null>(null);
@@ -98,7 +99,7 @@ export const ProgramDetailPage: React.FC = () => {
                     <Badge variant="info">{PROGRAM_TYPE_LABELS[program.type]}</Badge>{' '}
                     {program.requiredHours} h requeridas · {formatDate(program.startDate)} – {formatDate(program.endDate)}
                 </>}
-                actions={<Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>}
+                actions={canEnroll && <Button icon={UserPlus} onClick={() => openForm(null)}>Inscribir asociado</Button>}
             />
 
             <Card padding="none" className="overflow-hidden">
@@ -130,7 +131,7 @@ export const ProgramDetailPage: React.FC = () => {
                                         <td className={TD}>{en.hoursCompleted} / {program.requiredHours} h</td>
                                         <td className={TD}>{formatDate(en.completionDate)}</td>
                                         <TableActions>
-                                            <IconButton icon={Pencil} label={`Actualizar inscripción de ${en.fullName}`} onClick={() => openForm(en)} />
+                                            {canEnroll && <IconButton icon={Pencil} label={`Actualizar inscripción de ${en.fullName}`} onClick={() => openForm(en)} />}
                                         </TableActions>
                                     </tr>
                                 ))}

@@ -5,7 +5,7 @@ import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock } fr
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, type ProjectResponse } from '../../../shared/api/types';
-import { useIsAdmin } from '../../../shared/hooks';
+import { usePermission } from '../../../shared/hooks';
 import { ProjectCard, NewProjectTile } from '../components/ProjectCard';
 import { AskAiButton } from '../../ai/AskAiButton';
 
@@ -19,7 +19,7 @@ const STATUS_TABS = [
 ];
 
 export const ProjectsPage: React.FC = () => {
-    const isAdmin = useIsAdmin();
+    const canCreate = usePermission().has('menu.platform.projects.create');
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export const ProjectsPage: React.FC = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        {isAdmin && (
+                        {canCreate && (
                             <Link to={ROUTES.CREATE_PROJECT}>
                                 <Button icon={Plus}>
                                     Nuevo Proyecto
@@ -113,8 +113,8 @@ export const ProjectsPage: React.FC = () => {
                         icon={FolderOpen}
                         className="py-20"
                         title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
-                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : isAdmin ? 'Crea tu primer proyecto para comenzar.' : undefined}
-                        action={!searchQuery && isAdmin && (
+                        description={searchQuery ? 'Intenta con otros términos de búsqueda.' : canCreate ? 'Crea tu primer proyecto para comenzar.' : undefined}
+                        action={!searchQuery && canCreate && (
                             <Link to={ROUTES.CREATE_PROJECT}>
                                 <Button icon={Plus}>Crear Proyecto</Button>
                             </Link>
@@ -128,7 +128,7 @@ export const ProjectsPage: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
                             {filteredProjects.map(project => <ProjectCard key={project.id} project={project} />)}
-                            {isAdmin && <NewProjectTile />}
+                            {canCreate && <NewProjectTile />}
                         </div>
                     </>
                 )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
 import { Card, Badge, Button, Input, Select, Textarea, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePermission } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
 import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../../../shared/api/types';
 import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
@@ -16,6 +16,8 @@ export const CompetenciasPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canCreate = has('menu.solidarity.competencies.create');
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
 
@@ -49,10 +51,10 @@ export const CompetenciasPage: React.FC = () => {
     };
 
     useEffect(() => {
-        if (isAdmin) {
+        if (isAdmin || canCreate) {
             associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => setAssociates([]));
         }
-    }, [isAdmin]);
+    }, [isAdmin, canCreate]);
 
     useEffect(() => {
         loadOwned(targetUserId);
@@ -112,7 +114,7 @@ export const CompetenciasPage: React.FC = () => {
     const availabilityCell = (c: CompetencyDto) => (
         <div className="flex items-center gap-2">
             <Badge variant={c.isAvailable ? 'success' : 'default'} dot>{c.isAvailable ? 'Disponible' : 'No disponible'}</Badge>
-            {isAdmin && (
+            {has('menu.solidarity.competencies.edit') && (
                 <Button size="sm" variant="ghost" onClick={() => handleToggle(c)}>
                     {c.isAvailable ? 'Desactivar' : 'Activar'}
                 </Button>
@@ -155,7 +157,7 @@ export const CompetenciasPage: React.FC = () => {
             <PageHeader
                 title="Competencias"
                 description="Competencias cooperativas de los asociados disponibles para el servicio solidario."
-                actions={<><AskAiButton moduleKey="competencies" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="competencies" />{canCreate && (
                     <Button icon={Plus} onClick={() => { setForm({ ...emptyForm(), userId: ownerId }); setCreateOpen(true); }}>
                         Registrar Competencia
                     </Button>

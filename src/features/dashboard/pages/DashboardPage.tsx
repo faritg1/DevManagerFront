@@ -5,7 +5,7 @@ import { StatCard, Badge, Button, PageContainer, PageHeader, LoadingBlock, Empty
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
 import { useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { usePermission } from '../../../shared/hooks';
 import { ProjectStatus, type ApiResponse, type ProjectResponse } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
 import { ProjectCard, NewProjectTile } from '../../projects/components/ProjectCard';
@@ -40,7 +40,9 @@ const QuickLink: React.FC<{ to: string; icon: typeof Bot; iconClass: string; tit
 
 export const DashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canCreateProject = has('menu.platform.projects.create');
+    const canAttendArco = has('menu.solidarity.habeas_data.attend');
 
     const [projects, setProjects] = useState<Kpi<ProjectResponse[]>>(undefined);
     const [members, setMembers] = useState<Kpi<{ active: number; total: number }>>(undefined);
@@ -57,14 +59,14 @@ export const DashboardPage: React.FC = () => {
         settle(skillsService.getAll()).then(list => setTotalSkills(list && list.length));
     }, []);
 
-    // Gestión solidaria: the organization comes from the JWT; pending ARCO is admin-only.
+    // Gestión solidaria: the organization comes from the JWT; pending ARCO needs the attend action.
     useEffect(() => {
         if (!user?.id) return;
         settle(excedentesService.getAll()).then(list => setLatestSurplus(
             !list ? null : list.length ? [...list].sort((x, y) => y.period.localeCompare(x.period))[0].totalSurplus : 'none'));
         settle(bienestarService.getPrograms()).then(list => setWelfarePrograms(list && list.length));
-        if (isAdmin) settle(habeasDataService.getPendingArco()).then(list => setPendingArco(list && list.length));
-    }, [user?.id, isAdmin]);
+        if (canAttendArco) settle(habeasDataService.getPendingArco()).then(list => setPendingArco(list && list.length));
+    }, [user?.id, canAttendArco]);
 
     const count = (status: ProjectStatus) => kpi(projects, list => list.filter(p => p.status === status).length);
     const activeProjects = kpi(projects, list => list.filter(p => p.status === ProjectStatus.Open || p.status === ProjectStatus.InProgress).length);
@@ -74,7 +76,7 @@ export const DashboardPage: React.FC = () => {
             <PageHeader
                 title={user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
                 description="Resumen general de tu organización y proyectos."
-                actions={isAdmin && (
+                actions={canCreateProject && (
                     <Link to={ROUTES.CREATE_PROJECT}>
                         <Button icon={Plus}>Nuevo Proyecto</Button>
                     </Link>
@@ -119,7 +121,7 @@ export const DashboardPage: React.FC = () => {
                     <h2 id="dash-solidaria" className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         Gestión Solidaria
                     </h2>
-                    <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                    <div className={`grid grid-cols-1 gap-4 ${canAttendArco ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                         <StatCard
                             compact
                             title="Excedentes del último período"
@@ -129,7 +131,7 @@ export const DashboardPage: React.FC = () => {
                             iconColor="text-emerald-500"
                             iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
                         />
-                        {isAdmin && (
+                        {canAttendArco && (
                             <StatCard
                                 compact
                                 title="Solicitudes ARCO pendientes"
@@ -178,8 +180,8 @@ export const DashboardPage: React.FC = () => {
                             icon={FolderOpen}
                             className="py-20"
                             title="No hay proyectos"
-                            description={isAdmin ? 'Comienza creando tu primer proyecto.' : undefined}
-                            action={isAdmin && (
+                            description={canCreateProject ? 'Comienza creando tu primer proyecto.' : undefined}
+                            action={canCreateProject && (
                                 <Link to={ROUTES.CREATE_PROJECT}>
                                     <Button icon={Plus}>Crear Proyecto</Button>
                                 </Link>
@@ -188,7 +190,7 @@ export const DashboardPage: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                             {projects.map(project => <ProjectCard key={project.id} project={project} />)}
-                            {isAdmin && <NewProjectTile />}
+                            {canCreateProject && <NewProjectTile />}
                         </div>
                     )}
                 </section>

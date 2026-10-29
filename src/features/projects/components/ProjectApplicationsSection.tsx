@@ -4,7 +4,7 @@ import { Users, CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Textarea } from "../../../shared/ui";
 import { applicationsService } from "../../../shared/api";
 import { ApplicationStatus, type ApplicationResponse } from "../../../shared/api/types";
-import { useModal } from "../../../shared/hooks";
+import { useModal, usePermission } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
     
 interface ProjectApplicationsSectionProps {
@@ -20,6 +20,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
 }) => {
   const { showNotification } = useNotification();
   const { catalogs } = useConfig();
+  const canReview = usePermission().has("menu.platform.projects.review");
   const reviewModal = useModal();
 
   const [selectedApplication, setSelectedApplication] = useState<ApplicationResponse | null>(null);
@@ -140,7 +141,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isPending ? (
+                    {isPending && canReview ? (
                       <>
                         <Button
                           variant="outline"

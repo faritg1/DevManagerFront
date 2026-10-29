@@ -7,7 +7,7 @@ import type {
   SkillDto,
   AddSkillRequirementRequest,
 } from "../../../shared/api/types";
-import { useModal, useIsAdmin } from "../../../shared/hooks";
+import { useModal, usePermission } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
 
 interface ProjectRequirementsSectionProps {
@@ -24,8 +24,8 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
   const { showNotification } = useNotification();
   const { catalogs } = useConfig();
   const requirementModal = useModal();
-  // POST /projects/{id}/reqs is Admin-only on the API, so only admins get the add actions.
-  const isAdmin = useIsAdmin();
+  // POST /projects/{id}/reqs requires the project edit action on the API.
+  const canEdit = usePermission().has("menu.platform.projects.edit");
 
   const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
@@ -100,7 +100,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
               Requisitos de Habilidades
               <Badge variant="default">{requirements.length}</Badge>
             </div>
-            {isAdmin && (
+            {canEdit && (
               <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
                 Agregar
               </Button>
@@ -111,7 +111,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         {requirements.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-slate-500 dark:text-slate-400 mb-4">No hay requisitos definidos</p>
-            {isAdmin && (
+            {canEdit && (
               <Button variant="outline" size="sm" icon={Plus} onClick={handleOpenModal}>
                 Agregar Requisito
               </Button>

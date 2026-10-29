@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
 import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
 import type {
     AidType,
@@ -44,6 +44,8 @@ export const BienestarPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canApprove = has('menu.solidarity.welfare.approve');
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
 
@@ -134,18 +136,18 @@ export const BienestarPage: React.FC = () => {
     useEffect(() => {
         loadPrograms();
         loadFund();
+        if (canApprove) loadPending();
         if (isAdmin) {
-            loadPending();
             associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => {});
         } else if (user?.id) {
             setLookupUserId(user.id);
             loadUser(user.id);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAdmin, user?.id]);
+    }, [isAdmin, canApprove, user?.id]);
 
     const refreshAfterChange = () => {
-        if (isAdmin) loadPending();
+        if (canApprove) loadPending();
         if (lookupUserId) loadUser(lookupUserId);
     };
 
@@ -240,8 +242,7 @@ export const BienestarPage: React.FC = () => {
     };
 
     const requestActions = (s: WelfareRequestDto) => {
-        if (!isAdmin) return null;
-        if (s.status === 1) {
+        if (s.status === 1 && canApprove) {
             return (
                 <div className="flex gap-2">
                     <Button size="sm" variant="primary" icon={CheckCircle2} onClick={() => openResolve(s, 'aprobar')}>Aprobar</Button>
@@ -249,7 +250,7 @@ export const BienestarPage: React.FC = () => {
                 </div>
             );
         }
-        if (s.status === 2) {
+        if (s.status === 2 && has('menu.solidarity.welfare.deliver')) {
             return <Button size="sm" variant="outline" icon={PackageCheck} onClick={() => openResolve(s, 'entregar')}>Entregar</Button>;
         }
         return null;
@@ -288,7 +289,7 @@ export const BienestarPage: React.FC = () => {
                     <Button variant="outline" icon={HandCoins} onClick={() => { setRequestForm(emptyRequest()); setRequestOpen(true); }}>
                         Nueva Solicitud
                     </Button>
-                    {isAdmin && (
+                    {has('menu.solidarity.welfare.create') && (
                         <Button icon={Plus} onClick={() => { setProgramForm(emptyProgram()); setProgramOpen(true); }}>
                             Nuevo Programa
                         </Button>
@@ -299,7 +300,7 @@ export const BienestarPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Programas" value={programs.length} icon={Heart} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
-                <StatCard title={isAdmin ? 'Solicitudes pendientes' : 'Mis solicitudes'} value={isAdmin ? pending.length : requests.length} icon={HandCoins} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
+                <StatCard title={canApprove ? 'Solicitudes pendientes' : 'Mis solicitudes'} value={canApprove ? pending.length : requests.length} icon={HandCoins} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 <StatCard title="Saldo del fondo" value={fund ? currency(fund.availableBalance) : '—'} icon={Wallet} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
             </div>
 
@@ -318,7 +319,7 @@ export const BienestarPage: React.FC = () => {
                 ) : (
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Sin fondo registrado para esta organización.</p>
                 )}
-                {isAdmin && (
+                {has('menu.solidarity.welfare.calculate') && (
                     <div className="border-t border-slate-200 dark:border-border-dark pt-4">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Calcular aporte desde la distribución de excedentes del período</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -379,7 +380,7 @@ export const BienestarPage: React.FC = () => {
                 <Pager pager={programPager} />
             </Card>
 
-            {isAdmin && (
+            {canApprove && (
                 <Card className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
                         <HandCoins className="text-orange-500" size={20} />

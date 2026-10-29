@@ -10,8 +10,8 @@ import { ROUTES } from '../../../shared/config/constants';
 import { formatDate } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
 
-/** Backend ArcoNotifier.HabeasDataManagePermission */
-const ARCO_MANAGE_PERMISSION = 'menu.solidarity.habeas_data_manage';
+/** Backend ArcoNotifier.HabeasDataAttendPermission: action under the Habeas Data item */
+const ARCO_ATTEND_PERMISSION = 'menu.solidarity.habeas_data.attend';
 
 const ARCO_TYPE_LABEL: Record<ArcoType, string> = {
     1: 'Acceso',
@@ -33,7 +33,7 @@ export const HabeasDataPage: React.FC = () => {
     const isAdmin = useIsAdmin();
     const { has } = usePermission();
     // Handlers see the organization's pending list and answer it; everyone else sees their own requests
-    const canManage = isAdmin || has(ARCO_MANAGE_PERMISSION);
+    const canManage = has(ARCO_ATTEND_PERMISSION);
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
     const [requests, setRequests] = useState<ArcoRequestDto[]>([]);
@@ -140,7 +140,7 @@ export const HabeasDataPage: React.FC = () => {
                         <ShieldCheck className="text-emerald-500" size={20} />
                         <p className="text-sm text-slate-600 dark:text-slate-300">
                             Los consentimientos se gestionan por política versionada
-                            {isAdmin && <> en <Link className="text-primary font-bold" to={ROUTES.DATA_POLICIES}>Políticas de datos</Link> y en el detalle de cada asociado</>}.
+                            {has('menu.solidarity.data_policies') && <> en <Link className="text-primary font-bold" to={ROUTES.DATA_POLICIES}>Políticas de datos</Link> y en el detalle de cada asociado</>}.
                         </p>
                     </div>
                 </Card>

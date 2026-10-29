@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
 import { Card, Badge, Button, Input, Select, Textarea, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
 import type {
     AccidentSeverity,
@@ -42,6 +42,10 @@ export const SstPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canExams = has('menu.solidarity.sst.exams');
+    const canAccidents = has('menu.solidarity.sst.accidents');
+    const canRisks = has('menu.solidarity.sst.risks');
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
     const [exams, setExams] = useState<MedicalExamDto[]>([]);
@@ -85,11 +89,11 @@ export const SstPage: React.FC = () => {
         setIsLoading(true);
         try {
             const [exRes, riRes, acRes] = await Promise.all([
-                isAdmin
+                canExams
                     ? (examScope ? sstService.getExamsByUser(examScope) : sstService.getPendingExams())
                     : sstService.getExamsByUser(user.id),
                 sstService.getRisks(),
-                isAdmin
+                canAccidents
                     ? (onlyPendingAccidents ? sstService.getAccidentsPendingInvestigation() : sstService.getAccidents())
                     : Promise.resolve(null),
             ]);
@@ -106,13 +110,13 @@ export const SstPage: React.FC = () => {
     useEffect(() => {
         loadAll();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAdmin, user?.id, examScope, onlyPendingAccidents]);
+    }, [canExams, canAccidents, user?.id, examScope, onlyPendingAccidents]);
 
     useEffect(() => {
-        if (isAdmin) {
+        if (isAdmin || canExams || canAccidents) {
             associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => {});
         }
-    }, [isAdmin]);
+    }, [isAdmin, canExams, canAccidents]);
 
     const handleRecordExam = submitting(async () => {
         if (!recording) return;
@@ -230,25 +234,25 @@ export const SstPage: React.FC = () => {
             <PageHeader
                 title="Seguridad y Salud en el Trabajo (SST)"
                 description="Exámenes médicos, matriz de riesgos y accidentes de trabajo (FURAT)."
-                actions={<><AskAiButton moduleKey="sst" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="sst" />{(canExams || canAccidents || canRisks) && (
                     <div className="flex flex-wrap gap-2">
-                        <Button icon={CalendarPlus} variant="outline" onClick={() => { setScheduleForm(emptySchedule()); setScheduleOpen(true); }}>
+                        {canExams && <Button icon={CalendarPlus} variant="outline" onClick={() => { setScheduleForm(emptySchedule()); setScheduleOpen(true); }}>
                             Programar Examen
-                        </Button>
-                        <Button icon={Siren} variant="outline" onClick={() => { setAccidentForm(emptyAccident()); setAccidentOpen(true); }}>
+                        </Button>}
+                        {canAccidents && <Button icon={Siren} variant="outline" onClick={() => { setAccidentForm(emptyAccident()); setAccidentOpen(true); }}>
                             Reportar Accidente
-                        </Button>
-                        <Button icon={Plus} onClick={() => { setRiskForm(emptyRisk()); setRiskOpen(true); }}>
+                        </Button>}
+                        {canRisks && <Button icon={Plus} onClick={() => { setRiskForm(emptyRisk()); setRiskOpen(true); }}>
                             Agregar Riesgo
-                        </Button>
+                        </Button>}
                     </div>
                 )}</>}
             />
 
-            <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
-                <StatCard title={isAdmin ? (examScope ? 'Exámenes del asociado' : 'Exámenes pendientes') : 'Mis exámenes'} value={exams.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
+            <div className={`grid grid-cols-1 ${canAccidents ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
+                <StatCard title={canExams ? (examScope ? 'Exámenes del asociado' : 'Exámenes pendientes') : 'Mis exámenes'} value={exams.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 <StatCard title="Riesgos" value={risks.length} icon={ShieldAlert} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
-                {isAdmin && <StatCard title="Accidentes sin investigar" value={pendingInvestigation.length} icon={AlertCircle} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />}
+                {canAccidents && <StatCard title="Accidentes sin investigar" value={pendingInvestigation.length} icon={AlertCircle} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -256,7 +260,7 @@ export const SstPage: React.FC = () => {
                     <div className="flex items-center gap-2 mb-4">
                         <Stethoscope className="text-blue-500" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                            {isAdmin ? (examScope ? 'Exámenes del Asociado' : 'Exámenes Médicos Pendientes') : 'Mis Exámenes Médicos'}
+                            {canExams ? (examScope ? 'Exámenes del Asociado' : 'Exámenes Médicos Pendientes') : 'Mis Exámenes Médicos'}
                         </h2>
                     </div>
                     {isAdmin && (
@@ -276,7 +280,7 @@ export const SstPage: React.FC = () => {
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">Examen de {EXAM_TYPE_LABEL[e.examType] ?? e.examType}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            Programado: {formatDate(e.scheduledDate)}{isAdmin && <> · {nameOf(e.userId)}</>}
+                                            Programado: {formatDate(e.scheduledDate)}{canExams && <> · {nameOf(e.userId)}</>}
                                         </p>
                                         {e.performed && e.result && (
                                             <p className="text-xs text-slate-500 dark:text-slate-400">Resultado: {EXAM_RESULT_LABEL[e.result]} ({formatDate(e.performedAt)})</p>
@@ -286,7 +290,7 @@ export const SstPage: React.FC = () => {
                                     </div>
                                     {e.performed ? (
                                         <Badge variant="success">Realizado</Badge>
-                                    ) : isAdmin ? (
+                                    ) : canExams ? (
                                         <Button size="sm" onClick={() => { setRecording(e); setExamResult(1); setExamNotes(''); setExamFileUrl(''); }}>Registrar</Button>
                                     ) : (
                                         <Badge variant="warning">Pendiente</Badge>
@@ -325,7 +329,7 @@ export const SstPage: React.FC = () => {
                 </Card>
             </div>
 
-            {isAdmin && (
+            {canAccidents && (
                 <Card>
                     <div className="flex flex-wrap items-center gap-2 mb-4">
                         <FileText className="text-rose-500" size={20} />

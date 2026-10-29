@@ -32,6 +32,11 @@ const Markdown: React.FC<{ text: string }> = ({ text }) => (
     </div>
 );
 
+// The quota hint is optional: any unexpected /ai/usage shape (null, [], partial) just hides it.
+const isUsageSummary = (u: unknown): u is AiUsageSummary =>
+    !!u && typeof u === 'object' && !Array.isArray(u)
+    && Number.isFinite((u as AiUsageSummary).remaining) && Number.isFinite((u as AiUsageSummary).percent);
+
 const moduleName = (caps: AiCapabilities | null, key: string) => caps?.allowed.find(c => c.key === key)?.name ?? key;
 
 const Chip: React.FC<{ chip: ToolChip; name: string }> = ({ chip, name }) => {
@@ -129,7 +134,7 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
 
     // Remaining-quota hint, refreshed after each answer; only for who may see the usage (no 403 noise)
     useEffect(() => {
-        if (canSeeUsage && !streaming) aiService.getUsage().then(r => setUsage(r.data ?? null), () => setUsage(null));
+        if (canSeeUsage && !streaming) aiService.getUsage().then(r => setUsage(isUsageSummary(r?.data) ? r.data : null), () => setUsage(null));
     }, [canSeeUsage, streaming]);
 
     const refreshConversations = useCallback(() => {

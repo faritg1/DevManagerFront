@@ -31,3 +31,16 @@ test('AI drawer streams tool chips, a markdown table and sources', async ({ page
     await expect(dialog.getByRole('cell', { name: 'Bruno' })).toBeVisible();
     await expect(dialog.getByText('Fuentes:')).toBeVisible();
 });
+
+test('AI drawer survives an unexpected /ai/usage shape and hides the quota hint', async ({ page }) => {
+    await mockApi(page, ADMIN, {
+        'GET /ai/capabilities': { success: true, data: { allowed: [{ key: 'associates', name: 'Asociados', suggestions: [] }], denied: [] } },
+        'GET /ai/usage': { success: true, data: [] },
+    });
+    await signIn(page);
+    await page.goto('/#/associates');
+    await page.getByRole('button', { name: 'Preguntar a la IA' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('textbox', { name: 'Pregunta para el asistente' })).toBeVisible();
+    await expect(dialog.getByText('Cuota de IA')).toHaveCount(0);
+});

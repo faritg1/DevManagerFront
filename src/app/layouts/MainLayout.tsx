@@ -4,8 +4,10 @@ import { Sidebar } from '../../widgets/Sidebar';
 import { Header, ImpersonationBanner } from '../../widgets/Header';
 
 import { ConfigProvider, PermissionsProvider, UserNotificationsProvider } from '../../shared/context';
+import { useTableCellLabels } from '../../shared/hooks';
 
 export const MainLayout: React.FC = () => {
+    useTableCellLabels();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const openMobileMenu = useCallback(() => setIsMobileMenuOpen(true), []);

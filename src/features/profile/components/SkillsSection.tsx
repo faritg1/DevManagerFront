@@ -49,9 +49,9 @@ export const SkillsSection: React.FC<Props> = ({
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-2">
-                        <Award className="text-primary" size={20} />
+                <CardTitle className="flex items-center justify-between gap-2 w-full">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Award className="text-primary shrink-0" size={20} />
                         Mis Habilidades
                         <Badge variant="default">{skills.length}</Badge>
                     </div>

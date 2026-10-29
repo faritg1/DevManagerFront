@@ -88,7 +88,7 @@ export const CertificationsSection: React.FC<Props> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="text-primary" size={20} />
+            <Award className="text-primary shrink-0" size={20} />
             Certificaciones
           </CardTitle>
         </CardHeader>
@@ -101,9 +101,9 @@ export const CertificationsSection: React.FC<Props> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between w-full">
+          <CardTitle className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2">
-              <Award className="text-primary" size={20} />
+              <Award className="text-primary shrink-0" size={20} />
               Certificaciones
               <Badge variant="default">{certifications.length}</Badge>
             </div>

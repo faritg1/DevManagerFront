@@ -504,8 +504,8 @@ export const OrganosPage: React.FC = () => {
                             </div>
                             {o.description && <p className="text-sm text-slate-500 mt-2 line-clamp-2 dark:text-slate-400">{o.description}</p>}
                             <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-border-dark text-xs text-slate-500 dark:text-slate-400">
-                                <span className="flex items-center gap-1"><Users size={13} /> {o.membersCount} miembros</span>
-                                <span className="flex items-center gap-1"><FileText size={13} /> {o.minutesCount} actas</span>
+                                <span className="flex items-center gap-1"><Users size={13} /> {o.membersCount} {o.membersCount === 1 ? 'miembro' : 'miembros'}</span>
+                                <span className="flex items-center gap-1"><FileText size={13} /> {o.minutesCount} {o.minutesCount === 1 ? 'acta' : 'actas'}</span>
                             </div>
                         </Card>
                     ))}

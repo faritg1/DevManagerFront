@@ -58,6 +58,10 @@ export const STORAGE_KEYS = {
     SIDEBAR_COLLAPSED: 'sidebar_collapsed',
     SIDEBAR_SECTIONS: 'sidebar_collapsed_sections',
     LANGUAGE: 'language',
+    /** While impersonating: the super admin's own session, restored on exit or when the short-lived token expires */
+    IMPERSONATOR_TOKEN: 'impersonator_token',
+    IMPERSONATOR_USER: 'impersonator_user',
+    IMPERSONATION: 'impersonation',
 } as const;
 
 export const associateDetailPath = (userId: string): string => `/associates/${userId}`;

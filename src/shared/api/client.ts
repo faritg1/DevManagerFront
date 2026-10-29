@@ -1,4 +1,5 @@
-import { STORAGE_KEYS } from "../config/constants";
+import { ROUTES, STORAGE_KEYS } from "../config/constants";
+import { endImpersonation, reloadAt } from "./impersonation";
 import type { ApiResponse } from "./types";
 
 export interface ApiError {
@@ -43,7 +44,10 @@ export const readApiError = async (response: Response, notify = true): Promise<A
     // Response body is not JSON
   }
 
-  if (response.status === 401) {
+  if (response.status === 401 && endImpersonation()) {
+    // The short-lived impersonation token expired: back to the super admin's own session, never a refresh
+    reloadAt(`#${ROUTES.SUPER_ADMIN}`);
+  } else if (response.status === 401) {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
     // Event instead of window.location: a redirect loops under HashRouter.

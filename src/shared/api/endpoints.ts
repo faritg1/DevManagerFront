@@ -265,6 +265,9 @@ export const API_ENDPOINTS = {
     PLATFORM: {
       ORGANIZATIONS: "/platform/organizations",
       USERS: (organizationId: string) => `/platform/organizations/${organizationId}/users`,
+      IMPERSONATE: "/platform/impersonate",
+      IMPERSONATE_STOP: "/platform/impersonate/stop",
+      IMPERSONATIONS: "/platform/impersonations",
     },
 
     // Asistente Cooperativo

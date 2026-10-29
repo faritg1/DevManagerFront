@@ -1334,6 +1334,9 @@ export interface PermissionAuditEntry {
   action: string;
   granted: { code: string; name: string }[];
   revoked: { code: string; name: string }[];
+  /** Made by a platform super admin (actor) acting as this user through impersonation */
+  impersonatedUserId?: string | null;
+  impersonatedUserName?: string | null;
 }
 
 export interface PermissionAuditPage {
@@ -1369,4 +1372,32 @@ export interface PlatformUser {
   isActive: boolean;
   roles: string[];
   isSuperAdmin: boolean;
+}
+
+/** POST /platform/impersonate: short-lived token of the target user; there is no refresh token */
+export interface ImpersonationResponse {
+  token: string;
+  expiresAt: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  organizationId: string;
+  organizationName: string;
+}
+
+/** GET /platform/impersonations: newest first */
+export interface ImpersonationLogEntry {
+  id: string;
+  actorUserId: string;
+  actorName: string;
+  targetUserId: string;
+  targetName: string;
+  targetOrganizationId: string;
+  organizationName: string;
+  startedAt: string;
+  expiresAt: string;
+  /** null while open or when the token simply expired */
+  endedAt: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
 }

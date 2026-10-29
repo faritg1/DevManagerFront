@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { rbacService } from "../../../shared/api";
 import type { PermissionAuditEntry, PermissionAuditPage } from "../../../shared/api/types";
-import { formatDateTime } from "../../../shared/format";
+import { asUtc, formatDateTime } from "../../../shared/format";
 import type { PagedFilter } from "../../../shared/hooks";
 import { Badge, EmptyState, LoadingBlock, Pager, TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS } from "../../../shared/ui";
 
@@ -15,9 +15,6 @@ const ACTION_LABELS: Record<string, string> = {
   user_override: "Permiso directo",
   user_override_removed: "Permiso directo retirado",
 };
-
-/** The API sends UTC timestamps without offset. */
-const asUtc = (d: string) => (/(?:[zZ]|[+-]\d\d:?\d\d)$/.test(d) ? d : `${d}Z`);
 
 const Chips: React.FC<{ items: PermissionAuditEntry["granted"]; variant: "success" | "danger"; sign: string }> = ({ items, variant, sign }) => (
   <>
@@ -77,7 +74,12 @@ export const PermissionAuditTable: React.FC<{ roleId?: string }> = ({ roleId }) 
             {data.items.map((e) => (
               <tr key={e.id} className={TR_CLASS}>
                 <td className={TD_CLASS}>{formatDateTime(asUtc(e.createdAt))}</td>
-                <td className={TD_CLASS}>{e.actorName}</td>
+                <td className={TD_CLASS}>
+                  {e.actorName}
+                  {e.impersonatedUserId && (
+                    <span className="block text-xs text-amber-600 dark:text-amber-400">Superadmin actuando como {e.impersonatedUserName ?? "usuario eliminado"}</span>
+                  )}
+                </td>
                 <td className={TD_CLASS}>
                   <span className="font-medium text-slate-800 dark:text-slate-100">{e.targetName}</span>
                   <span className="block text-xs text-slate-500 dark:text-slate-400">

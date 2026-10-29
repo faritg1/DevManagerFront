@@ -45,7 +45,7 @@ export const Button: React.FC<ButtonProps> = ({
     type = 'button',
     ...props
 }) => {
-    const baseStyles = 'inline-flex items-center justify-center font-bold rounded-xl transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-background-dark disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
+    const baseStyles = 'inline-flex items-center justify-center whitespace-nowrap font-bold rounded-xl transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-background-dark disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
     const iconSize = iconSizes[size];
 
     return (
@@ -60,7 +60,7 @@ export const Button: React.FC<ButtonProps> = ({
             {isLoading
                 ? <Loader2 size={iconSize} className="animate-spin" aria-hidden="true" />
                 : Icon && iconPosition === 'left' && <Icon size={iconSize} aria-hidden="true" />}
-            {children && <span>{children}</span>}
+            {children && <span className="inline-flex items-center gap-1.5">{children}</span>}
             {!isLoading && Icon && iconPosition === 'right' && <Icon size={iconSize} aria-hidden="true" />}
         </button>
     );

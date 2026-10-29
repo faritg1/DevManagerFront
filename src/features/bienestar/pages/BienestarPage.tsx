@@ -80,7 +80,7 @@ export const BienestarPage: React.FC = () => {
 
     const programPager = usePagedFilter(programs, { searchFields: p => [p.name, p.description] });
 
-    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
 
     const loadPrograms = async () => {
         setProgLoading(true);
@@ -243,13 +243,13 @@ export const BienestarPage: React.FC = () => {
         if (s.status === 1) {
             return (
                 <div className="flex gap-2">
-                    <Button size="sm" variant="primary" onClick={() => openResolve(s, 'aprobar')}><CheckCircle2 size={14} /> Aprobar</Button>
-                    <Button size="sm" variant="danger" onClick={() => openResolve(s, 'rechazar')}><XCircle size={14} /> Rechazar</Button>
+                    <Button size="sm" variant="primary" icon={CheckCircle2} onClick={() => openResolve(s, 'aprobar')}>Aprobar</Button>
+                    <Button size="sm" variant="danger" icon={XCircle} onClick={() => openResolve(s, 'rechazar')}>Rechazar</Button>
                 </div>
             );
         }
         if (s.status === 2) {
-            return <Button size="sm" variant="outline" onClick={() => openResolve(s, 'entregar')}><PackageCheck size={14} /> Entregar</Button>;
+            return <Button size="sm" variant="outline" icon={PackageCheck} onClick={() => openResolve(s, 'entregar')}>Entregar</Button>;
         }
         return null;
     };
@@ -265,7 +265,7 @@ export const BienestarPage: React.FC = () => {
             </p>
             <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{s.reason}</p>
             {s.resolutionNotes && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{s.resolutionNotes}</p>}
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                     {currency(s.approvedAmount ?? s.requestedAmount)}
                     {s.approvedAmount != null && s.approvedAmount !== s.requestedAmount && (

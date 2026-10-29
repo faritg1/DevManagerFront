@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
 import type { SurplusDistributionDto, CalculateSurplusRequest } from '../../../shared/api/types';
 import { formatDate, currency } from '../../../shared/format';
@@ -22,6 +22,18 @@ export const ExcedentesPage: React.FC = () => {
     const [approving, setApproving] = useState<SurplusDistributionDto | null>(null);
     const [revaluation, setRevaluation] = useState<number | null>(null);
     const [cooperativeReturn, setCooperativeReturn] = useState<number | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    const pager = usePagedFilter(distributions, {
+        searchFields: e => [formatDate(e.period), e.approvedByAssembly ? 'Aprobada' : 'Pendiente', e.notes],
+    });
+
+    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
+    const submitting = (fn: () => Promise<void>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try { await fn(); } finally { setSaving(false); }
+    };
 
     const loadData = async () => {
         setIsLoading(true);
@@ -39,7 +51,7 @@ export const ExcedentesPage: React.FC = () => {
         loadData();
     }, []);
 
-    const handleCalculate = async () => {
+    const handleCalculate = submitting(async () => {
         try {
             const res = await excedentesService.calculate({
                 period: calcForm.period,
@@ -55,9 +67,10 @@ export const ExcedentesPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleApprove = async () => {
+
+    const handleApprove = submitting(async () => {
         if (!approving) return;
         try {
             const res = await excedentesService.approve(approving.id, {
@@ -74,7 +87,8 @@ export const ExcedentesPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
+
 
     const approvedCount = distributions.filter(e => e.approvedByAssembly).length;
     const totalSurplus = distributions.reduce((s, e) => s + e.totalSurplus, 0);
@@ -98,6 +112,9 @@ export const ExcedentesPage: React.FC = () => {
             </div>
 
             <Card padding="none" className="overflow-hidden">
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                    <SearchInput pager={pager} label="Buscar por período o estado" />
+                </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>
                         <thead className={THEAD_CLASS}>
@@ -115,14 +132,14 @@ export const ExcedentesPage: React.FC = () => {
                         <tbody className={TBODY_CLASS}>
                             {isLoading ? (
                                 <tr><td colSpan={8}><LoadingBlock /></td></tr>
-                            ) : distributions.length === 0 ? (
-                                <tr><td colSpan={8}><EmptyState title="No hay distribuciones de excedentes" /></td></tr>
+                            ) : pager.total === 0 ? (
+                                <tr><td colSpan={8}><EmptyState title={pager.query ? 'Ninguna distribución coincide con la búsqueda' : 'No hay distribuciones de excedentes'} /></td></tr>
                             ) : (
-                                distributions.map(e => (
+                                pager.pageItems.map(e => (
                                     <tr key={e.id} className={TR_CLASS}>
                                         <td className={TD_CLASS}>
                                             <p className="font-bold text-slate-900 dark:text-white">{formatDate(e.period)}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.createdAt).toLocaleDateString('es-ES')}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(e.createdAt)}</p>
                                         </td>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{currency(e.totalSurplus)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(e.protectionReserve)}</td>
@@ -149,24 +166,26 @@ export const ExcedentesPage: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                <Pager pager={pager} />
             </Card>
 
             <Modal
                 isOpen={calcOpen}
                 onClose={() => setCalcOpen(false)}
+                onSubmit={handleCalculate}
                 title="Calcular Distribución de Excedentes"
                 icon={<Calculator className="text-primary" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleCalculate} disabled={calcForm.totalSurplus <= 0}>Calcular</Button>
+                        <Button type="submit" isLoading={saving}>Calcular</Button>
                         <Button variant="outline" onClick={() => setCalcOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <Input type="date" label="Período *" value={calcForm.period} onChange={(e) => setCalcForm(f => ({ ...f, period: e.target.value }))} />
-                    <Input type="number" label="Total excedentes *" value={calcForm.totalSurplus} onChange={(e) => setCalcForm(f => ({ ...f, totalSurplus: Number(e.target.value) }))} />
+                    <Input type="date" label="Período *" required value={calcForm.period} onChange={(e) => setCalcForm(f => ({ ...f, period: e.target.value }))} />
+                    <Input type="number" label="Total excedentes *" required min={0.01} step="any" value={calcForm.totalSurplus} onChange={(e) => setCalcForm(f => ({ ...f, totalSurplus: Number(e.target.value) }))} />
                     <Input label="Observaciones" value={calcForm.notes || ''} onChange={(e) => setCalcForm(f => ({ ...f, notes: e.target.value }))} />
                 </div>
             </Modal>
@@ -174,12 +193,13 @@ export const ExcedentesPage: React.FC = () => {
             <Modal
                 isOpen={!!approving}
                 onClose={() => setApproving(null)}
+                onSubmit={handleApprove}
                 title="Aprobar en Asamblea General"
                 icon={<CheckCircle2 className="text-emerald-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleApprove}>Aprobar</Button>
+                        <Button type="submit" isLoading={saving}>Aprobar</Button>
                         <Button variant="outline" onClick={() => setApproving(null)}>Cancelar</Button>
                     </>
                 }
@@ -188,8 +208,8 @@ export const ExcedentesPage: React.FC = () => {
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         Remanente a distribuir: <span className="font-bold text-slate-900 dark:text-white">{approving ? currency(approving.remainder) : ''}</span>
                     </p>
-                    <Input type="number" label="Revalorización de aportes" value={revaluation ?? ''} onChange={(e) => setRevaluation(e.target.value ? Number(e.target.value) : null)} />
-                    <Input type="number" label="Retorno cooperativo" value={cooperativeReturn ?? ''} onChange={(e) => setCooperativeReturn(e.target.value ? Number(e.target.value) : null)} />
+                    <Input type="number" step="any" label="Revalorización de aportes" value={revaluation ?? ''} onChange={(e) => setRevaluation(e.target.value ? Number(e.target.value) : null)} />
+                    <Input type="number" step="any" label="Retorno cooperativo" value={cooperativeReturn ?? ''} onChange={(e) => setCooperativeReturn(e.target.value ? Number(e.target.value) : null)} />
                 </div>
             </Modal>
         </PageContainer>

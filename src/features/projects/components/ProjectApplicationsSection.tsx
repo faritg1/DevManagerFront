@@ -1,11 +1,7 @@
+import { formatDate } from '../../../shared/format';
 import React, { useState } from "react";
-import {
-  Users,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal } from "../../../shared/ui";
+import { Users, CheckCircle2, XCircle } from "lucide-react";
+import { Card, CardHeader, CardTitle, Badge, Button, Avatar, Modal, Textarea } from "../../../shared/ui";
 import { applicationsService } from "../../../shared/api";
 import { ApplicationStatus, type ApplicationResponse } from "../../../shared/api/types";
 import { useModal } from "../../../shared/hooks";
@@ -16,19 +12,7 @@ interface ProjectApplicationsSectionProps {
   onApplicationsChange: (apps: ApplicationResponse[]) => void;
 }
 
-const formatApplicationDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Fecha inválida';
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  } catch {
-    return 'Fecha inválida';
-  }
-};
+const formatApplicationDate = (d: string): string => formatDate(d, undefined, 'Fecha inválida');
 
 export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProps> = ({
   applications,
@@ -68,7 +52,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
   };
 
   const handleSubmitReview = async () => {
-    if (!selectedApplication) return;
+    if (!selectedApplication || isReviewing || (reviewAction === "reject" && !reviewNotes.trim())) return;
     setIsReviewing(true);
     try {
       const status =
@@ -189,6 +173,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
       <Modal
         isOpen={reviewModal.isOpen}
         onClose={reviewModal.close}
+        onSubmit={handleSubmitReview}
         title={reviewAction === "approve" ? "Aprobar Postulación" : "Rechazar Postulación"}
         icon={
           reviewAction === "approve" ? (
@@ -201,16 +186,12 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
         footer={
           <>
             <Button
-              onClick={handleSubmitReview}
-              disabled={isReviewing || (reviewAction === "reject" && !reviewNotes.trim())}
-              icon={isReviewing ? Loader2 : reviewAction === "approve" ? CheckCircle2 : XCircle}
-              className={reviewAction === "reject" ? "bg-rose-600 hover:bg-rose-700" : ""}
+              type="submit"
+              variant={reviewAction === "approve" ? "primary" : "danger"}
+              isLoading={isReviewing}
+              icon={reviewAction === "approve" ? CheckCircle2 : XCircle}
             >
-              {isReviewing
-                ? "Procesando..."
-                : reviewAction === "approve"
-                ? "Aprobar"
-                : "Rechazar"}
+              {reviewAction === "approve" ? "Aprobar" : "Rechazar"}
             </Button>
             <Button variant="outline" onClick={reviewModal.close}>
               Cancelar
@@ -228,11 +209,7 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Postulado el{" "}
-                  {new Date(selectedApplication.appliedAt).toLocaleDateString("es-ES", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {formatDate(selectedApplication.appliedAt, { day: "2-digit", month: "long", year: "numeric" })}
                 </p>
               </div>
             </div>
@@ -268,28 +245,20 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
               </p>
             </div>
 
-            <div>
-              <label htmlFor="project-applications-section-notas-de-revision" className="text-slate-700 dark:text-white text-sm font-bold block mb-2">
-                Notas de revisión{" "}
-                {reviewAction === "reject" && <span className="text-rose-500">*</span>}
-              </label>
-              <textarea id="project-applications-section-notas-de-revision"
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-                placeholder={
-                  reviewAction === "approve"
-                    ? "Opcional: Agrega comentarios sobre la aprobación..."
-                    : "Obligatorio: Indica el motivo del rechazo..."
-                }
-                rows={3}
-                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-white dark:bg-background-dark px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none"
-              />
-              {reviewAction === "reject" && !reviewNotes.trim() && (
-                <p className="text-xs text-rose-500 mt-1">
-                  Las notas son obligatorias para rechazar una postulación
-                </p>
-              )}
-            </div>
+            <Textarea
+              label={reviewAction === "reject" ? "Notas de revisión *" : "Notas de revisión"}
+              required={reviewAction === "reject"}
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              placeholder={
+                reviewAction === "approve"
+                  ? "Opcional: Agrega comentarios sobre la aprobación..."
+                  : "Indica el motivo del rechazo..."
+              }
+              hint={reviewAction === "reject" ? "Las notas son obligatorias para rechazar una postulación" : undefined}
+              rows={3}
+              className="resize-none"
+            />
           </div>
         )}
       </Modal>

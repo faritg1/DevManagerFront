@@ -29,7 +29,7 @@ import type {
 import { useConfig } from "../../../shared/context";
 import { Card, Badge, Avatar, PageContainer, PageHeader, BackButton, LoadingBlock } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
-import { formatDate, skillLevelLabel } from "../../../shared/format";
+import { formatDate, formatNumber, skillLevelLabel } from "../../../shared/format";
 
 const getLevelColor = (level: number) => {
   if (level >= 5) return "bg-amber-500";
@@ -294,9 +294,9 @@ export const UserDetailPage: React.FC = () => {
                 <span className="text-sm text-slate-500 dark:text-slate-400">Nivel promedio</span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {skills.length > 0
-                    ? (
+                    ? formatNumber(
                         skills.reduce((a, s) => a + s.level, 0) / skills.length
-                      ).toFixed(1)
+                      )
                     : "—"}
                 </span>
               </div>

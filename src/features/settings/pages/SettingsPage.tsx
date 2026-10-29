@@ -12,9 +12,8 @@ import {
   Check,
   Globe,
   HardDrive,
-  Loader2,
 } from "lucide-react";
-import { Card, Badge, Button, Avatar, PageContainer, PageHeader } from "../../../shared/ui";
+import { Card, Badge, Button, Avatar, PageContainer, PageHeader, LoadingBlock } from "../../../shared/ui";
 import { useAuth, useNotification } from "../../../shared/context";
 import { STORAGE_KEYS, ROUTES } from "../../../shared/config/constants";
 import { useNavigate } from "react-router-dom";
@@ -68,14 +67,14 @@ export const SettingsPage: React.FC = () => {
         </h2>
 
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Avatar name={user.name} size="lg" />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 {user.name}
               </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
-              <div className="flex items-center gap-2 mt-2">
+              <p className="break-all text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 {user.role ? (
                   <Badge variant="purple" icon={Shield}>
                     {user.role}
@@ -99,9 +98,7 @@ export const SettingsPage: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-          </div>
+          <LoadingBlock className="py-4" />
         )}
       </Card>
 
@@ -115,14 +112,16 @@ export const SettingsPage: React.FC = () => {
           Selecciona el tema de la interfaz
         </p>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {themeOptions.map(({ mode, label, icon: Icon }) => {
             const isActive = theme === mode;
             return (
               <button
                 key={mode}
+                type="button"
+                aria-pressed={isActive}
                 onClick={() => handleThemeChange(mode)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                className={`flex sm:flex-col items-center gap-3 sm:gap-2 p-3 sm:p-4 rounded-xl border-2 transition-all ${
                   isActive
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
                     : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
@@ -147,7 +146,7 @@ export const SettingsPage: React.FC = () => {
                   {label}
                 </span>
                 {isActive && (
-                  <Check size={16} className="text-primary" />
+                  <Check size={16} className="text-primary ml-auto sm:ml-0" aria-hidden="true" />
                 )}
               </button>
             );

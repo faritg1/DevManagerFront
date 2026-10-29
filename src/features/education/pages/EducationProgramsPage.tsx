@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, SELECT_CLASS, EmptyState } from '../../../shared/ui';
-import { useModal, useConfirm } from '../../../shared/hooks';
+import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState } from '../../../shared/ui';
+import { useModal, useConfirm, usePagedFilter } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
 import type { EducationProgramDto, ProgramType } from '../../../shared/api/types';
 import { educationProgramPath } from '../../../shared/config/constants';
 import { errorText, formatDate, needsLocalToast } from '../../associates/labels';
 import { PROGRAM_TYPE_LABELS } from '../labels';
-
-const selectCls = SELECT_CLASS;
 
 export const EducationProgramsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -26,6 +24,7 @@ export const EducationProgramsPage: React.FC = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const pager = usePagedFilter(items, { searchFields: p => [p.name, PROGRAM_TYPE_LABELS[p.type]] });
 
     const toast = useCallback((e: unknown) => {
         if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
@@ -55,6 +54,7 @@ export const EducationProgramsPage: React.FC = () => {
     };
 
     const save = async () => {
+        if (isSaving || !valid) return;
         setIsSaving(true);
         const body = { name: name.trim(), type, requiredHours: Number(hours), startDate: startDate || undefined, endDate: endDate || undefined };
         try {
@@ -100,11 +100,18 @@ export const EducationProgramsPage: React.FC = () => {
             />
 
             <Card padding="none" className="overflow-hidden">
+                {items.length > 0 && (
+                    <div className={`${TD} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                        <SearchInput pager={pager} label="Buscar por nombre o tipo" />
+                    </div>
+                )}
                 {isLoading ? (
                     <LoadingBlock />
                 ) : items.length === 0 ? (
                     <EmptyState title="Aún no hay programas" description="Crea un programa de educación cooperativa para empezar a inscribir asociados." />
-                ) : (
+                ) : pager.total === 0 ? (
+                    <EmptyState title="Ningún programa coincide con la búsqueda" />
+                ) : (<>
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>
                             <thead className={THEAD_CLASS}>
@@ -118,7 +125,7 @@ export const EducationProgramsPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
-                                {items.map((p) => (
+                                {pager.pageItems.map((p) => (
                                     <tr
                                         key={p.id}
                                         onClick={() => navigate(educationProgramPath(p.id))}
@@ -138,29 +145,28 @@ export const EducationProgramsPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                )}
+                    <Pager pager={pager} />
+                </>)}
             </Card>
 
             <Modal
                 isOpen={modal.isOpen}
                 onClose={modal.close}
+                onSubmit={save}
                 title={editing ? 'Editar programa' : 'Nuevo programa'}
                 footer={
                     <>
-                        <Button isLoading={isSaving} disabled={!valid} onClick={save}>Guardar</Button>
+                        <Button type="submit" isLoading={isSaving}>Guardar</Button>
                         <Button variant="outline" onClick={modal.close}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="space-y-4">
-                    <Input label="Nombre *" value={name} onChange={(e) => setName(e.target.value)} />
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="education-programs-tipo" className="text-slate-700 dark:text-white text-sm font-bold">Tipo *</label>
-                        <select id="education-programs-tipo" value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)} className={selectCls}>
-                            {Object.entries(PROGRAM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input label="Horas requeridas *" type="number" min={1} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
+                    <Input label="Nombre *" required value={name} onChange={(e) => setName(e.target.value)} />
+                    <Select label="Tipo *" required value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)}>
+                        {Object.entries(PROGRAM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input label="Horas requeridas *" required type="number" min={0.5} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
                     <Input label="Fecha de inicio" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     <Input label="Fecha de fin" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </div>

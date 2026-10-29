@@ -34,6 +34,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
     description: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,6 +47,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         setFormData({ name: "", description: "" });
       }
       setError(null);
+      setNameError(null);
     }
   }, [isOpen, roleToEdit]);
 
@@ -54,12 +56,13 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!formData.name.trim()) {
-      setError("El nombre es obligatorio");
+      setNameError("El nombre es obligatorio");
       return;
     }
+    setNameError(null);
 
     setIsSubmitting(true);
     setError(null);
@@ -105,6 +108,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      onSubmit={handleSubmit}
       title={roleToEdit ? "Editar Rol" : "Nuevo Rol"}
       size="md"
       footer={
@@ -112,20 +116,21 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
           <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Guardando..." : "Guardar"}
+          <Button type="submit" isLoading={isSubmitting}>
+            Guardar
           </Button>
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <Input
-          label="Nombre del Rol"
+          label="Nombre del Rol *"
+          required
           name="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Ej: Editor de Contenido"
-          error={error && !formData.name ? "Requerido" : undefined}
+          error={nameError ?? undefined}
           autoFocus
         />
 
@@ -142,7 +147,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
             {error}
           </div>
         )}
-      </form>
+      </div>
     </Modal>
   );
 };

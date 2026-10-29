@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, UserPlus } from 'lucide-react';
-import { BackButton, Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { BackButton, Button, Card, Badge, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, LoadingBlock, EmptyState, Pager, SearchInput } from '../../../shared/ui';
+import { usePagedFilter } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, educationService } from '../../../shared/api';
 import type { AssociateDto, EducationProgramDto, EnrollmentDto } from '../../../shared/api/types';
@@ -20,6 +21,7 @@ export const ProgramDetailPage: React.FC = () => {
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<EnrollmentDto | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const pager = usePagedFilter(enrollments, { searchFields: en => [en.fullName, ENROLLMENT_STATUS_LABELS[en.status]] });
 
     const toast = useCallback((e: unknown) => {
         if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
@@ -102,7 +104,13 @@ export const ProgramDetailPage: React.FC = () => {
             <Card padding="none" className="overflow-hidden">
                 {enrollments.length === 0 ? (
                     <EmptyState title="Aún no hay inscripciones" />
-                ) : (
+                ) : (<>
+                    <div className={`${TD} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                        <SearchInput pager={pager} label="Buscar asociado o estado" />
+                    </div>
+                    {pager.total === 0 ? (
+                        <EmptyState title="Ninguna inscripción coincide con la búsqueda" />
+                    ) : (
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>
                             <thead className={THEAD_CLASS}>
@@ -115,7 +123,7 @@ export const ProgramDetailPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
-                                {enrollments.map((en) => (
+                                {pager.pageItems.map((en) => (
                                     <tr key={en.id} className={TR_CLASS}>
                                         <td className={`${TD} font-semibold`}>{en.fullName}</td>
                                         <td className={TD}><Badge variant={ENROLLMENT_STATUS_VARIANTS[en.status]}>{ENROLLMENT_STATUS_LABELS[en.status]}</Badge></td>
@@ -129,7 +137,9 @@ export const ProgramDetailPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                )}
+                    )}
+                    <Pager pager={pager} />
+                </>)}
             </Card>
 
             {formOpen && (

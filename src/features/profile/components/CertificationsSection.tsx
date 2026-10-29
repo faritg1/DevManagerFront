@@ -1,3 +1,4 @@
+import { formatDate as formatSharedDate } from '../../../shared/format';
 import React, { useState } from "react";
 import {
   Card,
@@ -5,11 +6,11 @@ import {
   CardTitle,
   Button,
   Badge,
+  LoadingBlock,
   IconButton,
 } from "../../../shared/ui";
 import {
   Award,
-  Loader2,
   Plus,
   Pencil,
   Trash2,
@@ -50,14 +51,7 @@ export const CertificationsSection: React.FC<Props> = ({
   );
   const { confirm } = useConfirm();
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const formatDate = (dateStr: string | null) => formatSharedDate(dateStr, undefined, "");
 
   const isExpired = (dateStr: string | null) => {
     if (!dateStr) return false;
@@ -94,13 +88,11 @@ export const CertificationsSection: React.FC<Props> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="text-primary" size={20} />
+            <Award className="text-primary shrink-0" size={20} />
             Certificaciones
           </CardTitle>
         </CardHeader>
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="animate-spin text-primary" size={24} />
-        </div>
+        <LoadingBlock className="py-8" />
       </Card>
     );
   }
@@ -109,9 +101,9 @@ export const CertificationsSection: React.FC<Props> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between w-full">
+          <CardTitle className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2">
-              <Award className="text-primary" size={20} />
+              <Award className="text-primary shrink-0" size={20} />
               Certificaciones
               <Badge variant="default">{certifications.length}</Badge>
             </div>
@@ -153,9 +145,7 @@ export const CertificationsSection: React.FC<Props> = ({
                 className="p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark hover:border-primary/30 transition-all relative"
               >
                 {opLoading && (
-                  <div className="absolute inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center rounded-xl z-10">
-                    <Loader2 className="animate-spin text-primary" />
-                  </div>
+                  <LoadingBlock className="absolute inset-0 z-10 rounded-xl bg-white/50 dark:bg-black/50" />
                 )}
 
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">

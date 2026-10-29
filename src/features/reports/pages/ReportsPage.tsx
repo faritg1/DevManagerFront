@@ -1,3 +1,4 @@
+import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import {
@@ -21,7 +22,7 @@ import type {
   EmployeeUtilizationResponse,
   DepartmentMetricsResponse,
 } from "../../../shared/api/types";
-import { Card, Badge, Button, StatCard, PageContainer, PageHeader } from "../../../shared/ui";
+import { Card, Badge, Button, StatCard, PageContainer, PageHeader, LoadingBlock } from "../../../shared/ui";
 import { EducationCoverageCard } from "../components/EducationCoverageCard";
 
 export const ReportsPage: React.FC = () => {
@@ -110,7 +111,7 @@ export const ReportsPage: React.FC = () => {
       onClick={() => toggleSection(section)}
       className="w-full flex items-center justify-between py-2 group"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2 text-left [&>svg]:shrink-0">
         {icon}
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
         {badge && (
@@ -206,8 +207,8 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
           {aiSummaryLoading && (
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <Loader2 size={14} className="animate-spin" />
+            <div role="status" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <Loader2 size={14} className="animate-spin" aria-hidden="true" />
               Cargando...
             </div>
           )}
@@ -219,12 +220,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
         ) : aiSummaryLoading ? (
-          <div className="text-center py-6">
-            <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" />
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Generando insights...
-            </p>
-          </div>
+          <LoadingBlock label="Generando insights..." className="py-6" />
         ) : (
           <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
             <AlertTriangle size={20} className="text-amber-500 mx-auto mb-2" />
@@ -337,7 +333,7 @@ export const ReportsPage: React.FC = () => {
                             : "default"
                         }
                       >
-                        Prom: {+skill.averageLevel.toFixed(1)}
+                        Prom: {formatNumber(skill.averageLevel)}
                       </Badge>
                     </div>
                   </div>

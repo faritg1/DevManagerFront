@@ -4,7 +4,10 @@ import {
     Scale, CheckCircle2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Textarea, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+
+/** Runs a handler on submit without the browser's page reload. */
+const submit = (fn: () => void) => (e: React.FormEvent) => { e.preventDefault(); fn(); };
 import { useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { asistenteService } from '../../../shared/api';
@@ -193,20 +196,20 @@ export const AsistentePage: React.FC = () => {
                             <BookOpen className="text-blue-500" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Consulta Normativa</h2>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            <label htmlFor="asistente-consulta" className="text-slate-700 dark:text-white text-sm font-bold">Consulta *</label>
-                            <textarea id="asistente-consulta"
+                        <form className="grid grid-cols-1 gap-4" onSubmit={submit(handleConsultar)}>
+                            <Textarea
+                                label="Consulta *"
+                                required
                                 value={consulta}
                                 onChange={(e) => setConsulta(e.target.value)}
-                                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
                                 rows={4}
                                 placeholder="Ej: ¿Cómo se distribuyen los excedentes?"
                             />
                             <Input label="Contexto (opcional)" value={contexto} onChange={(e) => setContexto(e.target.value)} placeholder="Ej: cooperativa de transporte de 200 asociados" />
-                            <Button icon={Bot} onClick={handleConsultar} disabled={!consulta.trim()} className="self-start">
+                            <Button type="submit" icon={Bot} className="self-start">
                                 Consultar
                             </Button>
-                        </div>
+                        </form>
                     </Card>
                     <Card>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Respuesta</h2>
@@ -222,8 +225,8 @@ export const AsistentePage: React.FC = () => {
                             <FileBarChart2 className="text-purple-500" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Generar Balance Social</h2>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            <Input type="number" label="Año *" value={reporteAnio} onChange={(e) => setReporteAnio(Number(e.target.value))} />
+                        <form className="grid grid-cols-1 gap-4" onSubmit={submit(handleGenerarReporte)}>
+                            <Input type="number" label="Año *" required min={2000} value={reporteAnio} onChange={(e) => setReporteAnio(Number(e.target.value))} />
                             <div role="radiogroup" aria-labelledby="asistente-incluir-rec">
                                 <p id="asistente-incluir-rec" className="text-slate-700 dark:text-white text-sm font-bold">Incluir recomendaciones</p>
                                 <div className="flex gap-4 mt-3">
@@ -235,10 +238,10 @@ export const AsistentePage: React.FC = () => {
                                     </label>
                                 </div>
                             </div>
-                            <Button icon={FileBarChart2} onClick={handleGenerarReporte} className="self-start">
+                            <Button type="submit" icon={FileBarChart2} className="self-start">
                                 Generar Reporte
                             </Button>
-                        </div>
+                        </form>
                     </Card>
                     <Card>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Reporte</h2>
@@ -358,20 +361,20 @@ export const AsistentePage: React.FC = () => {
                             <MessageSquare className="text-primary" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Responder Duda de Asociado</h2>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            <label htmlFor="asistente-pregunta" className="text-slate-700 dark:text-white text-sm font-bold">Pregunta *</label>
-                            <textarea id="asistente-pregunta"
+                        <form className="grid grid-cols-1 gap-4" onSubmit={submit(handleResponder)}>
+                            <Textarea
+                                label="Pregunta *"
+                                required
                                 value={pregunta}
                                 onChange={(e) => setPregunta(e.target.value)}
-                                className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary"
                                 rows={4}
                                 placeholder="Ej: ¿Cómo me afilio a la cooperativa?"
                             />
                             <Input label="Tipo de asociado (opcional)" value={tipoAsociado} onChange={(e) => setTipoAsociado(e.target.value)} placeholder="Ej: nuevo" />
-                            <Button icon={MessageSquare} onClick={handleResponder} disabled={!pregunta.trim()} className="self-start">
+                            <Button type="submit" icon={MessageSquare} className="self-start">
                                 Responder
                             </Button>
-                        </div>
+                        </form>
                     </Card>
                     <Card>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Respuesta</h2>

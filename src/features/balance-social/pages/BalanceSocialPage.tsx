@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS } from '../../../shared/ui';
+import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2, CheckCircle2 } from 'lucide-react';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, ProgressBar, SELECT_CLASS } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
@@ -108,8 +108,8 @@ export const BalanceSocialPage: React.FC = () => {
                 actions={<>
                 <div className="flex items-center gap-3">
                     <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} placeholder="Año" aria-label="Año" className="w-32" />
-                    <Button variant="outline" onClick={loadData} disabled={isLoading}>
-                        {isLoading ? 'Cargando...' : 'Consultar'}
+                    <Button variant="outline" onClick={loadData} isLoading={isLoading}>
+                        Consultar
                     </Button>
                 </div>
                 </>}
@@ -131,6 +131,7 @@ export const BalanceSocialPage: React.FC = () => {
                 {isAdmin && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                         <select
+                            aria-label="Asociado"
                             value={lookupUserId}
                             onChange={(e) => setLookupUserId(e.target.value)}
                             className={SELECT_CLASS}
@@ -138,8 +139,8 @@ export const BalanceSocialPage: React.FC = () => {
                             <option value="">Seleccionar asociado</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </select>
-                        <Button icon={Search} onClick={() => loadIndicator(lookupUserId)} disabled={!lookupUserId || lookupLoading}>
-                            {lookupLoading ? 'Consultando...' : 'Consultar'}
+                        <Button icon={Search} onClick={() => loadIndicator(lookupUserId)} disabled={!lookupUserId} isLoading={lookupLoading}>
+                            Consultar
                         </Button>
                     </div>
                 )}
@@ -160,14 +161,18 @@ export const BalanceSocialPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {report.dimensions.map(d => (
                             <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between gap-2">
                                     <p className="font-bold text-slate-900 dark:text-white">{d.name}</p>
-                                    <Badge variant={dimensionVariant(d.status)}>{d.status} · {d.coverage}%</Badge>
+                                    <Badge variant={dimensionVariant(d.status)}>{d.status}</Badge>
+                                </div>
+                                <div className="mt-2 flex items-center gap-3" role="img" aria-label={`Cobertura ${d.coverage}%`}>
+                                    <ProgressBar value={d.coverage} variant={dimensionVariant(d.status)} size="sm" className="flex-1" />
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums">{d.coverage}%</span>
                                 </div>
                                 <ul className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                                     {d.indicators.map(ind => (
                                         <li key={ind.name}>
-                                            {ind.name}: <span className="font-bold">{ind.currentValue}{ind.unit ? ` ${ind.unit}` : ''}</span>
+                                            {ind.name}: <span className="font-bold">{ind.unit === 'COP' ? currency(ind.currentValue) : `${ind.currentValue}${ind.unit ? ` ${ind.unit}` : ''}`}</span>
                                             {ind.targetValue > 0 && <> / meta {ind.targetValue}{ind.coverage != null ? ` (${ind.coverage}%)` : ''}</>}
                                         </li>
                                     ))}
@@ -200,7 +205,7 @@ export const BalanceSocialPage: React.FC = () => {
                         {isLoading ? (
                             <LoadingBlock />
                         ) : indicators.length === 0 ? (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Sin indicadores para el año seleccionado.</p>
+                            <EmptyState title="Sin indicadores para el año seleccionado" icon={Users} className="py-6" />
                         ) : (
                             <div className="space-y-3">{indicators.map(renderIndicator)}</div>
                         )}
@@ -214,7 +219,7 @@ export const BalanceSocialPage: React.FC = () => {
                         {isLoading ? (
                             <LoadingBlock />
                         ) : nonCompliant.length === 0 ? (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Todos cumplen con las horas mínimas de educación.</p>
+                            <EmptyState title="Todos cumplen con las horas mínimas de educación" icon={CheckCircle2} className="py-6" />
                         ) : (
                             <div className="space-y-3">{nonCompliant.map(renderIndicator)}</div>
                         )}

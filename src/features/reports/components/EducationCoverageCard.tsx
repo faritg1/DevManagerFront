@@ -1,8 +1,9 @@
+import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState } from "react";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { reportsService } from "../../../shared/api";
 import type { EducationCoverageResponse } from "../../../shared/api/types";
-import { Card, Badge, SELECT_SM_CLASS } from "../../../shared/ui";
+import { Card, Badge, LoadingBlock, SELECT_SM_CLASS } from "../../../shared/ui";
 import { HOURS_TYPE_LABELS } from "../../education/labels";
 
 const thisYear = new Date().getFullYear();
@@ -32,6 +33,7 @@ export const EducationCoverageCard: React.FC = () => {
           Cobertura de educación cooperativa
         </h2>
         <select
+          aria-label="Año"
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           className={SELECT_SM_CLASS}
@@ -40,7 +42,7 @@ export const EducationCoverageCard: React.FC = () => {
         </select>
       </div>
       {loading ? (
-        <div className="flex justify-center py-6"><Loader2 className="animate-spin text-primary" /></div>
+        <LoadingBlock className="py-6" />
       ) : !data ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">No se pudo cargar la cobertura.</p>
       ) : (
@@ -48,7 +50,7 @@ export const EducationCoverageCard: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-900 dark:text-white">
             <div><p className="text-xs text-slate-500 dark:text-slate-400">Cobertura</p><p className="text-2xl font-bold">{Math.round(data.coverageRatio * 100)}%</p></div>
             <div><p className="text-xs text-slate-500 dark:text-slate-400">Asociados cubiertos</p><p className="text-2xl font-bold">{data.coveredAssociates} / {data.eligibleAssociates}</p></div>
-            <div><p className="text-xs text-slate-500 dark:text-slate-400">Promedio de horas</p><p className="text-2xl font-bold">{data.avgHours.toFixed(1)} h</p></div>
+            <div><p className="text-xs text-slate-500 dark:text-slate-400">Promedio de horas</p><p className="text-2xl font-bold">{formatNumber(data.avgHours)} h</p></div>
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">Educación básica</p>
               <Badge variant={data.basicCompliant ? "success" : "warning"}>{data.basicCompliant ? "Cumple" : "No cumple"}</Badge>

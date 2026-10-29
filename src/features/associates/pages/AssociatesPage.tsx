@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
-import { useModal } from '../../../shared/hooks';
+import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState } from '../../../shared/ui';
+import { useModal, usePagedFilter } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
 import type { AssociateDto, AssociateStatus, UserResponse } from '../../../shared/api/types';
@@ -20,6 +20,7 @@ export const AssociatesPage: React.FC = () => {
     const [userId, setUserId] = useState('');
     const [applicationDate, setApplicationDate] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const pager = usePagedFilter(items, { searchFields: a => [a.fullName, a.documentNumber] });
 
     const load = useCallback(async () => {
         setIsLoading(true);
@@ -48,6 +49,7 @@ export const AssociatesPage: React.FC = () => {
     };
 
     const create = async () => {
+        if (isSaving) return;
         setIsSaving(true);
         try {
             const res = await associatesService.create({ userId, applicationDate: applicationDate || undefined });
@@ -70,25 +72,27 @@ export const AssociatesPage: React.FC = () => {
             <PageHeader
                 title="Asociados"
                 description="Ciclo de vida de membresía y consentimiento de datos."
-                actions={<>
+                actions={<Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>}
+            />
+
+            <Card padding="none" className="overflow-hidden">
+                <div className={`${TD} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center gap-3`}>
+                    <SearchInput pager={pager} label="Buscar por nombre o documento" />
                     <select
+                        aria-label="Filtrar por estado"
                         value={status}
-                        onChange={(e) => setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : '')}
-                        className={SELECT_SM_CLASS}
+                        onChange={(e) => { setStatus(e.target.value ? (Number(e.target.value) as AssociateStatus) : ''); pager.setPage(1); }}
+                        className={`${SELECT_SM_CLASS} sm:ml-auto`}
                     >
                         <option value="">Todos los estados</option>
                         {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
-                    <Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>
-                </>}
-            />
-
-            <Card padding="none" className="overflow-hidden">
+                </div>
                 {isLoading ? (
                     <LoadingBlock />
-                ) : items.length === 0 ? (
-                    <EmptyState title="No hay asociados con este filtro" description="Prueba con otro estado o registra un asociado nuevo." />
-                ) : (
+                ) : pager.total === 0 ? (
+                    <EmptyState title="No hay asociados con este filtro" description="Prueba con otra búsqueda u otro estado, o registra un asociado nuevo." />
+                ) : (<>
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>
                             <thead className={THEAD_CLASS}>
@@ -101,7 +105,7 @@ export const AssociatesPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className={`${TBODY_CLASS} text-slate-900 dark:text-white`}>
-                                {items.map((a) => (
+                                {pager.pageItems.map((a) => (
                                     <tr
                                         key={a.userId}
                                         onClick={() => navigate(associateDetailPath(a.userId))}
@@ -119,35 +123,35 @@ export const AssociatesPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                )}
+                    <Pager pager={pager} />
+                </>)}
             </Card>
 
             <Modal
                 isOpen={createModal.isOpen}
                 onClose={createModal.close}
+                onSubmit={create}
                 title="Nuevo asociado"
                 icon={<UserPlus className="text-primary" size={20} />}
                 footer={
                     <>
-                        <Button isLoading={isSaving} disabled={!userId} onClick={create}>Crear</Button>
+                        <Button type="submit" isLoading={isSaving}>Crear</Button>
                         <Button variant="outline" onClick={createModal.close}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="associates-usuario-existente" className="text-slate-700 dark:text-white text-sm font-bold">Usuario existente *</label>
-                        <select id="associates-usuario-existente"
-                            value={userId}
-                            onChange={(e) => setUserId(e.target.value)}
-                            className={SELECT_CLASS}
-                        >
-                            <option value="">— Selecciona un usuario —</option>
-                            {users.filter((u) => !associateIds.has(u.id)).map((u) => (
-                                <option key={u.id} value={u.id}>{u.fullName} ({u.email})</option>
-                            ))}
-                        </select>
-                    </div>
+                    <Select
+                        label="Usuario existente *"
+                        required
+                        value={userId}
+                        onChange={(e) => setUserId(e.target.value)}
+                    >
+                        <option value="">— Selecciona un usuario —</option>
+                        {users.filter((u) => !associateIds.has(u.id)).map((u) => (
+                            <option key={u.id} value={u.id}>{u.fullName} ({u.email})</option>
+                        ))}
+                    </Select>
                     <Input
                         label="Fecha de solicitud (opcional, por defecto hoy)"
                         type="date"

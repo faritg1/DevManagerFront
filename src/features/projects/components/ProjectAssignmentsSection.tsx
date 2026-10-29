@@ -1,3 +1,4 @@
+import { formatDate } from '../../../shared/format';
 import React from "react";
 import { Users, Edit, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, Badge, Button, Avatar } from "../../../shared/ui";
@@ -85,11 +86,7 @@ export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {assignment.roleName && <span className="mr-2">{assignment.roleName} •</span>}
                       Desde{" "}
-                      {new Date(assignment.assignedAt).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatDate(assignment.assignedAt)}
                     </p>
                   </div>
                 </div>

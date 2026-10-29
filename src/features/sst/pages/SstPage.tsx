@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
 import type {
     AccidentSeverity,
@@ -29,9 +29,6 @@ const EXAM_TYPE_LABEL: Record<number, string> = { 1: 'Ingreso', 2: 'Periódico',
 const EXAM_RESULT_LABEL: Record<number, string> = { 1: 'Apto', 2: 'Apto con restricciones', 3: 'No apto' };
 const SEVERITY_LABEL: Record<number, string> = { 1: 'Leve', 2: 'Grave', 3: 'Mortal' };
 const RISK_LEVEL_LABEL: Record<number, string> = { 1: 'Bajo', 2: 'Medio', 3: 'Alto', 4: 'Muy alto', 5: 'Crítico' };
-
-const textareaClass = 'w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-4 py-3 outline-none focus:ring-1 focus:ring-primary mt-2';
-const selectClass = `${SELECT_CLASS} w-full mt-2`;
 
 const emptyRisk = (): CreateRiskRequest => ({ level: 1, factor: '', description: '' });
 const emptyInvestigation = (): InvestigateAccidentRequest => ({ investigationDate: today(), conclusions: '', causes: '', correctiveMeasures: '' });
@@ -71,8 +68,16 @@ export const SstPage: React.FC = () => {
 
     const [investigating, setInvestigating] = useState<WorkAccidentDto | null>(null);
     const [invForm, setInvForm] = useState<InvestigateAccidentRequest>(emptyInvestigation);
+    const [saving, setSaving] = useState(false);
 
-    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : userId);
+    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
+    const submitting = (fn: () => Promise<void>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try { await fn(); } finally { setSaving(false); }
+    };
+
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
 
     const loadAll = async () => {
         if (!user?.id) return;
@@ -108,7 +113,7 @@ export const SstPage: React.FC = () => {
         }
     }, [isAdmin]);
 
-    const handleRecordExam = async () => {
+    const handleRecordExam = submitting(async () => {
         if (!recording) return;
         try {
             const res = await sstService.recordExam(recording.id, examResult, examNotes.trim() || undefined, examFileUrl.trim() || undefined);
@@ -124,9 +129,10 @@ export const SstPage: React.FC = () => {
                 loadAll();
             }
         }
-    };
+    });
 
-    const handleSchedule = async () => {
+
+    const handleSchedule = submitting(async () => {
         try {
             const res = await sstService.scheduleExam(scheduleForm.userId, scheduleForm.examType, scheduleForm.scheduledDate);
             if (res.success && res.data) {
@@ -137,9 +143,11 @@ export const SstPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleReportAccident = async () => {
+
+    const handleReportAccident = submitting(async () => {
+        if (!accidentValid) return;
         try {
             const res = await sstService.reportAccident({
                 userId: accidentForm.userId,
@@ -158,9 +166,11 @@ export const SstPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleCreateRisk = async () => {
+
+    const handleCreateRisk = submitting(async () => {
+        if (!riskForm.factor.trim() || !riskForm.description.trim()) return;
         try {
             const res = await sstService.createRisk({
                 level: riskForm.level,
@@ -177,10 +187,11 @@ export const SstPage: React.FC = () => {
         } catch {
             // el listener global muestra el error
         }
-    };
+    });
 
-    const handleInvestigate = async () => {
-        if (!investigating) return;
+
+    const handleInvestigate = submitting(async () => {
+        if (!investigating || !invValid) return;
         try {
             const res = await sstService.investigateAccident(investigating.id, invForm);
             if (res.success && res.data) {
@@ -195,7 +206,8 @@ export const SstPage: React.FC = () => {
                 loadAll();
             }
         }
-    };
+    });
+
 
     const pendingInvestigation = accidents.filter(a => !a.investigationCompleted);
     const invValid = invForm.conclusions.trim() && invForm.causes.trim() && invForm.correctiveMeasures.trim();
@@ -203,12 +215,14 @@ export const SstPage: React.FC = () => {
     const accidentValid = accidentForm.userId && accidentForm.occurredAt && !accidentInFuture
         && accidentForm.accidentType.trim() && accidentForm.arl.trim() && accidentForm.description.trim();
 
-    const associatePicker = (id: string, value: string, onChange: (v: string) => void) => (
-        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={selectClass}>
+    const associatePicker = (value: string, onChange: (v: string) => void) => (
+        <Select label="Asociado *" required value={value} onChange={(e) => onChange(e.target.value)}>
             <option value="">Seleccione un asociado</option>
             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-        </select>
+        </Select>
     );
+
+    const accidentPager = usePagedFilter(accidents, { searchFields: a => [nameOf(a.userId), a.accidentType, a.arl, a.furatNumber] });
 
     return (
         <PageContainer>
@@ -245,7 +259,7 @@ export const SstPage: React.FC = () => {
                         </h2>
                     </div>
                     {isAdmin && (
-                        <select value={examScope} onChange={(e) => setExamScope(e.target.value)} className={`${selectClass} mb-4`}>
+                        <select aria-label="Exámenes a mostrar" value={examScope} onChange={(e) => setExamScope(e.target.value)} className={`${SELECT_CLASS} w-full mb-4`}>
                             <option value="">Pendientes de toda la organización</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </select>
@@ -315,15 +329,16 @@ export const SstPage: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-2 mb-4">
                         <FileText className="text-rose-500" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accidentes de Trabajo (FURAT)</h2>
-                        <label className="ml-auto flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <SearchInput pager={accidentPager} label="Buscar accidente" className="sm:ml-auto sm:max-w-xs" />
+                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                             <input type="checkbox" checked={onlyPendingAccidents} onChange={(e) => setOnlyPendingAccidents(e.target.checked)} />
                             Solo pendientes de investigación
                         </label>
                     </div>
                     {isLoading ? (
                         <LoadingBlock />
-                    ) : accidents.length === 0 ? (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Sin accidentes registrados.</p>
+                    ) : accidentPager.total === 0 ? (
+                        <EmptyState title={accidentPager.query ? 'Ningún accidente coincide con la búsqueda' : 'Sin accidentes registrados'} />
                     ) : (
                         <div className="overflow-x-auto">
                             <table className={TABLE_CLASS}>
@@ -340,7 +355,7 @@ export const SstPage: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className={TBODY_CLASS}>
-                                    {accidents.map(a => (
+                                    {accidentPager.pageItems.map(a => (
                                         <tr key={a.id} className={TR_CLASS}>
                                             <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(a.occurredAt)}</td>
                                             <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{nameOf(a.userId)}</td>
@@ -366,6 +381,7 @@ export const SstPage: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
+                            <Pager pager={accidentPager} />
                         </div>
                     )}
                 </Card>
@@ -374,51 +390,44 @@ export const SstPage: React.FC = () => {
             <Modal
                 isOpen={scheduleOpen}
                 onClose={() => setScheduleOpen(false)}
+                onSubmit={handleSchedule}
                 title="Programar Examen Médico"
                 icon={<CalendarPlus className="text-blue-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleSchedule} disabled={!scheduleForm.userId || !scheduleForm.scheduledDate}>Programar</Button>
+                        <Button type="submit" isLoading={saving}>Programar</Button>
                         <Button variant="outline" onClick={() => setScheduleOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label htmlFor="sst-examen-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        {associatePicker('sst-examen-asociado', scheduleForm.userId, v => setScheduleForm(f => ({ ...f, userId: v })))}
-                    </div>
-                    <div>
-                        <label htmlFor="sst-tipo-de-examen" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de examen *</label>
-                        <select id="sst-tipo-de-examen" value={scheduleForm.examType} onChange={(e) => setScheduleForm(f => ({ ...f, examType: Number(e.target.value) as ExamType }))} className={selectClass}>
-                            {Object.entries(EXAM_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input type="date" label="Fecha programada *" value={scheduleForm.scheduledDate} onChange={(e) => setScheduleForm(f => ({ ...f, scheduledDate: e.target.value }))} />
+                    {associatePicker(scheduleForm.userId, v => setScheduleForm(f => ({ ...f, userId: v })))}
+                    <Select label="Tipo de examen *" required value={scheduleForm.examType} onChange={(e) => setScheduleForm(f => ({ ...f, examType: Number(e.target.value) as ExamType }))}>
+                        {Object.entries(EXAM_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input type="date" label="Fecha programada *" required value={scheduleForm.scheduledDate} onChange={(e) => setScheduleForm(f => ({ ...f, scheduledDate: e.target.value }))} />
                 </div>
             </Modal>
 
             <Modal
                 isOpen={!!recording}
                 onClose={() => setRecording(null)}
+                onSubmit={handleRecordExam}
                 title="Registrar Resultado de Examen"
                 icon={<Stethoscope className="text-blue-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleRecordExam}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setRecording(null)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label htmlFor="sst-resultado" className="text-slate-700 dark:text-white text-sm font-bold">Resultado *</label>
-                        <select id="sst-resultado" value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)} className={selectClass}>
-                            {Object.entries(EXAM_RESULT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
+                    <Select label="Resultado *" required value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)}>
+                        {Object.entries(EXAM_RESULT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
                     <Input label="URL del soporte" value={examFileUrl} onChange={(e) => setExamFileUrl(e.target.value)} />
                     <Input label="Observaciones" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
                 </div>
@@ -427,41 +436,38 @@ export const SstPage: React.FC = () => {
             <Modal
                 isOpen={accidentOpen}
                 onClose={() => setAccidentOpen(false)}
+                onSubmit={handleReportAccident}
                 title="Reportar Accidente de Trabajo"
                 icon={<Siren className="text-rose-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleReportAccident} disabled={!accidentValid}>Reportar</Button>
+                        <Button type="submit" isLoading={saving}>Reportar</Button>
                         <Button variant="outline" onClick={() => setAccidentOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                        <label htmlFor="sst-accidente-asociado" className="text-slate-700 dark:text-white text-sm font-bold">Asociado *</label>
-                        {associatePicker('sst-accidente-asociado', accidentForm.userId, v => setAccidentForm(f => ({ ...f, userId: v })))}
+                        {associatePicker(accidentForm.userId, v => setAccidentForm(f => ({ ...f, userId: v })))}
                     </div>
                     <Input
                         type="datetime-local"
                         label="Fecha y hora *"
+                        required
                         max={nowLocal()}
                         value={accidentForm.occurredAt}
                         onChange={(e) => setAccidentForm(f => ({ ...f, occurredAt: e.target.value }))}
                         error={accidentInFuture ? 'No puede ser una fecha futura' : undefined}
                     />
-                    <div>
-                        <label htmlFor="sst-gravedad" className="text-slate-700 dark:text-white text-sm font-bold">Gravedad *</label>
-                        <select id="sst-gravedad" value={accidentForm.severity} onChange={(e) => setAccidentForm(f => ({ ...f, severity: Number(e.target.value) as AccidentSeverity }))} className={selectClass}>
-                            {Object.entries(SEVERITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input label="Tipo de accidente *" value={accidentForm.accidentType} onChange={(e) => setAccidentForm(f => ({ ...f, accidentType: e.target.value }))} />
-                    <Input label="ARL *" value={accidentForm.arl} onChange={(e) => setAccidentForm(f => ({ ...f, arl: e.target.value }))} />
+                    <Select label="Gravedad *" required value={accidentForm.severity} onChange={(e) => setAccidentForm(f => ({ ...f, severity: Number(e.target.value) as AccidentSeverity }))}>
+                        {Object.entries(SEVERITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input label="Tipo de accidente *" required value={accidentForm.accidentType} onChange={(e) => setAccidentForm(f => ({ ...f, accidentType: e.target.value }))} />
+                    <Input label="ARL *" required value={accidentForm.arl} onChange={(e) => setAccidentForm(f => ({ ...f, arl: e.target.value }))} />
                     <Input label="Número FURAT" value={accidentForm.furatNumber || ''} onChange={(e) => setAccidentForm(f => ({ ...f, furatNumber: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <label htmlFor="sst-descripcion" className="text-slate-700 dark:text-white text-sm font-bold">Descripción *</label>
-                        <textarea id="sst-descripcion" value={accidentForm.description} onChange={(e) => setAccidentForm(f => ({ ...f, description: e.target.value }))} className={textareaClass} rows={3} />
+                        <Textarea label="Descripción *" required value={accidentForm.description} onChange={(e) => setAccidentForm(f => ({ ...f, description: e.target.value }))} rows={3} />
                     </div>
                 </div>
             </Modal>
@@ -469,31 +475,27 @@ export const SstPage: React.FC = () => {
             <Modal
                 isOpen={riskOpen}
                 onClose={() => setRiskOpen(false)}
+                onSubmit={handleCreateRisk}
                 title="Agregar Riesgo"
                 icon={<ShieldAlert className="text-orange-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreateRisk} disabled={!riskForm.factor.trim() || !riskForm.description.trim()}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setRiskOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="sst-nivel-de-riesgo" className="text-slate-700 dark:text-white text-sm font-bold">Nivel de riesgo *</label>
-                        <select id="sst-nivel-de-riesgo" value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))} className={selectClass}>
-                            {Object.entries(RISK_LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </select>
-                    </div>
-                    <Input label="Factor *" value={riskForm.factor} onChange={(e) => setRiskForm(f => ({ ...f, factor: e.target.value }))} />
+                    <Select label="Nivel de riesgo *" required value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))}>
+                        {Object.entries(RISK_LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </Select>
+                    <Input label="Factor *" required value={riskForm.factor} onChange={(e) => setRiskForm(f => ({ ...f, factor: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <label htmlFor="sst-descripcion-2" className="text-slate-700 dark:text-white text-sm font-bold">Descripción *</label>
-                        <textarea id="sst-descripcion-2" value={riskForm.description} onChange={(e) => setRiskForm(f => ({ ...f, description: e.target.value }))} className={textareaClass} rows={3} />
+                        <Textarea label="Descripción *" required value={riskForm.description} onChange={(e) => setRiskForm(f => ({ ...f, description: e.target.value }))} rows={3} />
                     </div>
                     <div className="sm:col-span-2">
-                        <label htmlFor="sst-controles" className="text-slate-700 dark:text-white text-sm font-bold">Controles</label>
-                        <textarea id="sst-controles" value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} className={textareaClass} rows={3} />
+                        <Textarea label="Controles" value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} rows={3} />
                     </div>
                 </div>
             </Modal>
@@ -501,31 +503,23 @@ export const SstPage: React.FC = () => {
             <Modal
                 isOpen={!!investigating}
                 onClose={() => setInvestigating(null)}
+                onSubmit={handleInvestigate}
                 title="Investigar Accidente"
                 icon={<ClipboardCheck className="text-rose-500" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleInvestigate} disabled={!invValid}>Guardar Investigación</Button>
+                        <Button type="submit" isLoading={saving}>Guardar Investigación</Button>
                         <Button variant="outline" onClick={() => setInvestigating(null)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
                     <p className="text-xs text-slate-500 dark:text-slate-400">La investigación se registra una sola vez y no puede modificarse.</p>
-                    <Input type="date" label="Fecha de investigación *" max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
-                    <div>
-                        <label htmlFor="sst-conclusiones" className="text-slate-700 dark:text-white text-sm font-bold">Conclusiones *</label>
-                        <textarea id="sst-conclusiones" value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} className={textareaClass} rows={2} />
-                    </div>
-                    <div>
-                        <label htmlFor="sst-causas" className="text-slate-700 dark:text-white text-sm font-bold">Causas *</label>
-                        <textarea id="sst-causas" value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} className={textareaClass} rows={2} />
-                    </div>
-                    <div>
-                        <label htmlFor="sst-medidas-correctivas" className="text-slate-700 dark:text-white text-sm font-bold">Medidas correctivas *</label>
-                        <textarea id="sst-medidas-correctivas" value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} className={textareaClass} rows={2} />
-                    </div>
+                    <Input type="date" label="Fecha de investigación *" required max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
+                    <Textarea label="Conclusiones *" required value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} rows={2} />
+                    <Textarea label="Causas *" required value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} rows={2} />
+                    <Textarea label="Medidas correctivas *" required value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} rows={2} />
                 </div>
             </Modal>
         </PageContainer>

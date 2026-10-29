@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS } from '../../../shared/ui';
+import { Card, Button, Input, Select, Modal, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
 import type {
     AssociateDto,
@@ -11,15 +11,13 @@ import type {
     CreateCompensationRequest,
     PilaContributionDto,
 } from '../../../shared/api/types';
-import { currency, today } from '../../../shared/format';
+import { currency, formatDate, today } from '../../../shared/format';
 
 const MODEL_LABEL: Record<CompensationModel, string> = {
     1: 'Días por tarifa',
     2: 'Fijo mensual',
     3: 'Por proyecto',
 };
-
-const selectClass = SELECT_CLASS;
 
 const emptyForm = (userId = ''): CreateCompensationRequest => ({ userId, period: today(), model: 1, baseValue: 0 });
 
@@ -36,6 +34,7 @@ export const NominaPage: React.FC = () => {
     const [compLoading, setCompLoading] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
     const [createForm, setCreateForm] = useState<CreateCompensationRequest>(emptyForm());
+    const [saving, setSaving] = useState(false);
 
     const [pilaYear, setPilaYear] = useState(new Date().getFullYear());
     const [pilaMonth, setPilaMonth] = useState(new Date().getMonth() + 1);
@@ -62,7 +61,8 @@ export const NominaPage: React.FC = () => {
         }).catch(() => setAssociates([]));
     }, [isAdmin, user?.id]);
 
-    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || userId;
+    const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || 'Asociado no disponible';
+    const sheetPager = usePagedFilter(sheet, { searchFields: p => [nameOf(p.userId)] });
 
     const loadCompensations = async () => {
         if (!compUserId) return;
@@ -95,6 +95,8 @@ export const NominaPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
+        if (saving) return;
+        setSaving(true);
         const payload: CreateCompensationRequest = {
             userId: createForm.userId,
             period: createForm.period,
@@ -114,6 +116,8 @@ export const NominaPage: React.FC = () => {
             }
         } catch {
             // el listener global muestra el error
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -159,14 +163,14 @@ export const NominaPage: React.FC = () => {
                     </div>
                     <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 mb-4`}>
                         {isAdmin && (
-                            <select value={compUserId} onChange={(e) => setCompUserId(e.target.value)} className={selectClass}>
+                            <select aria-label="Asociado" value={compUserId} onChange={(e) => setCompUserId(e.target.value)} className={SELECT_CLASS}>
                                 <option value="">Seleccionar asociado</option>
                                 {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                             </select>
                         )}
                         <Input type="number" value={compYear} onChange={(e) => setCompYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
-                        <Button variant="outline" onClick={loadCompensations} disabled={!compUserId || compLoading}>
-                            {compLoading ? 'Cargando...' : 'Consultar'}
+                        <Button variant="outline" onClick={loadCompensations} disabled={!compUserId} isLoading={compLoading}>
+                            Consultar
                         </Button>
                     </div>
                     {compensations.length > 0 ? (
@@ -175,7 +179,7 @@ export const NominaPage: React.FC = () => {
                                 <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-background-dark">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{MODEL_LABEL[c.model] ?? 'Modelo'}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(c.period).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(c.period, { month: 'long', year: 'numeric' })}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(c.calculatedValue)}</p>
@@ -200,15 +204,15 @@ export const NominaPage: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                             <Input type="number" value={pilaYear} onChange={(e) => setPilaYear(Number(e.target.value))} placeholder="Año" aria-label="Año" />
                             <Input type="number" value={pilaMonth} onChange={(e) => setPilaMonth(Number(e.target.value))} min={1} max={12} placeholder="Mes" aria-label="Mes" />
-                            <Button variant="outline" onClick={loadSheet} disabled={pilaLoading}>
-                                {pilaLoading ? 'Cargando...' : 'Planilla'}
+                            <Button variant="outline" onClick={loadSheet} isLoading={pilaLoading}>
+                                Planilla
                             </Button>
                         </div>
 
                         <div className="border-t border-slate-200 dark:border-border-dark pt-4 mt-2">
                             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Calcular aporte individual ({pilaMonth}/{pilaYear})</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                <select value={pilaUserId} onChange={(e) => setPilaUserId(e.target.value)} className={selectClass}>
+                                <select aria-label="Asociado para el aporte" value={pilaUserId} onChange={(e) => setPilaUserId(e.target.value)} className={SELECT_CLASS}>
                                     <option value="">Asociado</option>
                                     {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                                 </select>
@@ -241,6 +245,10 @@ export const NominaPage: React.FC = () => {
 
             {isAdmin && sheet.length > 0 && (
                 <Card padding="none" className="overflow-hidden mt-6">
+                    <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Planilla {pilaMonth}/{pilaYear}</h2>
+                        <SearchInput pager={sheetPager} label="Buscar asociado" />
+                    </div>
                     <div className="overflow-x-auto">
                         <table className={TABLE_CLASS}>
                             <thead className={THEAD_CLASS}>
@@ -254,7 +262,10 @@ export const NominaPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className={TBODY_CLASS}>
-                                {sheet.map(p => (
+                                {sheetPager.total === 0 && (
+                                    <tr><td colSpan={6}><EmptyState title="Ningún asociado coincide con la búsqueda" /></td></tr>
+                                )}
+                                {sheetPager.pageItems.map(p => (
                                     <tr key={p.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{nameOf(p.userId)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.contributionBase)}</td>
@@ -267,41 +278,44 @@ export const NominaPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
+                    <Pager pager={sheetPager} />
                 </Card>
             )}
 
             <Modal
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
+                onSubmit={handleCreate}
                 title="Nueva Compensación"
                 icon={<Plus className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={handleCreate} disabled={!createForm.userId || createForm.baseValue <= 0 || (isDaysByRate && !(createForm.dailyRate && createForm.dailyRate > 0))}>Guardar</Button>
+                        <Button type="submit" isLoading={saving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <select value={createForm.userId} onChange={(e) => setCreateForm(f => ({ ...f, userId: e.target.value }))} className={selectClass}>
-                        <option value="">Asociado *</option>
+                    <Select label="Asociado *" required value={createForm.userId} onChange={(e) => setCreateForm(f => ({ ...f, userId: e.target.value }))}>
+                        <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
-                    </select>
-                    <Input type="date" label="Período *" value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
-                    <div>
-                        <label htmlFor="nomina-modelo" className="text-slate-700 dark:text-white text-sm font-bold">Modelo *</label>
-                        <select id="nomina-modelo"
-                            value={createForm.model}
-                            onChange={(e) => setCreateForm(f => ({ ...f, model: Number(e.target.value) as CompensationModel }))}
-                            className={`w-full mt-2 ${selectClass}`}
-                        >
-                            {([1, 2, 3] as CompensationModel[]).map(m => <option key={m} value={m}>{MODEL_LABEL[m]}</option>)}
-                        </select>
-                    </div>
+                    </Select>
+                    <Input type="date" label="Período *" required value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
+                    <Select
+                        label="Modelo *"
+                        required
+                        value={createForm.model}
+                        onChange={(e) => setCreateForm(f => ({ ...f, model: Number(e.target.value) as CompensationModel }))}
+                    >
+                        {([1, 2, 3] as CompensationModel[]).map(m => <option key={m} value={m}>{MODEL_LABEL[m]}</option>)}
+                    </Select>
                     <Input
                         type="number"
                         label={isDaysByRate ? 'Días trabajados *' : 'Valor *'}
+                        required
+                        min={0.01}
+                        step="any"
                         value={createForm.baseValue}
                         onChange={(e) => setCreateForm(f => ({ ...f, baseValue: Number(e.target.value) }))}
                     />
@@ -309,6 +323,9 @@ export const NominaPage: React.FC = () => {
                         <Input
                             type="number"
                             label="Tarifa diaria *"
+                            required
+                            min={0.01}
+                            step="any"
                             value={createForm.dailyRate ?? ''}
                             onChange={(e) => setCreateForm(f => ({ ...f, dailyRate: e.target.value ? Number(e.target.value) : undefined }))}
                         />

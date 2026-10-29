@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Eye, EyeOff, Hexagon } from 'lucide-react';
+import { Building2, User, Mail, Hexagon } from 'lucide-react';
 import { useAuth } from '../../../shared/context';
-import { Button, Input, SELECT_CLASS } from '../../../shared/ui';
+import { Button, Input, Select } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES } from '../../associates/labels';
 
 export const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
     const { register, isLoading } = useAuth();
-    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         organizationName: '',
         entityType: '',
@@ -19,6 +18,7 @@ export const RegisterPage: React.FC = () => {
         confirmPassword: '',
     });
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({
@@ -31,15 +31,11 @@ export const RegisterPage: React.FC = () => {
         e.preventDefault();
         setError('');
 
-        if (formData.password !== formData.confirmPassword) {
-            setError('Las contraseñas no coinciden');
-            return;
-        }
-
-        if (formData.password.length < 8) {
-            setError('La contraseña debe tener al menos 8 caracteres');
-            return;
-        }
+        const errors: typeof fieldErrors = {};
+        if (formData.password.length < 8) errors.password = 'La contraseña debe tener al menos 8 caracteres';
+        if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
+        setFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
 
         try {
             await register({
@@ -59,7 +55,7 @@ export const RegisterPage: React.FC = () => {
     return (
         <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
             <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
-                <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500 blur-[120px] animate-pulse" />
+                <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500 blur-[120px] animate-pulse motion-reduce:animate-none" />
                 <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary blur-[100px]" />
             </div>
 
@@ -96,17 +92,14 @@ export const RegisterPage: React.FC = () => {
                             required
                         />
 
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="register-tipo-de-entidad" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de entidad (opcional)</label>
-                            <select id="register-tipo-de-entidad"
-                                value={formData.entityType}
-                                onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
-                                className={SELECT_CLASS}
-                            >
-                                <option value="">No especificar</option>
-                                {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                            </select>
-                        </div>
+                        <Select
+                            label="Tipo de entidad (opcional)"
+                            value={formData.entityType}
+                            onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
+                        >
+                            <option value="">No especificar</option>
+                            {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </Select>
 
                         <Input
                             label="Tu Nombre"
@@ -122,6 +115,7 @@ export const RegisterPage: React.FC = () => {
                             label="Email Corporativo"
                             type="email"
                             name="email"
+                            autoComplete="email"
                             value={formData.email}
                             onChange={handleChange}
                             placeholder="juan@empresa.com"
@@ -130,39 +124,28 @@ export const RegisterPage: React.FC = () => {
                         />
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-2">
-                                <span className="text-slate-700 dark:text-white text-sm font-bold">Contraseña</span>
-                                <div className="relative">
-                                    <input 
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 pl-4 pr-12 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                        placeholder="••••••••" 
-                                        type={showPassword ? "text" : "password"}
-                                        required
-                                    />
-                                    <button aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} 
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <span className="text-slate-700 dark:text-white text-sm font-bold">Confirmar</span>
-                                <input 
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    className="w-full rounded-xl border border-slate-300 dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-12 px-4 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                    placeholder="••••••••" 
-                                    type="password"
-                                    required
-                                />
-                            </div>
+                            <Input
+                                label="Contraseña"
+                                name="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="••••••••"
+                                autoComplete="new-password"
+                                error={fieldErrors.password}
+                                required
+                            />
+                            <Input
+                                label="Confirmar contraseña"
+                                name="confirmPassword"
+                                type="password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="••••••••"
+                                autoComplete="new-password"
+                                error={fieldErrors.confirmPassword}
+                                required
+                            />
                         </div>
 
                         <Button 

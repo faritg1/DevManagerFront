@@ -33,7 +33,7 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => (
     <div className={`flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300 hover:shadow-md dark:border-border-dark dark:bg-card-dark dark:hover:border-input-border ${compact ? 'gap-2 p-4' : 'gap-4 p-5 sm:p-6'} ${className}`}>
         <div className="flex items-start justify-between gap-2">
-            <p title={title} className={`min-w-0 flex-1 break-words font-bold uppercase leading-snug text-slate-500 dark:text-slate-400 ${compact ? 'text-[11px] tracking-wide' : 'text-xs tracking-wider sm:text-sm'}`}>
+            <p title={title} className={`min-w-0 flex-1 break-words hyphens-auto font-bold uppercase leading-snug text-slate-500 dark:text-slate-400 ${compact ? 'text-[11px] tracking-wide' : 'text-xs tracking-wider sm:text-sm'}`}>
                 {title}
             </p>
             {Icon && (

@@ -39,7 +39,7 @@ export const Avatar: React.FC<AvatarProps> = ({
             <img
                 src={src}
                 alt={alt}
-                className={`${sizeStyles[size]} rounded-full object-cover ${className}`}
+                className={`${sizeStyles[size]} shrink-0 rounded-full object-cover ${className}`}
             />
         );
     }
@@ -48,7 +48,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         <div
             className={`
                 ${sizeStyles[size]} 
-                rounded-full 
+                shrink-0 rounded-full 
                 bg-gradient-to-br ${gradient}
                 flex items-center justify-center 
                 text-white font-bold

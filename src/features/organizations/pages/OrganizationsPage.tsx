@@ -13,7 +13,7 @@ import {
     Users,
     type LucideIcon,
 } from 'lucide-react';
-import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, SELECT_CLASS, LoadingBlock } from '../../../shared/ui';
+import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, Select, LoadingBlock } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
@@ -21,7 +21,6 @@ import type { AssociateStatus, OrganizationDto, OrganizationEntityType } from '.
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate } from '../../associates/labels';
 
-const selectClass = SELECT_CLASS;
 
 /** Valor ausente: texto atenuado en lugar de una etiqueta vacía. */
 const Undefined: React.FC<{ label?: string }> = ({ label = 'Sin definir' }) => (
@@ -110,7 +109,7 @@ export const OrganizationsPage: React.FC = () => {
     }, []);
 
     const save = async () => {
-        if (!form) return;
+        if (!form || isSaving || !form.name.trim()) return;
         setIsSaving(true);
         try {
             const res = await organizationsService.updateCurrent({
@@ -267,12 +266,13 @@ export const OrganizationsPage: React.FC = () => {
             <Modal
                 isOpen={!!form}
                 onClose={() => setForm(null)}
+                onSubmit={save}
                 title="Editar organización"
                 icon={<Pencil className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button onClick={save} isLoading={isSaving} disabled={!form?.name.trim()}>Guardar</Button>
+                        <Button type="submit" isLoading={isSaving}>Guardar</Button>
                         <Button variant="outline" onClick={() => setForm(null)}>Cancelar</Button>
                     </>
                 }
@@ -282,6 +282,7 @@ export const OrganizationsPage: React.FC = () => {
                         <div className="sm:col-span-2">
                             <Input
                                 label="Nombre *"
+                                required
                                 value={form.name}
                                 maxLength={160}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -302,27 +303,21 @@ export const OrganizationsPage: React.FC = () => {
                             placeholder="900123456-1"
                             onChange={(e) => setForm({ ...form, nit: e.target.value })}
                         />
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="org-entity-type" className="text-sm font-bold text-slate-700 dark:text-white">
-                                Tipo de entidad
-                            </label>
-                            <select
-                                id="org-entity-type"
-                                value={form.entityType}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        entityType: e.target.value ? (Number(e.target.value) as OrganizationEntityType) : '',
-                                    })
-                                }
-                                className={selectClass}
-                            >
-                                <option value="">Sin definir</option>
-                                {Object.entries(ENTITY_TYPES).map(([k, v]) => (
-                                    <option key={k} value={k}>{v}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <Select
+                            label="Tipo de entidad"
+                            value={form.entityType}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    entityType: e.target.value ? (Number(e.target.value) as OrganizationEntityType) : '',
+                                })
+                            }
+                        >
+                            <option value="">Sin definir</option>
+                            {Object.entries(ENTITY_TYPES).map(([k, v]) => (
+                                <option key={k} value={k}>{v}</option>
+                            ))}
+                        </Select>
                     </div>
                 )}
             </Modal>

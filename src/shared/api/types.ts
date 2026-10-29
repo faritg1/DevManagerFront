@@ -76,8 +76,12 @@ export interface UpdateOrganizationRequest {
 export interface UserResponse {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  /** UI field derived from firstName/lastName by usersService. */
   fullName: string;
   roleName: string;
+  /** UI field mapped from the API's `phone` by usersService. */
   phoneNumber: string | null;
   isActive: boolean;
   createdAt: string;
@@ -87,20 +91,20 @@ export interface UserResponse {
 }
 
 export interface CreateUserRequest {
-  isEmployee?: boolean;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
-  fullName: string;
-  roleId: string;
-  phoneNumber?: string | null;
+  phone?: string | null;
+  isEmployee?: boolean;
 }
 
 export interface UpdateUserRequest {
-  isEmployee?: boolean;
-  fullName?: string;
-  phoneNumber?: string | null;
-  roleId?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
   isActive?: boolean;
+  isEmployee?: boolean;
 }
 
 // ============ PROFILE ============

@@ -79,6 +79,7 @@ export const API_ENDPOINTS = {
   // Applications (Postulaciones)
   APPLICATIONS: {
     REVIEW: (id: string) => `/applications/${id}/review`,
+    PENDING_COUNT: "/applications/pending-count",
   },
 
   // Assignments

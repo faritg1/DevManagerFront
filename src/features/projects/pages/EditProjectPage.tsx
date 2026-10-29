@@ -5,7 +5,6 @@ import {
   Save,
   X,
   Calendar,
-  Loader2,
   Target,
   Plus,
   Trash2,
@@ -14,6 +13,9 @@ import {
 import {
   Button,
   Input,
+  Select,
+  Textarea,
+  LoadingBlock,
   Card,
   CardHeader,
   CardTitle,
@@ -21,7 +23,6 @@ import {
   Modal,
   PageContainer,
   PageHeader,
-  SELECT_CLASS,
   useGoBack,
 } from "../../../shared/ui";
 import { useModal } from "../../../shared/hooks";
@@ -154,6 +155,7 @@ export const EditProjectPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (!id || !formData.name.trim()) {
       showNotification({
@@ -201,6 +203,7 @@ export const EditProjectPage: React.FC = () => {
   };
 
   const handleAddSkill = async () => {
+    if (isAddingSkill) return;
     if (!id || !newSkillId) {
       showNotification({ type: "error", message: "Selecciona una habilidad" });
       return;
@@ -248,12 +251,7 @@ export const EditProjectPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-        <p className="text-slate-500 dark:text-slate-400">
-          Cargando proyecto...
-        </p>
-      </div>
+      <LoadingBlock label="Cargando proyecto..." className="h-full py-20" />
     );
   }
 
@@ -280,17 +278,13 @@ export const EditProjectPage: React.FC = () => {
             >
               Cancelar
             </Button>
-            <Button
-              icon={isSubmitting ? Loader2 : Save}
-              onClick={handleSubmit}
-              isLoading={isSubmitting}
-            >
-              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            <Button type="submit" form="edit-project-form" icon={Save} isLoading={isSubmitting}>
+              Guardar Cambios
             </Button>
           </>}
         />
 
-        <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+        <form id="edit-project-form" className="flex flex-col gap-8" onSubmit={handleSubmit}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -307,36 +301,22 @@ export const EditProjectPage: React.FC = () => {
                 placeholder="Ej: Sistema de Gestión Hospitalaria"
                 required
               />
-              <div className="flex flex-col gap-2">
-                <span className="text-slate-700 dark:text-white text-sm font-bold">
-                  Estado
-                </span>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className={`${SELECT_CLASS} w-full`}
-                >
-                  {catalogs?.projectStatuses.map((status) => (
-                      <option key={status.id} value={status.id}>
-                        {status.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+              <Select label="Estado" name="status" value={formData.status} onChange={handleChange}>
+                {catalogs?.projectStatuses.map((status) => (
+                  <option key={status.id} value={status.id}>
+                    {status.name}
+                  </option>
+                ))}
+              </Select>
               <div className="md:col-span-2">
-                <label className="flex flex-col gap-2">
-                  <span className="text-slate-700 dark:text-white text-sm font-bold">
-                    Descripción
-                  </span>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Describe los objetivos y alcance del proyecto..."
-                  />
-                </label>
+                <Textarea
+                  label="Descripción"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="h-32 resize-none"
+                  placeholder="Describe los objetivos y alcance del proyecto..."
+                />
               </div>
             </div>
           </Card>
@@ -363,23 +343,13 @@ export const EditProjectPage: React.FC = () => {
                 value={formData.endDate}
                 onChange={handleChange}
               />
-              <div className="flex flex-col gap-2">
-                <span className="text-slate-700 dark:text-white text-sm font-bold">
-                  Complejidad
-                </span>
-                <select
-                  name="complexityLevel"
-                  value={formData.complexityLevel}
-                  onChange={handleChange}
-                  className={`${SELECT_CLASS} w-full`}
-                >
-                  {catalogs?.complexityLevels.map((level) => (
-                    <option key={level.id} value={level.id}>
-                      {level.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select label="Complejidad" name="complexityLevel" value={formData.complexityLevel} onChange={handleChange}>
+                {catalogs?.complexityLevels.map((level) => (
+                  <option key={level.id} value={level.id}>
+                    {level.name}
+                  </option>
+                ))}
+              </Select>
             </div>
           </Card>
 
@@ -483,44 +453,37 @@ export const EditProjectPage: React.FC = () => {
       <Modal
         isOpen={addSkillModal.isOpen}
         onClose={addSkillModal.close}
+        onSubmit={handleAddSkill}
         title="Agregar Requisito de Habilidad"
         size="md"
+        footer={
+          <>
+            <Button type="submit" icon={CheckCircle2} isLoading={isAddingSkill}>
+              Agregar Requisito
+            </Button>
+            <Button variant="outline" onClick={addSkillModal.close} disabled={isAddingSkill}>
+              Cancelar
+            </Button>
+          </>
+        }
       >
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <span className="text-slate-700 dark:text-white text-sm font-bold">
-              Habilidad *
-            </span>
-            <select
-              value={newSkillId}
-              onChange={(e) => setNewSkillId(e.target.value)}
-              className={`${SELECT_CLASS} w-full`}
-            >
-              <option value="">Seleccionar habilidad...</option>
-              {filteredSkills.map((skill) => (
-                <option key={skill.id} value={skill.id}>
-                  {skill.name} {skill.category ? `(${skill.category})` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select label="Habilidad *" required value={newSkillId} onChange={(e) => setNewSkillId(e.target.value)}>
+            <option value="">Seleccionar habilidad...</option>
+            {filteredSkills.map((skill) => (
+              <option key={skill.id} value={skill.id}>
+                {skill.name} {skill.category ? `(${skill.category})` : ""}
+              </option>
+            ))}
+          </Select>
 
-          <div className="flex flex-col gap-2">
-            <span className="text-slate-700 dark:text-white text-sm font-bold">
-              Nivel Requerido
-            </span>
-            <select
-              value={newSkillLevel}
-              onChange={(e) => setNewSkillLevel(e.target.value)}
-              className={`${SELECT_CLASS} w-full`}
-            >
-              {catalogs?.skillLevels.map((level) => (
-                <option key={level.id} value={level.id}>
-                  {level.id} - {level.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select label="Nivel Requerido" value={newSkillLevel} onChange={(e) => setNewSkillLevel(e.target.value)}>
+            {catalogs?.skillLevels.map((level) => (
+              <option key={level.id} value={level.id}>
+                {level.id} - {level.name}
+              </option>
+            ))}
+          </Select>
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -533,24 +496,6 @@ export const EditProjectPage: React.FC = () => {
               ¿Es obligatorio?
             </span>
           </label>
-
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-border-dark">
-            <Button
-              variant="outline"
-              onClick={addSkillModal.close}
-              disabled={isAddingSkill}
-            >
-              Cancelar
-            </Button>
-            <Button
-              icon={isAddingSkill ? Loader2 : CheckCircle2}
-              onClick={handleAddSkill}
-              isLoading={isAddingSkill}
-              disabled={!newSkillId}
-            >
-              {isAddingSkill ? "Agregando..." : "Agregar Requisito"}
-            </Button>
-          </div>
         </div>
       </Modal>
     </PageContainer>

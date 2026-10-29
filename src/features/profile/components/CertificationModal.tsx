@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Button, Input } from '../../../shared/ui';
-import { Award, Loader2, Calendar, ExternalLink, Save, Plus } from 'lucide-react';
+import { Award, ExternalLink, Save, Plus } from 'lucide-react';
 import type { CertificationResponse, CreateCertificationRequest } from '../../../shared/api/types';
 
 interface Props {
@@ -50,7 +50,7 @@ export const CertificationModal: React.FC<Props> = ({
     }, [isOpen, editing]);
 
     const handleSave = async () => {
-        if (!formData.name || !formData.issuer || !formData.issueDate) return;
+        if (savingLocal || saving || !formData.name || !formData.issuer || !formData.issueDate) return;
         
         setSavingLocal(true);
         const payload: CreateCertificationRequest = {
@@ -80,17 +80,14 @@ export const CertificationModal: React.FC<Props> = ({
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
+            onSubmit={handleSave}
             title={editing ? 'Editar Certificación' : 'Nueva Certificación'}
             icon={<Award className="text-primary" size={20} />}
             size="md"
             footer={
                 <>
-                    <Button 
-                        onClick={handleSave}
-                        disabled={savingLocal || saving || !formData.name || !formData.issuer || !formData.issueDate}
-                        icon={savingLocal || saving ? Loader2 : (editing ? Save : Plus)}
-                    >
-                        {savingLocal || saving ? 'Guardando...' : (editing ? 'Guardar cambios' : 'Crear Certificación')}
+                    <Button type="submit" isLoading={savingLocal || saving} icon={editing ? Save : Plus}>
+                        {editing ? 'Guardar cambios' : 'Crear Certificación'}
                     </Button>
                     <Button variant="outline" onClick={handleClose}>
                         Cancelar
@@ -99,65 +96,46 @@ export const CertificationModal: React.FC<Props> = ({
             }
         >
             <div className="space-y-5">
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="certification-modal-nombre-de-la" className="text-slate-700 dark:text-white text-sm font-bold">
-                        Nombre de la certificación *
-                    </label>
-                    <Input id="certification-modal-nombre-de-la"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Ej: AWS Certified Solutions Architect"
-                    />
-                </div>
+                <Input
+                    label="Nombre de la certificación *"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Ej: AWS Certified Solutions Architect"
+                />
 
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="certification-modal-emisor" className="text-slate-700 dark:text-white text-sm font-bold">
-                        Emisor *
-                    </label>
-                    <Input id="certification-modal-emisor"
-                        value={formData.issuer}
-                        onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
-                        placeholder="Ej: Amazon Web Services"
-                    />
-                </div>
+                <Input
+                    label="Emisor *"
+                    required
+                    value={formData.issuer}
+                    onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
+                    placeholder="Ej: Amazon Web Services"
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="certification-modal-fecha-de-emision" className="text-slate-700 dark:text-white text-sm font-bold">
-                            Fecha de emisión *
-                        </label>
-                        <Input id="certification-modal-fecha-de-emision"
-                            type="date"
-                            value={formData.issueDate}
-                            onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="certification-modal-fecha-de-expiracion" className="text-slate-700 dark:text-white text-sm font-bold">
-                            Fecha de expiración
-                        </label>
-                        <Input id="certification-modal-fecha-de-expiracion"
-                            type="date"
-                            value={formData.expirationDate}
-                            onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
-                        />
-                    </div>
+                    <Input
+                        label="Fecha de emisión *"
+                        required
+                        type="date"
+                        value={formData.issueDate}
+                        onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
+                    />
+                    <Input
+                        label="Fecha de expiración"
+                        type="date"
+                        value={formData.expirationDate ?? ''}
+                        onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
+                    />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="certification-modal-url-de-evidencia" className="text-slate-700 dark:text-white text-sm font-bold">
-                        URL de evidencia (opcional)
-                    </label>
-                    <Input id="certification-modal-url-de-evidencia"
-                        value={formData.evidenceUrl}
-                        onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
-                        placeholder="https://..."
-                        icon={ExternalLink}
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Agrega un link a tu certificación o credencial.
-                    </p>
-                </div>
+                <Input
+                    label="URL de evidencia (opcional)"
+                    value={formData.evidenceUrl ?? ''}
+                    onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
+                    placeholder="https://..."
+                    icon={ExternalLink}
+                    hint="Agrega un link a tu certificación o credencial."
+                />
             </div>
         </Modal>
     );

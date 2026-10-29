@@ -1,3 +1,4 @@
+import { formatDate as formatSharedDate } from '../../shared/format';
 import type { ApiError } from '../../shared/api';
 import type { AssociateRole, AssociateStatus } from '../../shared/api/types';
 import type { BadgeVariant } from '../../shared/ui';
@@ -44,8 +45,8 @@ export const ENTITY_TYPES: Record<number, string> = {
     6: 'Otra',
 };
 
-export const formatDate = (d?: string | null): string =>
-    d ? new Date(`${d.slice(0, 10)}T00:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+/** Shows only the calendar day of a date or timestamp. */
+export const formatDate = (d?: string | null): string => formatSharedDate(d?.slice(0, 10));
 
 export { formatDateTime } from '../../shared/format';
 
@@ -55,3 +56,6 @@ export const isApiError = (e: unknown): e is ApiError =>
 export const needsLocalToast = (e: unknown): boolean => !isApiError(e) || e.status === 404;
 export const errorText = (e: unknown, fallback = 'Error de conexión'): string =>
     isApiError(e) && e.message ? e.message : fallback;
+
+/** "v2" or "2" -> "v2" (seeded versions already carry the prefix). */
+export const versionLabel = (v: string) => (/^v/i.test(v) ? v : `v${v}`);

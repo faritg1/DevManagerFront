@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Info, Users, Save, X, Calendar, Loader2 } from 'lucide-react';
-import { Button, Input, Card, CardHeader, CardTitle, PageContainer, PageHeader, SELECT_CLASS, useGoBack } from '../../../shared/ui';
+import { Info, Users, Save, X, Calendar } from 'lucide-react';
+import { Button, Input, Select, Textarea, Card, CardHeader, CardTitle, PageContainer, PageHeader, useGoBack } from '../../../shared/ui';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
@@ -37,6 +37,7 @@ export const CreateProjectPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
         
         if (!values.name.trim()) {
             showNotification({ type: 'error', message: 'El nombre del proyecto es requerido' });
@@ -84,17 +85,13 @@ export const CreateProjectPage: React.FC = () => {
                         >
                             Cancelar
                         </Button>
-                        <Button 
-                            icon={isSubmitting ? Loader2 : Save}
-                            onClick={handleSubmit}
-                            isLoading={isSubmitting}
-                        >
-                            {isSubmitting ? 'Guardando...' : 'Guardar Proyecto'}
+                        <Button type="submit" form="create-project-form" icon={Save} isLoading={isSubmitting}>
+                            Guardar Proyecto
                         </Button>
                 </>}
             />
                 
-                <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+                <form id="create-project-form" className="flex flex-col gap-8" onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -120,16 +117,14 @@ export const CreateProjectPage: React.FC = () => {
                                 hint="Identificador único (opcional)"
                             />
                             <div className="md:col-span-2">
-                                <label className="flex flex-col gap-2">
-                                    <span className="text-slate-700 dark:text-white text-sm font-bold">Descripción</span>
-                                    <textarea 
-                                        name="description"
-                                        value={values.description}
-                                        onChange={handleChange}
-                                        className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white h-32 p-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
-                                        placeholder="Describe los objetivos y alcance del proyecto..."
-                                    />
-                                </label>
+                                <Textarea
+                                    label="Descripción"
+                                    name="description"
+                                    value={values.description}
+                                    onChange={handleChange}
+                                    className="h-32 resize-none"
+                                    placeholder="Describe los objetivos y alcance del proyecto..."
+                                />
                             </div>
                         </div>
                     </Card>
@@ -156,21 +151,18 @@ export const CreateProjectPage: React.FC = () => {
                                 value={values.endDate}
                                 onChange={handleChange}
                             />
-                            <div className="flex flex-col gap-2">
-                                <span className="text-slate-700 dark:text-white text-sm font-bold">Complejidad</span>
-                                <select
-                                    name="complexityLevel"
-                                    value={values.complexityLevel}
-                                    onChange={handleChange}
-                                    className={`${SELECT_CLASS} w-full`}
-                                >
-                                    {catalogs?.complexityLevels.map(level => (
-                                        <option key={level.id} value={level.id}>
-                                            {level.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <Select
+                                label="Complejidad"
+                                name="complexityLevel"
+                                value={values.complexityLevel}
+                                onChange={handleChange}
+                            >
+                                {catalogs?.complexityLevels.map(level => (
+                                    <option key={level.id} value={level.id}>
+                                        {level.name}
+                                    </option>
+                                ))}
+                            </Select>
                         </div>
                     </Card>
                 </form>

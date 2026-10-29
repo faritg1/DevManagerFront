@@ -6,11 +6,10 @@ import {
     Edit,
     Trash2,
     UserPlus,
-    Loader2,
     AlertCircle,
     Sparkles,
 } from 'lucide-react';
-import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBlock, ActionMenu } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
@@ -27,6 +26,7 @@ import {
 
 import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
 import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
+import { formatDate as formatLongDate } from '../../../shared/format';
 
 import { ProjectRequirementsSection } from '../components/ProjectRequirementsSection';
 import { ProjectApplicationsSection } from '../components/ProjectApplicationsSection';
@@ -34,14 +34,8 @@ import { ProjectMatchingModal } from '../components/ProjectMatchingModal';
 import { ProjectAssignModal } from '../components/ProjectAssignModal';
 import { ProjectAssignmentsSection } from '../components/ProjectAssignmentsSection';
 
-const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Sin definir';
-    return new Date(dateString).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-};
+const formatDate = (d: string | null): string => formatLongDate(d, { day: '2-digit', month: 'long', year: 'numeric' }, 'Sin definir');
+
 
 export const ProjectDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -220,47 +214,30 @@ export const ProjectDetailPage: React.FC = () => {
                 }
                 actions={<>
                     {isAdmin && (
-                        <>
-                            <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
-                                Editar
-                            </Button>
-                            <Button 
-                                variant="outline"
-                                icon={isDeleting ? Loader2 : Trash2}
-                                onClick={handleDeleteProject}
-                                disabled={isDeleting}
-                                className={`border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 ${isDeleting ? '[&_svg]:animate-spin' : ''}`}
-                            >
-                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                            </Button>
-                            <Button 
-                                variant="outline"
-                                icon={Sparkles}
-                                onClick={matchingModal.open}
-                                className="border-purple-300 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                            >
-                                Buscar Candidatos IA
-                            </Button>
-                            <Button
-                                variant="outline"
-                                icon={UserPlus}
-                                onClick={() => { setEditingAssignment(null); assignModal.open(); }}
-                                className="border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                            >
-                                Asignar Miembro
-                            </Button>
-                        </>
+                        <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
+                            Editar
+                        </Button>
                     )}
                     {!hasAlreadyApplied && (
                         <Button icon={UserPlus} onClick={handleApply}>
                             Postularme
                         </Button>
                     )}
+                    {isAdmin && (
+                        <ActionMenu
+                            label="Más acciones"
+                            items={[
+                                { label: 'Buscar Candidatos IA', icon: Sparkles, onSelect: matchingModal.open },
+                                { label: 'Asignar Miembro', icon: UserPlus, onSelect: () => { setEditingAssignment(null); assignModal.open(); } },
+                                { label: isDeleting ? 'Eliminando…' : 'Eliminar', icon: Trash2, onSelect: handleDeleteProject, danger: true, separated: true },
+                            ]}
+                        />
+                    )}
                 </>}
             />
             <div className="flex flex-col gap-8">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <Card padding="md" className="text-center">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10">
                                 <Calendar className="text-blue-500" size={24} />
@@ -272,7 +249,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    <Card padding="md" className="text-center">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-500/10">
                                 <Calendar className="text-purple-500" size={24} />
@@ -284,7 +261,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </div>
                     </Card>
 
-                    <Card padding="md" className="text-center">
+                    <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">
                             <div className={`p-3 rounded-xl ${
                                 complexityConfig.variant === 'danger' ? 'bg-rose-50 dark:bg-rose-500/10' :

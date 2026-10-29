@@ -14,8 +14,8 @@ import {
 import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
-import { useConfirm } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState } from "../../../shared/ui";
+import { useConfirm, usePagedFilter } from "../../../shared/hooks";
+import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState, Pager } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 
 type FilterType = "all" | "global" | "organizational";
@@ -90,6 +90,7 @@ export const SkillsCatalogPage: React.FC = () => {
 
     return result.sort((a, b) => a.name.localeCompare(b.name));
   }, [skills, searchQuery, filterType, filterCategory]);
+  const pager = usePagedFilter(filteredSkills, { pageSize: 15 });
 
   const stats = useMemo(
     () => ({
@@ -238,15 +239,16 @@ export const SkillsCatalogPage: React.FC = () => {
               placeholder="Buscar por nombre o categoría..." aria-label="Buscar habilidades"
               icon={Search}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); pager.setPage(1); }}
             />
           </div>
 
           <div className="flex items-center gap-2">
             <Filter size={16} className="text-slate-400 shrink-0" />
             <select
+              aria-label="Filtrar por tipo"
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as FilterType)}
+              onChange={(e) => { setFilterType(e.target.value as FilterType); pager.setPage(1); }}
               className={SELECT_SM_CLASS}
             >
               <option value="all">Todos los tipos</option>
@@ -256,8 +258,9 @@ export const SkillsCatalogPage: React.FC = () => {
           </div>
 
           <select
+            aria-label="Filtrar por categoría"
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
+            onChange={(e) => { setFilterCategory(e.target.value); pager.setPage(1); }}
             className={SELECT_SM_CLASS}
           >
             <option value="all">Todas las categorías</option>
@@ -307,7 +310,7 @@ export const SkillsCatalogPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className={TBODY_CLASS}>
-                {filteredSkills.map((skill) => (
+                {pager.pageItems.map((skill) => (
                   <tr
                     key={skill.id}
                     className={TR_CLASS}
@@ -350,11 +353,15 @@ export const SkillsCatalogPage: React.FC = () => {
             </table>
           </div>
 
-          <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-card-dark">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Mostrando {filteredSkills.length} de {skills.length} habilidades
-            </p>
-          </div>
+          {pager.pageCount > 1 ? (
+            <Pager pager={pager} />
+          ) : (
+            <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-card-dark">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Mostrando {filteredSkills.length} de {skills.length} habilidades
+              </p>
+            </div>
+          )}
         </Card>
       )}
 

@@ -3,7 +3,7 @@ import { Badge, Button, SELECT_CLASS } from '../../../shared/ui';
 import { consentsService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import type { ConsentDto, DataPolicyDto } from '../../../shared/api/types';
-import { errorText, formatDateTime, needsLocalToast } from '../labels';
+import { errorText, formatDateTime, needsLocalToast, versionLabel } from '../labels';
 
 interface Props {
     userId: string;
@@ -61,7 +61,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                             onChange={(e) => setPolicyId(e.target.value)}
                             className={SELECT_CLASS}
                         >
-                            {policies.map((p) => <option key={p.id} value={p.id}>v{p.version} — {p.purpose}</option>)}
+                            {policies.map((p) => <option key={p.id} value={p.id}>{versionLabel(p.version)} — {p.purpose}</option>)}
                         </select>
                     </div>
                     <Button

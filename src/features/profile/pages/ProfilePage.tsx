@@ -22,7 +22,6 @@ import {
   SkillsSection,
   CertificationsSection,
   SkillModal,
-  RequestRoleModal,
 } from "../components";
 import type {
   EmployeeSkillResponse,
@@ -47,17 +46,11 @@ export const ProfilePage: React.FC = () => {
     profileForm,
     effectivePerms,
     permsLoading,
-    availableRoles,
-    rolesLoading,
-    requestingRoleId,
-    setRequestingRoleId,
     setProfileForm,
     startEditing,
     cancelEditing,
     saveProfile,
     deleteProfile,
-    loadAvailableRoles,
-    requestRoleChange,
     reload,
   } = useProfile();
 
@@ -81,7 +74,6 @@ export const ProfilePage: React.FC = () => {
   } = useCertifications();
 
   const skillModal = useModal();
-  const requestRoleModal = useModal();
   const aiValidationModal = useModal();
   const { confirm } = useConfirm();
   const [editingSkill, setEditingSkill] =
@@ -152,26 +144,6 @@ export const ProfilePage: React.FC = () => {
         message: "Error al guardar habilidad",
       });
     }
-  };
-
-  const handleRequestRole = async (): Promise<boolean> => {
-    if (!requestingRoleId) return false;
-    const ok = await requestRoleChange(requestingRoleId);
-    if (ok) {
-      showNotification({
-        type: "success",
-        message: "Solicitud enviada / Rol actualizado (si tienes permisos)",
-      });
-      requestRoleModal.close();
-      return true;
-    } else {
-      showNotification({
-        type: "error",
-        message: "No se pudo solicitar el cambio",
-      });
-      return false;
-    }
-    return ok;
   };
 
   const handleValidateSkillAI = async (skill: EmployeeSkillResponse) => {
@@ -324,10 +296,6 @@ export const ProfilePage: React.FC = () => {
             <RolesPermissionsCard
               effectivePerms={effectivePerms}
               permsLoading={permsLoading}
-              onRequestRoleOpen={async () => {
-                await loadAvailableRoles();
-                requestRoleModal.open();
-              }}
             />
           </div>
           <div className="xl:col-span-4 space-y-6">
@@ -401,19 +369,6 @@ export const ProfilePage: React.FC = () => {
         editing={editingSkill}
         onSave={saveSkillHandler}
         catalogs={catalogs}
-      />
-
-      <RequestRoleModal
-        isOpen={requestRoleModal.isOpen}
-        onClose={() => {
-          requestRoleModal.close();
-          setRequestingRoleId(null);
-        }}
-        availableRoles={availableRoles}
-        loading={rolesLoading}
-        selectedRoleId={requestingRoleId}
-        setSelectedRoleId={(id) => setRequestingRoleId(id)}
-        onRequest={handleRequestRole}
       />
 
       {/* Modal resultado de validación IA */}

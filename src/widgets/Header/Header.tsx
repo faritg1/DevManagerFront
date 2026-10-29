@@ -54,7 +54,8 @@ const getRouteName = (path: string): string => {
     if (SEGMENT_NAMES[lastSegment]) return SEGMENT_NAMES[lastSegment];
     // Un segundo nivel que no es una ruta conocida es un identificador (/users/:id, /education/:programId…).
     if (segments.length >= 2) return 'Detalle';
-    return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1).replace(/-/g, ' ');
+    // Every top-level route is in ROUTE_NAMES, so anything else is the 404 page.
+    return segments.length ? 'Página no encontrada' : 'Inicio';
 };
 
 const generateBreadcrumbs = (pathname: string): Array<{ path: string; name: string }> => {

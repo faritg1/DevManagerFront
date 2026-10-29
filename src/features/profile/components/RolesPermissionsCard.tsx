@@ -1,33 +1,25 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Button, Badge } from '../../../shared/ui';
-import { Key, Loader2, ShieldCheck } from 'lucide-react';
-import type { EffectivePermissionsResponse, RoleDto } from '../../../shared/api/types';
+import { Card, CardHeader, CardTitle, Badge, LoadingBlock } from '../../../shared/ui';
+import { Key } from 'lucide-react';
+import type { EffectivePermissionsResponse } from '../../../shared/api/types';
 
 interface Props {
     effectivePerms: EffectivePermissionsResponse | null;
     permsLoading: boolean;
-    onRequestRoleOpen: () => void;
 }
 
-export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoading, onRequestRoleOpen }) => (
+export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoading }) => (
     <Card>
         <CardHeader>
-            <CardTitle className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                    <Key className="text-primary" size={20} />
-                    Roles & Permisos
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={onRequestRoleOpen}>
-                        Solicitar cambio de rol
-                    </Button>
-                </div>
+            <CardTitle className="flex items-center gap-2">
+                <Key className="text-primary" size={20} />
+                Roles & Permisos
             </CardTitle>
         </CardHeader>
 
         <div className="p-4">
             {permsLoading ? (
-                <div className="text-center py-4"><Loader2 className="animate-spin text-primary" /></div>
+                <LoadingBlock className="py-4" />
             ) : effectivePerms ? (
                 <>
                     <div className="mb-3">
@@ -39,9 +31,9 @@ export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoa
 
                     <div>
                         <p className="text-sm text-slate-500 mb-2 dark:text-slate-400">Permisos efectivos</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {effectivePerms.effectivePermissions.map(p => (
-                                <div key={p.code} className="p-2 bg-slate-50 dark:bg-background-dark rounded-md text-sm text-slate-600 dark:text-slate-300">{p.code}</div>
+                                <div key={p.code} className="p-2 bg-slate-50 dark:bg-background-dark rounded-md text-sm text-slate-600 dark:text-slate-300 break-all">{p.code}</div>
                             ))}
                         </div>
                     </div>

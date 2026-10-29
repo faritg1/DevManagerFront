@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { profileService, rbacService, usersService } from "../../../shared/api";
+import { profileService, rbacService } from "../../../shared/api";
 import type {
   ProfileResponse,
   UpdateProfileRequest,
   EffectivePermissionsResponse,
-  RoleDto,
 } from "../../../shared/api/types";
 import type { ApiError } from "../../../shared/api";
 import { useAuth } from "../../../shared/context";
@@ -22,17 +21,11 @@ interface UseProfileResult {
   profileForm: UpdateProfileRequest;
   effectivePerms: EffectivePermissionsResponse | null;
   permsLoading: boolean;
-  availableRoles: RoleDto[];
-  rolesLoading: boolean;
-  requestingRoleId: string | null;
-  setRequestingRoleId: React.Dispatch<React.SetStateAction<string | null>>;
   setProfileForm: React.Dispatch<React.SetStateAction<UpdateProfileRequest>>;
   startEditing: () => void;
   cancelEditing: () => void;
   saveProfile: () => Promise<{ success: boolean; message?: string }>;
   deleteProfile: () => Promise<boolean>;
-  loadAvailableRoles: () => Promise<void>;
-  requestRoleChange: (roleId: string) => Promise<boolean>;
   reload: () => void;
 }
 
@@ -50,10 +43,6 @@ export function useProfile(): UseProfileResult {
   const [effectivePerms, setEffectivePerms] =
     useState<EffectivePermissionsResponse | null>(null);
   const [permsLoading, setPermsLoading] = useState(false);
-
-  const [availableRoles, setAvailableRoles] = useState<RoleDto[]>([]);
-  const [rolesLoading, setRolesLoading] = useState(false);
-  const [requestingRoleId, setRequestingRoleId] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -90,8 +79,8 @@ export function useProfile(): UseProfileResult {
           if (permResp.success && permResp.data) {
             setEffectivePerms(permResp.data);
           }
-        } catch (err) {
-          console.error("[Profile] Error al cargar permisos:", err);
+        } catch {
+          // The permissions card shows its empty state.
         } finally {
           setPermsLoading(false);
         }
@@ -216,33 +205,6 @@ export function useProfile(): UseProfileResult {
     return true;
   };
 
-  const loadAvailableRoles = async () => {
-    setRolesLoading(true);
-    try {
-      const resp = await rbacService.getRoles();
-      if (resp.success && resp.data) setAvailableRoles(resp.data);
-    } catch (err) {
-      console.error("Failed to load roles list", err);
-    } finally {
-      setRolesLoading(false);
-    }
-  };
-
-  const requestRoleChange = async (roleId: string) => {
-    if (!user?.id) return false;
-    try {
-      const resp = await usersService.update(user.id, { roleId });
-      if (resp.success) {
-        const permResp = await rbacService.getUserEffectivePermissions(user.id);
-        if (permResp.success && permResp.data) setEffectivePerms(permResp.data);
-        return true;
-      }
-    } catch (err) {
-      console.error("Request role change failed", err);
-    }
-    return false;
-  };
-
   return {
     profile,
     isLoading,
@@ -253,17 +215,11 @@ export function useProfile(): UseProfileResult {
     profileForm,
     effectivePerms,
     permsLoading,
-    availableRoles,
-    rolesLoading,
-    requestingRoleId,
-    setRequestingRoleId,
     setProfileForm,
     startEditing,
     cancelEditing,
     saveProfile,
     deleteProfile,
-    loadAvailableRoles,
-    requestRoleChange,
     reload: fetchProfile,
   };
 }

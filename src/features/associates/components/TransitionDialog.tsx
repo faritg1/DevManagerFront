@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input } from '../../../shared/ui';
+import { Modal, Button, Input, Textarea } from '../../../shared/ui';
 import type { AssociateStatus } from '../../../shared/api/types';
 import { STATUS_LABELS } from '../labels';
 
@@ -24,17 +24,13 @@ export const TransitionDialog: React.FC<Props> = ({ isOpen, toStatus, isSaving, 
             isOpen={isOpen}
             onClose={onClose}
             title={`Cambiar a ${STATUS_LABELS[toStatus]}`}
+            onSubmit={() => {
+                if (!canSubmit || isSaving) return;
+                onConfirm({ effectiveDate: effectiveDate || undefined, reason: reason.trim() || undefined });
+            }}
             footer={
                 <>
-                    <Button
-                        isLoading={isSaving}
-                        disabled={!canSubmit}
-                        variant={isWithdraw ? 'danger' : 'primary'}
-                        onClick={() => onConfirm({
-                            effectiveDate: effectiveDate || undefined,
-                            reason: reason.trim() || undefined,
-                        })}
-                    >
+                    <Button type="submit" isLoading={isSaving} variant={isWithdraw ? 'danger' : 'primary'}>
                         Confirmar
                     </Button>
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
@@ -49,17 +45,15 @@ export const TransitionDialog: React.FC<Props> = ({ isOpen, toStatus, isSaving, 
                     onChange={(e) => setEffectiveDate(e.target.value)}
                 />
                 {isWithdraw && (
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="transition-motivo-del-retiro" className="text-slate-700 dark:text-white text-sm font-bold">Motivo del retiro *</label>
-                        <textarea id="transition-motivo-del-retiro"
-                            value={reason}
-                            maxLength={400}
-                            rows={3}
-                            onChange={(e) => setReason(e.target.value)}
-                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
-                        />
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{reason.length}/400</span>
-                    </div>
+                    <Textarea
+                        label="Motivo del retiro *"
+                        required
+                        value={reason}
+                        maxLength={400}
+                        rows={3}
+                        hint={`${reason.length}/400`}
+                        onChange={(e) => setReason(e.target.value)}
+                    />
                 )}
             </div>
         </Modal>

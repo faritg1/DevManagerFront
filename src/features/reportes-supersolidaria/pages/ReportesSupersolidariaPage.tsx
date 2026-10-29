@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
 import type {
     ComplianceDto,
@@ -46,6 +46,10 @@ export const ReportesSupersolidariaPage: React.FC = () => {
 
     const [viewing, setViewing] = useState<SupersolidariaReportDto | null>(null);
 
+    const pager = usePagedFilter(reports, {
+        searchFields: r => [formatDate(r.period), REPORT_TYPE_LABEL[r.reportType], r.isSent ? 'Enviado' : 'Pendiente'],
+    });
+
     const loadData = async () => {
         setIsLoading(true);
         try {
@@ -63,6 +67,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
     }, []);
 
     const handleGenerate = async () => {
+        if (genLoading) return;
         setGenLoading(true);
         try {
             const res = await reportesSupersolidariaService.generate({
@@ -118,6 +123,9 @@ export const ReportesSupersolidariaPage: React.FC = () => {
             </div>
 
             <Card padding="none" className="overflow-hidden">
+                <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                    <SearchInput pager={pager} label="Buscar por período, tipo o estado" />
+                </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>
                         <thead className={THEAD_CLASS}>
@@ -133,14 +141,14 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         <tbody className={TBODY_CLASS}>
                             {isLoading ? (
                                 <tr><td colSpan={6}><LoadingBlock /></td></tr>
-                            ) : reports.length === 0 ? (
-                                <tr><td colSpan={6}><EmptyState title="No hay reportes generados" /></td></tr>
+                            ) : pager.total === 0 ? (
+                                <tr><td colSpan={6}><EmptyState title={pager.query ? 'Ningún reporte coincide con la búsqueda' : 'No hay reportes generados'} /></td></tr>
                             ) : (
-                                reports.map(r => (
+                                pager.pageItems.map(r => (
                                     <tr key={r.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-bold text-slate-900 dark:text-white`}>{formatDate(r.period)} – {formatDate(r.periodEnd)}</td>
                                         <td className={TD_CLASS}><Badge variant="info">{REPORT_TYPE_LABEL[r.reportType] ?? r.reportType}</Badge></td>
-                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{new Date(r.createdAt).toLocaleDateString('es-ES')}</td>
+                                        <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(r.createdAt)}</td>
                                         <td className={TD_CLASS}>
                                             <Badge variant={r.isSent ? 'success' : 'warning'} dot>{r.isSent ? 'Enviado' : 'Pendiente'}</Badge>
                                         </td>
@@ -158,35 +166,40 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                <Pager pager={pager} />
             </Card>
 
             <Modal
                 isOpen={genOpen}
                 onClose={() => setGenOpen(false)}
+                onSubmit={handleGenerate}
                 title="Generar Reporte Supersolidaria"
                 icon={<FileBarChart2 className="text-blue-500" size={20} />}
                 size="md"
                 footer={
                     <>
-                        <Button onClick={handleGenerate} isLoading={genLoading}>Generar</Button>
+                        <Button type="submit" isLoading={genLoading}>Generar</Button>
                         <Button variant="outline" onClick={() => setGenOpen(false)}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="grid grid-cols-1 gap-4">
-                    <Input type="date" label="Inicio del período *" value={genForm.period} onChange={(e) => setGenForm(f => ({ ...f, period: e.target.value }))} />
-                    <p className="text-xs text-slate-500 -mt-2 dark:text-slate-400">Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero.</p>
-                    <div>
-                        <label htmlFor="reportes-supersolidaria-tipo-de-reporte" className="text-slate-700 dark:text-white text-sm font-bold">Tipo de reporte</label>
-                        <select id="reportes-supersolidaria-tipo-de-reporte"
-                            value={genForm.reportType}
-                            onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
-                            className={`${SELECT_CLASS} w-full mt-2`}
-                        >
-                            <option value={1}>Trimestral</option>
-                            <option value={2}>Anual</option>
-                        </select>
-                    </div>
+                    <Input
+                        type="date"
+                        label="Inicio del período *"
+                        required
+                        hint="Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero."
+                        value={genForm.period}
+                        onChange={(e) => setGenForm(f => ({ ...f, period: e.target.value }))}
+                    />
+                    <Select
+                        label="Tipo de reporte"
+                        value={genForm.reportType}
+                        onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
+                    >
+                        <option value={1}>Trimestral</option>
+                        <option value={2}>Anual</option>
+                    </Select>
                     <Input label="Observaciones" value={genForm.notes ?? ''} onChange={(e) => setGenForm(f => ({ ...f, notes: e.target.value }))} />
                 </div>
             </Modal>

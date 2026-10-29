@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FilePlus } from 'lucide-react';
-import { Button, Card, Modal, Input, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { Button, Card, Modal, Input, Textarea, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
 import type { DataPolicyDto } from '../../../shared/api/types';
-import { errorText, formatDate, needsLocalToast } from '../labels';
+import { errorText, formatDate, needsLocalToast, versionLabel } from '../labels';
 
 const EMPTY = { version: '', purpose: '', text: '', effectiveFrom: '' };
 
@@ -31,6 +31,7 @@ export const DataPoliciesPage: React.FC = () => {
     useEffect(() => { load(); }, [load]);
 
     const publish = async () => {
+        if (isSaving || !canPublish) return;
         setIsSaving(true);
         try {
             const res = await consentsService.createPolicy({
@@ -71,7 +72,7 @@ export const DataPoliciesPage: React.FC = () => {
                     <Card key={p.id} padding="md">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <h2 className="font-bold text-slate-900 dark:text-white">
-                                v{p.version}{i === 0 && <span className="ml-2 text-xs text-emerald-600">(más reciente)</span>}
+                                {versionLabel(p.version)}{i === 0 && <span className="ml-2 text-xs text-emerald-600">(más reciente)</span>}
                             </h2>
                             <span className="text-xs text-slate-500 dark:text-slate-400">Vigente desde {formatDate(p.effectiveFrom)}</span>
                         </div>
@@ -84,29 +85,28 @@ export const DataPoliciesPage: React.FC = () => {
             <Modal
                 isOpen={modal.isOpen}
                 onClose={modal.close}
+                onSubmit={publish}
                 title="Publicar política"
                 icon={<FilePlus className="text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
-                        <Button isLoading={isSaving} disabled={!canPublish} onClick={publish}>Publicar</Button>
+                        <Button type="submit" isLoading={isSaving}>Publicar</Button>
                         <Button variant="outline" onClick={modal.close}>Cancelar</Button>
                     </>
                 }
             >
                 <div className="space-y-4">
-                    <Input label="Versión *" placeholder="2.0" value={form.version} onChange={(e) => setForm((f) => ({ ...f, version: e.target.value }))} />
-                    <Input label="Finalidad *" value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
+                    <Input label="Versión *" required placeholder="2.0" value={form.version} onChange={(e) => setForm((f) => ({ ...f, version: e.target.value }))} />
+                    <Input label="Finalidad *" required value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
                     <Input label="Vigente desde (opcional)" type="date" value={form.effectiveFrom} onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))} />
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="data-policies-texto" className="text-slate-700 dark:text-white text-sm font-bold">Texto *</label>
-                        <textarea id="data-policies-texto"
-                            rows={6}
-                            value={form.text}
-                            onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white p-3 outline-none focus:ring-1 focus:ring-primary"
-                        />
-                    </div>
+                    <Textarea
+                        label="Texto *"
+                        required
+                        rows={6}
+                        value={form.text}
+                        onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
+                    />
                 </div>
             </Modal>
         </PageContainer>

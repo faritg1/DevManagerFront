@@ -90,11 +90,8 @@ export const API_ENDPOINTS = {
 
   // Agent IA (sin /api prefix - usa agentClient)
   AGENT: {
-    QUERY: "/Agent/query",
     VALIDATE_SKILL: "/Agent/validate-skill",
     MATCH_CANDIDATES: "/Agent/match-candidates",
-    APPROVE: (actionId: string) => `/Agent/approve/${actionId}`,
-    REJECT: (actionId: string) => `/Agent/reject/${actionId}`,
   },
 
   // Roles & Permissions (RBAC)
@@ -252,11 +249,17 @@ export const API_ENDPOINTS = {
       ENVIAR: (id: string) => `/reportes/supersolidaria/${id}/enviar`,
     },
 
+    AI: {
+      CHAT: "/ai/chat",
+      CAPABILITIES: "/ai/capabilities",
+      CONVERSATIONS: "/ai/conversations",
+      MESSAGES: (id: string) => `/ai/conversations/${id}/messages`,
+      CONVERSATION: (id: string) => `/ai/conversations/${id}`,
+    },
+
     // Asistente Cooperativo
     ASISTENTE: {
-      CONSULTAR: "/asistente/consultar",
       GENERAR_REPORTE: "/asistente/generar-reporte",
       VERIFICAR_CUMPLIMIENTO: "/asistente/verificar-cumplimiento",
-      RESPONDER: "/asistente/responder",
     },
   } as const;

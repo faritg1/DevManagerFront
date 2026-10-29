@@ -360,41 +360,6 @@ export interface AssignmentResponse {
 }
 
 // ============ AGENT IA ============
-export interface AgentQueryRequest {
-  query: string;
-  requireApproval?: boolean;
-}
-
-export interface AgentToolExecuted {
-  tool_name: string;
-  input: string;
-  output: string;
-  success: boolean;
-}
-
-export interface AgentMetadata {
-  reasoning: string;
-  tools_executed: AgentToolExecuted[];
-  requires_human_approval: boolean;
-  action_id: string | null;
-}
-
-export interface AgentSuggestedAction {
-  label: string;
-  query: string;
-}
-
-export interface AgentQueryResponse {
-  response_type: 'text' | 'mixed' | 'table';
-  summary: string;
-  markdown: string;
-  payload: {
-    text: string;
-  };
-  metadata: AgentMetadata;
-  suggested_actions: AgentSuggestedAction[];
-}
-
 export interface ValidateSkillAIRequest {
   userId: string;
   skillId: string;
@@ -501,10 +466,6 @@ export interface MatchCandidatesResponse {
   projectName: string;
   candidates: CandidateMatch[];
   analysisNarrative: string;
-}
-
-export interface RejectActionRequest {
-  reason: string;
 }
 
 // ============ RBAC (ROLES & PERMISSIONS) ============
@@ -1244,20 +1205,6 @@ export interface GenerateSupersolidariaReportRequest {
 }
 
 // ============ COOPERATIVE ASSISTANT ============
-export interface RegulationCitation {
-  rule: string;
-  article: string;
-  description?: string;
-}
-
-export interface CooperativeQueryResponse {
-  answer: string;
-  markdown?: string;
-  citations: RegulationCitation[];
-  suggestedActions: string[];
-  generatedByAi: boolean;
-}
-
 export interface ComplianceAreaDto {
   name: string;
   applicableRule: string;
@@ -1283,4 +1230,60 @@ export interface VerifyComplianceRequest {
   verifyEducation: boolean;
   verifyOccupationalHealth: boolean;
   verifyHabeasData: boolean;
+}
+
+// ============ AI ASSISTANT ============
+export interface AiChatRequest {
+  conversationId?: string;
+  message: string;
+  moduleKey?: string;
+}
+
+export interface AiSource {
+  tool: string;
+  module: string;
+  label: string;
+}
+
+export type AiToolStatus = 'started' | 'done' | 'denied' | 'error';
+
+/** Server-sent events of POST /ai/chat, in stream order. Every stream ends with `done` or `error`. */
+export type AiStreamEvent =
+  | { type: 'meta'; data: { conversationId: string; messageId: string; modules: string[] } }
+  | { type: 'tool'; data: { name: string; module: string; status: AiToolStatus; rows?: number } }
+  | { type: 'delta'; data: { text: string } }
+  | { type: 'refusal'; data: { deniedModules: string[]; message: string } }
+  | { type: 'done'; data: { messageId: string; sources: AiSource[]; usage: { in: number; out: number } } }
+  | { type: 'error'; data: { code: string; message: string } };
+
+export interface AiCapability {
+  key: string;
+  name: string;
+  suggestions: string[];
+}
+
+export interface AiCapabilities {
+  allowed: AiCapability[];
+  denied: string[];
+}
+
+export interface AiConversation {
+  id: string;
+  title: string;
+  moduleKey?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AiStoredMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'tool' | 'refusal';
+  content: string;
+  toolName?: string | null;
+  moduleKey?: string | null;
+  toolStatus?: 'ok' | 'denied' | 'error' | 'truncated' | null;
+  resultRows?: number | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  createdAt: string;
 }

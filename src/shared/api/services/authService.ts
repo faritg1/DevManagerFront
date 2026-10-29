@@ -8,6 +8,7 @@ import type {
   ApiResponse,
 } from "../types";
 import { STORAGE_KEYS } from "../../config/constants";
+import { clearImpersonation } from "../impersonation";
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
@@ -41,6 +42,8 @@ export const authService = {
   logout(): void {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    // Signing out while impersonating ends both sessions
+    clearImpersonation();
     window.location.hash = "#/";
   },
 };

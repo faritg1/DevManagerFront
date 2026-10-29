@@ -10,6 +10,7 @@ export const ROUTES = {
     EDIT_PROJECT: '/projects/:id/edit',
 
     REPORTS: '/reports',
+    AI_USAGE: '/ai-usage',
     
     ORGANIZATIONS: '/organizations',
     USERS: '/users',
@@ -39,6 +40,7 @@ export const ROUTES = {
     COMPETENCIAS: '/competencias',
     REPORTES_SUPERSOLIDARIA: '/reportes-supersolidaria',
     ASISTENTE: '/asistente',
+    SUPER_ADMIN: '/superadmin',
 } as const;
 
 export const NAV_SECTIONS = {
@@ -46,6 +48,7 @@ export const NAV_SECTIONS = {
     AGENTS: 'Agentes IA',
     ADMIN: 'Administración',
     SOLIDARIO: 'Gestión Solidaria',
+    SUPER_ADMIN: 'Superadministración',
 } as const;
 
 export const STORAGE_KEYS = {
@@ -55,6 +58,10 @@ export const STORAGE_KEYS = {
     SIDEBAR_COLLAPSED: 'sidebar_collapsed',
     SIDEBAR_SECTIONS: 'sidebar_collapsed_sections',
     LANGUAGE: 'language',
+    /** While impersonating: the super admin's own session, restored on exit or when the short-lived token expires */
+    IMPERSONATOR_TOKEN: 'impersonator_token',
+    IMPERSONATOR_USER: 'impersonator_user',
+    IMPERSONATION: 'impersonation',
 } as const;
 
 export const associateDetailPath = (userId: string): string => `/associates/${userId}`;

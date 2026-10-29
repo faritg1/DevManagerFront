@@ -3,9 +3,11 @@ import { rbacService } from '../api';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 
 interface PermissionsContextValue {
-    /** True when the signed-in user holds the code (server already prunes options of ungranted sections). */
+    /** True when the signed-in user holds the code (server already prunes options and actions of ungranted ancestors); always true for admins. */
     has: (code: string) => boolean;
     isAdmin: boolean;
+    /** Platform super administrator (server-decided; false while impersonating). */
+    isSuperAdmin: boolean;
     isLoading: boolean;
     /** /permissions/me failed: callers fall back to the role-name `adminOnly` behavior. */
     failed: boolean;
@@ -19,6 +21,7 @@ export const PermissionsProvider: React.FC<{ children: ReactNode }> = ({ childre
     const roleIsAdmin = useIsAdmin();
     const [codes, setCodes] = useState<Set<string> | null>(null);
     const [isAdmin, setIsAdmin] = useState(roleIsAdmin);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [failed, setFailed] = useState(false);
 
     const refresh = useCallback(async () => {
@@ -26,6 +29,7 @@ export const PermissionsProvider: React.FC<{ children: ReactNode }> = ({ childre
             const res = await rbacService.getMyPermissions();
             setCodes(new Set(res.data.effectivePermissions.map((p) => p.code)));
             setIsAdmin(res.data.isAdmin);
+            setIsSuperAdmin(!!res.data.isSuperAdmin);
             setFailed(false);
         } catch {
             setFailed(true);
@@ -35,12 +39,13 @@ export const PermissionsProvider: React.FC<{ children: ReactNode }> = ({ childre
     useEffect(() => { refresh(); }, [refresh]);
 
     const value = useMemo<PermissionsContextValue>(() => ({
-        has: (code) => !!codes?.has(code),
+        has: (code) => (failed ? roleIsAdmin : isAdmin) || !!codes?.has(code),
         isAdmin: failed ? roleIsAdmin : isAdmin,
+        isSuperAdmin,
         isLoading: !codes && !failed,
         failed,
         refresh,
-    }), [codes, isAdmin, roleIsAdmin, failed, refresh]);
+    }), [codes, isAdmin, isSuperAdmin, roleIsAdmin, failed, refresh]);
 
     return <PermissionsContext.Provider value={value}>{children}</PermissionsContext.Provider>;
 };

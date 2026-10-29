@@ -1,18 +1,14 @@
 import React, { useState } from "react";
 import {
   UserX,
-  Sparkles,
-  CheckCircle2,
   AlertTriangle,
-  TrendingUp,
 } from "lucide-react";
 import { useAuth, useNotification, useConfig } from "../../../shared/context";
 import { useModal, useConfirm } from "../../../shared/hooks";
 import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
 import { useCertifications } from "../hooks/useCertifications";
-import { agentService } from "../../../shared/api";
-import { Card, Badge, Button, Modal, PageContainer, LoadingBlock } from "../../../shared/ui";
+import { Button, PageContainer, LoadingBlock } from "../../../shared/ui";
 import {
   ProfileHeader,
   BioCard,
@@ -26,7 +22,6 @@ import {
 import type {
   EmployeeSkillResponse,
   UpsertEmployeeSkillRequest,
-  ValidateSkillAIResponse,
   CertificationResponse,
   CreateCertificationRequest,
 } from "../../../shared/api/types";
@@ -74,7 +69,6 @@ export const ProfilePage: React.FC = () => {
   } = useCertifications();
 
   const skillModal = useModal();
-  const aiValidationModal = useModal();
   const { confirm } = useConfirm();
   const [editingSkill, setEditingSkill] =
     useState<EmployeeSkillResponse | null>(null);
@@ -84,14 +78,6 @@ export const ProfilePage: React.FC = () => {
     evidenceUrl: "",
     experienceDescription: "",
   });
-  const [validatingSkillId, setValidatingSkillId] = useState<string | null>(
-    null,
-  );
-  const [aiValidationResult, setAiValidationResult] = useState<{
-    skillName: string;
-    level: number;
-    result: ValidateSkillAIResponse;
-  } | null>(null);
 
   const addSkill = async () => {
     setEditingSkill(null);
@@ -143,39 +129,6 @@ export const ProfilePage: React.FC = () => {
         type: "error",
         message: "Error al guardar habilidad",
       });
-    }
-  };
-
-  const handleValidateSkillAI = async (skill: EmployeeSkillResponse) => {
-    if (!user?.id) return;
-    setValidatingSkillId(skill.id);
-    try {
-      const response = await agentService.validateSkill({
-        userId: user.id,
-        skillId: skill.skillId,
-        level: skill.level,
-        evidenceUrl: skill.evidenceUrl,
-      });
-      if (response.success && response.data) {
-        setAiValidationResult({
-          skillName: skill.skillName,
-          level: skill.level,
-          result: response.data,
-        });
-        aiValidationModal.open();
-      } else {
-        showNotification({
-          type: "error",
-          message: response.message || "Error al validar la habilidad con IA",
-        });
-      }
-    } catch (err) {
-      showNotification({
-        type: "error",
-        message: "Error de conexión al servicio de IA",
-      });
-    } finally {
-      setValidatingSkillId(null);
     }
   };
 
@@ -303,11 +256,9 @@ export const ProfilePage: React.FC = () => {
               skills={mySkills}
               isLoading={isLoadingSkills}
               opLoading={skillOpLoading}
-              validatingSkillId={validatingSkillId}
               onAdd={addSkill}
               onEdit={editSkill}
               onDelete={removeSkill}
-              onValidateAI={handleValidateSkillAI}
               catalogs={catalogs}
             />
             <CertificationsSection
@@ -370,121 +321,6 @@ export const ProfilePage: React.FC = () => {
         onSave={saveSkillHandler}
         catalogs={catalogs}
       />
-
-      {/* Modal resultado de validación IA */}
-      <Modal
-        isOpen={aiValidationModal.isOpen}
-        onClose={aiValidationModal.close}
-        title="Validación IA de Habilidad"
-        icon={<Sparkles className="text-purple-500" size={20} />}
-        size="md"
-      >
-        {aiValidationResult && (
-          <div className="space-y-5">
-            <div
-              className={`p-4 rounded-xl border ${
-                aiValidationResult.result.isValid
-                  ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30"
-                  : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30"
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                {aiValidationResult.result.isValid ? (
-                  <CheckCircle2
-                    className="text-emerald-500 shrink-0"
-                    size={24}
-                  />
-                ) : (
-                  <AlertTriangle
-                    className="text-amber-500 shrink-0"
-                    size={24}
-                  />
-                )}
-                <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">
-                    {aiValidationResult.skillName} — Nivel{" "}
-                    {aiValidationResult.level}
-                  </h4>
-                  <p
-                    className={`text-sm font-medium ${
-                      aiValidationResult.result.isValid
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-amber-600 dark:text-amber-400"
-                    }`}
-                  >
-                    {aiValidationResult.result.isValid
-                      ? "Nivel validado correctamente"
-                      : "Requiere revisión"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Confianza del análisis
-                  </span>
-                  <span className="font-bold text-slate-700 dark:text-slate-300">
-                    {aiValidationResult.result.confidence}%
-                  </span>
-                </div>
-                <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      aiValidationResult.result.confidence >= 70
-                        ? "bg-emerald-500"
-                        : aiValidationResult.result.confidence >= 40
-                          ? "bg-amber-500"
-                          : "bg-rose-500"
-                    }`}
-                    style={{
-                      width: `${aiValidationResult.result.confidence}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                <TrendingUp size={16} className="text-primary" />
-                Análisis
-              </h5>
-              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed bg-slate-50 dark:bg-background-dark p-3 rounded-xl border border-slate-200 dark:border-border-dark">
-                {aiValidationResult.result.reasoning}
-              </p>
-            </div>
-
-            {aiValidationResult.result.recommendations.length > 0 && (
-              <div>
-                <h5 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                  <Sparkles size={16} className="text-purple-500" />
-                  Recomendaciones
-                </h5>
-                <ul className="space-y-2">
-                  {aiValidationResult.result.recommendations.map((rec, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-background-dark p-3 rounded-lg border border-slate-200 dark:border-border-dark"
-                    >
-                      <Badge variant="default" className="shrink-0 mt-0.5">
-                        {i + 1}
-                      </Badge>
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-2">
-              <Button variant="outline" onClick={aiValidationModal.close}>
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </PageContainer>
   );
 };

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { BackButton, Button, Card, Badge, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
+import { usePermission } from '../../../shared/hooks';
 import { associatesService } from '../../../shared/api';
 import type { AssociateDetailDto, AssociateStatus } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
@@ -22,6 +23,7 @@ const ACTION_LABELS: Record<AssociateStatus, string> = {
 export const AssociateDetailPage: React.FC = () => {
     const { userId = '' } = useParams<{ userId: string }>();
     const { showNotification } = useNotification();
+    const { has, isAdmin } = usePermission();
     const [data, setData] = useState<AssociateDetailDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [target, setTarget] = useState<AssociateStatus | null>(null);
@@ -83,7 +85,7 @@ export const AssociateDetailPage: React.FC = () => {
                 description={`${data.email} · ${ROLE_LABELS[data.role]}`}
                 actions={<>
                     <Badge variant={STATUS_VARIANTS[data.status]}>{STATUS_LABELS[data.status]}</Badge>
-                    {ALLOWED_TRANSITIONS[data.status].map((s) => (
+                    {has('menu.solidarity.associates.edit') && ALLOWED_TRANSITIONS[data.status].map((s) => (
                         <Button key={s} size="sm" variant={s === 4 ? 'danger' : 'primary'} onClick={() => setTarget(s)}>
                             {ACTION_LABELS[s]}
                         </Button>
@@ -96,22 +98,27 @@ export const AssociateDetailPage: React.FC = () => {
                 <MembershipPeriodsTable periods={data.periods} />
             </Card>
 
-            <Card padding="md">
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Documento de identidad</h2>
-                <DocumentForm
-                    key={`${data.documentType}-${data.documentNumber}-${data.hasActiveConsent}`}
-                    userId={data.userId}
-                    documentType={data.documentType}
-                    documentNumber={data.documentNumber}
-                    hasActiveConsent={data.hasActiveConsent}
-                    onSaved={load}
-                />
-            </Card>
+            {/* PUT /users/{id}/document stays admin-only (user administration) */}
+            {isAdmin && (
+                <Card padding="md">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Documento de identidad</h2>
+                    <DocumentForm
+                        key={`${data.documentType}-${data.documentNumber}-${data.hasActiveConsent}`}
+                        userId={data.userId}
+                        documentType={data.documentType}
+                        documentNumber={data.documentNumber}
+                        hasActiveConsent={data.hasActiveConsent}
+                        onSaved={load}
+                    />
+                </Card>
+            )}
 
-            <Card padding="md">
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Consentimiento de datos (Habeas Data)</h2>
-                <ConsentsPanel userId={data.userId} onChanged={load} />
-            </Card>
+            {has('menu.solidarity.data_policies') && (
+                <Card padding="md">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Consentimiento de datos (Habeas Data)</h2>
+                    <ConsentsPanel userId={data.userId} onChanged={load} />
+                </Card>
+            )}
 
             {target !== null && (
                 <TransitionDialog

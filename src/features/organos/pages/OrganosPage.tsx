@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
 import { Card, Badge, Button, IconButton, Input, Select, Textarea, Modal, ProgressBar, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, useConfirm } from '../../../shared/hooks';
+import { useIsAdmin, useConfirm, usePermission } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
 import type {
     AssemblyDto,
@@ -56,6 +56,9 @@ export const OrganosPage: React.FC = () => {
     const { user } = useAuth();
     const { confirm } = useConfirm();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canMembers = has('menu.solidarity.governing_bodies.members');
+    const canAssemblies = has('menu.solidarity.governing_bodies.assemblies');
 
     const [bodies, setBodies] = useState<GoverningBodyDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -113,10 +116,10 @@ export const OrganosPage: React.FC = () => {
 
     useEffect(() => {
         loadBodies();
-        if (isAdmin) {
+        if (isAdmin || canMembers) {
             associatesService.getAll().then(res => setAssociates(res.success && res.data ? res.data : [])).catch(() => {});
         }
-    }, [isAdmin]);
+    }, [isAdmin, canMembers]);
 
     const handleCreate = submitting(async () => {
         if (!createForm.name.trim()) return;
@@ -381,7 +384,7 @@ export const OrganosPage: React.FC = () => {
             <PageHeader
                 title="Órganos"
                 description="Órganos de administración y control, miembros, actas, asambleas y votos."
-                actions={<><AskAiButton moduleKey="governing_bodies" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="governing_bodies" />{has('menu.solidarity.governing_bodies.create') && (
                     <Button icon={Plus} onClick={() => setCreateOpen(true)}>
                         Crear Órgano
                     </Button>
@@ -411,7 +414,7 @@ export const OrganosPage: React.FC = () => {
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Users size={16} /> Miembros</h3>
-                                    {isAdmin && <Button size="sm" variant="outline" icon={Plus} onClick={() => setMemberOpen(true)}>Asignar</Button>}
+                                    {canMembers && <Button size="sm" variant="outline" icon={Plus} onClick={() => setMemberOpen(true)}>Asignar</Button>}
                                 </div>
                                 <div className="space-y-2">
                                     {members.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Sin miembros.</p>}
@@ -422,7 +425,7 @@ export const OrganosPage: React.FC = () => {
                                                 <p className="text-xs text-slate-500 dark:text-slate-400">{m.position} · {formatDate(m.startDate)}{m.endDate ? ` – ${formatDate(m.endDate)}` : ''}</p>
                                                 <Badge variant={m.isActive ? 'success' : 'default'}>{m.isActive ? 'Activo' : 'Inactivo'}</Badge>
                                             </div>
-                                            {isAdmin && (
+                                            {canMembers && (
                                                 <IconButton icon={Trash2} label={`Retirar a ${m.fullName}`} variant="danger" onClick={() => handleRemoveMember(m)} />
                                             )}
                                         </div>
@@ -433,7 +436,7 @@ export const OrganosPage: React.FC = () => {
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><FileText size={16} /> Actas</h3>
-                                    {isAdmin && (
+                                    {has('menu.solidarity.governing_bodies.minutes') && (
                                         <Button size="sm" variant="outline" icon={Plus} onClick={() => { setMinutesForm(emptyMinutes(selected.id)); setMinutesOpen(true); }}>
                                             Registrar
                                         </Button>
@@ -458,7 +461,7 @@ export const OrganosPage: React.FC = () => {
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Building2 size={16} /> Asambleas</h3>
-                                    {isAdmin && (
+                                    {canAssemblies && (
                                         <Button size="sm" variant="outline" icon={Plus} onClick={() => { setConveneForm(emptyAssembly(selected.id)); setConveneOpen(true); }}>
                                             Convocar
                                         </Button>
@@ -742,7 +745,7 @@ export const OrganosPage: React.FC = () => {
                             </div>
                         )}
 
-                        {isAdmin && !assembly.isClosed && (
+                        {canAssemblies && !assembly.isClosed && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-background-dark space-y-3">
                                     <h4 className="font-bold text-slate-900 dark:text-white">Asistencia</h4>

@@ -22,8 +22,8 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, type ActionMenuItem } from '../../../shared/ui';
-import { useModal, useIsAdmin, usePagedFilter } from '../../../shared/hooks';
-import { useNotification } from '../../../shared/context';
+import { useModal, useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
+import { useAuth, useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
@@ -43,6 +43,9 @@ export const UsersPage: React.FC = () => {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const isAdmin = useIsAdmin();
+    const canValidateSkills = usePermission().has('menu.platform.skills.validate');
+    // Nobody validates their own skills (the API answers 403): hide the buttons on the caller's own row
+    const { user: me } = useAuth();
     
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -407,7 +410,7 @@ export const UsersPage: React.FC = () => {
                 { label: 'Permisos efectivos', icon: Key, onSelect: open(permissionsModal) },
             );
         }
-        items.push({ label: 'Skills / Validar', icon: Award, onSelect: open(skillsModal) });
+        items.push({ label: canValidateSkills && user.id !== me?.id ? 'Skills / Validar' : 'Skills', icon: Award, onSelect: open(skillsModal) });
         if (isAdmin) {
             items.push(
                 user.isActive
@@ -974,7 +977,10 @@ export const UsersPage: React.FC = () => {
                 ) : (
                     <div className="space-y-3">
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                            {userSkills.length} habilidades declaradas. Puedes validar o ajustar el nivel de cada una.
+                            {userSkills.length} habilidades declaradas.{' '}
+                            {selectedUser?.id === me?.id
+                                ? 'Son tus propias habilidades: debe validarlas otra persona.'
+                                : canValidateSkills && 'Puedes validar o ajustar el nivel de cada una.'}
                         </p>
                         {userSkills.map((skill) => (
                             <div
@@ -1013,6 +1019,7 @@ export const UsersPage: React.FC = () => {
                                     </p>
                                 )}
 
+                                {canValidateSkills && selectedUser?.id !== me?.id && (
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <Button
                                         variant="outline"
@@ -1073,6 +1080,7 @@ export const UsersPage: React.FC = () => {
                                         </Button>
                                     )}
                                 </div>
+                                )}
                             </div>
                         ))}
                     </div>

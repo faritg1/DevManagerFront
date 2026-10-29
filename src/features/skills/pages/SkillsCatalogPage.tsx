@@ -14,7 +14,7 @@ import {
 import { skillsService } from "../../../shared/api";
 import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
-import { useConfirm, usePagedFilter } from "../../../shared/hooks";
+import { useConfirm, usePagedFilter, usePermission } from "../../../shared/hooks";
 import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState, Pager } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 import { AskAiButton } from "../../ai/AskAiButton";
@@ -25,6 +25,7 @@ export const SkillsCatalogPage: React.FC = () => {
   const toast = useToast();
   const { confirm } = useConfirm();
   const { catalogs } = useConfig();
+  const { has } = usePermission();
 
   const [skills, setSkills] = useState<SkillDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -187,9 +188,9 @@ export const SkillsCatalogPage: React.FC = () => {
         icon={<Code2 size={28} className="text-primary" />}
         title="Catálogo de Habilidades"
         description="Gestiona las habilidades globales y organizacionales"
-        actions={<><AskAiButton moduleKey="skills" /><Button icon={Plus} onClick={handleCreate}>
+        actions={<><AskAiButton moduleKey="skills" />{has("menu.platform.skills.create") && <Button icon={Plus} onClick={handleCreate}>
           Nueva Habilidad
-        </Button></>}
+        </Button>}</>}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -281,7 +282,7 @@ export const SkillsCatalogPage: React.FC = () => {
                 ? "No se encontraron habilidades con los filtros aplicados"
                 : "No hay habilidades registradas"
             }
-            action={!searchQuery && filterType === "all" && filterCategory === "all" && (
+            action={!searchQuery && filterType === "all" && filterCategory === "all" && has("menu.platform.skills.create") && (
               <Button variant="outline" icon={Plus} onClick={handleCreate}>
                 Crear primera habilidad
               </Button>
@@ -337,14 +338,14 @@ export const SkillsCatalogPage: React.FC = () => {
                       {renderSkillTypeBadge(skill.skillType)}
                     </td>
                     <TableActions>
-                      <IconButton icon={Pencil} label={`Editar ${skill.name}`} onClick={() => handleEdit(skill)} />
-                      <IconButton
+                      {has("menu.platform.skills.edit") && <IconButton icon={Pencil} label={`Editar ${skill.name}`} onClick={() => handleEdit(skill)} />}
+                      {has("menu.platform.skills.delete") && <IconButton
                         icon={Trash2}
                         label={`Eliminar ${skill.name}`}
                         variant="danger"
                         isLoading={deletingId === skill.id}
                         onClick={() => handleDelete(skill)}
-                      />
+                      />}
                     </TableActions>
                   </tr>
                 ))}

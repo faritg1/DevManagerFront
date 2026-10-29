@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
 import { Card, Button, Input, Select, Modal, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
+import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
 import type {
     AssociateDto,
@@ -26,6 +26,9 @@ export const NominaPage: React.FC = () => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
     const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canCreate = has('menu.solidarity.payroll.create');
+    const canPila = has('menu.solidarity.payroll.pila');
 
     const [associates, setAssociates] = useState<AssociateDto[]>([]);
 
@@ -48,19 +51,18 @@ export const NominaPage: React.FC = () => {
     const [pilaError, setPilaError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isAdmin) {
-            setCompUserId(user?.id ?? '');
-            return;
-        }
+        // Only admins read another associate's compensation (API ownership check); the actions still need the list
+        if (!isAdmin) setCompUserId(user?.id ?? '');
+        if (!isAdmin && !canCreate && !canPila) return;
         associatesService.getAll().then(res => {
             const list = res.success && res.data ? res.data : [];
             setAssociates(list);
             if (list[0]) {
-                setCompUserId(list[0].userId);
+                if (isAdmin) setCompUserId(list[0].userId);
                 setPilaUserId(list[0].userId);
             }
         }).catch(() => setAssociates([]));
-    }, [isAdmin, user?.id]);
+    }, [isAdmin, canCreate, canPila, user?.id]);
 
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || 'Asociado no disponible';
     const sheetPager = usePagedFilter(sheet, { searchFields: p => [nameOf(p.userId)] });
@@ -149,14 +151,14 @@ export const NominaPage: React.FC = () => {
             <PageHeader
                 title="Nómina Solidaria"
                 description="Compensación de asociados (CTAs) y aportes PILA."
-                actions={<><AskAiButton moduleKey="payroll" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="payroll" />{canCreate && (
                     <Button icon={Plus} onClick={() => { setCreateForm(emptyForm(compUserId)); setCreateOpen(true); }}>
                         Nueva Compensación
                     </Button>
                 )}</>}
             />
 
-            <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-2' : ''} gap-6`}>
+            <div className={`grid grid-cols-1 ${canPila ? 'lg:grid-cols-2' : ''} gap-6`}>
                 <Card>
                     <div className="flex items-center gap-2 mb-4">
                         <FileSpreadsheet className="text-primary" size={20} />
@@ -196,7 +198,7 @@ export const NominaPage: React.FC = () => {
                     )}
                 </Card>
 
-                {isAdmin && (
+                {canPila && (
                     <Card>
                         <div className="flex items-center gap-2 mb-4">
                             <Calculator className="text-primary" size={20} />
@@ -244,7 +246,7 @@ export const NominaPage: React.FC = () => {
                 )}
             </div>
 
-            {isAdmin && sheet.length > 0 && (
+            {canPila && sheet.length > 0 && (
                 <Card padding="none" className="overflow-hidden mt-6">
                     <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Planilla {pilaMonth}/{pilaYear}</h2>

@@ -113,6 +113,7 @@ export const API_ENDPOINTS = {
     ME: "/permissions/me",
     ASSIGN_TO_USER: "/permissions/assign-to-user",
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
+    AUDIT: "/permissions/audit",
   },
 
   // In-app notifications of the current user
@@ -255,6 +256,18 @@ export const API_ENDPOINTS = {
       CONVERSATIONS: "/ai/conversations",
       MESSAGES: (id: string) => `/ai/conversations/${id}/messages`,
       CONVERSATION: (id: string) => `/ai/conversations/${id}`,
+      USAGE: "/ai/usage",
+      QUOTAS: "/ai/quotas",
+      QUOTA: (organizationId: string) => `/ai/quotas/${organizationId}`,
+    },
+
+    // Superadministración de la plataforma
+    PLATFORM: {
+      ORGANIZATIONS: "/platform/organizations",
+      USERS: (organizationId: string) => `/platform/organizations/${organizationId}/users`,
+      IMPERSONATE: "/platform/impersonate",
+      IMPERSONATE_STOP: "/platform/impersonate/stop",
+      IMPERSONATIONS: "/platform/impersonations",
     },
 
     // Asistente Cooperativo

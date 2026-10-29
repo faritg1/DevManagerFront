@@ -13,7 +13,7 @@ import { Card, Badge, Button, PageContainer, PageHeader, BackButton, LoadingBloc
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, assignmentsService } from '../../../shared/api';
 import { useNotification, useConfig, useAuth } from '../../../shared/context';
-import { useModal, useConfirm, useIsAdmin } from '../../../shared/hooks';
+import { useModal, useConfirm, usePermission } from '../../../shared/hooks';
 import { 
     ProjectStatus, 
     PROJECT_STATUS_LABELS,
@@ -44,7 +44,8 @@ export const ProjectDetailPage: React.FC = () => {
     const { catalogs } = useConfig();
     const { confirm } = useConfirm();
     const { user } = useAuth();
-    const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canAssign = has('menu.platform.projects.assign');
 
     const [project, setProject] = useState<ProjectResponse | null>(null);
     const [requirements, setRequirements] = useState<SkillRequirementResponse[]>([]);
@@ -213,7 +214,7 @@ export const ProjectDetailPage: React.FC = () => {
                     </span>
                 }
                 actions={<>
-                    {isAdmin && (
+                    {has('menu.platform.projects.edit') && (
                         <Button variant="outline" icon={Edit} onClick={() => navigate(`/projects/${id}/edit`)}>
                             Editar
                         </Button>
@@ -223,13 +224,17 @@ export const ProjectDetailPage: React.FC = () => {
                             Postularme
                         </Button>
                     )}
-                    {isAdmin && (
+                    {(canAssign || has('menu.platform.projects.delete')) && (
                         <ActionMenu
                             label="Más acciones"
                             items={[
-                                { label: 'Buscar Candidatos IA', icon: Sparkles, onSelect: matchingModal.open },
-                                { label: 'Asignar Miembro', icon: UserPlus, onSelect: () => { setEditingAssignment(null); assignModal.open(); } },
-                                { label: isDeleting ? 'Eliminando…' : 'Eliminar', icon: Trash2, onSelect: handleDeleteProject, danger: true, separated: true },
+                                ...(canAssign ? [
+                                    { label: 'Buscar Candidatos IA', icon: Sparkles, onSelect: matchingModal.open },
+                                    { label: 'Asignar Miembro', icon: UserPlus, onSelect: () => { setEditingAssignment(null); assignModal.open(); } },
+                                ] : []),
+                                ...(has('menu.platform.projects.delete') ? [
+                                    { label: isDeleting ? 'Eliminando…' : 'Eliminar', icon: Trash2, onSelect: handleDeleteProject, danger: true, separated: canAssign },
+                                ] : []),
                             ]}
                         />
                     )}
@@ -296,7 +301,7 @@ export const ProjectDetailPage: React.FC = () => {
 
                 <ProjectAssignmentsSection
                     assignments={assignments}
-                    isAdmin={isAdmin}
+                    canAssign={canAssign}
                     onEdit={(assignment) => { setEditingAssignment(assignment); assignModal.open(); }}
                     onAssignmentsChange={loadAssignments}
                 />

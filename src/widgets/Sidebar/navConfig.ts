@@ -20,6 +20,8 @@ import {
     FileBarChart2,
     Sparkles,
     Award,
+    Gauge,
+    Crown,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -35,6 +37,8 @@ export interface NavItemConfig {
     permission?: string;
     /** Sólo roles administrativos: el endpoint de la pantalla es admin-only en el backend. */
     adminOnly?: boolean;
+    /** Sólo el superadministrador de la plataforma (GET /permissions/me → isSuperAdmin), no un permiso de menú. */
+    superAdminOnly?: boolean;
     /** Sub-elementos: el ítem se muestra como grupo desplegable. */
     children?: NavItemConfig[];
 }
@@ -43,6 +47,8 @@ export interface NavSectionConfig {
     key: string;
     permission: string;
     title: string;
+    /** Sección del superadministrador: se muestra por isSuperAdmin, no por `permission`. */
+    superAdminOnly?: boolean;
     items: NavItemConfig[];
 }
 
@@ -56,6 +62,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'projects', permission: 'menu.platform.projects', label: 'Proyectos', icon: Briefcase, to: ROUTES.PROJECTS },
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
             { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
+            { key: 'ai-usage', permission: 'menu.platform.ai_usage', label: 'Uso de IA', icon: Gauge, to: ROUTES.AI_USAGE },
         ],
     },
     {
@@ -67,10 +74,10 @@ export const NAV_CONFIG: NavSectionConfig[] = [
         key: 'solidario', permission: 'menu.solidarity',
         title: NAV_SECTIONS.SOLIDARIO,
         items: [
-            { key: 'associates', permission: 'menu.solidarity.associates', label: 'Asociados', icon: HeartHandshake, to: ROUTES.ASSOCIATES, adminOnly: true },
-            { key: 'data-policies', permission: 'menu.solidarity.data_policies', label: 'Políticas de datos', icon: FileText, to: ROUTES.DATA_POLICIES, adminOnly: true },
+            { key: 'associates', permission: 'menu.solidarity.associates', label: 'Asociados', icon: HeartHandshake, to: ROUTES.ASSOCIATES },
+            { key: 'data-policies', permission: 'menu.solidarity.data_policies', label: 'Políticas de datos', icon: FileText, to: ROUTES.DATA_POLICIES },
             { key: 'habeas-data', permission: 'menu.solidarity.habeas_data', label: 'Habeas Data (ARCO)', icon: Shield, to: ROUTES.HABEAS_DATA },
-            { key: 'education', permission: 'menu.solidarity.education', label: 'Educación', icon: GraduationCap, to: ROUTES.EDUCATION, adminOnly: true },
+            { key: 'education', permission: 'menu.solidarity.education', label: 'Educación', icon: GraduationCap, to: ROUTES.EDUCATION },
             { key: 'organos', permission: 'menu.solidarity.governing_bodies', label: 'Órganos', icon: Landmark, to: ROUTES.ORGANOS },
             { key: 'competencias', permission: 'menu.solidarity.competencies', label: 'Competencias', icon: Award, to: ROUTES.COMPETENCIAS },
             { key: 'excedentes', permission: 'menu.solidarity.surplus', label: 'Excedentes', icon: PiggyBank, to: ROUTES.EXCEDENTES },
@@ -100,6 +107,11 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             },
         ],
     },
+    {
+        key: 'super-admin', permission: '', superAdminOnly: true,
+        title: NAV_SECTIONS.SUPER_ADMIN,
+        items: [{ key: 'super-admin', label: 'Plataforma', icon: Crown, to: ROUTES.SUPER_ADMIN, superAdminOnly: true }],
+    },
 ];
 
 export interface NavAccess {
@@ -107,10 +119,12 @@ export interface NavAccess {
     isAdmin: boolean;
     /** Sin permisos cargados (error): se vuelve al filtro sólo por `adminOnly`. */
     failed: boolean;
+    isSuperAdmin?: boolean;
 }
 
 /** visible = permiso concedido && (!adminOnly || admin); un grupo es visible si lo es algún hijo. */
 export const isItemVisible = (item: NavItemConfig, access: NavAccess): boolean => {
+    if (item.superAdminOnly) return !!access.isSuperAdmin;
     if (item.adminOnly && !access.isAdmin) return false;
     if (item.children) return item.children.some((child) => isItemVisible(child, access));
     return access.failed || (!!item.permission && access.has(item.permission));
@@ -119,7 +133,7 @@ export const isItemVisible = (item: NavItemConfig, access: NavAccess): boolean =
 /** Secciones con sus ítems visibles; una sección sin permiso o sin ítems visibles desaparece. */
 export const visibleNav = (access: NavAccess): NavSectionConfig[] =>
     NAV_CONFIG
-        .filter((section) => access.failed || access.has(section.permission))
+        .filter((section) => (section.superAdminOnly ? !!access.isSuperAdmin : access.failed || access.has(section.permission)))
         .map((section) => ({
             ...section,
             items: section.items

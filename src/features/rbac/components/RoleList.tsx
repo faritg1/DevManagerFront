@@ -1,7 +1,8 @@
 import React from "react";
 import { RoleDto } from "../../../shared/api/types";
 import { KeyRound, Pencil, Trash2 } from "lucide-react";
-import { EmptyState, LoadingBlock, IconButton, TableActions, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS } from "../../../shared/ui";
+import { usePermission } from "../../../shared/hooks";
+import { Badge, EmptyState, LoadingBlock, IconButton, TableActions, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS } from "../../../shared/ui";
 
 interface RoleListProps {
   roles: RoleDto[];
@@ -18,6 +19,9 @@ export const RoleList: React.FC<RoleListProps> = ({
   onDelete,
   onManagePermissions,
 }) => {
+  // Global roles are shared by every organization: only the platform super admin edits them
+  const { isSuperAdmin } = usePermission();
+
   if (isLoading) {
     return <LoadingBlock label="Cargando roles…" />;
   }
@@ -46,7 +50,10 @@ export const RoleList: React.FC<RoleListProps> = ({
           {roles.map((role) => (
             <tr key={role.id} className={TR_CLASS}>
               <td className={`${TD_CLASS} font-medium text-slate-900 dark:text-white`}>
-                <span className={TD_TRUNCATE_CLASS} title={role.name}>{role.name}</span>
+                <span className="flex items-center gap-2">
+                  <span className={TD_TRUNCATE_CLASS} title={role.name}>{role.name}</span>
+                  {role.isGlobal && <Badge variant="info">Global</Badge>}
+                </span>
               </td>
               <td className={`${TD_CLASS} text-slate-600 dark:text-slate-400`}>
                 <span className={TD_TRUNCATE_CLASS} title={role.description || undefined}>{role.description || "-"}</span>
@@ -63,8 +70,9 @@ export const RoleList: React.FC<RoleListProps> = ({
               </td>
               <TableActions>
                 <IconButton icon={KeyRound} label={`Permisos de ${role.name}`} variant="primary" onClick={() => onManagePermissions(role)} />
-                <IconButton icon={Pencil} label={`Editar ${role.name}`} onClick={() => onEdit(role)} />
-                <IconButton icon={Trash2} label={`Eliminar ${role.name}`} variant="danger" onClick={() => onDelete(role.id)} />
+                {(!role.isGlobal || isSuperAdmin) && <IconButton icon={Pencil} label={`Editar ${role.name}`} onClick={() => onEdit(role)} />}
+                {/* The API refuses deleting a global role for everyone */}
+                {!role.isGlobal && <IconButton icon={Trash2} label={`Eliminar ${role.name}`} variant="danger" onClick={() => onDelete(role.id)} />}
               </TableActions>
             </tr>
           ))}

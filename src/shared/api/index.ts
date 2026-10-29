@@ -1,5 +1,6 @@
 export { type ApiError } from "./client";
 export * from "./types";
+export * from "./impersonation";
 
 export {
   authService,
@@ -30,4 +31,5 @@ export {
   organizationsService,
   notificationsService,
   aiService,
+  platformService,
 } from "./services";

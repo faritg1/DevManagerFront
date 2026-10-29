@@ -39,6 +39,7 @@ const RolePermissionsPage = page(rbac, "RolePermissionsPage");
 const PermissionsPage = page(rbac, "PermissionsPage");
 const SkillsCatalogPage = page(() => import("../features/skills"), "SkillsCatalogPage");
 const ReportsPage = page(() => import("../features/reports"), "ReportsPage");
+const AiUsagePage = page(() => import("../features/ai"), "AiUsagePage");
 const SettingsPage = page(() => import("../features/settings"), "SettingsPage");
 const AssociatesPage = page(associates, "AssociatesPage");
 const AssociateDetailPage = page(associates, "AssociateDetailPage");
@@ -55,6 +56,7 @@ const HabeasDataPage = page(() => import("../features/habeas-data"), "HabeasData
 const CompetenciasPage = page(() => import("../features/competencias"), "CompetenciasPage");
 const ReportesSupersolidariaPage = page(() => import("../features/reportes-supersolidaria"), "ReportesSupersolidariaPage");
 const AsistentePage = page(() => import("../features/asistente"), "AsistentePage");
+const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPage");
 
 export const AppRouter: React.FC = () => {
   return (
@@ -92,18 +94,26 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
                     <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                     <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+                    <Route path={ROUTES.AI_USAGE} element={<AiUsagePage />} />
+                    {/* Guarded by its superAdminOnly menu entry (PermissionGuard) */}
+                    <Route path={ROUTES.SUPER_ADMIN} element={<SuperAdminPage />} />
+                    <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                    <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                    <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                    <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                    <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
+
+                    <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
+                      <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
+                    </Route>
+                    <Route element={<PermissionGuard require="menu.platform.projects.edit" />}>
+                      <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
+                    </Route>
 
                     <Route element={<AdminGuard />}>
-                      <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
-                      <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
                       <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
                       <Route path={ROUTES.USERS} element={<UsersPage />} />
                       <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
-                      <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
-                      <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
-                      <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
-                      <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
-                      <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
                       <Route path={ROUTES.ROLES} element={<RolesPage />} />
                       <Route path={`${ROUTES.ROLES}/:id/permissions`} element={<RolePermissionsPage />} />
                       <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />

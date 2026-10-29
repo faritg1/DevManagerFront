@@ -9,14 +9,14 @@ import { useConfirm } from "../../../shared/hooks";
 
 interface ProjectAssignmentsSectionProps {
   assignments: AssignmentResponse[];
-  isAdmin: boolean;
+  canAssign: boolean;
   onEdit: (assignment: AssignmentResponse) => void;
   onAssignmentsChange: () => void;
 }
 
 export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps> = ({
   assignments,
-  isAdmin,
+  canAssign,
   onEdit,
   onAssignmentsChange,
 }) => {
@@ -92,7 +92,7 @@ export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
-                  {isAdmin && (
+                  {canAssign && (
                     <>
                       <Button
                         variant="outline"

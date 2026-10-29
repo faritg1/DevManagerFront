@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Coins, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
 import { Card, Badge, Button, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
+import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
 import type { SurplusDistributionDto, CalculateSurplusRequest } from '../../../shared/api/types';
 import { formatDate, currency } from '../../../shared/format';
@@ -12,7 +12,8 @@ const emptyCalc = (): CalculateSurplusRequest => ({ period: new Date().toISOStri
 
 export const ExcedentesPage: React.FC = () => {
     const { showNotification } = useNotification();
-    const isAdmin = useIsAdmin();
+    const { has } = usePermission();
+    const canApprove = has('menu.solidarity.surplus.approve');
 
     const [distributions, setDistributions] = useState<SurplusDistributionDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +100,7 @@ export const ExcedentesPage: React.FC = () => {
             <PageHeader
                 title="Excedentes Cooperativos"
                 description="Distribución de excedentes según Ley 79 (reserva, educación y solidaridad)."
-                actions={<><AskAiButton moduleKey="surplus" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="surplus" />{has('menu.solidarity.surplus.calculate') && (
                     <Button icon={Calculator} onClick={() => { setCalcForm(emptyCalc()); setCalcOpen(true); }}>
                         Calcular Distribución
                     </Button>
@@ -127,7 +128,7 @@ export const ExcedentesPage: React.FC = () => {
                                 <th className={TH_CLASS}>Solidaridad</th>
                                 <th className={TH_CLASS}>Remanente</th>
                                 <th className={TH_CLASS}>Estado</th>
-                                {isAdmin && <th className={TH_ACTIONS_CLASS}>Acciones</th>}
+                                {canApprove && <th className={TH_ACTIONS_CLASS}>Acciones</th>}
                             </tr>
                         </thead>
                         <tbody className={TBODY_CLASS}>
@@ -152,7 +153,7 @@ export const ExcedentesPage: React.FC = () => {
                                                 {e.approvedByAssembly ? 'Aprobada' : 'Pendiente'}
                                             </Badge>
                                         </td>
-                                        {isAdmin && (
+                                        {canApprove && (
                                             <TableActions>
                                                 {!e.approvedByAssembly && (
                                                     <Button size="sm" variant="outline" onClick={() => { setApproving(e); setRevaluation(null); setCooperativeReturn(null); }}>

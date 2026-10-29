@@ -20,6 +20,8 @@ export interface LoginResponse {
   lastName: string;
   organizationId?: string;
   expiresAt?: string;
+  /** Platform super administrator (Platform:SuperAdminUserIds) */
+  isSuperAdmin?: boolean;
 }
 
 export interface RegisterOrganizationRequest {
@@ -475,6 +477,8 @@ export interface RoleDto {
   description: string | null;
   permissionCount: number;
   userCount: number;
+  /** Shared by every organization: read-only except for the platform super admin */
+  isGlobal?: boolean;
 }
 
 export interface CreateRoleRequest {
@@ -513,6 +517,8 @@ export interface MyPermissionsResponse {
   roles: RoleDto[];
   effectivePermissions: PermissionDto[];
   directOverrides: { permissionId: string; permissionCode: string; permissionName: string; isGranted: boolean }[];
+  /** Platform super administrator; false while impersonating */
+  isSuperAdmin?: boolean;
 }
 
 export interface PermissionGroupDto {
@@ -523,6 +529,8 @@ export interface PermissionGroupDto {
 export interface RolePermissionsResponse {
   id: string;
   name: string;
+  /** null for a global role */
+  organizationId?: string | null;
   permissions: PermissionDto[];
 }
 
@@ -1286,4 +1294,114 @@ export interface AiStoredMessage {
   inputTokens?: number | null;
   outputTokens?: number | null;
   createdAt: string;
+}
+
+/** GET /ai/usage: the organization's AI quota for the current UTC month */
+export interface AiUsageSummary {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  quota: number;
+  isDefaultQuota: boolean;
+  used: number;
+  remaining: number;
+  percent: number;
+  dailyBudget: number;
+  usedToday: number;
+  byUseCase: { useCase: string; tokens: number }[];
+  daily: { date: string; tokens: number }[];
+}
+
+/** GET /ai/quotas (platform super admin only, 403 for everyone else) */
+export interface AiOrganizationQuota {
+  organizationId: string;
+  name: string;
+  /** Own quota; null uses the platform default */
+  monthlyTokenQuota: number | null;
+  effectiveQuota: number;
+  used: number;
+  percent: number;
+}
+
+/** One row of GET /permissions/audit: who changed whose permissions, with the granted/revoked diff */
+export interface PermissionAuditEntry {
+  id: string;
+  createdAt: string;
+  actorUserId: string;
+  actorName: string;
+  targetType: 'Role' | 'User';
+  targetId: string;
+  targetName: string;
+  /** Role assigned or removed when the target is a user */
+  roleId: string | null;
+  roleName: string | null;
+  action: string;
+  granted: { code: string; name: string }[];
+  revoked: { code: string; name: string }[];
+  /** Made by a platform super admin (actor) acting as this user through impersonation */
+  impersonatedUserId?: string | null;
+  impersonatedUserName?: string | null;
+}
+
+export interface PermissionAuditPage {
+  items: PermissionAuditEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface PermissionAuditFilter {
+  targetType?: 'Role' | 'User';
+  targetId?: string;
+  actorId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+}
+
+/** GET /platform/organizations (platform super admin only) */
+export interface PlatformOrganization {
+  id: string;
+  name: string;
+  nit: string | null;
+  isActive: boolean;
+  userCount: number;
+}
+
+/** GET /platform/organizations/{id}/users; super admins cannot be impersonated */
+export interface PlatformUser {
+  id: string;
+  fullName: string;
+  email: string;
+  isActive: boolean;
+  roles: string[];
+  isSuperAdmin: boolean;
+}
+
+/** POST /platform/impersonate: short-lived token of the target user; there is no refresh token */
+export interface ImpersonationResponse {
+  token: string;
+  expiresAt: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  organizationId: string;
+  organizationName: string;
+}
+
+/** GET /platform/impersonations: newest first */
+export interface ImpersonationLogEntry {
+  id: string;
+  actorUserId: string;
+  actorName: string;
+  targetUserId: string;
+  targetName: string;
+  targetOrganizationId: string;
+  organizationName: string;
+  startedAt: string;
+  expiresAt: string;
+  /** null while open or when the token simply expired */
+  endedAt: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
 }

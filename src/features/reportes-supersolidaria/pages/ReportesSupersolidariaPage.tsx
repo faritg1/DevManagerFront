@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
 import { Card, Badge, Button, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter } from '../../../shared/hooks';
+import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
 import type {
     ComplianceDto,
@@ -36,7 +36,7 @@ const emptyForm = (): GenerateSupersolidariaReportRequest => ({ period: new Date
 
 export const ReportesSupersolidariaPage: React.FC = () => {
     const { showNotification } = useNotification();
-    const isAdmin = useIsAdmin();
+    const { has } = usePermission();
 
     const [reports, setReports] = useState<SupersolidariaReportDto[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +111,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
             <PageHeader
                 title="Reportes Supersolidaria"
                 description="Reportes integrales para la Superintendencia de la Economía Solidaria."
-                actions={<><AskAiButton moduleKey="supersolidaria" />{isAdmin && (
+                actions={<><AskAiButton moduleKey="supersolidaria" />{has('menu.solidarity.supersolidaria_reports.generate') && (
                     <Button icon={Plus} onClick={() => { setGenForm(emptyForm()); setGenOpen(true); }}>
                         Generar Reporte
                     </Button>
@@ -156,7 +156,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{formatDate(r.sentAt)}</td>
                                         <TableActions>
                                             <IconButton icon={Eye} label="Ver reporte" onClick={() => setViewing(r)} />
-                                            {isAdmin && !r.isSent && (
+                                            {has('menu.solidarity.supersolidaria_reports.send') && !r.isSent && (
                                                 <Button size="sm" icon={Send} onClick={() => handleSend(r.id)}>Enviar</Button>
                                             )}
                                             {r.isSent && <CheckCircle2 size={18} className="mx-2 text-emerald-500" aria-label="Enviado" />}

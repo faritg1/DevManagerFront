@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { authService, organizationsService, rbacService } from '../api';
-import { STORAGE_KEYS } from '../config/constants';
+import { authService, beginImpersonation, endImpersonation, organizationsService, platformService, rbacService, readImpersonation, reloadAt, type ImpersonationSession } from '../api';
+import { ROUTES, STORAGE_KEYS } from '../config/constants';
 
 export interface User {
     id: string;
@@ -24,6 +24,12 @@ interface AuthContextValue extends AuthState {
     register: (data: RegisterData) => Promise<void>;
     logout: () => void;
     updateUser: (user: Partial<User>) => void;
+    /** Set while a super admin acts as another user (persistent banner) */
+    impersonation: ImpersonationSession | null;
+    /** Super admin only: swaps to a short-lived session of that user and reloads the app as them */
+    startImpersonation: (userId: string) => Promise<void>;
+    /** Restores the super admin's own session and returns to the super admin area */
+    stopImpersonation: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -189,6 +195,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setState({ ...initialState, isLoading: false });
     }, []);
 
+    // Read once: every start/stop reloads the page
+    const [impersonation] = useState(readImpersonation);
+
+    const startImpersonation = useCallback(async (userId: string) => {
+        const { data } = await platformService.impersonate(userId);
+        beginImpersonation(data.token, {
+            targetName: data.fullName,
+            organizationName: data.organizationName,
+            expiresAt: data.expiresAt,
+        });
+
+        // Same as login: the role comes from the (now impersonated) effective permissions
+        let role = '';
+        try {
+            role = (await rbacService.getMyPermissions()).data?.roles?.[0]?.name ?? '';
+        } catch {
+            // Without a role the menu still follows the permissions
+        }
+        const user: User = {
+            id: data.userId,
+            name: data.fullName,
+            email: data.email,
+            role,
+            organizationId: data.organizationId,
+            organizationName: data.organizationName,
+        };
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+        reloadAt(`#${ROUTES.DASHBOARD}`);
+    }, []);
+
+    const stopImpersonation = useCallback(async () => {
+        try {
+            await platformService.stopImpersonation();
+        } catch {
+            // Best effort: the log keeps the start; the token expires on its own
+        }
+        endImpersonation();
+        reloadAt(`#${ROUTES.SUPER_ADMIN}`);
+    }, []);
+
     const updateUser = useCallback((updates: Partial<User>) => {
         setState(prev => {
             if (!prev.user) return prev;
@@ -206,6 +252,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         updateUser,
+        impersonation,
+        startImpersonation,
+        stopImpersonation,
     };
 
     return (

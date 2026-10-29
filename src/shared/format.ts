@@ -18,6 +18,9 @@ export const formatDate = (d: string | null | undefined, options: Intl.DateTimeF
 export const formatDateTime = (d: string | null | undefined): string =>
     d ? toDate(d).toLocaleString(LOCALE, { ...DATE_OPTIONS, hour: '2-digit', minute: '2-digit' }) : '—';
 
+/** The API sends UTC timestamps without offset (EF datetime2): read them as UTC. */
+export const asUtc = (d: string): string => (/(?:[zZ]|[+-]\d\d:?\d\d)$/.test(d) ? d : `${d}Z`);
+
 export const formatTime = (d: Date): string => d.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
 
 /** Locale number with up to `digits` decimals ("3,5"). */

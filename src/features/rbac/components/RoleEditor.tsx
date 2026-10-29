@@ -6,7 +6,7 @@ import type { PermissionTreeNode } from "../../../shared/api/types";
 import { ROUTES } from "../../../shared/config/constants";
 import { useToast } from "../../../shared/context";
 import { isAdminRoleName, usePermission } from "../../../shared/hooks";
-import { Button, EmptyState, Input, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
+import { Badge, Button, EmptyState, Input, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
 import { routeForPermission } from "../../../widgets/Sidebar/navConfig";
 
 const CHECKBOX_CLASS = "size-4 shrink-0 accent-primary disabled:cursor-not-allowed";
@@ -33,9 +33,10 @@ const TriCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { inde
 export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
   const toast = useToast();
   const navigate = useNavigate();
-  const { refresh: refreshMyPermissions } = usePermission();
+  const { refresh: refreshMyPermissions, isSuperAdmin } = usePermission();
   const [tree, setTree] = useState<PermissionTreeNode[] | null>(null);
   const [roleName, setRoleName] = useState("");
+  const [isGlobal, setIsGlobal] = useState(false);
   // Selected options and actions only; sections are derived (granted when any option is).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -48,6 +49,8 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
       .then(([treeRes, roleRes]) => {
         setTree(treeRes.data);
         setRoleName(roleRes.data.name);
+        // The API omits null fields: a global role comes without organizationId
+        setIsGlobal(roleRes.data.organizationId == null);
         setSelected(new Set(treeRes.data.flatMap((s) =>
           (s.children.length ? s.children.flatMap((o) => [o, ...o.children]) : [s]).filter((n) => n.isGranted).map((n) => n.id))));
       })
@@ -55,7 +58,10 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
       .finally(() => setIsLoading(false));
   }, [roleId]);
 
-  const readOnly = isAdminRoleName(roleName);
+  const adminRole = isAdminRoleName(roleName);
+  // Global roles are shared by every organization: only the platform super admin changes them
+  const globalLocked = isGlobal && !isSuperAdmin;
+  const readOnly = adminRole || globalLocked;
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -113,7 +119,7 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
     <PageContainer>
       <PageHeader
         backTo={ROUTES.ROLES}
-        title={`Permisos — ${roleName}`}
+        title={<>Permisos — {roleName}{isGlobal && <Badge variant="info" className="ml-2 align-middle">Global</Badge>}</>}
         description="Elige qué secciones y opciones del menú ve este rol y qué acciones puede hacer en cada una."
         actions={<>
           <Button
@@ -130,7 +136,11 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
       {readOnly && (
         <div className="mb-4 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-700 dark:text-slate-200">
           <ShieldCheck size={20} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-          <p>Los roles administradores siempre tienen acceso completo; sus permisos no se pueden editar.</p>
+          <p>
+            {adminRole
+              ? "Los roles administradores siempre tienen acceso completo; sus permisos no se pueden editar."
+              : "Rol global: lo comparten todas las organizaciones. Puedes consultarlo, pero solo el superadministrador de la plataforma puede cambiar sus permisos."}
+          </p>
         </div>
       )}
 
@@ -160,25 +170,25 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
           {visible.map((section) => {
             const leaves = leafIds(section);
             const count = leaves.filter((id) => selected.has(id)).length;
-            const sectionOn = readOnly || count === leaves.length;
+            const sectionOn = adminRole || count === leaves.length;
             return (
               <fieldset key={section.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark">
                 <legend className="sr-only">{section.name}</legend>
                 <label className="flex cursor-pointer items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-border-dark dark:bg-background-dark">
                   <TriCheckbox
                     checked={sectionOn}
-                    indeterminate={!readOnly && count > 0 && count < leaves.length}
+                    indeterminate={!adminRole && count > 0 && count < leaves.length}
                     disabled={readOnly}
                     onChange={() => setMany(allIds(section), !sectionOn)}
                   />
                   <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white">{section.name}</span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {readOnly ? leaves.length : count}/{leaves.length}
+                    {adminRole ? leaves.length : count}/{leaves.length}
                   </span>
                 </label>
                 <ul className="divide-y divide-slate-100 dark:divide-border-dark">
                   {section.children.map((option) => {
-                    const optionOn = readOnly || selected.has(option.id);
+                    const optionOn = adminRole || selected.has(option.id);
                     const actionIds = option.children.map((a) => a.id);
                     const allActionsOn = actionIds.every((id) => selected.has(id));
                     return (
@@ -210,7 +220,7 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
                                 <input
                                   type="checkbox"
                                   className={CHECKBOX_CLASS}
-                                  checked={readOnly || (optionOn && selected.has(action.id))}
+                                  checked={adminRole || (optionOn && selected.has(action.id))}
                                   disabled={readOnly || !optionOn}
                                   onChange={(e) => setMany([action.id], e.target.checked)}
                                 />

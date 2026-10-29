@@ -477,6 +477,8 @@ export interface RoleDto {
   description: string | null;
   permissionCount: number;
   userCount: number;
+  /** Shared by every organization: read-only except for the platform super admin */
+  isGlobal?: boolean;
 }
 
 export interface CreateRoleRequest {
@@ -527,6 +529,8 @@ export interface PermissionGroupDto {
 export interface RolePermissionsResponse {
   id: string;
   name: string;
+  /** null for a global role */
+  organizationId?: string | null;
   permissions: PermissionDto[];
 }
 

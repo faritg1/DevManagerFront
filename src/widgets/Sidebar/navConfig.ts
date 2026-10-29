@@ -21,6 +21,7 @@ import {
     Sparkles,
     Award,
     Gauge,
+    Crown,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -36,6 +37,8 @@ export interface NavItemConfig {
     permission?: string;
     /** Sólo roles administrativos: el endpoint de la pantalla es admin-only en el backend. */
     adminOnly?: boolean;
+    /** Sólo el superadministrador de la plataforma (GET /permissions/me → isSuperAdmin), no un permiso de menú. */
+    superAdminOnly?: boolean;
     /** Sub-elementos: el ítem se muestra como grupo desplegable. */
     children?: NavItemConfig[];
 }
@@ -44,6 +47,8 @@ export interface NavSectionConfig {
     key: string;
     permission: string;
     title: string;
+    /** Sección del superadministrador: se muestra por isSuperAdmin, no por `permission`. */
+    superAdminOnly?: boolean;
     items: NavItemConfig[];
 }
 
@@ -102,6 +107,11 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             },
         ],
     },
+    {
+        key: 'super-admin', permission: '', superAdminOnly: true,
+        title: NAV_SECTIONS.SUPER_ADMIN,
+        items: [{ key: 'super-admin', label: 'Plataforma', icon: Crown, to: ROUTES.SUPER_ADMIN, superAdminOnly: true }],
+    },
 ];
 
 export interface NavAccess {
@@ -109,10 +119,12 @@ export interface NavAccess {
     isAdmin: boolean;
     /** Sin permisos cargados (error): se vuelve al filtro sólo por `adminOnly`. */
     failed: boolean;
+    isSuperAdmin?: boolean;
 }
 
 /** visible = permiso concedido && (!adminOnly || admin); un grupo es visible si lo es algún hijo. */
 export const isItemVisible = (item: NavItemConfig, access: NavAccess): boolean => {
+    if (item.superAdminOnly) return !!access.isSuperAdmin;
     if (item.adminOnly && !access.isAdmin) return false;
     if (item.children) return item.children.some((child) => isItemVisible(child, access));
     return access.failed || (!!item.permission && access.has(item.permission));
@@ -121,7 +133,7 @@ export const isItemVisible = (item: NavItemConfig, access: NavAccess): boolean =
 /** Secciones con sus ítems visibles; una sección sin permiso o sin ítems visibles desaparece. */
 export const visibleNav = (access: NavAccess): NavSectionConfig[] =>
     NAV_CONFIG
-        .filter((section) => access.failed || access.has(section.permission))
+        .filter((section) => (section.superAdminOnly ? !!access.isSuperAdmin : access.failed || access.has(section.permission)))
         .map((section) => ({
             ...section,
             items: section.items

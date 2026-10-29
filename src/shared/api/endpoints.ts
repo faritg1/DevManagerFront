@@ -261,6 +261,12 @@ export const API_ENDPOINTS = {
       QUOTA: (organizationId: string) => `/ai/quotas/${organizationId}`,
     },
 
+    // Superadministración de la plataforma
+    PLATFORM: {
+      ORGANIZATIONS: "/platform/organizations",
+      USERS: (organizationId: string) => `/platform/organizations/${organizationId}/users`,
+    },
+
     // Asistente Cooperativo
     ASISTENTE: {
       GENERAR_REPORTE: "/asistente/generar-reporte",

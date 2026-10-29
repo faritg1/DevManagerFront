@@ -20,6 +20,8 @@ export interface LoginResponse {
   lastName: string;
   organizationId?: string;
   expiresAt?: string;
+  /** Platform super administrator (Platform:SuperAdminUserIds) */
+  isSuperAdmin?: boolean;
 }
 
 export interface RegisterOrganizationRequest {
@@ -513,6 +515,8 @@ export interface MyPermissionsResponse {
   roles: RoleDto[];
   effectivePermissions: PermissionDto[];
   directOverrides: { permissionId: string; permissionCode: string; permissionName: string; isGranted: boolean }[];
+  /** Platform super administrator; false while impersonating */
+  isSuperAdmin?: boolean;
 }
 
 export interface PermissionGroupDto {
@@ -1304,7 +1308,7 @@ export interface AiUsageSummary {
   daily: { date: string; tokens: number }[];
 }
 
-/** GET /ai/quotas (platform operators only; empty for everyone else) */
+/** GET /ai/quotas (platform super admin only, 403 for everyone else) */
 export interface AiOrganizationQuota {
   organizationId: string;
   name: string;
@@ -1346,4 +1350,23 @@ export interface PermissionAuditFilter {
   from?: string;
   to?: string;
   page?: number;
+}
+
+/** GET /platform/organizations (platform super admin only) */
+export interface PlatformOrganization {
+  id: string;
+  name: string;
+  nit: string | null;
+  isActive: boolean;
+  userCount: number;
+}
+
+/** GET /platform/organizations/{id}/users; super admins cannot be impersonated */
+export interface PlatformUser {
+  id: string;
+  fullName: string;
+  email: string;
+  isActive: boolean;
+  roles: string[];
+  isSuperAdmin: boolean;
 }

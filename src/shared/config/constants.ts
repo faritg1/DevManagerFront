@@ -40,6 +40,7 @@ export const ROUTES = {
     COMPETENCIAS: '/competencias',
     REPORTES_SUPERSOLIDARIA: '/reportes-supersolidaria',
     ASISTENTE: '/asistente',
+    SUPER_ADMIN: '/superadmin',
 } as const;
 
 export const NAV_SECTIONS = {
@@ -47,6 +48,7 @@ export const NAV_SECTIONS = {
     AGENTS: 'Agentes IA',
     ADMIN: 'Administración',
     SOLIDARIO: 'Gestión Solidaria',
+    SUPER_ADMIN: 'Superadministración',
 } as const;
 
 export const STORAGE_KEYS = {

@@ -30,4 +30,5 @@ export {
   organizationsService,
   notificationsService,
   aiService,
+  platformService,
 } from "./services";

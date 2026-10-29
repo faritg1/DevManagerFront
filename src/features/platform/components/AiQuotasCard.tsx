@@ -7,8 +7,8 @@ import { Button, Card, Input, ProgressBar, TABLE_CLASS, TBODY_CLASS, TD_CLASS, T
 import { quotaVariant } from '../../ai/AiUsagePage';
 
 /**
- * Monthly AI quota of every organization, for platform operators only: the API returns an empty list for anyone
- * else (org admins included), so the card renders nothing and nobody can raise their own quota.
+ * Monthly AI quota of every organization, in the super admin area: the API answers 403 to anyone else (org admins
+ * included), so the card renders nothing and nobody can raise their own quota.
  */
 export const AiQuotasCard: React.FC = () => {
     const { showNotification } = useNotification();
@@ -46,13 +46,13 @@ export const AiQuotasCard: React.FC = () => {
     };
 
     return (
-        <Card className="mt-6" padding="none">
+        <Card padding="none">
             <div className="flex items-center gap-2 p-6 pb-2">
                 <Gauge className="text-primary" size={20} />
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Cuotas mensuales de IA por organización</h2>
             </div>
             <p className="px-6 pb-4 text-sm text-slate-500 dark:text-slate-400">
-                Solo el operador de la plataforma la asigna. Vacío usa la cuota estándar.
+                Solo el superadministrador de la plataforma la asigna. Vacío usa la cuota estándar.
             </p>
             <div className="overflow-x-auto">
                 <table className={TABLE_CLASS}>

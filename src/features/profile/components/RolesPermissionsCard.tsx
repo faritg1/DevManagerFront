@@ -31,9 +31,9 @@ export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoa
 
                     <div>
                         <p className="text-sm text-slate-500 mb-2 dark:text-slate-400">Permisos efectivos</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {effectivePerms.effectivePermissions.map(p => (
-                                <div key={p.code} className="p-2 bg-slate-50 dark:bg-background-dark rounded-md text-sm text-slate-600 dark:text-slate-300">{p.code}</div>
+                                <div key={p.code} className="p-2 bg-slate-50 dark:bg-background-dark rounded-md text-sm text-slate-600 dark:text-slate-300 break-all">{p.code}</div>
                             ))}
                         </div>
                     </div>

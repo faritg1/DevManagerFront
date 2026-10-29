@@ -67,14 +67,14 @@ export const SettingsPage: React.FC = () => {
         </h2>
 
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Avatar name={user.name} size="lg" />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 {user.name}
               </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
-              <div className="flex items-center gap-2 mt-2">
+              <p className="break-all text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 {user.role ? (
                   <Badge variant="purple" icon={Shield}>
                     {user.role}

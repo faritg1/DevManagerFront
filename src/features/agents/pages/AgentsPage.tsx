@@ -245,7 +245,7 @@ export const AgentsPage: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
                 <Card className="flex min-w-0 items-center gap-2 sm:gap-3 p-2 sm:p-3">
-                    <div className="p-1.5 sm:p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg shrink-0">
+                    <div className="hidden sm:block p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg shrink-0">
                         <Bot className="text-emerald-500" size={16} />
                     </div>
                     <div className="min-w-0">
@@ -254,7 +254,7 @@ export const AgentsPage: React.FC = () => {
                     </div>
                 </Card>
                 <Card className="flex min-w-0 items-center gap-2 sm:gap-3 p-2 sm:p-3">
-                    <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg shrink-0">
+                    <div className="hidden sm:block p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg shrink-0">
                         <Activity className="text-blue-500" size={16} />
                     </div>
                     <div className="min-w-0">
@@ -263,7 +263,7 @@ export const AgentsPage: React.FC = () => {
                     </div>
                 </Card>
                 <Card className="flex min-w-0 items-center gap-2 sm:gap-3 p-2 sm:p-3">
-                    <div className="p-1.5 sm:p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg shrink-0">
+                    <div className="hidden sm:block p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg shrink-0">
                         <Cpu className="text-purple-500" size={16} />
                     </div>
                     <div className="min-w-0">

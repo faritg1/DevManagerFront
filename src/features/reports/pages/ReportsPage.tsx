@@ -111,7 +111,7 @@ export const ReportsPage: React.FC = () => {
       onClick={() => toggleSection(section)}
       className="w-full flex items-center justify-between py-2 group"
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-2 text-left [&>svg]:shrink-0">
+      <div className="flex min-w-0 items-center gap-2 text-left [&>svg]:shrink-0">
         {icon}
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
         {badge && (

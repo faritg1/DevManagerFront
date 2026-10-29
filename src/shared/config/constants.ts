@@ -41,6 +41,7 @@ export const ROUTES = {
     REPORTES_SUPERSOLIDARIA: '/reportes-supersolidaria',
     ASISTENTE: '/asistente',
     SUPER_ADMIN: '/superadmin',
+    AUDIT: '/audit',
 } as const;
 
 export const NAV_SECTIONS = {

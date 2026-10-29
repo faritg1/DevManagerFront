@@ -1405,3 +1405,42 @@ export interface ImpersonationLogEntry {
   ipAddress: string | null;
   userAgent: string | null;
 }
+
+/** GET /audit/changes: who created, changed or deleted a business record (values as strings, secrets excluded) */
+export type ChangeLogAction = 'Created' | 'Updated' | 'Deleted';
+
+export interface ChangeLogEntry {
+  id: string;
+  createdAt: string;
+  organizationId: string | null;
+  /** null for background jobs (actorName "Sistema") */
+  actorUserId: string | null;
+  actorName: string;
+  /** Platform super admin acting as the actor through impersonation */
+  impersonatorUserId: string | null;
+  impersonatorName: string | null;
+  /** Entity class name, e.g. "Associate"; entityTypeName is its Spanish label */
+  entityType: string;
+  entityTypeName: string;
+  entityId: string;
+  action: ChangeLogAction;
+  changes: { field: string; old: string | null; new: string | null }[];
+}
+
+export interface ChangeLogPage {
+  items: ChangeLogEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** from/to are UTC instants (to is exclusive); organizationId other than the caller's is for the super admin only */
+export interface ChangeLogFilter {
+  entityType?: string;
+  entityId?: string;
+  actorId?: string;
+  from?: string;
+  to?: string;
+  organizationId?: string;
+  page?: number;
+}

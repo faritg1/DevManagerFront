@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShieldCheck } from "lucide-react";
+import { History, Search, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { rbacService } from "../../../shared/api";
 import type { PermissionTreeNode } from "../../../shared/api/types";
 import { ROUTES } from "../../../shared/config/constants";
@@ -31,6 +32,7 @@ const TriCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { inde
 
 export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
   const toast = useToast();
+  const navigate = useNavigate();
   const { refresh: refreshMyPermissions } = usePermission();
   const [tree, setTree] = useState<PermissionTreeNode[] | null>(null);
   const [roleName, setRoleName] = useState("");
@@ -113,9 +115,16 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
         backTo={ROUTES.ROLES}
         title={`Permisos — ${roleName}`}
         description="Elige qué secciones y opciones del menú ve este rol y qué acciones puede hacer en cada una."
-        actions={!readOnly && (
-          <Button onClick={handleSave} isLoading={isSaving}>Guardar permisos</Button>
-        )}
+        actions={<>
+          <Button
+            variant="secondary"
+            icon={History}
+            onClick={() => navigate(`${ROUTES.PERMISSIONS}?${new URLSearchParams({ tab: "history", roleId, role: roleName })}`)}
+          >
+            Historial
+          </Button>
+          {!readOnly && <Button onClick={handleSave} isLoading={isSaving}>Guardar permisos</Button>}
+        </>}
       />
 
       {readOnly && (

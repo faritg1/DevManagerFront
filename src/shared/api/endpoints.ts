@@ -113,6 +113,7 @@ export const API_ENDPOINTS = {
     ME: "/permissions/me",
     ASSIGN_TO_USER: "/permissions/assign-to-user",
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
+    AUDIT: "/permissions/audit",
   },
 
   // In-app notifications of the current user

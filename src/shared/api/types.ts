@@ -1314,3 +1314,36 @@ export interface AiOrganizationQuota {
   used: number;
   percent: number;
 }
+
+/** One row of GET /permissions/audit: who changed whose permissions, with the granted/revoked diff */
+export interface PermissionAuditEntry {
+  id: string;
+  createdAt: string;
+  actorUserId: string;
+  actorName: string;
+  targetType: 'Role' | 'User';
+  targetId: string;
+  targetName: string;
+  /** Role assigned or removed when the target is a user */
+  roleId: string | null;
+  roleName: string | null;
+  action: string;
+  granted: { code: string; name: string }[];
+  revoked: { code: string; name: string }[];
+}
+
+export interface PermissionAuditPage {
+  items: PermissionAuditEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface PermissionAuditFilter {
+  targetType?: 'Role' | 'User';
+  targetId?: string;
+  actorId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+}

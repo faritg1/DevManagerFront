@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { rbacService } from "../../../shared/api";
 import type { PermissionTreeNode } from "../../../shared/api/types";
 import { EmptyState, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
 import { routeForPermission } from "../../../widgets/Sidebar/navConfig";
+import { PermissionAuditTable } from "../components/PermissionAuditTable";
 
-/** Read-only catalogue of menu permissions: sections, the options (screens) they unlock and the actions inside each option. */
+/** Read-only catalogue of menu permissions (sections, options, actions) and the history of permission changes (?tab=history[&roleId=]). */
 export const PermissionsPage: React.FC = () => {
   const [tree, setTree] = useState<PermissionTreeNode[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") === "history" ? "history" : "catalog";
+  const roleId = searchParams.get("roleId") ?? undefined;
 
   useEffect(() => {
     rbacService.getPermissionTree().then((res) => setTree(res.data)).catch(() => setFailed(true));
@@ -17,10 +22,37 @@ export const PermissionsPage: React.FC = () => {
     <PageContainer>
       <PageHeader
         title="Permisos del menú"
-        description="Cada rol ve las secciones y opciones que tenga asignadas y hace las acciones concedidas en ellas. Asígnalos desde Roles."
+        description="Cada rol ve las secciones y opciones que tenga asignadas y hace las acciones concedidas en ellas. Asígnalos desde Roles; cada cambio queda en el historial."
       />
 
-      {failed ? (
+      <div role="tablist" aria-label="Vista" className="mb-4 flex gap-2 border-b border-slate-200 dark:border-border-dark">
+        {([["catalog", "Catálogo"], ["history", "Historial de cambios"]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setSearchParams(key === "history" ? { tab: "history" } : {})}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === key ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "history" ? (
+        <>
+          {roleId && (
+            <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
+              Cambios del rol <strong>{searchParams.get("role") ?? ""}</strong> y sus asignaciones ·{" "}
+              <button type="button" className="font-medium text-primary hover:underline" onClick={() => setSearchParams({ tab: "history" })}>
+                Ver todos
+              </button>
+            </p>
+          )}
+          <PermissionAuditTable key={roleId ?? "all"} roleId={roleId} />
+        </>
+      ) : failed ? (
         <EmptyState title="No se pudo cargar el catálogo de permisos" />
       ) : !tree ? (
         <LoadingBlock label="Cargando permisos…" />

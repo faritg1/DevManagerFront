@@ -15,6 +15,8 @@ import type {
   EffectivePermissionsResponse,
   PermissionTreeNode,
   MyPermissionsResponse,
+  PermissionAuditFilter,
+  PermissionAuditPage,
 } from "../types";
 
 export const rbacService = {
@@ -67,6 +69,10 @@ export const rbacService = {
 
   async getPermissionTree(roleId?: string): Promise<ApiResponse<PermissionTreeNode[]>> {
     return apiClient.get<PermissionTreeNode[]>(API_ENDPOINTS.PERMISSIONS.TREE, { roleId });
+  },
+
+  async getPermissionAudit(filter: PermissionAuditFilter): Promise<ApiResponse<PermissionAuditPage>> {
+    return apiClient.get<PermissionAuditPage>(API_ENDPOINTS.PERMISSIONS.AUDIT, { ...filter });
   },
 
   async getMyPermissions(): Promise<ApiResponse<MyPermissionsResponse>> {

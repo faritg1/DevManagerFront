@@ -42,7 +42,7 @@ export const PermissionsPage: React.FC = () => {
                     <span className="truncate text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                       <code>{routeForPermission(option.code) ?? option.code}</code>
                     </span>
-                    <span className="text-slate-600 dark:text-slate-300">{option.description && option.description !== routeForPermission(option.code) ? option.description : "—"}</span>
+                    <span className="text-slate-600 dark:text-slate-300">{option.description && option.description !== routeForPermission(option.code) ? option.description : null}</span>
                   </li>
                 ))}
               </ul>

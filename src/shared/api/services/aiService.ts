@@ -4,8 +4,10 @@ import type {
   AiCapabilities,
   AiChatRequest,
   AiConversation,
+  AiOrganizationQuota,
   AiStoredMessage,
   AiStreamEvent,
+  AiUsageSummary,
   ApiResponse,
 } from "../types";
 
@@ -14,6 +16,7 @@ const E = API_ENDPOINTS.AI;
 const PRE_STREAM_MESSAGES: Record<string, string> = {
   RATE_LIMITED: "Has hecho muchas consultas, intenta en un minuto.",
   AI_BUDGET_EXCEEDED: "Se agotó el cupo diario del asistente para tu organización. Intenta de nuevo mañana.",
+  AI_MONTHLY_QUOTA_EXCEEDED: "Se agotó la cuota mensual de IA de tu organización. Se renueva el día 1 del próximo mes o cuando el operador de la plataforma la amplíe.",
 };
 
 /** Parses one SSE frame ("event: x\ndata: {...}"). Multi-line data is joined with "\n"; comments and unknown frames return null. */
@@ -82,4 +85,11 @@ export const aiService = {
   getMessages: (id: string): Promise<ApiResponse<AiStoredMessage[]>> => apiClient.get(E.MESSAGES(id)),
 
   deleteConversation: (id: string): Promise<ApiResponse<void>> => apiClient.delete(E.CONVERSATION(id)),
+
+  getUsage: (): Promise<ApiResponse<AiUsageSummary>> => apiClient.get(E.USAGE),
+
+  listQuotas: (): Promise<ApiResponse<AiOrganizationQuota[]>> => apiClient.get(E.QUOTAS),
+
+  setQuota: (organizationId: string, monthlyTokenQuota: number | null): Promise<ApiResponse<void>> =>
+    apiClient.put(E.QUOTA(organizationId), { monthlyTokenQuota }),
 };

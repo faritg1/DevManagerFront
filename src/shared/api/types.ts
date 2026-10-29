@@ -1287,3 +1287,30 @@ export interface AiStoredMessage {
   outputTokens?: number | null;
   createdAt: string;
 }
+
+/** GET /ai/usage: the organization's AI quota for the current UTC month */
+export interface AiUsageSummary {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  quota: number;
+  isDefaultQuota: boolean;
+  used: number;
+  remaining: number;
+  percent: number;
+  dailyBudget: number;
+  usedToday: number;
+  byUseCase: { useCase: string; tokens: number }[];
+  daily: { date: string; tokens: number }[];
+}
+
+/** GET /ai/quotas (platform operators only; empty for everyone else) */
+export interface AiOrganizationQuota {
+  organizationId: string;
+  name: string;
+  /** Own quota; null uses the platform default */
+  monthlyTokenQuota: number | null;
+  effectiveQuota: number;
+  used: number;
+  percent: number;
+}

@@ -20,6 +20,7 @@ import {
     FileBarChart2,
     Sparkles,
     Award,
+    Gauge,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -56,6 +57,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'projects', permission: 'menu.platform.projects', label: 'Proyectos', icon: Briefcase, to: ROUTES.PROJECTS },
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
             { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
+            { key: 'ai-usage', permission: 'menu.platform.ai_usage', label: 'Uso de IA', icon: Gauge, to: ROUTES.AI_USAGE },
         ],
     },
     {

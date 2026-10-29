@@ -10,6 +10,7 @@ export const ROUTES = {
     EDIT_PROJECT: '/projects/:id/edit',
 
     REPORTS: '/reports',
+    AI_USAGE: '/ai-usage',
     
     ORGANIZATIONS: '/organizations',
     USERS: '/users',

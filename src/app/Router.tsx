@@ -39,6 +39,7 @@ const RolePermissionsPage = page(rbac, "RolePermissionsPage");
 const PermissionsPage = page(rbac, "PermissionsPage");
 const SkillsCatalogPage = page(() => import("../features/skills"), "SkillsCatalogPage");
 const ReportsPage = page(() => import("../features/reports"), "ReportsPage");
+const AiUsagePage = page(() => import("../features/ai"), "AiUsagePage");
 const SettingsPage = page(() => import("../features/settings"), "SettingsPage");
 const AssociatesPage = page(associates, "AssociatesPage");
 const AssociateDetailPage = page(associates, "AssociateDetailPage");
@@ -92,6 +93,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.REPORTES_SUPERSOLIDARIA} element={<ReportesSupersolidariaPage />} />
                     <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                     <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+                    <Route path={ROUTES.AI_USAGE} element={<AiUsagePage />} />
 
                     <Route element={<AdminGuard />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />

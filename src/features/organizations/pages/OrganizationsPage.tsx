@@ -20,6 +20,7 @@ import { organizationsService } from '../../../shared/api';
 import type { AssociateStatus, OrganizationDto, OrganizationEntityType } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate } from '../../associates/labels';
+import { AiQuotasCard } from '../components/AiQuotasCard';
 
 
 /** Valor ausente: texto atenuado en lugar de una etiqueta vacía. */
@@ -262,6 +263,8 @@ export const OrganizationsPage: React.FC = () => {
                     tone="bg-rose-100 text-rose-500 dark:bg-rose-500/10"
                 />
             </div>
+
+            <AiQuotasCard />
 
             <Modal
                 isOpen={!!form}

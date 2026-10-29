@@ -255,6 +255,9 @@ export const API_ENDPOINTS = {
       CONVERSATIONS: "/ai/conversations",
       MESSAGES: (id: string) => `/ai/conversations/${id}/messages`,
       CONVERSATION: (id: string) => `/ai/conversations/${id}`,
+      USAGE: "/ai/usage",
+      QUOTAS: "/ai/quotas",
+      QUOTA: (organizationId: string) => `/ai/quotas/${organizationId}`,
     },
 
     // Asistente Cooperativo

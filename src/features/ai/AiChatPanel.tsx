@@ -3,14 +3,16 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import {
     AlertCircle, ArrowLeft, Bot, CheckCircle2, History, Loader2, Lock, MessageSquarePlus, Send, Sparkles, Square, Trash2, XCircle,
 } from 'lucide-react';
-import { aiService, type AiCapabilities, type AiConversation } from '../../shared/api';
-import { useConfirm } from '../../shared/hooks';
+import { aiService, type AiCapabilities, type AiConversation, type AiUsageSummary } from '../../shared/api';
+import { useConfirm, usePermission } from '../../shared/hooks';
 import { useNotification } from '../../shared/context';
-import { timeAgo } from '../../shared/format';
+import { formatNumber, timeAgo } from '../../shared/format';
 import { Button, EmptyState, IconButton, LoadingBlock } from '../../shared/ui';
 import { useAiCapabilities, useAiChat, type ChatTurn, type ToolChip } from './useAiChat';
 
 const MAX_LENGTH = 2000;
+/** Backend AiController.UsagePermission */
+const AI_USAGE_PERMISSION = 'menu.platform.ai_usage';
 
 // Model output is untrusted: no images (tracking pixels) and only http(s) links, opened in a new tab.
 const safeUrl = (url: string) => (/^https?:\/\//i.test(url) ? url : '');
@@ -117,6 +119,14 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
     const logRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const counterId = useId();
+    const { has, isAdmin } = usePermission();
+    const canSeeUsage = isAdmin || has(AI_USAGE_PERMISSION);
+    const [usage, setUsage] = useState<AiUsageSummary | null>(null);
+
+    // Remaining-quota hint, refreshed after each answer; only for who may see the usage (no 403 noise)
+    useEffect(() => {
+        if (canSeeUsage && !streaming) aiService.getUsage().then(r => setUsage(r.data ?? null), () => setUsage(null));
+    }, [canSeeUsage, streaming]);
 
     const refreshConversations = useCallback(() => {
         aiService.listConversations().then(r => setConversations(r.data ?? []), () => setConversations([]));
@@ -282,7 +292,12 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
                     </div>
                     <p id={counterId} className="mt-1 flex justify-between text-xs text-slate-500 dark:text-slate-400">
                         <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nueva línea</span>
-                        <span className="ml-auto">{input.length}/{MAX_LENGTH}</span>
+                        {usage && (
+                            <span className={`ml-auto ${usage.percent >= 80 ? 'font-semibold text-orange-600 dark:text-orange-400' : ''}`}>
+                                Cuota de IA: {formatNumber(usage.remaining, 0)} tokens disponibles ({formatNumber(usage.percent)} % usado)
+                            </span>
+                        )}
+                        <span className={usage ? 'ml-3' : 'ml-auto'}>{input.length}/{MAX_LENGTH}</span>
                     </p>
                 </form>
             </section>

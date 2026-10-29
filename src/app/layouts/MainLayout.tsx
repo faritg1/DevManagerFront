@@ -18,13 +18,16 @@ export const MainLayout: React.FC = () => {
         <PermissionsProvider>
         <UserNotificationsProvider>
             <div className="flex min-h-screen w-full bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
+                <a href="#main-content" onClick={(e) => { e.preventDefault(); document.getElementById('main-content')?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-xl focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">
+                    Saltar al contenido
+                </a>
                 <Sidebar isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
                 
                 <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible">
                     <ImpersonationBanner />
                     <Header onMenuClick={openMobileMenu} />
 
-                    <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth print:overflow-visible">
+                    <main id="main-content" tabIndex={-1} className="flex-1 outline-none overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth print:overflow-visible">
                         <RouteBoundary />
                     </main>
                 </div>

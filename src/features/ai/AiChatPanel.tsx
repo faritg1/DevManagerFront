@@ -278,7 +278,7 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ moduleKey, compact = f
                             placeholder="Escribe tu pregunta…"
                             aria-label="Pregunta para el asistente"
                             aria-describedby={counterId}
-                            className="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary [field-sizing:content] dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder:text-slate-500"
+                            className="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary [field-sizing:content] dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder:text-slate-500"
                         />
                         {streaming ? (
                             <Button variant="secondary" icon={Square} onClick={stop} className="h-11" aria-label="Detener respuesta">

@@ -79,7 +79,7 @@ export const PermissionsPage: React.FC = () => {
                       <ul className="flex flex-wrap gap-1.5 sm:col-span-3" aria-label={`Acciones de ${option.name}`}>
                         {option.children.map((action) => (
                           <li key={action.id} title={action.description ?? undefined} className="rounded-full border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 dark:border-border-dark dark:text-slate-300">
-                            {action.name} <code className="text-slate-400">{action.code.split(".").pop()}</code>
+                            {action.name} <code className="text-slate-500 dark:text-slate-400">{action.code.split(".").pop()}</code>
                           </li>
                         ))}
                       </ul>

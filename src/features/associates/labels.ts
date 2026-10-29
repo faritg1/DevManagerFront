@@ -56,3 +56,6 @@ export const isApiError = (e: unknown): e is ApiError =>
 export const needsLocalToast = (e: unknown): boolean => !isApiError(e) || e.status === 404;
 export const errorText = (e: unknown, fallback = 'Error de conexión'): string =>
     isApiError(e) && e.message ? e.message : fallback;
+
+/** "v2" or "2" -> "v2" (seeded versions already carry the prefix). */
+export const versionLabel = (v: string) => (/^v/i.test(v) ? v : `v${v}`);

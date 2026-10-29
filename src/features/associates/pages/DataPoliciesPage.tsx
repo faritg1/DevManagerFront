@@ -5,7 +5,7 @@ import { useModal } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
 import type { DataPolicyDto } from '../../../shared/api/types';
-import { errorText, formatDate, needsLocalToast } from '../labels';
+import { errorText, formatDate, needsLocalToast, versionLabel } from '../labels';
 
 const EMPTY = { version: '', purpose: '', text: '', effectiveFrom: '' };
 
@@ -72,7 +72,7 @@ export const DataPoliciesPage: React.FC = () => {
                     <Card key={p.id} padding="md">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <h2 className="font-bold text-slate-900 dark:text-white">
-                                v{p.version}{i === 0 && <span className="ml-2 text-xs text-emerald-600">(más reciente)</span>}
+                                {versionLabel(p.version)}{i === 0 && <span className="ml-2 text-xs text-emerald-600">(más reciente)</span>}
                             </h2>
                             <span className="text-xs text-slate-500 dark:text-slate-400">Vigente desde {formatDate(p.effectiveFrom)}</span>
                         </div>

@@ -4,7 +4,7 @@ import type { PermissionTreeNode } from "../../../shared/api/types";
 import { EmptyState, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
 import { routeForPermission } from "../../../widgets/Sidebar/navConfig";
 
-/** Read-only catalogue of menu permissions: sections and the options (screens) they unlock. */
+/** Read-only catalogue of menu permissions: sections, the options (screens) they unlock and the actions inside each option. */
 export const PermissionsPage: React.FC = () => {
   const [tree, setTree] = useState<PermissionTreeNode[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -17,7 +17,7 @@ export const PermissionsPage: React.FC = () => {
     <PageContainer>
       <PageHeader
         title="Permisos del menú"
-        description="Cada rol ve las secciones y opciones que tenga asignadas. Asígnalos desde Roles."
+        description="Cada rol ve las secciones y opciones que tenga asignadas y hace las acciones concedidas en ellas. Asígnalos desde Roles."
       />
 
       {failed ? (
@@ -43,6 +43,15 @@ export const PermissionsPage: React.FC = () => {
                       <code>{routeForPermission(option.code) ?? option.code}</code>
                     </span>
                     <span className="text-slate-600 dark:text-slate-300">{option.description && option.description !== routeForPermission(option.code) ? option.description : null}</span>
+                    {option.children.length > 0 && (
+                      <ul className="flex flex-wrap gap-1.5 sm:col-span-3" aria-label={`Acciones de ${option.name}`}>
+                        {option.children.map((action) => (
+                          <li key={action.id} title={action.description ?? undefined} className="rounded-full border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 dark:border-border-dark dark:text-slate-300">
+                            {action.name} <code className="text-slate-400">{action.code.split(".").pop()}</code>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>

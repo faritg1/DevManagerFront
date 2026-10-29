@@ -94,18 +94,23 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.ASISTENTE} element={<AsistentePage />} />
                     <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
                     <Route path={ROUTES.AI_USAGE} element={<AiUsagePage />} />
+                    <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
+                    <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
+                    <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
+                    <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
+                    <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
+
+                    <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
+                      <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
+                    </Route>
+                    <Route element={<PermissionGuard require="menu.platform.projects.edit" />}>
+                      <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
+                    </Route>
 
                     <Route element={<AdminGuard />}>
-                      <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
-                      <Route path={ROUTES.EDIT_PROJECT} element={<EditProjectPage />} />
                       <Route path={ROUTES.ORGANIZATIONS} element={<OrganizationsPage />} />
                       <Route path={ROUTES.USERS} element={<UsersPage />} />
                       <Route path={ROUTES.USER_DETAIL} element={<UserDetailPage />} />
-                      <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
-                      <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
-                      <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />
-                      <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
-                      <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
                       <Route path={ROUTES.ROLES} element={<RolesPage />} />
                       <Route path={`${ROUTES.ROLES}/:id/permissions`} element={<RolePermissionsPage />} />
                       <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />

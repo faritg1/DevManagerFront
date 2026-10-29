@@ -3,7 +3,7 @@ import { rbacService } from '../api';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 
 interface PermissionsContextValue {
-    /** True when the signed-in user holds the code (server already prunes options of ungranted sections). */
+    /** True when the signed-in user holds the code (server already prunes options and actions of ungranted ancestors); always true for admins. */
     has: (code: string) => boolean;
     isAdmin: boolean;
     isLoading: boolean;
@@ -35,7 +35,7 @@ export const PermissionsProvider: React.FC<{ children: ReactNode }> = ({ childre
     useEffect(() => { refresh(); }, [refresh]);
 
     const value = useMemo<PermissionsContextValue>(() => ({
-        has: (code) => !!codes?.has(code),
+        has: (code) => (failed ? roleIsAdmin : isAdmin) || !!codes?.has(code),
         isAdmin: failed ? roleIsAdmin : isAdmin,
         isLoading: !codes && !failed,
         failed,

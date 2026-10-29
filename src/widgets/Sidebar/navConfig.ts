@@ -69,10 +69,10 @@ export const NAV_CONFIG: NavSectionConfig[] = [
         key: 'solidario', permission: 'menu.solidarity',
         title: NAV_SECTIONS.SOLIDARIO,
         items: [
-            { key: 'associates', permission: 'menu.solidarity.associates', label: 'Asociados', icon: HeartHandshake, to: ROUTES.ASSOCIATES, adminOnly: true },
-            { key: 'data-policies', permission: 'menu.solidarity.data_policies', label: 'Políticas de datos', icon: FileText, to: ROUTES.DATA_POLICIES, adminOnly: true },
+            { key: 'associates', permission: 'menu.solidarity.associates', label: 'Asociados', icon: HeartHandshake, to: ROUTES.ASSOCIATES },
+            { key: 'data-policies', permission: 'menu.solidarity.data_policies', label: 'Políticas de datos', icon: FileText, to: ROUTES.DATA_POLICIES },
             { key: 'habeas-data', permission: 'menu.solidarity.habeas_data', label: 'Habeas Data (ARCO)', icon: Shield, to: ROUTES.HABEAS_DATA },
-            { key: 'education', permission: 'menu.solidarity.education', label: 'Educación', icon: GraduationCap, to: ROUTES.EDUCATION, adminOnly: true },
+            { key: 'education', permission: 'menu.solidarity.education', label: 'Educación', icon: GraduationCap, to: ROUTES.EDUCATION },
             { key: 'organos', permission: 'menu.solidarity.governing_bodies', label: 'Órganos', icon: Landmark, to: ROUTES.ORGANOS },
             { key: 'competencias', permission: 'menu.solidarity.competencies', label: 'Competencias', icon: Award, to: ROUTES.COMPETENCIAS },
             { key: 'excedentes', permission: 'menu.solidarity.surplus', label: 'Excedentes', icon: PiggyBank, to: ROUTES.EXCEDENTES },

@@ -51,6 +51,7 @@ export const ActivitiesPage: React.FC = () => {
     const [view, setView] = useState<'list' | 'board'>('list');
     const [proposals, setProposals] = useState<ProposalResponse[]>([]);
     const [proposeOpen, setProposeOpen] = useState(false);
+    const [justGenerated, setJustGenerated] = useState(false);
 
     const project = projects?.find((p) => p.id === projectId);
     const readOnly = isProjectReadOnly(project);
@@ -230,7 +231,7 @@ export const ActivitiesPage: React.FC = () => {
 
                 <ProjectProgress key={`${project.id}-${items?.length}-${items?.filter((i) => i.status === WorkItemStatus.Done).length}`} projectId={project.id} className="mb-4" />
 
-                <AiProposalsPanel proposals={proposals} members={members} canDecide={canPropose || (isAdmin && !readOnly && !noPrefix)} onDecided={decided} onStale={loadProposals} />
+                <AiProposalsPanel key={String(justGenerated)} defaultOpen={justGenerated} proposals={proposals} members={members} canDecide={canPropose || (isAdmin && !readOnly && !noPrefix)} onDecided={decided} onStale={loadProposals} />
 
                 <div role="tablist" aria-label="Vista de actividades" className="mb-3 flex gap-2">
                     {([['list', 'Backlog', Table2], ['board', 'Tablero', KanbanSquare]] as const).map(([key, label, Icon]) => (
@@ -249,8 +250,10 @@ export const ActivitiesPage: React.FC = () => {
                 </div>
 
                 <Card padding="none" className="overflow-hidden">
-                    <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-border-dark">
-                        <Input label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Clave o título" />
+                    <div className="grid grid-cols-2 gap-3 border-b border-slate-200 p-4 lg:grid-cols-4 dark:border-border-dark">
+                        <div className="col-span-2 lg:col-span-1">
+                            <Input label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Clave o título" />
+                        </div>
                         <Select label="Estado" value={status} onChange={(e) => setStatus(e.target.value)}>
                             <option value="">Todos</option>
                             {STATUS_ORDER.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
@@ -293,13 +296,14 @@ export const ActivitiesPage: React.FC = () => {
                     canComment={has('menu.platform.activities.comment') && !readOnly}
                     userId={user?.id}
                     highlightCommentId={search.get('comment')}
+                    onEdit={canEdit ? (i) => { setSearch({}); openForm(i); } : undefined}
                 />
 
                 <GenerateProposalModal
                     isOpen={proposeOpen}
                     onClose={() => setProposeOpen(false)}
                     projectId={project.id}
-                    onGenerated={(p) => { setProposals((ps) => [p, ...ps]); toast.success('Propuesta generada: revísala y confírmala'); }}
+                    onGenerated={(p) => { setProposals((ps) => [p, ...ps]); setJustGenerated(true); toast.success('Propuesta generada: revísala y confírmala'); }}
                 />
 
                 <WorkItemFormModal

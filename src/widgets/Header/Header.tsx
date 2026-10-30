@@ -56,6 +56,7 @@ const getRouteName = (path: string): string => {
     const lastSegment = segments[segments.length - 1] || 'Inicio';
     if (SEGMENT_NAMES[lastSegment]) return SEGMENT_NAMES[lastSegment];
     // Un segundo nivel que no es una ruta conocida es un identificador (/users/:id, /education/:programId…).
+    if (segments.length === 2 && segments[0] === 'activities') return 'Proyecto';
     if (segments.length >= 2) return 'Detalle';
     // Every top-level route is in ROUTE_NAMES, so anything else is the 404 page.
     return segments.length ? 'Página no encontrada' : 'Inicio';

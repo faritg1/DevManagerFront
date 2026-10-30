@@ -597,9 +597,27 @@ export interface SkillDistributionResponse {
   levelDistribution: Record<string, number>;
 }
 
+export interface WorkItemSummaryResponse {
+  total: number;
+  done: number;
+  cancelled: number;
+  progressPercent: number | null;
+}
+
+export interface AtRiskProject {
+  projectId: string;
+  name: string;
+  progressPercent: number | null;
+  elapsedPercent: number | null;
+  overdueItems: number;
+}
+
 export interface ProjectMetricsResponse {
   totalActiveProjects: number;
+  /** InProgress projects with overdue open activities, or progress below elapsed time. */
   projectsAtRisk: number;
+  atRiskProjects?: AtRiskProject[];
+  averageProgressPercent?: number | null;
   mostDemandedSkills: { skillName: string; requiredInProjects: number }[];
 }
 

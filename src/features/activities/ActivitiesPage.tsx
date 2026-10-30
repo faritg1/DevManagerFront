@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRightLeft, Edit2, Eye, KanbanSquare, ListChecks, Plus, Sparkles, Table2, Trash2 } from 'lucide-react';
 import {
     assignmentsService, projectsService, workItemsService,
-    WorkItemType, type ProjectResponse, type ProposalResponse, type WorkItemResponse, type WorkItemStatus,
+    WorkItemStatus, WorkItemType, type ProjectResponse, type ProposalResponse, type WorkItemResponse,
 } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { useAuth, useToast } from '../../shared/context';
@@ -17,6 +17,7 @@ import { AiProposalsPanel } from './components/AiProposalsPanel';
 import { GenerateProposalModal } from './components/GenerateProposalModal';
 import { KanbanBoard } from './components/KanbanBoard';
 import { KeyPrefixSetup } from './components/KeyPrefixSetup';
+import { ProjectProgress } from './components/ProjectProgress';
 import { WorkItemDetailDrawer } from './components/WorkItemDetailDrawer';
 import { WorkItemFormModal, type Member } from './components/WorkItemFormModal';
 import { WorkItemTable } from './components/WorkItemTable';
@@ -34,7 +35,7 @@ export const ActivitiesPage: React.FC = () => {
     const [search, setSearch] = useSearchParams();
     const toast = useToast();
     const { confirm } = useConfirm();
-    const { has } = usePermission();
+    const { has, isAdmin } = usePermission();
     const { user } = useAuth();
 
     const [projects, setProjects] = useState<ProjectResponse[] | null>(null);
@@ -227,7 +228,9 @@ export const ActivitiesPage: React.FC = () => {
                     </p>
                 )}
 
-                <AiProposalsPanel proposals={proposals} members={members} canDecide={canPropose} onDecided={decided} onStale={loadProposals} />
+                <ProjectProgress key={`${project.id}-${items?.length}-${items?.filter((i) => i.status === WorkItemStatus.Done).length}`} projectId={project.id} className="mb-4" />
+
+                <AiProposalsPanel proposals={proposals} members={members} canDecide={canPropose || (isAdmin && !readOnly && !noPrefix)} onDecided={decided} onStale={loadProposals} />
 
                 <div role="tablist" aria-label="Vista de actividades" className="mb-3 flex gap-2">
                     {([['list', 'Backlog', Table2], ['board', 'Tablero', KanbanSquare]] as const).map(([key, label, Icon]) => (

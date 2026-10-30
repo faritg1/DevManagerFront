@@ -7,6 +7,7 @@ import { useConfirm, usePermission } from '../../shared/hooks';
 import { useNotification } from '../../shared/context';
 import { formatNumber, timeAgo } from '../../shared/format';
 import { Button, EmptyState, IconButton, LoadingBlock, Markdown } from '../../shared/ui';
+import { ProposalConfirmCard } from '../activities/components/ProposalConfirmCard';
 import { useAiCapabilities, useAiChat, type ChatTurn, type ToolChip } from './useAiChat';
 
 const MAX_LENGTH = 2000;
@@ -68,6 +69,7 @@ const Turn: React.FC<{ t: ChatTurn; caps: AiCapabilities | null }> = ({ t, caps 
                     </div>
                 )}
                 {t.text && <Markdown text={t.text} />}
+                {t.proposals.map(p => <ProposalConfirmCard key={p.actionId} actionId={p.actionId} projectId={p.projectId} />)}
                 {t.streaming && !t.text && !t.tools.some(c => c.status === 'started') && (
                     <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <Loader2 size={14} className="animate-spin" aria-hidden="true" /> Pensando…

@@ -16,12 +16,14 @@ export interface ChatTurn {
     tools: ToolChip[];
     sources: AiSource[];
     deniedModules: string[];
+    /** Proposals the assistant generated in this answer (SSE `action`). */
+    proposals: { actionId: string; projectId: string }[];
     streaming?: boolean;
     error?: string;
 }
 
 const turn = (role: ChatTurn['role'], text = '', id: string = crypto.randomUUID()): ChatTurn =>
-    ({ id, role, text, tools: [], sources: [], deniedModules: [] });
+    ({ id, role, text, tools: [], sources: [], deniedModules: [], proposals: [] });
 
 /** Rebuilds the visible turns from stored rows: tool rows become chips of the assistant answer that follows them. */
 const fromStored = (rows: AiStoredMessage[]): ChatTurn[] => {
@@ -86,6 +88,9 @@ export const useAiChat = (moduleKey?: string) => {
                         });
                         break;
                     }
+                    case 'action':
+                        patch(t => ({ ...t, proposals: [...t.proposals, { actionId: e.data.actionId, projectId: e.data.projectId }] }));
+                        break;
                     case 'delta':
                         patch(t => ({ ...t, text: t.text + e.data.text }));
                         break;

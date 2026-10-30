@@ -32,4 +32,5 @@ export {
   notificationsService,
   aiService,
   platformService,
+  auditService,
 } from "./services";

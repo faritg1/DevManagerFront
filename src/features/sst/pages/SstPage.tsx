@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -18,6 +18,7 @@ import type {
 } from '../../../shared/api/types';
 import { formatDate, today } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
 
 /** yyyy-MM-ddTHH:mm en hora local, para inputs datetime-local */
 const nowLocal = () => {
@@ -83,6 +84,17 @@ export const SstPage: React.FC = () => {
     };
 
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
+    const accidentColumns: CsvColumn<WorkAccidentDto>[] = [
+        { header: 'Fecha', value: (a) => formatDate(a.occurredAt, undefined, '') },
+        { header: 'Asociado', value: (a) => nameOf(a.userId) },
+        { header: 'Tipo', value: (a) => a.accidentType },
+        { header: 'Gravedad', value: (a) => SEVERITY_LABEL[a.severity] ?? a.severity },
+        { header: 'ARL', value: (a) => a.arl },
+        { header: 'FURAT', value: (a) => a.furatNumber },
+        { header: 'Estado', value: (a) => (a.investigationCompleted ? 'Investigado' : 'Pendiente') },
+        { header: 'Fecha de investigación', value: (a) => formatDate(a.investigationDate, undefined, '') },
+        { header: 'Descripción', value: (a) => a.description },
+    ];
 
     const loadAll = async () => {
         if (!user?.id) return;
@@ -335,6 +347,7 @@ export const SstPage: React.FC = () => {
                         <FileText className="text-rose-500" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accidentes de Trabajo (FURAT)</h2>
                         <SearchInput pager={accidentPager} label="Buscar accidente" className="sm:ml-auto sm:max-w-xs" />
+                        <ExportButton rows={accidentPager.filtered} columns={accidentColumns} filename="accidentes-sst" />
                         <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                             <input type="checkbox" checked={onlyPendingAccidents} onChange={(e) => setOnlyPendingAccidents(e.target.checked)} />
                             Solo pendientes de investigación

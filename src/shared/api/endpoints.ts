@@ -116,6 +116,11 @@ export const API_ENDPOINTS = {
     AUDIT: "/permissions/audit",
   },
 
+  // General change history (audit.ChangeLog)
+  AUDIT: {
+    CHANGES: "/audit/changes",
+  },
+
   // In-app notifications of the current user
   NOTIFICATIONS: {
     BASE: "/notifications",

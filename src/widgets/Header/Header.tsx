@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Menu, Search, Sun, Moon, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../shared/hooks';
 import { ROUTES } from '../../shared/config/constants';
 import { NotificationBell } from './NotificationBell';
+import { CommandPalette } from './CommandPalette';
 
 interface HeaderProps {
     onMenuClick?: () => void;
@@ -21,6 +22,7 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.DATA_POLICIES]: 'Políticas de datos',
     [ROUTES.ROLES]: 'Roles',
     [ROUTES.PERMISSIONS]: 'Permisos',
+    [ROUTES.AUDIT]: 'Auditoría',
     [ROUTES.PROFILE]: 'Mi Perfil',
     [ROUTES.SETTINGS]: 'Configuración',
     [ROUTES.SKILLS_CATALOG]: 'Habilidades',
@@ -78,12 +80,25 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     const { resolvedTheme, toggleTheme } = useTheme();
     const location = useLocation();
     
+    const [paletteOpen, setPaletteOpen] = useState(false);
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setPaletteOpen((open) => !open);
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, []);
+
     const breadcrumbs = useMemo(() => {
         return generateBreadcrumbs(location.pathname);
     }, [location.pathname]);
 
     return (
-        <header className="h-16 border-b border-slate-200 dark:border-border-dark bg-white/80 dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+        <>
+        <header className="print:hidden h-16 border-b border-slate-200 dark:border-border-dark bg-white/80 dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
             {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
             <div className="flex items-center gap-2 min-w-0">
                 <button aria-label="Abrir menú" 
@@ -128,18 +143,27 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 </nav>
             </div>
 
-            <div className="hidden lg:flex flex-1 max-w-md mx-8">
-                <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input 
-                        type="text"
-                        placeholder="Buscar proyectos, agentes..." aria-label="Buscar"
-                        className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-card-dark text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
-                    />
-                </div>
-            </div>
+            <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                aria-keyshortcuts="Control+K Meta+K"
+                className="hidden lg:flex flex-1 max-w-md mx-8 h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-card-dark px-3 text-sm text-slate-500 dark:text-slate-400 hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+                <Search size={18} aria-hidden="true" />
+                <span className="flex-1 text-left">Buscar pantallas y acciones…</span>
+                <kbd className="rounded border border-slate-300 dark:border-border-dark px-1.5 font-sans text-xs">Ctrl K</kbd>
+            </button>
 
             <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setPaletteOpen(true)}
+                    aria-label="Buscar pantallas y acciones"
+                    title="Buscar (Ctrl+K)"
+                    className="lg:hidden p-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                    <Search size={20} aria-hidden="true" />
+                </button>
                 <button 
                     onClick={toggleTheme}
                     className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -152,6 +176,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 <NotificationBell />
             </div>
         </header>
+        {/* Outside <header>: its backdrop-blur would become the containing block of the fixed modal. */}
+        <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
+        </>
     );
 };
 

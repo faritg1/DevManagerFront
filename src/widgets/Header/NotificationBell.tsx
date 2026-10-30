@@ -122,7 +122,7 @@ export const NotificationBell: React.FC = () => {
                                                         {!n.isRead && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label="Sin leer" />}
                                                     </span>
                                                     <span className="mt-0.5 block text-sm text-slate-600 dark:text-slate-300 break-words">{n.message}</span>
-                                                    <time dateTime={n.createdAt} className="mt-1 block text-xs text-slate-400">{timeAgo(n.createdAt)}</time>
+                                                    <time dateTime={n.createdAt} className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{timeAgo(n.createdAt)}</time>
                                                 </span>
                                             </button>
                                             <IconButton icon={Trash2} label={`Eliminar notificación ${n.title}`} variant="danger" className="mt-1" onClick={() => remove(n)} />

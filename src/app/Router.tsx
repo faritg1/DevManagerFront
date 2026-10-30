@@ -57,6 +57,7 @@ const CompetenciasPage = page(() => import("../features/competencias"), "Compete
 const ReportesSupersolidariaPage = page(() => import("../features/reportes-supersolidaria"), "ReportesSupersolidariaPage");
 const AsistentePage = page(() => import("../features/asistente"), "AsistentePage");
 const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPage");
+const AuditPage = page(() => import("../features/audit"), "AuditPage");
 
 export const AppRouter: React.FC = () => {
   return (
@@ -97,6 +98,8 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.AI_USAGE} element={<AiUsagePage />} />
                     {/* Guarded by its superAdminOnly menu entry (PermissionGuard) */}
                     <Route path={ROUTES.SUPER_ADMIN} element={<SuperAdminPage />} />
+                    {/* menu.admin.audit or the super admin (navConfig allowSuperAdmin), as the API */}
+                    <Route path={ROUTES.AUDIT} element={<AuditPage />} />
                     <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
                     <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
                     <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />

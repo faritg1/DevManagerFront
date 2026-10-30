@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import {
     Bot, AlertCircle, BookOpen, FileBarChart2, ShieldCheck, CheckCircle2,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, Markdown } from '../../../shared/ui';
 
 /** Runs a handler on submit without the browser's page reload. */
 const submit = (fn: () => void) => (e: React.FormEvent) => { e.preventDefault(); fn(); };
@@ -155,7 +154,7 @@ export const AsistentePage: React.FC = () => {
                                     <Badge variant="purple">{reporteRes.year}</Badge>
                                 </div>
                                 {reporteRes.executiveSummary && <p className="text-sm text-slate-600 dark:text-slate-400">{reporteRes.executiveSummary}</p>}
-                                {reporteRes.narrative && <div className="prose prose-sm dark:prose-invert max-w-none break-words"><ReactMarkdown>{reporteRes.narrative}</ReactMarkdown></div>}
+                                {reporteRes.narrative && <Markdown text={reporteRes.narrative} />}
                                 <div className="space-y-2">
                                     {reporteRes.dimensions.map(d => (
                                         <div key={d.name} className="p-3 rounded-xl bg-slate-50 dark:bg-background-dark">

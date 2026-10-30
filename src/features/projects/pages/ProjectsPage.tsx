@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, FolderOpen, AlertCircle } from 'lucide-react';
-import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
-import { ProjectStatus, type ProjectResponse } from '../../../shared/api/types';
+import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_COMPLEXITY_LABELS, type ProjectResponse } from '../../../shared/api/types';
+import type { CsvColumn } from '../../../shared/export';
+import { formatDate } from '../../../shared/format';
 import { usePermission } from '../../../shared/hooks';
 import { ProjectCard, NewProjectTile } from '../components/ProjectCard';
 import { AskAiButton } from '../../ai/AskAiButton';
+
+const EXPORT_COLUMNS: CsvColumn<ProjectResponse>[] = [
+    { header: 'Código', value: (p) => p.code },
+    { header: 'Nombre', value: (p) => p.name },
+    { header: 'Descripción', value: (p) => p.description },
+    { header: 'Estado', value: (p) => PROJECT_STATUS_LABELS[p.status] },
+    { header: 'Complejidad', value: (p) => PROJECT_COMPLEXITY_LABELS[p.complexityLevel] },
+    { header: 'Inicio', value: (p) => formatDate(p.startDate, undefined, '') },
+    { header: 'Fin', value: (p) => formatDate(p.endDate, undefined, '') },
+];
 
 const STATUS_TABS = [
     { label: 'Todos', value: undefined },
@@ -122,9 +134,12 @@ export const ProjectsPage: React.FC = () => {
                     />
                 ) : (
                     <>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
-                        </p>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
+                            </p>
+                            <ExportButton rows={filteredProjects} columns={EXPORT_COLUMNS} filename="proyectos" />
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
                             {filteredProjects.map(project => <ProjectCard key={project.id} project={project} />)}

@@ -10,7 +10,7 @@ export const ImpersonationBanner: React.FC = () => {
     if (!impersonation) return null;
 
     return (
-        <div role="status" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-amber-500 px-4 py-2 text-sm font-medium text-slate-950">
+        <div role="status" className="print:hidden flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-amber-500 px-4 py-2 text-sm font-medium text-slate-950">
             <UserCog size={18} aria-hidden="true" />
             <span>
                 Estás actuando como <strong>{impersonation.targetName}</strong> en <strong>{impersonation.organizationName}</strong>

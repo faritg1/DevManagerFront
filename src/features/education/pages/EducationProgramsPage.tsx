@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState, ExportButton } from '../../../shared/ui';
 import { useModal, useConfirm, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -10,6 +10,15 @@ import { educationProgramPath } from '../../../shared/config/constants';
 import { errorText, formatDate, needsLocalToast } from '../../associates/labels';
 import { PROGRAM_TYPE_LABELS } from '../labels';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const EXPORT_COLUMNS: CsvColumn<EducationProgramDto>[] = [
+    { header: 'Nombre', value: (p) => p.name },
+    { header: 'Tipo', value: (p) => PROGRAM_TYPE_LABELS[p.type] },
+    { header: 'Horas requeridas', value: (p) => p.requiredHours },
+    { header: 'Inicio', value: (p) => (p.startDate ? formatDate(p.startDate) : '') },
+    { header: 'Fin', value: (p) => (p.endDate ? formatDate(p.endDate) : '') },
+];
 
 export const EducationProgramsPage: React.FC = () => {
     const { has } = usePermission();
@@ -103,8 +112,9 @@ export const EducationProgramsPage: React.FC = () => {
 
             <Card padding="none" className="overflow-hidden">
                 {items.length > 0 && (
-                    <div className={`${TD} border-b border-slate-200 dark:border-border-dark flex justify-end`}>
+                    <div className={`${TD} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3`}>
                         <SearchInput pager={pager} label="Buscar por nombre o tipo" />
+                        <ExportButton rows={pager.filtered} columns={EXPORT_COLUMNS} filename="programas-educacion" />
                     </div>
                 )}
                 {isLoading ? (

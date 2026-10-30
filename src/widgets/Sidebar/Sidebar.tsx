@@ -123,6 +123,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         return () => { document.body.style.overflow = ''; };
     }, [isOpen]);
 
+    // Mobile drawer: focus moves in on open, Escape closes, and focus returns to the opener (the hamburger) on close.
+    const drawerRef = useRef<HTMLElement>(null);
+    useEffect(() => {
+        if (!isOpen) return;
+        const opener = document.activeElement as HTMLElement | null;
+        drawerRef.current?.querySelector<HTMLElement>("button, a[href]")?.focus();
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onCloseRef.current?.(); };
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            if (opener?.isConnected) opener.focus();
+        };
+    }, [isOpen]);
+
     const handleLogout = async () => {
         const ok = await confirm({
             message: '¿Estás seguro de que deseas cerrar sesión?'
@@ -303,7 +317,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     return (
         <>
             {/* ── Desktop Sidebar ── visible md+ ── */}
-            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex-col hidden md:flex shrink-0 h-screen sticky top-0`}>
+            <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-[width] duration-200 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex-col hidden md:flex print:hidden shrink-0 h-screen sticky top-0`}>
                 {renderContent(collapsed, 'sidebar')}
             </aside>
 
@@ -316,6 +330,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             />
 
             <aside
+                ref={drawerRef}
+                id="mobile-menu"
+                aria-label="Menú"
+                // Off-screen while closed: inert keeps its links out of the tab order and the accessibility tree.
+                inert={!isOpen}
                 className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}

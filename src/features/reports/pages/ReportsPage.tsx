@@ -1,6 +1,5 @@
 import { formatNumber } from '../../../shared/format';
 import React, { useEffect, useState, useCallback } from "react";
-import ReactMarkdown from "react-markdown";
 import {
   BarChart2,
   Users,
@@ -22,7 +21,7 @@ import type {
   EmployeeUtilizationResponse,
   DepartmentMetricsResponse,
 } from "../../../shared/api/types";
-import { Card, Badge, Button, StatCard, PageContainer, PageHeader, LoadingBlock } from "../../../shared/ui";
+import { Card, Badge, Button, StatCard, PageContainer, PageHeader, LoadingBlock, Markdown } from "../../../shared/ui";
 import { EducationCoverageCard } from "../components/EducationCoverageCard";
 import { AskAiButton } from '../../ai/AskAiButton';
 
@@ -213,11 +212,7 @@ export const ReportsPage: React.FC = () => {
           )}
         </div>
         {aiSummary ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
-              <ReactMarkdown>{aiSummary}</ReactMarkdown>
-            </div>
-          </div>
+          <Markdown text={aiSummary} className="text-slate-700 dark:text-slate-300 leading-relaxed" />
         ) : aiSummaryLoading ? (
           <LoadingBlock label="Generando insights..." className="py-6" />
         ) : (

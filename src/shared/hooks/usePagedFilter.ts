@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
-const normalize = (v: unknown) =>
+/** Accent- and case-insensitive form of a value, for search matching. */
+export const normalizeSearch = (v: unknown): string =>
     String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 interface Options<T> {
@@ -15,6 +16,8 @@ export interface PagedFilter<T> {
     page: number;
     setPage: (p: number) => void;
     pageItems: T[];
+    /** Every item that passes the search filter (all pages), e.g. for export. */
+    filtered: T[];
     /** Items after the search filter, before paging. */
     total: number;
     pageCount: number;
@@ -28,9 +31,9 @@ export function usePagedFilter<T>(items: T[], { pageSize = 10, searchFields }: O
     const [page, setPage] = useState(1);
 
     const filtered = useMemo(() => {
-        const q = normalize(query.trim());
+        const q = normalizeSearch(query.trim());
         if (!q || !searchFields) return items;
-        return items.filter(item => searchFields(item).some(v => normalize(v).includes(q)));
+        return items.filter(item => searchFields(item).some(v => normalizeSearch(v).includes(q)));
         // searchFields is usually an inline lambda, so it is left out of the deps on purpose.
     }, [items, query]);
 
@@ -42,6 +45,7 @@ export function usePagedFilter<T>(items: T[], { pageSize = 10, searchFields }: O
         setQuery: (q) => { setQueryState(q); setPage(1); },
         page: current,
         setPage,
+        filtered,
         pageItems: filtered.slice((current - 1) * pageSize, current * pageSize),
         total: filtered.length,
         pageCount,

@@ -119,7 +119,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                         ${shownError ? ERROR_BORDER : 'border-slate-300 dark:border-border-dark focus:ring-primary focus:border-primary dark:focus:border-primary'}
                         bg-slate-50 dark:bg-background-dark
                         text-slate-900 dark:text-white
-                        placeholder:text-slate-400 dark:placeholder:text-slate-500
+                        placeholder:text-slate-500 dark:placeholder:text-slate-500
                         ${paddingLeft} ${paddingRight}
                         outline-none focus:ring-1 transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed

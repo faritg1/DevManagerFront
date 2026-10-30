@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -16,6 +16,16 @@ import type {
 } from '../../../shared/api/types';
 import { formatDate, currency, today } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const PROGRAM_EXPORT_COLUMNS: CsvColumn<WelfareProgramDto>[] = [
+    { header: 'Nombre', value: (p) => p.name },
+    { header: 'Descripción', value: (p) => p.description },
+    { header: 'Presupuesto', value: (p) => p.budget },
+    { header: 'Inicio', value: (p) => formatDate(p.startDate, undefined, '') },
+    { header: 'Fin', value: (p) => formatDate(p.endDate, undefined, '') },
+    { header: 'Estado', value: (p) => (p.isActive ? 'Activo' : 'Inactivo') },
+];
 
 const AID_TYPE_LABEL: Record<AidType, string> = {
     1: 'Auxilio económico',
@@ -340,7 +350,10 @@ export const BienestarPage: React.FC = () => {
                         <Heart className="text-rose-500" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
                     </div>
-                    <SearchInput pager={programPager} label="Buscar programa" />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <SearchInput pager={programPager} label="Buscar programa" />
+                        <ExportButton rows={programPager.filtered} columns={PROGRAM_EXPORT_COLUMNS} filename="programas-bienestar" />
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className={TABLE_CLASS}>

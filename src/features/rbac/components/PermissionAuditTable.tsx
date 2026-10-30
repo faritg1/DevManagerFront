@@ -52,6 +52,7 @@ export const PermissionAuditTable: React.FC<{ roleId?: string }> = ({ roleId }) 
     page: data.page,
     setPage,
     pageItems: data.items,
+    filtered: data.items,
     total: data.total,
     pageCount: Math.max(1, Math.ceil(data.total / data.pageSize)),
     pageSize: data.pageSize,
@@ -92,7 +93,7 @@ export const PermissionAuditTable: React.FC<{ roleId?: string }> = ({ roleId }) 
                   <div className="flex min-w-[16rem] flex-wrap gap-1.5">
                     <Chips items={e.granted} variant="success" sign="+" />
                     <Chips items={e.revoked} variant="danger" sign="−" />
-                    {e.granted.length + e.revoked.length === 0 && <span className="text-slate-400">—</span>}
+                    {e.granted.length + e.revoked.length === 0 && <span className="text-slate-500 dark:text-slate-400">—</span>}
                   </div>
                 </td>
               </tr>

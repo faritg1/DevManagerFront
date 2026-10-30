@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2, CheckCircle2 } from 'lucide-react';
-import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, ProgressBar, SELECT_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, ProgressBar, SELECT_CLASS, ExportButton } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
 import { useIsAdmin } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
 import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
 import { AskAiButton } from '../../ai/AskAiButton';
+import type { CsvColumn } from '../../../shared/export';
+
+const EXPORT_COLUMNS: CsvColumn<SocialBalanceIndicatorDto>[] = [
+    { header: 'Asociado', value: (i) => i.fullName || i.userId },
+    { header: 'Horas educación (año)', value: (i) => i.educationHours },
+    { header: 'Educación básica (h)', value: (i) => i.basicEducationHours },
+    { header: 'Asambleas', value: (i) => i.assemblyParticipations },
+    { header: 'Órganos / comités', value: (i) => i.committeeParticipations },
+    { header: 'Beneficios', value: (i) => i.benefitsReceived },
+    { header: 'Índice', value: (i) => i.index },
+    { header: 'Cumple educación', value: (i) => i.meetsEducation },
+];
 
 const dimensionVariant = (status: string): 'success' | 'warning' | 'danger' =>
     status === 'Cumple' ? 'success' : status === 'En Progreso' ? 'warning' : 'danger';
@@ -199,9 +211,10 @@ export const BalanceSocialPage: React.FC = () => {
             {isAdmin && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
                             <Users className="text-blue-500" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Indicadores de la Organización</h2>
+                            <div className="ml-auto"><ExportButton rows={indicators} columns={EXPORT_COLUMNS} filename={`balance-social-${year}`} /></div>
                         </div>
                         {isLoading ? (
                             <LoadingBlock />

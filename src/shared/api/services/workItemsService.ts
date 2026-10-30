@@ -7,6 +7,7 @@ import type {
   ProposalResponse,
   CreateWorkItemRequest,
   MoveWorkItemRequest,
+  MyWorkItemResponse,
   WorkItemCommentResponse,
   WorkItemHistoryEntry,
   UpdateWorkItemRequest,
@@ -14,7 +15,7 @@ import type {
   WorkItemSummaryResponse,
 } from "../types";
 
-const { SUMMARY, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT } = API_ENDPOINTS.WORK_ITEMS;
+const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -24,6 +25,9 @@ export const workItemsService = {
   /** Progress = done / (total - cancelled); progressPercent is null when there is nothing to measure. */
   summary: (projectId: string): Promise<ApiResponse<WorkItemSummaryResponse>> =>
     apiClient.get<WorkItemSummaryResponse>(SUMMARY(projectId)),
+
+  /** Open items assigned to the caller across their projects, due date ascending (no date last). */
+  mine: (): Promise<ApiResponse<MyWorkItemResponse[]>> => apiClient.get<MyWorkItemResponse[]>(MINE),
 
   create: (projectId: string, data: CreateWorkItemRequest): Promise<ApiResponse<WorkItemResponse>> =>
     apiClient.post<WorkItemResponse>(BY_PROJECT(projectId), data),

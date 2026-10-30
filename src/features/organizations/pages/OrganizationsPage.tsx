@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, Select, LoadingBlock } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { DEFAULT_ACTIVITIES_SETTINGS, setActivitiesSettings, useIsAdmin } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
-import type { AssociateStatus, OrganizationDto, OrganizationEntityType } from '../../../shared/api/types';
+import type { ActivitiesSettings, AssociateStatus, OrganizationDto, OrganizationEntityType } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
 import { ENTITY_TYPES, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate } from '../../associates/labels';
 
@@ -66,6 +66,7 @@ interface EditForm {
     entityType: OrganizationEntityType | '';
     dueSoonDays: string;
     overdueNotice: boolean;
+    activities: ActivitiesSettings;
 }
 
 const toForm = (o: OrganizationDto): EditForm => ({
@@ -75,6 +76,7 @@ const toForm = (o: OrganizationDto): EditForm => ({
     entityType: o.entityType ?? '',
     dueSoonDays: String(o.workItemDueSoonDays ?? 2),
     overdueNotice: o.workItemOverdueNotice ?? true,
+    activities: { ...DEFAULT_ACTIVITIES_SETTINGS, ...o.activitiesSettings },
 });
 
 export const OrganizationsPage: React.FC = () => {
@@ -128,9 +130,11 @@ export const OrganizationsPage: React.FC = () => {
                 entityType: form.entityType === '' ? null : form.entityType,
                 workItemDueSoonDays: days,
                 workItemOverdueNotice: form.overdueNotice,
+                activitiesSettings: form.activities,
             });
             if (res.success && res.data) {
                 setOrg(res.data);
+                setActivitiesSettings(res.data.activitiesSettings ?? form.activities);
                 updateUser({ organizationName: res.data.name });
                 setForm(null);
                 showNotification({ type: 'success', message: 'Organización actualizada' });
@@ -347,6 +351,22 @@ export const OrganizationsPage: React.FC = () => {
                             />
                             Avisar cuando una actividad se venza
                         </label>
+                        <fieldset className="flex flex-col gap-2 sm:col-span-2">
+                            <legend className="mb-1 text-sm font-semibold text-slate-900 dark:text-white">Módulo de actividades</legend>
+                            {([
+                                ['showOnProjectDetail', 'Mostrar actividades en el detalle del proyecto'],
+                                ['showMyWorkOnDashboard', 'Mostrar «Mis actividades» en el dashboard'],
+                            ] as const).map(([key, label]) => (
+                                <label key={key} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.activities[key]}
+                                        onChange={(e) => setForm({ ...form, activities: { ...form.activities, [key]: e.target.checked } })}
+                                    />
+                                    {label}
+                                </label>
+                            ))}
+                        </fieldset>
                     </div>
                 )}
             </Modal>

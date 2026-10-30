@@ -44,6 +44,7 @@ export const ROUTES = {
     AUDIT: '/audit',
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
+    MY_ACTIVITIES: '/my-activities',
 } as const;
 
 export const NAV_SECTIONS = {

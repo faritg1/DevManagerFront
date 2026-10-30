@@ -1,10 +1,11 @@
+import { Edit2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { workItemsService, type WorkItemCommentResponse, type WorkItemHistoryEntry, type WorkItemResponse } from '../../../shared/api';
 import { useToast } from '../../../shared/context';
-import { formatDateTime } from '../../../shared/format';
+import { formatDate, formatDateTime } from '../../../shared/format';
 import { useConfirm } from '../../../shared/hooks';
 import { Badge, Button, LoadingBlock, Markdown, Modal } from '../../../shared/ui';
-import { PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VARIANTS, TYPE_LABELS, TYPE_VARIANTS } from '../workItemMeta';
+import { isOverdue, PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VARIANTS, TYPE_LABELS, TYPE_VARIANTS } from '../workItemMeta';
 import { MentionInput } from './MentionInput';
 import type { Member } from './WorkItemFormModal';
 import { WorkItemHistory } from './WorkItemHistory';
@@ -19,6 +20,8 @@ interface Props {
     userId?: string;
     /** Comment to scroll to and highlight (notification link). */
     highlightCommentId?: string | null;
+    /** Opens the edit form; omitted when the user cannot edit. */
+    onEdit?: (item: WorkItemResponse) => void;
 }
 
 const TOKEN = /@\[([^\]]*)\]\(user:([0-9a-fA-F-]{36})\)/g;
@@ -31,7 +34,7 @@ const withChips = (c: WorkItemCommentResponse) =>
 const CHIP_CLASS = '[&_code]:rounded [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:text-primary [&_code::before]:content-none [&_code::after]:content-none';
 
 /** Detail of one activity: comments with @mentions and the change history. */
-export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId }) => {
+export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit }) => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const [tab, setTab] = useState<'comments' | 'history'>('comments');
@@ -92,8 +95,24 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
                         <Badge variant={TYPE_VARIANTS[item.type]}>{TYPE_LABELS[item.type]}</Badge>
                         <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                         <Badge variant={PRIORITY_VARIANTS[item.priority]}>{PRIORITY_LABELS[item.priority]}</Badge>
-                        <span className="text-sm text-slate-600 dark:text-slate-300">{nameOf(item.assigneeUserId)}</span>
+                        {isOverdue(item) && <Badge variant="danger">Vencida</Badge>}
+                        {onEdit && <Button size="sm" variant="outline" icon={Edit2} className="ml-auto" onClick={() => onEdit(item)}>Editar</Button>}
                     </div>
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-3 dark:bg-white/5">
+                        {([
+                            ['Responsable', item.assigneeUserId ? nameOf(item.assigneeUserId) : 'Sin asignar'],
+                            ['Reportó', nameOf(item.reporterUserId)],
+                            ['Estimado', item.estimateHours != null ? `${item.estimateHours} h` : '—'],
+                            ['Vence', formatDate(item.dueDate)],
+                            ['Creada', formatDate(item.createdAt)],
+                            ...(item.completedAt ? [['Completada', formatDate(item.completedAt)]] : []),
+                        ] as [string, string][]).map(([k, v]) => (
+                            <div key={k} className="min-w-0">
+                                <dt className="text-xs text-slate-500 dark:text-slate-400">{k}</dt>
+                                <dd className="truncate font-medium text-slate-900 dark:text-white">{v}</dd>
+                            </div>
+                        ))}
+                    </dl>
                     {item.description && <Markdown text={item.description} />}
 
                     <div role="tablist" aria-label="Detalle" className="flex gap-2">

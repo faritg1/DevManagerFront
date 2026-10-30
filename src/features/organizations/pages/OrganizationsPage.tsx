@@ -64,6 +64,8 @@ interface EditForm {
     legalName: string;
     nit: string;
     entityType: OrganizationEntityType | '';
+    dueSoonDays: string;
+    overdueNotice: boolean;
 }
 
 const toForm = (o: OrganizationDto): EditForm => ({
@@ -71,6 +73,8 @@ const toForm = (o: OrganizationDto): EditForm => ({
     legalName: o.legalName ?? '',
     nit: o.nit ?? '',
     entityType: o.entityType ?? '',
+    dueSoonDays: String(o.workItemDueSoonDays ?? 1),
+    overdueNotice: o.workItemOverdueNotice ?? true,
 });
 
 export const OrganizationsPage: React.FC = () => {
@@ -110,6 +114,11 @@ export const OrganizationsPage: React.FC = () => {
 
     const save = async () => {
         if (!form || isSaving || !form.name.trim()) return;
+        const days = Number(form.dueSoonDays);
+        if (form.dueSoonDays.trim() === '' || !Number.isInteger(days) || days < 0 || days > 10) {
+            showNotification({ type: 'error', message: 'Los días de aviso deben ser un entero entre 0 y 10' });
+            return;
+        }
         setIsSaving(true);
         try {
             const res = await organizationsService.updateCurrent({
@@ -117,6 +126,8 @@ export const OrganizationsPage: React.FC = () => {
                 legalName: form.legalName.trim() || null,
                 nit: form.nit.trim() || null,
                 entityType: form.entityType === '' ? null : form.entityType,
+                workItemDueSoonDays: days,
+                workItemOverdueNotice: form.overdueNotice,
             });
             if (res.success && res.data) {
                 setOrg(res.data);
@@ -318,6 +329,24 @@ export const OrganizationsPage: React.FC = () => {
                                 <option key={k} value={k}>{v}</option>
                             ))}
                         </Select>
+                        <Input
+                            label="Avisar antes del vencimiento (días hábiles)"
+                            type="number"
+                            min={0}
+                            max={10}
+                            step={1}
+                            value={form.dueSoonDays}
+                            hint="0 = solo el día del vencimiento"
+                            onChange={(e) => setForm({ ...form, dueSoonDays: e.target.value })}
+                        />
+                        <label className="flex items-center gap-2 self-center text-sm text-slate-700 dark:text-slate-300">
+                            <input
+                                type="checkbox"
+                                checked={form.overdueNotice}
+                                onChange={(e) => setForm({ ...form, overdueNotice: e.target.checked })}
+                            />
+                            Avisar cuando una actividad se venza
+                        </label>
                     </div>
                 )}
             </Modal>

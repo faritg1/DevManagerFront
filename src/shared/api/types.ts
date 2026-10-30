@@ -64,6 +64,10 @@ export interface OrganizationDto {
   entityType: OrganizationEntityType | null;
   isActive: boolean;
   createdAt: string;
+  /** Business days before the due date to notify the assignee (0-10; 0 = due day only) */
+  workItemDueSoonDays?: number;
+  /** Notify the assignee when an activity becomes overdue */
+  workItemOverdueNotice?: boolean;
   stats: OrganizationStatsDto;
 }
 
@@ -72,6 +76,9 @@ export interface UpdateOrganizationRequest {
   legalName?: string | null;
   nit?: string | null;
   entityType?: OrganizationEntityType | null;
+  /** 0-10, null/undefined = unchanged */
+  workItemDueSoonDays?: number | null;
+  workItemOverdueNotice?: boolean | null;
 }
 
 // ============ USERS ============

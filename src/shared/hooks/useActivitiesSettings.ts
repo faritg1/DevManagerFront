@@ -3,7 +3,9 @@ import { organizationsService } from '../api';
 import type { ActivitiesSettings } from '../api/types';
 import { STORAGE_KEYS } from '../config/constants';
 
-export const DEFAULT_ACTIVITIES_SETTINGS: ActivitiesSettings = { showOnProjectDetail: true, showMyWorkOnDashboard: true, sprintsEnabled: false };
+export const DEFAULT_ACTIVITIES_SETTINGS: ActivitiesSettings = {
+    showOnProjectDetail: true, showMyWorkOnDashboard: true, sprintsEnabled: false, timeTrackingEnabled: false,
+};
 
 /** One request per signed-in session: keyed by the token, so another login reads its own organization. */
 let cache: { token: string | null; settings: Promise<ActivitiesSettings> } | null = null;
@@ -26,7 +28,7 @@ export const setActivitiesSettings = (settings: ActivitiesSettings | undefined) 
     cache = { token: localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN), settings: Promise.resolve({ ...DEFAULT_ACTIVITIES_SETTINGS, ...settings }) };
 };
 
-/** The organization's activities module settings; defaults (sprints off, the rest on) while loading or when they cannot be read. */
+/** The organization's activities module settings; defaults (sprints and time tracking off, the rest on) while loading or when they cannot be read. */
 export const useActivitiesSettings = (): ActivitiesSettings => {
     const [settings, setSettings] = useState(DEFAULT_ACTIVITIES_SETTINGS);
     useEffect(() => {

@@ -1,5 +1,11 @@
 # Novedades
 
+## Registro de horas en Actividades
+
+- En **Organización**, el grupo "Módulo de actividades" tiene la opción **Habilitar registro de horas** (desactivada por defecto). Mientras esté apagada nada cambia; las horas ya registradas se conservan.
+- Con el registro habilitado, el detalle de una actividad tiene la pestaña **Horas**: lista quién registró cuántas horas y en qué fecha, y permite registrar las propias (fecha no futura, más de 0 y hasta 24 horas, nota opcional). Cada quien elimina sus registros; un administrador puede eliminar cualquiera.
+- El detalle muestra **Dedicado** (por ejemplo "6 h de 8 h", resaltado cuando supera lo estimado); la barra del sprint y la sección Actividades del proyecto muestran las horas dedicadas.
+
 ## Sprints opcionales en Actividades
 
 - En **Organización**, el grupo "Módulo de actividades" tiene la opción **Habilitar sprints** (desactivada por defecto). Mientras esté apagada nada cambia.

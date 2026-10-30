@@ -135,6 +135,8 @@ export const API_ENDPOINTS = {
     SPRINT: (id: string) => `/sprints/${id}`,
     SPRINT_START: (id: string) => `/sprints/${id}/start`,
     SPRINT_CLOSE: (id: string) => `/sprints/${id}/close`,
+    TIME_ENTRIES: (id: string) => `/work-items/${id}/time-entries`,
+    TIME_ENTRY: (entryId: string) => `/time-entries/${entryId}`,
   },
 
   // General change history (audit.ChangeLog)

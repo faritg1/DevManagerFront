@@ -16,7 +16,7 @@ export const ProjectActivitiesSection: React.FC<{ projectId: string }> = ({ proj
     const { has } = usePermission();
     const allowed = has('menu.platform.activities');
     const canCreate = has('menu.platform.activities.create');
-    const { showOnProjectDetail } = useActivitiesSettings();
+    const { showOnProjectDetail, timeTrackingEnabled } = useActivitiesSettings();
     const [summary, setSummary] = useState<WorkItemSummaryResponse | null>(null);
 
     useEffect(() => {
@@ -52,6 +52,7 @@ export const ProjectActivitiesSection: React.FC<{ projectId: string }> = ({ proj
                         ))}
                         <Badge variant="danger">Vencidas: {summary.overdue ?? 0}</Badge>
                         <Badge variant="warning">Por vencer: {summary.dueSoon ?? 0}</Badge>
+                        {timeTrackingEnabled && <Badge variant="info">Horas dedicadas: {summary.spentHours ?? 0} h</Badge>}
                     </div>
                 </>)}
             </Card>

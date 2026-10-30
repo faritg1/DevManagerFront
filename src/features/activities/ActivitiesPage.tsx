@@ -53,7 +53,7 @@ export const ActivitiesPage: React.FC = () => {
     const [proposals, setProposals] = useState<ProposalResponse[]>([]);
     const [proposeOpen, setProposeOpen] = useState(false);
     const [justGenerated, setJustGenerated] = useState(false);
-    const { sprintsEnabled } = useActivitiesSettings();
+    const { sprintsEnabled, timeTrackingEnabled } = useActivitiesSettings();
     const [sprints, setSprints] = useState<SprintResponse[]>([]);
     /** '' every item, 'none' items without sprint, otherwise a sprint id */
     const [sprint, setSprint] = useState('');
@@ -257,6 +257,7 @@ export const ActivitiesPage: React.FC = () => {
                         selected={sprints.find((s) => s.id === sprint) ?? null}
                         items={items ?? []}
                         canManage={canEdit}
+                        showSpent={timeTrackingEnabled}
                         onChanged={sprintChanged}
                     />
                 )}
@@ -333,6 +334,11 @@ export const ActivitiesPage: React.FC = () => {
                     highlightCommentId={search.get('comment')}
                     onEdit={canEdit ? (i) => { setSearch({}); openForm(i); } : undefined}
                     sprintName={sprintsEnabled ? (id) => sprints.find((s) => s.id === id)?.name ?? 'Sin sprint' : undefined}
+                    timeTracking={timeTrackingEnabled ? {
+                        canLog: has('menu.platform.activities') && !readOnly,
+                        isAdmin,
+                        onSpentChange: (id, spentHours) => setItems((list) => list?.map((i) => (i.id === id ? { ...i, spentHours } : i)) ?? null),
+                    } : undefined}
                 />
 
                 <GenerateProposalModal

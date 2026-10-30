@@ -79,6 +79,8 @@ export interface ActivitiesSettings {
   showMyWorkOnDashboard: boolean;
   /** Per-project sprints (optional for items); off by default */
   sprintsEnabled: boolean;
+  /** Members log real hours on items; off by default (logged hours stay readable) */
+  timeTrackingEnabled: boolean;
 }
 
 export interface UpdateOrganizationRequest {
@@ -616,6 +618,8 @@ export interface WorkItemSummaryResponse {
   progressPercent: number | null;
   estimateHours: number;
   doneEstimateHours: number;
+  /** Hours logged on the project's items. */
+  spentHours?: number;
   /** Count per WorkItemStatus (JSON keys are the status numbers as strings). */
   byStatus: Partial<Record<WorkItemStatus, number>>;
   /** Open items past their due date. */
@@ -1515,6 +1519,8 @@ export interface WorkItemResponse {
   estimateHours?: number | null;
   parentId?: string | null;
   sprintId?: string | null;
+  /** Hours logged on the item (0 when none). */
+  spentHours?: number;
   completedAt?: string | null;
   createdAt: string;
 }
@@ -1569,12 +1575,32 @@ export interface SprintResponse {
   progressPercent: number | null;
   estimateHours: number;
   doneEstimateHours: number;
+  /** Hours logged on the sprint's items. */
+  spentHours?: number;
 }
 
 export interface MoveWorkItemRequest {
   status: WorkItemStatus;
   afterId?: string | null;
   beforeId?: string | null;
+}
+
+/** Log hours on an item: a day not in the future (yyyy-mm-dd), more than 0 and up to 24 hours. */
+export interface TimeEntryRequest {
+  workDate: string;
+  hours: number;
+  note?: string | null;
+}
+
+export interface TimeEntryResponse {
+  id: string;
+  workItemId: string;
+  userId: string;
+  userName: string;
+  workDate: string;
+  hours: number;
+  note?: string | null;
+  createdAt: string;
 }
 
 export interface WorkItemCommentResponse {

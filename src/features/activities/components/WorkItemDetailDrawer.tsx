@@ -9,6 +9,7 @@ import { isOverdue, PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VA
 import { MentionInput } from './MentionInput';
 import type { Member } from './WorkItemFormModal';
 import { WorkItemHistory } from './WorkItemHistory';
+import { WorkItemTimeEntries } from './WorkItemTimeEntries';
 
 interface Props {
     item: WorkItemResponse | null;
@@ -24,7 +25,22 @@ interface Props {
     onEdit?: (item: WorkItemResponse) => void;
     /** Sprint name of an id (null: no sprint); omitted when sprints are off. */
     sprintName?: (sprintId: string | null | undefined) => string;
+    /** Time tracking on: shows "Dedicado" and the "Horas" tab; omitted when the organization has it off. */
+    timeTracking?: {
+        /** May log and delete own hours (project not read-only). */
+        canLog: boolean;
+        isAdmin?: boolean;
+        /** New spent hours of the item after logging or deleting. */
+        onSpentChange: (itemId: string, spentHours: number) => void;
+    };
 }
+
+/** "6 h de 8 h" (or "6 h" without estimate); over the estimate is a warning. */
+const spentLabel = (i: WorkItemResponse): [string, string] => {
+    const spent = i.spentHours ?? 0;
+    const over = i.estimateHours != null && spent > i.estimateHours;
+    return [i.estimateHours != null ? `${spent} h de ${i.estimateHours} h` : `${spent} h`, over ? 'text-amber-600 dark:text-amber-400' : ''];
+};
 
 const TOKEN = /@\[([^\]]*)\]\(user:([0-9a-fA-F-]{36})\)/g;
 
@@ -36,10 +52,10 @@ const withChips = (c: WorkItemCommentResponse) =>
 const CHIP_CLASS = '[&_code]:rounded [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:text-primary [&_code::before]:content-none [&_code::after]:content-none';
 
 /** Detail of one activity: comments with @mentions and the change history. */
-export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit, sprintName }) => {
+export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit, sprintName, timeTracking }) => {
     const toast = useToast();
     const { confirm } = useConfirm();
-    const [tab, setTab] = useState<'comments' | 'history'>('comments');
+    const [tab, setTab] = useState<'comments' | 'history' | 'hours'>('comments');
     const [comments, setComments] = useState<WorkItemCommentResponse[] | null>(null);
     const [history, setHistory] = useState<WorkItemHistoryEntry[] | null>(null);
     const [draft, setDraft] = useState('');
@@ -105,28 +121,37 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
                             ['Responsable', item.assigneeUserId ? nameOf(item.assigneeUserId) : 'Sin asignar'],
                             ['Reportó', nameOf(item.reporterUserId)],
                             ['Estimado', item.estimateHours != null ? `${item.estimateHours} h` : '—'],
+                            ...(timeTracking ? [['Dedicado', ...spentLabel(item)]] : []),
                             ['Vence', formatDate(item.dueDate)],
                             ...(sprintName ? [['Sprint', sprintName(item.sprintId)]] : []),
                             ['Creada', formatDate(item.createdAt)],
                             ...(item.completedAt ? [['Completada', formatDate(item.completedAt)]] : []),
-                        ] as [string, string][]).map(([k, v]) => (
+                        ] as [string, string, string?][]).map(([k, v, tone]) => (
                             <div key={k} className="min-w-0">
                                 <dt className="text-xs text-slate-500 dark:text-slate-400">{k}</dt>
-                                <dd className="truncate font-medium text-slate-900 dark:text-white">{v}</dd>
+                                <dd className={`truncate font-medium ${tone || 'text-slate-900 dark:text-white'}`}>{v}</dd>
                             </div>
                         ))}
                     </dl>
                     {item.description && <Markdown text={item.description} />}
 
                     <div role="tablist" aria-label="Detalle" className="flex gap-2">
-                        {([['comments', 'Comentarios'], ['history', 'Historial']] as const).map(([key, label]) => (
+                        {([['comments', 'Comentarios'], ['history', 'Historial'], ...(timeTracking ? [['hours', 'Horas']] as const : [])] as const).map(([key, label]) => (
                             <Button key={key} role="tab" aria-selected={tab === key} size="sm" variant={tab === key ? 'primary' : 'outline'} onClick={() => setTab(key)}>
                                 {label}
                             </Button>
                         ))}
                     </div>
 
-                    {tab === 'history' ? (
+                    {tab === 'hours' && timeTracking ? (
+                        <WorkItemTimeEntries
+                            itemId={item.id}
+                            canLog={timeTracking.canLog}
+                            userId={userId}
+                            isAdmin={timeTracking.isAdmin}
+                            onChange={(delta) => timeTracking.onSpentChange(item.id, Math.round(((item.spentHours ?? 0) + delta) * 100) / 100)}
+                        />
+                    ) : tab === 'history' ? (
                         history ? <WorkItemHistory entries={history} nameOf={nameOf} /> : <LoadingBlock label="Cargando historial…" />
                     ) : !comments ? (
                         <LoadingBlock label="Cargando comentarios…" />

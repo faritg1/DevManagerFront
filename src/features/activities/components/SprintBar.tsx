@@ -18,10 +18,12 @@ interface Props {
     /** Create, edit, start and close (edit permission, project not read-only). */
     canManage: boolean;
     onChanged: (sprint: SprintResponse) => void;
+    /** Time tracking on: also shows the hours logged on the sprint's items. */
+    showSpent?: boolean;
 }
 
 /** Compact bar of the selected sprint: dates, progress (done / non-cancelled) and its actions. */
-export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canManage, onChanged }) => {
+export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canManage, onChanged, showSpent }) => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const [form, setForm] = useState<SprintResponse | 'new' | null>(null);
@@ -32,6 +34,7 @@ export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canMana
     const done = mine.filter((i) => i.status === WorkItemStatus.Done);
     const hours = (list: WorkItemResponse[]) => list.reduce((sum, i) => sum + (i.estimateHours ?? 0), 0);
     const percent = mine.length ? Math.round((1000 * done.length) / mine.length) / 10 : 0;
+    const spent = selected ? Math.round(items.filter((i) => i.sprintId === selected.id).reduce((sum, i) => sum + (i.spentHours ?? 0), 0) * 100) / 100 : 0;
 
     const run = async (action: () => Promise<{ data: SprintResponse }>, message: string) => {
         try {
@@ -59,6 +62,7 @@ export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canMana
                     <Badge variant={selected.status === SprintStatus.Active ? 'success' : 'default'}>{SPRINT_STATUS_LABELS[selected.status]}</Badge>
                     <span className="text-slate-600 dark:text-slate-400">{formatDate(selected.startDate)} – {formatDate(selected.endDate)}</span>
                     <span className="text-slate-600 dark:text-slate-400">{done.length} de {mine.length} hechas · {hours(done)} / {hours(mine)} h</span>
+                    {showSpent && <span className="text-slate-600 dark:text-slate-400">{spent} h dedicadas</span>}
                     <ProgressBar value={percent} size="sm" variant="success" className="w-32" />
                     {selected.goal && <span className="w-full truncate text-slate-500 dark:text-slate-400">{selected.goal}</span>}
                 </div>

@@ -7,6 +7,8 @@ import type {
   ProposalResponse,
   SprintRequest,
   SprintResponse,
+  TimeEntryRequest,
+  TimeEntryResponse,
   CreateWorkItemRequest,
   MoveWorkItemRequest,
   MyWorkItemResponse,
@@ -18,7 +20,7 @@ import type {
 } from "../types";
 
 const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT,
-  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE } = API_ENDPOINTS.WORK_ITEMS;
+  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE, TIME_ENTRIES, TIME_ENTRY } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -90,4 +92,13 @@ export const workItemsService = {
 
   /** Its open items go back to "no sprint". */
   closeSprint: (id: string): Promise<ApiResponse<SprintResponse>> => apiClient.post<SprintResponse>(SPRINT_CLOSE(id), {}),
+
+  /** Hours logged on the item (readable even when the organization has time tracking off). */
+  timeEntries: (id: string): Promise<ApiResponse<TimeEntryResponse[]>> => apiClient.get<TimeEntryResponse[]>(TIME_ENTRIES(id)),
+
+  addTimeEntry: (id: string, data: TimeEntryRequest): Promise<ApiResponse<TimeEntryResponse>> =>
+    apiClient.post<TimeEntryResponse>(TIME_ENTRIES(id), data),
+
+  /** Own entries only; org admins may delete any. */
+  removeTimeEntry: (entryId: string): Promise<ApiResponse<void>> => apiClient.delete<void>(TIME_ENTRY(entryId)),
 };

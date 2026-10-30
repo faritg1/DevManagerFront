@@ -163,3 +163,10 @@ export const findNavItem = (pathname: string): NavItemConfig | undefined =>
 export const routeForPermission = (code: string): string | undefined =>
     NAV_CONFIG.flatMap((section) => section.items.flatMap((item) => item.children ?? [item]))
         .find((item) => item.permission === code)?.to;
+
+/** Menu label (section title or item label) for a permission code, e.g. `menu.solidarity` → "Gestión Solidaria". */
+export const labelForPermission = (code: string): string | undefined => {
+    const section = NAV_CONFIG.find((s) => s.permission === code);
+    return section?.title ?? NAV_CONFIG.flatMap((s) => s.items.flatMap((item) => [item, ...(item.children ?? [])]))
+        .find((item) => item.permission === code)?.label;
+};

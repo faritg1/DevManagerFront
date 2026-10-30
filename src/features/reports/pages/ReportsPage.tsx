@@ -35,6 +35,7 @@ export const ReportsPage: React.FC = () => {
   const [department, setDepartment] = useState<DepartmentMetricsResponse | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryFailed, setAiSummaryFailed] = useState(false);
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     distribution: true,
@@ -76,15 +77,17 @@ export const ReportsPage: React.FC = () => {
     }
   }, []);
 
+  // On demand only: each run spends the organization's AI quota
   const loadAiSummary = useCallback(async () => {
     setAiSummaryLoading(true);
+    setAiSummaryFailed(false);
     try {
       const aiRes = await reportsService.getAiSummary();
-      if (aiRes.success && aiRes.data?.markdown) {
-        setAiSummary(aiRes.data.markdown);
-      }
+      if (aiRes.success && aiRes.data?.markdown) setAiSummary(aiRes.data.markdown);
+      else setAiSummaryFailed(true);
     } catch (aiErr) {
       console.error("AI summary load error:", aiErr);
+      setAiSummaryFailed(true);
     } finally {
       setAiSummaryLoading(false);
     }
@@ -92,13 +95,9 @@ export const ReportsPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    loadAiSummary();
-  }, [loadData, loadAiSummary]);
+  }, [loadData]);
 
-  const handleRefresh = useCallback(() => {
-    loadData();
-    loadAiSummary();
-  }, [loadData, loadAiSummary]);
+  const handleRefresh = loadData;
 
   const SectionHeader: React.FC<{
     title: string;
@@ -200,28 +199,36 @@ export const ReportsPage: React.FC = () => {
                 Insights de IA
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Análisis automático generado por IA
+                Análisis generado por IA bajo demanda (consume la cuota de IA)
               </p>
             </div>
           </div>
-          {aiSummaryLoading && (
+          {aiSummaryLoading ? (
             <div role="status" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Loader2 size={14} className="animate-spin" aria-hidden="true" />
-              Cargando...
+              Generando...
             </div>
+          ) : (
+            <Button variant={aiSummary ? "outline" : "primary"} size="sm" icon={aiSummary ? RefreshCw : Sparkles} onClick={loadAiSummary}>
+              {aiSummary ? "Regenerar" : "Generar insights"}
+            </Button>
           )}
         </div>
         {aiSummary ? (
           <Markdown text={aiSummary} className="text-slate-700 dark:text-slate-300 leading-relaxed" />
         ) : aiSummaryLoading ? (
           <LoadingBlock label="Generando insights..." className="py-6" />
-        ) : (
+        ) : aiSummaryFailed ? (
           <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
             <AlertTriangle size={20} className="text-amber-500 mx-auto mb-2" />
             <p className="text-sm text-slate-600 dark:text-slate-400">
               No pudimos generar insights en este momento. Intenta más tarde.
             </p>
           </div>
+        ) : (
+          <p className="text-sm text-slate-600 dark:text-slate-400 py-2">
+            Pulsa "Generar insights" para obtener un análisis de los datos de esta página.
+          </p>
         )}
       </Card>
 

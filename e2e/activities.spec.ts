@@ -36,3 +36,34 @@ test('activities list shows the items of a project and creates a new one', async
     expect(created).toHaveLength(1);
     expect(created[0]).toMatchObject({ title: 'Nueva', type: 1, parentId: null });
 });
+
+test('board moves a card with the "Mover a" menu and rolls back when the API refuses', async ({ page }) => {
+    const moves: unknown[] = [];
+    let refuse = false;
+    await mockApi(page, { permissions: [...USER.permissions, 'menu.platform.activities.move'] }, {
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([item]),
+        'POST /work-items/w1/move': (route: { request: () => { postDataJSON: () => { status: number } }; fulfill: (r: object) => Promise<void> }) => {
+            const body = route.request().postDataJSON();
+            moves.push(body);
+            return refuse
+                ? route.fulfill({ status: 409, json: { success: false, message: 'Proyecto cerrado' } })
+                : route.fulfill({ json: { success: true, message: '', data: { ...item, status: body.status } } });
+        },
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1');
+    await page.getByRole('tab', { name: 'Tablero' }).click();
+
+    const todo = page.getByRole('region', { name: /^Por hacer/ });
+    await page.getByRole('button', { name: 'Acciones de DEV-1' }).click();
+    await page.getByRole('menuitem', { name: 'Mover a Por hacer' }).click();
+    await expect(todo.getByText('DEV-1')).toBeVisible();
+    expect(moves[0]).toMatchObject({ status: 2 });
+
+    refuse = true;
+    await page.getByRole('button', { name: 'Acciones de DEV-1' }).click();
+    await page.getByRole('menuitem', { name: 'Mover a Hecho' }).click();
+    await expect(page.getByText('No se pudo mover la actividad')).toBeVisible();
+    await expect(todo.getByText('DEV-1')).toBeVisible();
+});

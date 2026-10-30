@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Edit2, ListChecks, Plus, Trash2 } from 'lucide-react';
+import { ArrowRightLeft, Edit2, KanbanSquare, ListChecks, Plus, Table2, Trash2 } from 'lucide-react';
 import {
     assignmentsService, projectsService, workItemsService,
-    WorkItemType, type ProjectResponse, type WorkItemResponse,
+    WorkItemType, type ProjectResponse, type WorkItemResponse, type WorkItemStatus,
 } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
-import { useToast } from '../../shared/context';
+import { useAuth, useToast } from '../../shared/context';
 import type { CsvColumn } from '../../shared/export';
 import { formatDate } from '../../shared/format';
 import { useConfirm, usePermission } from '../../shared/hooks';
 import {
     Button, Card, EmptyState, ExportButton, Input, LoadingBlock, PageContainer, PageHeader, Select, type ActionMenuItem,
 } from '../../shared/ui';
+import { KanbanBoard } from './components/KanbanBoard';
 import { KeyPrefixSetup } from './components/KeyPrefixSetup';
 import { WorkItemFormModal, type Member } from './components/WorkItemFormModal';
 import { WorkItemTable } from './components/WorkItemTable';
@@ -30,6 +31,7 @@ export const ActivitiesPage: React.FC = () => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const { has } = usePermission();
+    const { user } = useAuth();
 
     const [projects, setProjects] = useState<ProjectResponse[] | null>(null);
     const [items, setItems] = useState<WorkItemResponse[] | null>(null);
@@ -41,6 +43,7 @@ export const ActivitiesPage: React.FC = () => {
     const [status, setStatus] = useState('');
     const [type, setType] = useState('');
     const [assignee, setAssignee] = useState('');
+    const [view, setView] = useState<'list' | 'board'>('list');
 
     const project = projects?.find((p) => p.id === projectId);
     const readOnly = isProjectReadOnly(project);
@@ -111,9 +114,34 @@ export const ActivitiesPage: React.FC = () => {
         }
     };
 
+    // The API lets the assignee move an item without the move permission.
+    const canMoveItem = (item: WorkItemResponse) =>
+        !readOnly && (has('menu.platform.activities.move') || (!!user && item.assigneeUserId === user.id));
+
+    /** Optimistic move: the card jumps at once and goes back (with a toast) if the API refuses. */
+    const move = async (item: WorkItemResponse, status: WorkItemStatus, beforeId?: string) => {
+        if (!items || (item.status === status && !beforeId)) return;
+        const snapshot = items;
+        const rest = items.filter((i) => i.id !== item.id);
+        const at = beforeId ? rest.findIndex((i) => i.id === beforeId) : -1;
+        rest.splice(at >= 0 ? at : rest.length, 0, { ...item, status });
+        setItems(rest);
+        try {
+            const { data } = await workItemsService.move(item.id, { status, beforeId: beforeId ?? null });
+            setItems((list) => list?.map((i) => (i.id === item.id ? data : i)) ?? null);
+        } catch {
+            setItems(snapshot);
+            toast.error('No se pudo mover la actividad', `${item.key} volvió a su posición anterior.`);
+        }
+    };
+
     const actionsFor = (item: WorkItemResponse): ActionMenuItem[] => [
-        ...(canEdit ? [{ label: 'Editar', icon: Edit2, onSelect: () => openForm(item) }] : []),
-        ...(canDelete ? [{ label: 'Eliminar', icon: Trash2, danger: true, separated: canEdit, onSelect: () => void remove(item) }] : []),
+        ...(canMoveItem(item)
+            ? STATUS_ORDER.filter((s) => s !== item.status)
+                .map((s) => ({ label: `Mover a ${STATUS_LABELS[s]}`, icon: ArrowRightLeft, onSelect: () => void move(item, s) }))
+            : []),
+        ...(canEdit ? [{ label: 'Editar', icon: Edit2, separated: canMoveItem(item), onSelect: () => openForm(item) }] : []),
+        ...(canDelete ? [{ label: 'Eliminar', icon: Trash2, danger: true, separated: canEdit || canMoveItem(item), onSelect: () => void remove(item) }] : []),
     ];
 
     const columns: CsvColumn<WorkItemResponse>[] = [
@@ -175,6 +203,22 @@ export const ActivitiesPage: React.FC = () => {
                     </p>
                 )}
 
+                <div role="tablist" aria-label="Vista de actividades" className="mb-3 flex gap-2">
+                    {([['list', 'Backlog', Table2], ['board', 'Tablero', KanbanSquare]] as const).map(([key, label, Icon]) => (
+                        <Button
+                            key={key}
+                            role="tab"
+                            aria-selected={view === key}
+                            variant={view === key ? 'primary' : 'outline'}
+                            size="sm"
+                            icon={Icon}
+                            onClick={() => setView(key)}
+                        >
+                            {label}
+                        </Button>
+                    ))}
+                </div>
+
                 <Card padding="none" className="overflow-hidden">
                     <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-border-dark">
                         <Input label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Clave o título" />
@@ -205,6 +249,8 @@ export const ActivitiesPage: React.FC = () => {
                         />
                     ) : visible.length === 0 ? (
                         <EmptyState icon={ListChecks} title="Sin resultados con estos filtros" />
+                    ) : view === 'board' ? (
+                        <KanbanBoard items={visible} nameOf={nameOf} canMove={canMoveItem} onMove={move} actionsFor={actionsFor} />
                     ) : (
                         <WorkItemTable items={visible} allItems={items} nameOf={nameOf} actionsFor={actionsFor} />
                     )}

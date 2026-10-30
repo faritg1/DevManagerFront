@@ -121,8 +121,12 @@ test('organization settings send the activities module toggles', async ({ page }
     await page.getByLabel('Habilitar sprints').check();
     await expect(page.getByLabel('Habilitar registro de horas')).not.toBeChecked();
     await page.getByLabel('Habilitar registro de horas').check();
+    await expect(page.getByLabel('Habilitar dependencias entre actividades')).not.toBeChecked();
+    await page.getByLabel('Habilitar dependencias entre actividades').check();
     await page.getByRole('button', { name: 'Guardar' }).click();
 
     await expect(page.getByText('Organización actualizada')).toBeVisible();
-    expect(sent[0].activitiesSettings).toEqual({ showOnProjectDetail: true, showMyWorkOnDashboard: false, sprintsEnabled: true, timeTrackingEnabled: true });
+    expect(sent[0].activitiesSettings).toEqual({
+        showOnProjectDetail: true, showMyWorkOnDashboard: false, sprintsEnabled: true, timeTrackingEnabled: true, dependenciesEnabled: true,
+    });
 });

@@ -1,5 +1,11 @@
 # Novedades
 
+## Dependencias entre actividades
+
+- En **Organización**, el grupo "Módulo de actividades" tiene la opción **Habilitar dependencias entre actividades** (desactivada por defecto). Mientras esté apagada nada cambia; las dependencias ya creadas se conservan.
+- Con las dependencias habilitadas, el detalle de una actividad tiene la sección **Dependencias**: lista a cuáles **Bloquea a** y por cuáles está **Bloqueada por**, abre la otra actividad con un clic y, con permiso de edición, agrega o quita dependencias con otra actividad del mismo proyecto.
+- Las actividades con bloqueos abiertos muestran la etiqueta **Bloqueada** en el tablero y en el backlog. Moverlas a En progreso, En revisión o Hecho muestra un aviso (por ejemplo "DEV-3 tiene 2 dependencias abiertas") pero el movimiento se hace igual.
+
 ## Registro de horas en Actividades
 
 - En **Organización**, el grupo "Módulo de actividades" tiene la opción **Habilitar registro de horas** (desactivada por defecto). Mientras esté apagada nada cambia; las horas ya registradas se conservan.

@@ -8,6 +8,7 @@ import { Badge, Button, LoadingBlock, Markdown, Modal } from '../../../shared/ui
 import { isOverdue, PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VARIANTS, TYPE_LABELS, TYPE_VARIANTS } from '../workItemMeta';
 import { MentionInput } from './MentionInput';
 import type { Member } from './WorkItemFormModal';
+import { WorkItemDependencies } from './WorkItemDependencies';
 import { WorkItemHistory } from './WorkItemHistory';
 import { WorkItemTimeEntries } from './WorkItemTimeEntries';
 
@@ -33,6 +34,8 @@ interface Props {
         /** New spent hours of the item after logging or deleting. */
         onSpentChange: (itemId: string, spentHours: number) => void;
     };
+    /** Dependencies on: shows the "Dependencias" section; omitted when the organization has them off. */
+    dependencies?: Omit<React.ComponentProps<typeof WorkItemDependencies>, 'itemId'>;
 }
 
 /** "6 h de 8 h" (or "6 h" without estimate); over the estimate is a warning. */
@@ -52,7 +55,7 @@ const withChips = (c: WorkItemCommentResponse) =>
 const CHIP_CLASS = '[&_code]:rounded [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:text-primary [&_code::before]:content-none [&_code::after]:content-none';
 
 /** Detail of one activity: comments with @mentions and the change history. */
-export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit, sprintName, timeTracking }) => {
+export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit, sprintName, timeTracking, dependencies }) => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const [tab, setTab] = useState<'comments' | 'history' | 'hours'>('comments');
@@ -134,6 +137,7 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
                         ))}
                     </dl>
                     {item.description && <Markdown text={item.description} />}
+                    {dependencies && <WorkItemDependencies itemId={item.id} {...dependencies} />}
 
                     <div role="tablist" aria-label="Detalle" className="flex gap-2">
                         {([['comments', 'Comentarios'], ['history', 'Historial'], ...(timeTracking ? [['hours', 'Horas']] as const : [])] as const).map(([key, label]) => (

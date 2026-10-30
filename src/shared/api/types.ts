@@ -81,6 +81,8 @@ export interface ActivitiesSettings {
   sprintsEnabled: boolean;
   /** Members log real hours on items; off by default (logged hours stay readable) */
   timeTrackingEnabled: boolean;
+  /** "Blocks / blocked by" links between items of a project; off by default (existing links stay readable) */
+  dependenciesEnabled: boolean;
 }
 
 export interface UpdateOrganizationRequest {
@@ -1521,6 +1523,8 @@ export interface WorkItemResponse {
   sprintId?: string | null;
   /** Hours logged on the item (0 when none). */
   spentHours?: number;
+  /** Blockers not Done/Cancelled (a warning, never a block). */
+  blockedByOpenCount?: number;
   completedAt?: string | null;
   createdAt: string;
 }
@@ -1583,6 +1587,27 @@ export interface MoveWorkItemRequest {
   status: WorkItemStatus;
   afterId?: string | null;
   beforeId?: string | null;
+}
+
+/** One of the two: blockedItemId ("this item blocks that one") or blockerItemId ("this item is blocked by that one"). */
+export interface WorkItemLinkRequest {
+  blockedItemId?: string;
+  blockerItemId?: string;
+}
+
+export interface LinkedWorkItem {
+  linkId: string;
+  itemId: string;
+  key: string;
+  title: string;
+  status: WorkItemStatus;
+}
+
+export interface WorkItemLinksResponse {
+  /** Items this one blocks. */
+  blocks: LinkedWorkItem[];
+  /** Items blocking this one. */
+  blockedBy: LinkedWorkItem[];
 }
 
 /** Log hours on an item: a day not in the future (yyyy-mm-dd), more than 0 and up to 24 hours. */

@@ -27,6 +27,9 @@ import { isProjectReadOnly, PRIORITY_LABELS, SPRINT_STATUS_LABELS, STATUS_LABELS
 /** Active member (AssignmentStatus.Active = 1, not ended), one entry per user. */
 const ACTIVE_ASSIGNMENT = 1;
 
+/** Moving a blocked item into these columns warns about its open blockers. */
+const FORWARD = [WorkItemStatus.InProgress, WorkItemStatus.InReview, WorkItemStatus.Done];
+
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 /** Activities (work items) of one project: backlog list with filters, create/edit/delete and CSV export. */
@@ -53,7 +56,7 @@ export const ActivitiesPage: React.FC = () => {
     const [proposals, setProposals] = useState<ProposalResponse[]>([]);
     const [proposeOpen, setProposeOpen] = useState(false);
     const [justGenerated, setJustGenerated] = useState(false);
-    const { sprintsEnabled, timeTrackingEnabled } = useActivitiesSettings();
+    const { sprintsEnabled, timeTrackingEnabled, dependenciesEnabled } = useActivitiesSettings();
     const [sprints, setSprints] = useState<SprintResponse[]>([]);
     /** '' every item, 'none' items without sprint, otherwise a sprint id */
     const [sprint, setSprint] = useState('');
@@ -78,6 +81,11 @@ export const ActivitiesPage: React.FC = () => {
             setMembers([...byUser.values()].sort((a, b) => a.name.localeCompare(b.name, 'es')));
         }, () => setMembers([]));
     }, [projectId]);
+
+    /** Silent reload (no loading state, drawer stays open) after links change the open-blocker counts. */
+    const refreshItems = () => {
+        if (projectId) workItemsService.list(projectId).then((r) => setItems(r.data ?? []), () => undefined);
+    };
 
     const loadProposals = useCallback(() => {
         if (!projectId) return;
@@ -163,6 +171,10 @@ export const ActivitiesPage: React.FC = () => {
     /** Optimistic move: the card jumps at once and goes back (with a toast) if the API refuses. */
     const move = async (item: WorkItemResponse, status: WorkItemStatus, beforeId?: string) => {
         if (!items || (item.status === status && !beforeId)) return;
+        // Dependencies only warn: the move goes ahead
+        const blockers = item.blockedByOpenCount ?? 0;
+        if (dependenciesEnabled && blockers > 0 && item.status !== status && FORWARD.includes(status))
+            toast.warning(`${item.key} tiene ${blockers} ${blockers === 1 ? 'dependencia abierta' : 'dependencias abiertas'}`);
         const snapshot = items;
         const rest = items.filter((i) => i.id !== item.id);
         const at = beforeId ? rest.findIndex((i) => i.id === beforeId) : -1;
@@ -318,9 +330,9 @@ export const ActivitiesPage: React.FC = () => {
                     ) : visible.length === 0 ? (
                         <EmptyState icon={ListChecks} title="Sin resultados con estos filtros" />
                     ) : view === 'board' ? (
-                        <KanbanBoard items={visible} nameOf={nameOf} canMove={canMoveItem} onMove={move} actionsFor={actionsFor} />
+                        <KanbanBoard items={visible} nameOf={nameOf} canMove={canMoveItem} onMove={move} actionsFor={actionsFor} showBlocked={dependenciesEnabled} />
                     ) : (
-                        <WorkItemTable items={visible} allItems={items} nameOf={nameOf} actionsFor={actionsFor} />
+                        <WorkItemTable items={visible} allItems={items} nameOf={nameOf} actionsFor={actionsFor} showBlocked={dependenciesEnabled} />
                     )}
                 </Card>
 
@@ -338,6 +350,12 @@ export const ActivitiesPage: React.FC = () => {
                         canLog: has('menu.platform.activities') && !readOnly,
                         isAdmin,
                         onSpentChange: (id, spentHours) => setItems((list) => list?.map((i) => (i.id === id ? { ...i, spentHours } : i)) ?? null),
+                    } : undefined}
+                    dependencies={dependenciesEnabled ? {
+                        items: items ?? [],
+                        canEdit,
+                        onOpenItem: (id) => setSearch({ item: id }),
+                        onChange: refreshItems,
                     } : undefined}
                 />
 

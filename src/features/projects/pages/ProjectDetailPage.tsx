@@ -28,6 +28,7 @@ import { getComplexityConfig as getSharedComplexityConfig } from '../utils/compl
 import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
 import { formatDate as formatLongDate } from '../../../shared/format';
 
+import { ProjectProgress } from '../../activities/components/ProjectProgress';
 import { ProjectRequirementsSection } from '../components/ProjectRequirementsSection';
 import { ProjectApplicationsSection } from '../components/ProjectApplicationsSection';
 import { ProjectMatchingModal } from '../components/ProjectMatchingModal';
@@ -241,6 +242,7 @@ export const ProjectDetailPage: React.FC = () => {
                 </>}
             />
             <div className="flex flex-col gap-8">
+                <ProjectProgress projectId={id!} />
                 <div className="grid grid-cols-3 gap-3 sm:gap-4">
                     <Card padding="sm" className="min-w-0 text-center sm:p-6">
                         <div className="flex flex-col items-center gap-2">

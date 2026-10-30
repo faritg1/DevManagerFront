@@ -14,6 +14,8 @@ import {
   Sparkles,
   RefreshCw,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "../../../shared/config/constants";
 import { reportsService } from "../../../shared/api";
 import type {
   SkillDistributionResponse,
@@ -350,6 +352,33 @@ export const ReportsPage: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {(projectMetrics.atRiskProjects?.length ?? 0) > 0 && (
+        <Card>
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+            <AlertTriangle size={20} className="text-amber-500" />
+            Proyectos en riesgo
+            {projectMetrics.averageProgressPercent != null && (
+              <Badge variant="info">Avance promedio: {formatNumber(projectMetrics.averageProgressPercent)}%</Badge>
+            )}
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400" title="Un proyecto en curso está en riesgo si tiene actividades abiertas vencidas o si su avance está por debajo del tiempo transcurrido.">
+            En riesgo: proyectos en curso con actividades abiertas vencidas o con avance por debajo del tiempo transcurrido.
+          </p>
+          <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-800">
+            {projectMetrics.atRiskProjects!.map((p) => (
+              <li key={p.projectId} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                <Link to={`${ROUTES.ACTIVITIES}/${p.projectId}`} className="font-medium text-primary hover:underline">{p.name}</Link>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Avance {p.progressPercent != null ? `${formatNumber(p.progressPercent)}%` : 'sin datos'}
+                  {p.elapsedPercent != null && ` vs ${formatNumber(p.elapsedPercent)}% del tiempo`}
+                  {p.overdueItems > 0 && ` · ${p.overdueItems} vencida(s)`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <Card>
         <SectionHeader

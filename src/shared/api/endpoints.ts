@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
     REQUIREMENTS: (id: string) => `/projects/${id}/reqs`,
     APPLICATIONS: (id: string) => `/projects/${id}/applications`,
     APPLY: (id: string) => `/projects/${id}/apply`,
+    KEY_PREFIX: (id: string) => `/projects/${id}/key-prefix`,
   },
 
   // Applications (Postulaciones)
@@ -114,6 +115,21 @@ export const API_ENDPOINTS = {
     ASSIGN_TO_USER: "/permissions/assign-to-user",
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
     AUDIT: "/permissions/audit",
+  },
+
+  // Actividades (work items)
+  WORK_ITEMS: {
+    BY_PROJECT: (projectId: string) => `/projects/${projectId}/work-items`,
+    SUMMARY: (projectId: string) => `/projects/${projectId}/work-items/summary`,
+    BY_ID: (id: string) => `/work-items/${id}`,
+    MOVE: (id: string) => `/work-items/${id}/move`,
+    COMMENTS: (id: string) => `/work-items/${id}/comments`,
+    COMMENT: (commentId: string) => `/work-items/comments/${commentId}`,
+    HISTORY: (id: string) => `/work-items/${id}/history`,
+    PROPOSALS: (projectId: string) => `/projects/${projectId}/work-items/proposals`,
+    PROPOSAL: (actionId: string) => `/work-items/proposals/${actionId}`,
+    PROPOSAL_CONFIRM: (actionId: string) => `/work-items/proposals/${actionId}/confirm`,
+    PROPOSAL_REJECT: (actionId: string) => `/work-items/proposals/${actionId}/reject`,
   },
 
   // General change history (audit.ChangeLog)

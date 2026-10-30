@@ -64,6 +64,10 @@ export interface OrganizationDto {
   entityType: OrganizationEntityType | null;
   isActive: boolean;
   createdAt: string;
+  /** Business days before the due date to notify the assignee (0-10; 0 = due day only) */
+  workItemDueSoonDays?: number;
+  /** Notify the assignee when an activity becomes overdue */
+  workItemOverdueNotice?: boolean;
   stats: OrganizationStatsDto;
 }
 
@@ -72,6 +76,9 @@ export interface UpdateOrganizationRequest {
   legalName?: string | null;
   nit?: string | null;
   entityType?: OrganizationEntityType | null;
+  /** 0-10, null/undefined = unchanged */
+  workItemDueSoonDays?: number | null;
+  workItemOverdueNotice?: boolean | null;
 }
 
 // ============ USERS ============
@@ -258,6 +265,7 @@ export const PROJECT_COMPLEXITY_LABELS = {
 export interface ProjectResponse {
   id: string;
   code: string | null;
+  keyPrefix?: string | null;
   name: string;
   description: string | null;
   startDate: string | null;
@@ -589,9 +597,27 @@ export interface SkillDistributionResponse {
   levelDistribution: Record<string, number>;
 }
 
+export interface WorkItemSummaryResponse {
+  total: number;
+  done: number;
+  cancelled: number;
+  progressPercent: number | null;
+}
+
+export interface AtRiskProject {
+  projectId: string;
+  name: string;
+  progressPercent: number | null;
+  elapsedPercent: number | null;
+  overdueItems: number;
+}
+
 export interface ProjectMetricsResponse {
   totalActiveProjects: number;
+  /** InProgress projects with overdue open activities, or progress below elapsed time. */
   projectsAtRisk: number;
+  atRiskProjects?: AtRiskProject[];
+  averageProgressPercent?: number | null;
   mostDemandedSkills: { skillName: string; requiredInProjects: number }[];
 }
 
@@ -1259,6 +1285,7 @@ export type AiToolStatus = 'started' | 'done' | 'denied' | 'error';
 export type AiStreamEvent =
   | { type: 'meta'; data: { conversationId: string; messageId: string; modules: string[] } }
   | { type: 'tool'; data: { name: string; module: string; status: AiToolStatus; rows?: number } }
+  | { type: 'action'; data: { actionId: string; type: 'WORK_ITEM_PROPOSAL'; projectId: string } }
   | { type: 'delta'; data: { text: string } }
   | { type: 'refusal'; data: { deniedModules: string[]; message: string } }
   | { type: 'done'; data: { messageId: string; sources: AiSource[]; usage: { in: number; out: number } } }
@@ -1443,4 +1470,117 @@ export interface ChangeLogFilter {
   to?: string;
   organizationId?: string;
   page?: number;
+}
+
+// ============ ACTIVIDADES (work items) ============
+// Mirror Domain.Enums.WorkItemType / Status / Priority (serialized as numbers).
+export enum WorkItemType { Task = 1, Story = 2, Bug = 3, Subtask = 4 }
+export enum WorkItemStatus { Backlog = 1, ToDo = 2, InProgress = 3, InReview = 4, Done = 5, Cancelled = 6 }
+export enum WorkItemPriority { Low = 1, Medium = 2, High = 3, Urgent = 4 }
+
+export interface WorkItemResponse {
+  id: string;
+  projectId: string;
+  /** PREFIX-N */
+  key: string;
+  number: number;
+  type: WorkItemType;
+  status: WorkItemStatus;
+  title: string;
+  description?: string | null;
+  assigneeUserId?: string | null;
+  reporterUserId: string;
+  priority: WorkItemPriority;
+  dueDate?: string | null;
+  estimateHours?: number | null;
+  parentId?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateWorkItemRequest {
+  type: WorkItemType;
+  title: string;
+  description?: string | null;
+  assigneeUserId?: string | null;
+  priority: WorkItemPriority;
+  dueDate?: string | null;
+  estimateHours?: number | null;
+  /** Required for a Subtask, forbidden otherwise */
+  parentId?: string | null;
+}
+
+/** Type, parent and status do not change here (status uses move). */
+export type UpdateWorkItemRequest = Omit<CreateWorkItemRequest, "type" | "parentId">;
+
+export interface MoveWorkItemRequest {
+  status: WorkItemStatus;
+  afterId?: string | null;
+  beforeId?: string | null;
+}
+
+export interface WorkItemCommentResponse {
+  id: string;
+  workItemId: string;
+  authorUserId: string;
+  authorName: string;
+  /** Mentions are written @[Name](user:GUID) */
+  body: string;
+  /** Only the tokens of these users are real mentions; any other token is plain text. */
+  mentionedUserIds: string[];
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface WorkItemFieldChange { field: string; old?: string | null; new?: string | null }
+
+export interface WorkItemHistoryEntry {
+  id: string;
+  createdAt: string;
+  actorName: string;
+  impersonatorUserId?: string | null;
+  impersonatorName?: string | null;
+  entityType: 'WorkItem' | 'WorkItemComment';
+  action: 'Created' | 'Updated' | 'Deleted';
+  changes: WorkItemFieldChange[];
+}
+
+/** Proposal item as the API serializes it: enums are strings (unlike work items), indexes are 0-based. */
+export interface ProposalItem {
+  index: number;
+  type: keyof typeof WorkItemType;
+  title: string;
+  description?: string | null;
+  priority: keyof typeof WorkItemPriority;
+  estimateHours?: number | null;
+  parentIndex?: number | null;
+  assigneeUserId?: string | null;
+  assigneeName?: string | null;
+}
+
+export interface ProposalResponse {
+  actionId: string;
+  projectId: string;
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  requestedByUserId: string;
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
+  requirement: string;
+  /** The AI proposed more than the maximum and only the first items were kept */
+  truncated: boolean;
+  items: ProposalItem[];
+}
+
+export interface ProposalItemEdit {
+  index: number;
+  title?: string;
+  assigneeUserId?: string;
+  removeAssignee?: boolean;
+  priority?: WorkItemPriority;
+}
+
+export interface ConfirmProposalResponse {
+  actionId: string;
+  created: WorkItemResponse[];
 }

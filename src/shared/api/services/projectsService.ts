@@ -42,6 +42,11 @@ export const projectsService = {
     return apiClient.delete<void>(API_ENDPOINTS.PROJECTS.BY_ID(id));
   },
 
+  /** Define el prefijo de las claves de actividades (ej. DEV-12); solo mientras el proyecto no tenga actividades. */
+  async setKeyPrefix(id: string, keyPrefix: string): Promise<ApiResponse<ProjectResponse>> {
+    return apiClient.put<ProjectResponse>(API_ENDPOINTS.PROJECTS.KEY_PREFIX(id), { keyPrefix });
+  },
+
   async getRequirements(
     projectId: string,
   ): Promise<ApiResponse<SkillRequirementResponse[]>> {

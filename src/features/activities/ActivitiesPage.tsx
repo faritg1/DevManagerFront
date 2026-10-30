@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowRightLeft, Edit2, Eye, KanbanSquare, ListChecks, Plus, Table2, Trash2 } from 'lucide-react';
+import { ArrowRightLeft, Edit2, Eye, KanbanSquare, ListChecks, Plus, Sparkles, Table2, Trash2 } from 'lucide-react';
 import {
     assignmentsService, projectsService, workItemsService,
-    WorkItemType, type ProjectResponse, type WorkItemResponse, type WorkItemStatus,
+    WorkItemType, type ProjectResponse, type ProposalResponse, type WorkItemResponse, type WorkItemStatus,
 } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { useAuth, useToast } from '../../shared/context';
@@ -13,6 +13,8 @@ import { useConfirm, usePermission } from '../../shared/hooks';
 import {
     Button, Card, EmptyState, ExportButton, Input, LoadingBlock, PageContainer, PageHeader, Select, type ActionMenuItem,
 } from '../../shared/ui';
+import { AiProposalsPanel } from './components/AiProposalsPanel';
+import { GenerateProposalModal } from './components/GenerateProposalModal';
 import { KanbanBoard } from './components/KanbanBoard';
 import { KeyPrefixSetup } from './components/KeyPrefixSetup';
 import { WorkItemDetailDrawer } from './components/WorkItemDetailDrawer';
@@ -46,6 +48,8 @@ export const ActivitiesPage: React.FC = () => {
     const [type, setType] = useState('');
     const [assignee, setAssignee] = useState('');
     const [view, setView] = useState<'list' | 'board'>('list');
+    const [proposals, setProposals] = useState<ProposalResponse[]>([]);
+    const [proposeOpen, setProposeOpen] = useState(false);
 
     const project = projects?.find((p) => p.id === projectId);
     const readOnly = isProjectReadOnly(project);
@@ -68,10 +72,17 @@ export const ActivitiesPage: React.FC = () => {
         }, () => setMembers([]));
     }, [projectId]);
 
+    const loadProposals = useCallback(() => {
+        if (!projectId) return;
+        workItemsService.proposals(projectId).then((r) => setProposals(r.data ?? []), () => setProposals([]));
+    }, [projectId]);
+
     useEffect(() => {
         setQuery(''); setStatus(''); setType(''); setAssignee('');
+        setProposals([]);
         load();
-    }, [load]);
+        loadProposals();
+    }, [load, loadProposals]);
 
     const nameOf = useCallback(
         (id: string | null | undefined) => (id ? members.find((m) => m.id === id)?.name ?? '—' : 'Sin asignar'),
@@ -91,6 +102,15 @@ export const ActivitiesPage: React.FC = () => {
     const canCreate = has('menu.platform.activities.create') && !readOnly && !noPrefix;
     const canEdit = has('menu.platform.activities.edit') && !readOnly;
     const canDelete = has('menu.platform.activities.delete') && !readOnly;
+
+    const canPropose = canCreate; // proposals need .create too
+
+    const decided = (actionId: string, created: WorkItemResponse[]) => {
+        setProposals((ps) => ps.filter((p) => p.actionId !== actionId));
+        if (created.length === 0) { toast.success('Propuesta rechazada'); return; }
+        setItems((list) => [...(list ?? []), ...created]);
+        toast.success(`${created.length} actividades creadas en el Backlog`);
+    };
 
     const openForm = (item: WorkItemResponse | null) => { setEditing(item); setFormOpen(true); };
 
@@ -169,6 +189,7 @@ export const ActivitiesPage: React.FC = () => {
                 actions={project && items && (
                     <>
                         <ExportButton rows={visible} columns={columns} filename={`actividades-${project.keyPrefix ?? 'proyecto'}`} />
+                        {canPropose && <Button variant="outline" icon={Sparkles} onClick={() => setProposeOpen(true)}>Generar propuesta con IA</Button>}
                         {canCreate && <Button icon={Plus} onClick={() => openForm(null)}>Nueva actividad</Button>}
                     </>
                 )}
@@ -205,6 +226,8 @@ export const ActivitiesPage: React.FC = () => {
                         Este proyecto está cerrado o cancelado: las actividades son de solo lectura.
                     </p>
                 )}
+
+                <AiProposalsPanel proposals={proposals} members={members} canDecide={canPropose} onDecided={decided} onStale={loadProposals} />
 
                 <div role="tablist" aria-label="Vista de actividades" className="mb-3 flex gap-2">
                     {([['list', 'Backlog', Table2], ['board', 'Tablero', KanbanSquare]] as const).map(([key, label, Icon]) => (
@@ -267,6 +290,13 @@ export const ActivitiesPage: React.FC = () => {
                     canComment={has('menu.platform.activities.comment') && !readOnly}
                     userId={user?.id}
                     highlightCommentId={search.get('comment')}
+                />
+
+                <GenerateProposalModal
+                    isOpen={proposeOpen}
+                    onClose={() => setProposeOpen(false)}
+                    projectId={project.id}
+                    onGenerated={(p) => { setProposals((ps) => [p, ...ps]); toast.success('Propuesta generada: revísala y confírmala'); }}
                 />
 
                 <WorkItemFormModal

@@ -1267,6 +1267,7 @@ export type AiToolStatus = 'started' | 'done' | 'denied' | 'error';
 export type AiStreamEvent =
   | { type: 'meta'; data: { conversationId: string; messageId: string; modules: string[] } }
   | { type: 'tool'; data: { name: string; module: string; status: AiToolStatus; rows?: number } }
+  | { type: 'action'; data: { actionId: string; type: 'WORK_ITEM_PROPOSAL'; projectId: string } }
   | { type: 'delta'; data: { text: string } }
   | { type: 'refusal'; data: { deniedModules: string[]; message: string } }
   | { type: 'done'; data: { messageId: string; sources: AiSource[]; usage: { in: number; out: number } } }
@@ -1524,4 +1525,44 @@ export interface WorkItemHistoryEntry {
   entityType: 'WorkItem' | 'WorkItemComment';
   action: 'Created' | 'Updated' | 'Deleted';
   changes: WorkItemFieldChange[];
+}
+
+/** Proposal item as the API serializes it: enums are strings (unlike work items), indexes are 0-based. */
+export interface ProposalItem {
+  index: number;
+  type: keyof typeof WorkItemType;
+  title: string;
+  description?: string | null;
+  priority: keyof typeof WorkItemPriority;
+  estimateHours?: number | null;
+  parentIndex?: number | null;
+  assigneeUserId?: string | null;
+  assigneeName?: string | null;
+}
+
+export interface ProposalResponse {
+  actionId: string;
+  projectId: string;
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  requestedByUserId: string;
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
+  requirement: string;
+  /** The AI proposed more than the maximum and only the first items were kept */
+  truncated: boolean;
+  items: ProposalItem[];
+}
+
+export interface ProposalItemEdit {
+  index: number;
+  title?: string;
+  assigneeUserId?: string;
+  removeAssignee?: boolean;
+  priority?: WorkItemPriority;
+}
+
+export interface ConfirmProposalResponse {
+  actionId: string;
+  created: WorkItemResponse[];
 }

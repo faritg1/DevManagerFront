@@ -79,9 +79,9 @@ class ApiClient {
     return (await response.json()) as ApiResponse<T>;
   }
 
-  private async request<T>(method: string, url: string, body?: unknown): Promise<ApiResponse<T>> {
+  private async request<T>(method: string, url: string, body?: unknown, timeoutMs = TIMEOUT_MS): Promise<ApiResponse<T>> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     let response: Response;
     try {
@@ -107,8 +107,8 @@ class ApiClient {
     return this.request<T>("GET", url.toString());
   }
 
-  post<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
-    return this.request<T>("POST", `${this.baseUrl}${endpoint}`, body);
+  post<T>(endpoint: string, body?: unknown, timeoutMs?: number): Promise<ApiResponse<T>> {
+    return this.request<T>("POST", `${this.baseUrl}${endpoint}`, body, timeoutMs);
   }
 
   put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {

@@ -2,6 +2,9 @@ import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
   ApiResponse,
+  ConfirmProposalResponse,
+  ProposalItemEdit,
+  ProposalResponse,
   CreateWorkItemRequest,
   MoveWorkItemRequest,
   WorkItemCommentResponse,
@@ -10,7 +13,7 @@ import type {
   WorkItemResponse,
 } from "../types";
 
-const { BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY } = API_ENDPOINTS.WORK_ITEMS;
+const { BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -43,4 +46,20 @@ export const workItemsService = {
   /** Newest first: the item and its comments. */
   history: (id: string): Promise<ApiResponse<WorkItemHistoryEntry[]>> =>
     apiClient.get<WorkItemHistoryEntry[]>(HISTORY(id)),
+
+  /** Consume cuota de IA y puede tardar: espera hasta 2 minutos. */
+  propose: (projectId: string, requirement: string): Promise<ApiResponse<ProposalResponse>> =>
+    apiClient.post<ProposalResponse>(PROPOSALS(projectId), { requirement }, 120_000),
+
+  /** Pendientes y vigentes, la más nueva primero. */
+  proposals: (projectId: string): Promise<ApiResponse<ProposalResponse[]>> =>
+    apiClient.get<ProposalResponse[]>(PROPOSALS(projectId)),
+
+  proposal: (actionId: string): Promise<ApiResponse<ProposalResponse>> => apiClient.get<ProposalResponse>(PROPOSAL(actionId)),
+
+  /** Sin `items` crea todas las propuestas tal cual; con `items` solo las listadas (con sus ediciones). */
+  confirmProposal: (actionId: string, items?: ProposalItemEdit[]): Promise<ApiResponse<ConfirmProposalResponse>> =>
+    apiClient.post<ConfirmProposalResponse>(PROPOSAL_CONFIRM(actionId), items ? { items } : {}),
+
+  rejectProposal: (actionId: string): Promise<ApiResponse<void>> => apiClient.post<void>(PROPOSAL_REJECT(actionId), {}),
 };

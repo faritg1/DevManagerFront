@@ -94,3 +94,50 @@ test('detail drawer opens from a notification link, highlights the comment and p
     await expect(page.getByText('Listo', { exact: true })).toBeVisible();
     expect(posted).toEqual(['Listo']);
 });
+
+test('generates an AI proposal, edits it and confirms a selection into the backlog', async ({ page }) => {
+    const proposal = {
+        actionId: 'a1', projectId: 'p1', status: 'PENDING_APPROVAL', requestedByUserId: 'u1',
+        createdAt: '2026-10-30T10:00:00', expiresAt: '2026-11-06T10:00:00', expired: false, requirement: 'Portal de pagos', truncated: true,
+        items: [
+            { index: 0, type: 'Story', title: 'Pagos en línea', priority: 'High', parentIndex: null, assigneeUserId: null, assigneeName: null },
+            { index: 1, type: 'Subtask', title: 'Integrar pasarela', priority: 'Medium', parentIndex: 0, assigneeUserId: null, assigneeName: null },
+            { index: 2, type: 'Task', title: 'Documentar API', priority: 'Low', parentIndex: null, assigneeUserId: null, assigneeName: null },
+        ],
+    };
+    const generated: unknown[] = [];
+    const confirmed: unknown[] = [];
+    await mockApi(page, USER, {
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([item]),
+        'POST /projects/p1/work-items/proposals': (route: { request: () => { postDataJSON: () => unknown }; fulfill: (r: object) => Promise<void> }) => {
+            generated.push(route.request().postDataJSON());
+            return route.fulfill({ status: 201, json: ok(proposal) });
+        },
+        'POST /work-items/proposals/a1/confirm': (route: { request: () => { postDataJSON: () => unknown }; fulfill: (r: object) => Promise<void> }) => {
+            confirmed.push(route.request().postDataJSON());
+            return route.fulfill({ json: ok({ actionId: 'a1', created: [{ ...item, id: 'w9', key: 'DEV-9', number: 9, status: 1, title: 'Documentar API v2' }] }) });
+        },
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1');
+
+    await page.getByRole('button', { name: 'Generar propuesta con IA' }).click();
+    await expect(page.getByText('consume la cuota de IA')).toBeVisible();
+    await page.getByLabel('Requerimiento').fill('Portal de pagos');
+    await page.getByRole('button', { name: 'Generar propuesta', exact: true }).click();
+
+    await expect(page.getByRole('heading', { name: 'Propuestas de IA' })).toBeVisible();
+    await expect(page.getByText('solo se conservaron las primeras 20')).toBeVisible();
+    expect(generated[0]).toEqual({ requirement: 'Portal de pagos' });
+
+    // Dropping the story also drops its subtask; the third item is edited.
+    await page.getByLabel('Incluir Pagos en línea').uncheck();
+    await expect(page.getByLabel('Incluir Integrar pasarela')).not.toBeChecked();
+    await page.getByLabel('Título de Documentar API').fill('Documentar API v2');
+    await page.getByRole('button', { name: 'Confirmar 1 de 3' }).click();
+
+    await expect(page.getByRole('cell', { name: 'DEV-9', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Propuestas de IA' })).toHaveCount(0);
+    expect(confirmed[0]).toEqual({ items: [{ index: 2, title: 'Documentar API v2' }] });
+});

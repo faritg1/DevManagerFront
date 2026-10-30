@@ -125,6 +125,10 @@ export const API_ENDPOINTS = {
     COMMENTS: (id: string) => `/work-items/${id}/comments`,
     COMMENT: (commentId: string) => `/work-items/comments/${commentId}`,
     HISTORY: (id: string) => `/work-items/${id}/history`,
+    PROPOSALS: (projectId: string) => `/projects/${projectId}/work-items/proposals`,
+    PROPOSAL: (actionId: string) => `/work-items/proposals/${actionId}`,
+    PROPOSAL_CONFIRM: (actionId: string) => `/work-items/proposals/${actionId}/confirm`,
+    PROPOSAL_REJECT: (actionId: string) => `/work-items/proposals/${actionId}/reject`,
   },
 
   // General change history (audit.ChangeLog)

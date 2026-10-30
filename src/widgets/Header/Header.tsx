@@ -24,6 +24,7 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.PERMISSIONS]: 'Permisos',
     [ROUTES.AUDIT]: 'Auditoría',
     [ROUTES.ACTIVITIES]: 'Actividades',
+    [ROUTES.MY_ACTIVITIES]: 'Mis actividades',
     [ROUTES.PROFILE]: 'Mi Perfil',
     [ROUTES.SETTINGS]: 'Configuración',
     [ROUTES.SKILLS_CATALOG]: 'Habilidades',

@@ -68,7 +68,15 @@ export interface OrganizationDto {
   workItemDueSoonDays?: number;
   /** Notify the assignee when an activity becomes overdue */
   workItemOverdueNotice?: boolean;
+  /** Activities module toggles; missing means every toggle at its default (on). */
+  activitiesSettings?: ActivitiesSettings;
   stats: OrganizationStatsDto;
+}
+
+/** Per-organization activities module settings (replaced as a whole on update). */
+export interface ActivitiesSettings {
+  showOnProjectDetail: boolean;
+  showMyWorkOnDashboard: boolean;
 }
 
 export interface UpdateOrganizationRequest {
@@ -79,6 +87,8 @@ export interface UpdateOrganizationRequest {
   /** 0-10, null/undefined = unchanged */
   workItemDueSoonDays?: number | null;
   workItemOverdueNotice?: boolean | null;
+  /** null/undefined = unchanged */
+  activitiesSettings?: ActivitiesSettings | null;
 }
 
 // ============ USERS ============
@@ -602,6 +612,14 @@ export interface WorkItemSummaryResponse {
   done: number;
   cancelled: number;
   progressPercent: number | null;
+  estimateHours: number;
+  doneEstimateHours: number;
+  /** Count per WorkItemStatus (JSON keys are the status numbers as strings). */
+  byStatus: Partial<Record<WorkItemStatus, number>>;
+  /** Open items past their due date. */
+  overdue: number;
+  /** Open items due within the organization's notice window (business days). */
+  dueSoon: number;
 }
 
 export interface AtRiskProject {
@@ -1496,6 +1514,13 @@ export interface WorkItemResponse {
   parentId?: string | null;
   completedAt?: string | null;
   createdAt: string;
+}
+
+/** An open item assigned to the caller, with its project (GET /work-items/mine). */
+export interface MyWorkItemResponse extends WorkItemResponse {
+  projectName: string;
+  projectKeyPrefix: string;
+  dueState: 'Overdue' | 'DueSoon' | null;
 }
 
 export interface CreateWorkItemRequest {

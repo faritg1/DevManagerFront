@@ -121,6 +121,7 @@ export const API_ENDPOINTS = {
   WORK_ITEMS: {
     BY_PROJECT: (projectId: string) => `/projects/${projectId}/work-items`,
     SUMMARY: (projectId: string) => `/projects/${projectId}/work-items/summary`,
+    MINE: "/work-items/mine",
     BY_ID: (id: string) => `/work-items/${id}`,
     MOVE: (id: string) => `/work-items/${id}/move`,
     COMMENTS: (id: string) => `/work-items/${id}/comments`,

@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
 import { StatCard, Badge, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
-import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService } from '../../../shared/api';
+import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService, workItemsService } from '../../../shared/api';
 import { useAuth } from '../../../shared/context';
-import { usePermission } from '../../../shared/hooks';
-import { ProjectStatus, type ApiResponse, type ProjectResponse } from '../../../shared/api/types';
+import { useActivitiesSettings, usePermission } from '../../../shared/hooks';
+import { ProjectStatus, type ApiResponse, type MyWorkItemResponse, type ProjectResponse } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
 import { ProjectCard, NewProjectTile } from '../../projects/components/ProjectCard';
+import { DueStateBadge, workItemLink } from '../../activities/components/DueStateBadge';
 
 /** undefined = loading, null = request failed. */
 type Kpi<T> = T | null | undefined;
@@ -43,6 +44,8 @@ export const DashboardPage: React.FC = () => {
     const { has } = usePermission();
     const canCreateProject = has('menu.platform.projects.create');
     const canAttendArco = has('menu.solidarity.habeas_data.attend');
+    const { showMyWorkOnDashboard } = useActivitiesSettings();
+    const showMyWork = has('menu.platform.activities') && showMyWorkOnDashboard;
 
     const [projects, setProjects] = useState<Kpi<ProjectResponse[]>>(undefined);
     const [members, setMembers] = useState<Kpi<{ active: number; total: number }>>(undefined);
@@ -51,6 +54,11 @@ export const DashboardPage: React.FC = () => {
     const [latestSurplus, setLatestSurplus] = useState<Kpi<number | 'none'>>(undefined);
     const [pendingArco, setPendingArco] = useState<Kpi<number>>(undefined);
     const [welfarePrograms, setWelfarePrograms] = useState<Kpi<number>>(undefined);
+    const [myWork, setMyWork] = useState<Kpi<MyWorkItemResponse[]>>(undefined);
+
+    useEffect(() => {
+        if (showMyWork) settle(workItemsService.mine()).then(setMyWork);
+    }, [showMyWork]);
 
     useEffect(() => {
         settle(projectsService.getAll()).then(setProjects);
@@ -151,6 +159,39 @@ export const DashboardPage: React.FC = () => {
                         />
                     </div>
                 </section>
+
+                {showMyWork && (
+                    <section aria-labelledby="dash-my-work" className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-border-dark dark:bg-card-dark">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <h2 id="dash-my-work" className="text-lg font-bold text-slate-900 dark:text-white">Mis actividades</h2>
+                            <Link to={ROUTES.MY_ACTIVITIES} className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                                Ver todas <ArrowRight size={14} aria-hidden="true" />
+                            </Link>
+                        </div>
+                        {myWork === undefined ? (
+                            <LoadingBlock label="Cargando actividades…" className="py-6" />
+                        ) : myWork === null ? (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{FAILED}</p>
+                        ) : myWork.length === 0 ? (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">No tienes actividades abiertas asignadas.</p>
+                        ) : (
+                            <ul className="divide-y divide-slate-100 dark:divide-border-dark">
+                                {myWork.slice(0, 5).map(i => (
+                                    <li key={i.id}>
+                                        <Link to={workItemLink(i)} className="flex min-w-0 items-center gap-3 py-2 hover:text-primary">
+                                            <span className="shrink-0 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">{i.key}</span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">{i.title}</span>
+                                                <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{i.projectName}</span>
+                                            </span>
+                                            <DueStateBadge state={i.dueState} />
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                )}
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <QuickLink to={ROUTES.AGENTS} icon={Bot} iconClass="bg-purple-50 text-purple-500 dark:bg-purple-500/10" title="Asistente IA" description="Consulta en lenguaje natural" />

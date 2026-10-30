@@ -1,5 +1,11 @@
 # Novedades
 
+## Actividades en proyectos y "Mis actividades"
+
+- El detalle del proyecto muestra una sección **Actividades**: avance, cantidad por estado, vencidas, por vencer y acceso al tablero.
+- Nueva pantalla **Mis actividades**: las actividades abiertas que tienes asignadas en todos tus proyectos, las que vencen primero arriba, con filtro por proyecto. El dashboard muestra las primeras cinco.
+- En **Organización**, el grupo "Módulo de actividades" permite ocultar la sección del proyecto y el widget del dashboard (ambos activos por defecto).
+
 ## Módulo de Actividades y proyectos en riesgo
 
 - Nuevo módulo **Actividades**: tareas, historias, bugs y subtareas por proyecto, con backlog, tablero Kanban, comentarios con menciones, historial, exportación a CSV y avisos de actividades por vencer o vencidas.

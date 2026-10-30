@@ -24,6 +24,7 @@ import {
     Crown,
     History,
     ListChecks,
+    ListTodo,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -65,6 +66,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'dashboard', permission: 'menu.platform.dashboard', label: 'Dashboard', icon: LayoutDashboard, to: ROUTES.DASHBOARD },
             { key: 'projects', permission: 'menu.platform.projects', label: 'Proyectos', icon: Briefcase, to: ROUTES.PROJECTS },
             { key: 'activities', permission: 'menu.platform.activities', label: 'Actividades', icon: ListChecks, to: ROUTES.ACTIVITIES },
+            { key: 'my-activities', permission: 'menu.platform.activities', label: 'Mis actividades', icon: ListTodo, to: ROUTES.MY_ACTIVITIES },
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
             { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
             { key: 'ai-usage', permission: 'menu.platform.ai_usage', label: 'Uso de IA', icon: Gauge, to: ROUTES.AI_USAGE },

@@ -25,14 +25,14 @@ test('activities list shows the items of a project and creates a new one', async
     await page.goto('/#/activities');
     await page.getByLabel('Proyecto').selectOption('p1');
 
-    await expect(page.getByRole('cell', { name: 'DEV-1' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'DEV-1', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Luis Pérez' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Nueva actividad' }).click();
     await page.getByLabel('Título').fill('Nueva');
     await page.getByRole('button', { name: 'Crear actividad' }).click();
 
-    await expect(page.getByRole('cell', { name: 'DEV-2' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'DEV-2', exact: true })).toBeVisible();
     expect(created).toHaveLength(1);
     expect(created[0]).toMatchObject({ title: 'Nueva', type: 1, parentId: null });
 });
@@ -64,6 +64,33 @@ test('board moves a card with the "Mover a" menu and rolls back when the API ref
     refuse = true;
     await page.getByRole('button', { name: 'Acciones de DEV-1' }).click();
     await page.getByRole('menuitem', { name: 'Mover a Hecho' }).click();
-    await expect(page.getByText('No se pudo mover la actividad')).toBeVisible();
+    await expect(page.getByText('Proyecto cerrado')).toHaveCount(1);
     await expect(todo.getByText('DEV-1')).toBeVisible();
+});
+
+test('detail drawer opens from a notification link, highlights the comment and posts a new one', async ({ page }) => {
+    const posted: unknown[] = [];
+    const comment = { id: 'c1', workItemId: 'w1', authorUserId: 'u2', authorName: 'Luis Pérez', body: 'Revisar @[Ana](user:11111111-1111-1111-1111-111111111111)', mentionedUserIds: ['11111111-1111-1111-1111-111111111111'], createdAt: '2026-10-30T10:00:00' };
+    await mockApi(page, { permissions: [...USER.permissions, 'menu.platform.activities.comment'] }, {
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([item]),
+        'GET /assignments': ok([{ id: 'a1', projectId: 'p1', userId: 'u2', userName: 'Luis Pérez', status: 1 }]),
+        'GET /work-items/w1/comments': ok([comment]),
+        'GET /work-items/w1/history': ok([]),
+        'POST /work-items/w1/comments': (route: { request: () => { postDataJSON: () => { body: string } }; fulfill: (r: object) => Promise<void> }) => {
+            const { body } = route.request().postDataJSON();
+            posted.push(body);
+            return route.fulfill({ status: 201, json: ok({ ...comment, id: 'c2', body, mentionedUserIds: [] }) });
+        },
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1?item=w1&comment=c1');
+
+    await expect(page.getByRole('dialog')).toContainText('DEV-1');
+    await expect(page.locator('[data-highlighted]')).toContainText('@Ana');
+
+    await page.getByLabel('Nuevo comentario').fill('Listo');
+    await page.getByRole('button', { name: 'Comentar' }).click();
+    await expect(page.getByText('Listo', { exact: true })).toBeVisible();
+    expect(posted).toEqual(['Listo']);
 });

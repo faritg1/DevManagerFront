@@ -122,6 +122,9 @@ export const API_ENDPOINTS = {
     BY_PROJECT: (projectId: string) => `/projects/${projectId}/work-items`,
     BY_ID: (id: string) => `/work-items/${id}`,
     MOVE: (id: string) => `/work-items/${id}/move`,
+    COMMENTS: (id: string) => `/work-items/${id}/comments`,
+    COMMENT: (commentId: string) => `/work-items/comments/${commentId}`,
+    HISTORY: (id: string) => `/work-items/${id}/history`,
   },
 
   // General change history (audit.ChangeLog)

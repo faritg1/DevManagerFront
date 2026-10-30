@@ -1492,3 +1492,29 @@ export interface MoveWorkItemRequest {
   afterId?: string | null;
   beforeId?: string | null;
 }
+
+export interface WorkItemCommentResponse {
+  id: string;
+  workItemId: string;
+  authorUserId: string;
+  authorName: string;
+  /** Mentions are written @[Name](user:GUID) */
+  body: string;
+  /** Only the tokens of these users are real mentions; any other token is plain text. */
+  mentionedUserIds: string[];
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface WorkItemFieldChange { field: string; old?: string | null; new?: string | null }
+
+export interface WorkItemHistoryEntry {
+  id: string;
+  createdAt: string;
+  actorName: string;
+  impersonatorUserId?: string | null;
+  impersonatorName?: string | null;
+  entityType: 'WorkItem' | 'WorkItemComment';
+  action: 'Created' | 'Updated' | 'Deleted';
+  changes: WorkItemFieldChange[];
+}

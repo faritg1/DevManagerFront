@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRightLeft, Edit2, KanbanSquare, ListChecks, Plus, Table2, Trash2 } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowRightLeft, Edit2, Eye, KanbanSquare, ListChecks, Plus, Table2, Trash2 } from 'lucide-react';
 import {
     assignmentsService, projectsService, workItemsService,
     WorkItemType, type ProjectResponse, type WorkItemResponse, type WorkItemStatus,
@@ -15,6 +15,7 @@ import {
 } from '../../shared/ui';
 import { KanbanBoard } from './components/KanbanBoard';
 import { KeyPrefixSetup } from './components/KeyPrefixSetup';
+import { WorkItemDetailDrawer } from './components/WorkItemDetailDrawer';
 import { WorkItemFormModal, type Member } from './components/WorkItemFormModal';
 import { WorkItemTable } from './components/WorkItemTable';
 import { isProjectReadOnly, PRIORITY_LABELS, STATUS_LABELS, STATUS_ORDER, TYPE_LABELS } from './workItemMeta';
@@ -28,6 +29,7 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 export const ActivitiesPage: React.FC = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
+    const [search, setSearch] = useSearchParams();
     const toast = useToast();
     const { confirm } = useConfirm();
     const { has } = usePermission();
@@ -130,17 +132,17 @@ export const ActivitiesPage: React.FC = () => {
             const { data } = await workItemsService.move(item.id, { status, beforeId: beforeId ?? null });
             setItems((list) => list?.map((i) => (i.id === item.id ? data : i)) ?? null);
         } catch {
-            setItems(snapshot);
-            toast.error('No se pudo mover la actividad', `${item.key} volvió a su posición anterior.`);
+            setItems(snapshot); // the global listener shows the one error toast
         }
     };
 
     const actionsFor = (item: WorkItemResponse): ActionMenuItem[] => [
+        { label: 'Ver detalle', icon: Eye, onSelect: () => setSearch({ item: item.id }) },
         ...(canMoveItem(item)
             ? STATUS_ORDER.filter((s) => s !== item.status)
                 .map((s) => ({ label: `Mover a ${STATUS_LABELS[s]}`, icon: ArrowRightLeft, onSelect: () => void move(item, s) }))
             : []),
-        ...(canEdit ? [{ label: 'Editar', icon: Edit2, separated: canMoveItem(item), onSelect: () => openForm(item) }] : []),
+        ...(canEdit ? [{ label: 'Editar', icon: Edit2, separated: true, onSelect: () => openForm(item) }] : []),
         ...(canDelete ? [{ label: 'Eliminar', icon: Trash2, danger: true, separated: canEdit || canMoveItem(item), onSelect: () => void remove(item) }] : []),
     ];
 
@@ -155,6 +157,7 @@ export const ActivitiesPage: React.FC = () => {
         { header: 'Horas estimadas', value: (i) => i.estimateHours },
     ];
 
+    const openItem = items?.find((i) => i.id === search.get('item')) ?? null;
     const parents = (items ?? []).filter((i) => i.type !== WorkItemType.Subtask);
 
     return (
@@ -255,6 +258,16 @@ export const ActivitiesPage: React.FC = () => {
                         <WorkItemTable items={visible} allItems={items} nameOf={nameOf} actionsFor={actionsFor} />
                     )}
                 </Card>
+
+                <WorkItemDetailDrawer
+                    item={openItem}
+                    onClose={() => setSearch({})}
+                    members={members}
+                    nameOf={nameOf}
+                    canComment={has('menu.platform.activities.comment') && !readOnly}
+                    userId={user?.id}
+                    highlightCommentId={search.get('comment')}
+                />
 
                 <WorkItemFormModal
                     isOpen={formOpen}

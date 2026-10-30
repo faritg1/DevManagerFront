@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
     REQUIREMENTS: (id: string) => `/projects/${id}/reqs`,
     APPLICATIONS: (id: string) => `/projects/${id}/applications`,
     APPLY: (id: string) => `/projects/${id}/apply`,
+    KEY_PREFIX: (id: string) => `/projects/${id}/key-prefix`,
   },
 
   // Applications (Postulaciones)
@@ -114,6 +115,13 @@ export const API_ENDPOINTS = {
     ASSIGN_TO_USER: "/permissions/assign-to-user",
     USER_EFFECTIVE: (userId: string) => `/permissions/user/${userId}/effective`,
     AUDIT: "/permissions/audit",
+  },
+
+  // Actividades (work items)
+  WORK_ITEMS: {
+    BY_PROJECT: (projectId: string) => `/projects/${projectId}/work-items`,
+    BY_ID: (id: string) => `/work-items/${id}`,
+    MOVE: (id: string) => `/work-items/${id}/move`,
   },
 
   // General change history (audit.ChangeLog)

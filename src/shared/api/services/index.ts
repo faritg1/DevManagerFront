@@ -28,3 +28,4 @@ export { notificationsService } from "./notificationsService";
 export { aiService } from "./aiService";
 export { platformService } from "./platformService";
 export { auditService } from "./auditService";
+export { workItemsService } from "./workItemsService";

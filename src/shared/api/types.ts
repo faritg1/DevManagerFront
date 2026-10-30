@@ -258,6 +258,7 @@ export const PROJECT_COMPLEXITY_LABELS = {
 export interface ProjectResponse {
   id: string;
   code: string | null;
+  keyPrefix?: string | null;
   name: string;
   description: string | null;
   startDate: string | null;
@@ -1443,4 +1444,51 @@ export interface ChangeLogFilter {
   to?: string;
   organizationId?: string;
   page?: number;
+}
+
+// ============ ACTIVIDADES (work items) ============
+// Mirror Domain.Enums.WorkItemType / Status / Priority (serialized as numbers).
+export enum WorkItemType { Task = 1, Story = 2, Bug = 3, Subtask = 4 }
+export enum WorkItemStatus { Backlog = 1, ToDo = 2, InProgress = 3, InReview = 4, Done = 5, Cancelled = 6 }
+export enum WorkItemPriority { Low = 1, Medium = 2, High = 3, Urgent = 4 }
+
+export interface WorkItemResponse {
+  id: string;
+  projectId: string;
+  /** PREFIX-N */
+  key: string;
+  number: number;
+  type: WorkItemType;
+  status: WorkItemStatus;
+  title: string;
+  description?: string | null;
+  assigneeUserId?: string | null;
+  reporterUserId: string;
+  priority: WorkItemPriority;
+  dueDate?: string | null;
+  estimateHours?: number | null;
+  parentId?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateWorkItemRequest {
+  type: WorkItemType;
+  title: string;
+  description?: string | null;
+  assigneeUserId?: string | null;
+  priority: WorkItemPriority;
+  dueDate?: string | null;
+  estimateHours?: number | null;
+  /** Required for a Subtask, forbidden otherwise */
+  parentId?: string | null;
+}
+
+/** Type, parent and status do not change here (status uses move). */
+export type UpdateWorkItemRequest = Omit<CreateWorkItemRequest, "type" | "parentId">;
+
+export interface MoveWorkItemRequest {
+  status: WorkItemStatus;
+  afterId?: string | null;
+  beforeId?: string | null;
 }

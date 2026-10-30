@@ -42,6 +42,8 @@ export const ROUTES = {
     ASISTENTE: '/asistente',
     SUPER_ADMIN: '/superadmin',
     AUDIT: '/audit',
+    ACTIVITIES: '/activities',
+    ACTIVITIES_PROJECT: '/activities/:projectId',
 } as const;
 
 export const NAV_SECTIONS = {

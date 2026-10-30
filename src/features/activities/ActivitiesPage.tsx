@@ -3,13 +3,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRightLeft, Edit2, Eye, KanbanSquare, ListChecks, Plus, Sparkles, Table2, Trash2 } from 'lucide-react';
 import {
     assignmentsService, projectsService, workItemsService,
-    WorkItemStatus, WorkItemType, type ProjectResponse, type ProposalResponse, type WorkItemResponse,
+    SprintStatus, WorkItemStatus, WorkItemType, type ProjectResponse, type ProposalResponse, type SprintResponse, type WorkItemResponse,
 } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { useAuth, useToast } from '../../shared/context';
 import type { CsvColumn } from '../../shared/export';
 import { formatDate } from '../../shared/format';
-import { useConfirm, usePermission } from '../../shared/hooks';
+import { useActivitiesSettings, useConfirm, usePermission } from '../../shared/hooks';
 import {
     Button, Card, EmptyState, ExportButton, Input, LoadingBlock, PageContainer, PageHeader, Select, type ActionMenuItem,
 } from '../../shared/ui';
@@ -18,10 +18,11 @@ import { GenerateProposalModal } from './components/GenerateProposalModal';
 import { KanbanBoard } from './components/KanbanBoard';
 import { KeyPrefixSetup } from './components/KeyPrefixSetup';
 import { ProjectProgress } from './components/ProjectProgress';
+import { SprintBar } from './components/SprintBar';
 import { WorkItemDetailDrawer } from './components/WorkItemDetailDrawer';
 import { WorkItemFormModal, type Member } from './components/WorkItemFormModal';
 import { WorkItemTable } from './components/WorkItemTable';
-import { isProjectReadOnly, PRIORITY_LABELS, STATUS_LABELS, STATUS_ORDER, TYPE_LABELS } from './workItemMeta';
+import { isProjectReadOnly, PRIORITY_LABELS, SPRINT_STATUS_LABELS, STATUS_LABELS, STATUS_ORDER, TYPE_LABELS } from './workItemMeta';
 
 /** Active member (AssignmentStatus.Active = 1, not ended), one entry per user. */
 const ACTIVE_ASSIGNMENT = 1;
@@ -52,6 +53,10 @@ export const ActivitiesPage: React.FC = () => {
     const [proposals, setProposals] = useState<ProposalResponse[]>([]);
     const [proposeOpen, setProposeOpen] = useState(false);
     const [justGenerated, setJustGenerated] = useState(false);
+    const { sprintsEnabled } = useActivitiesSettings();
+    const [sprints, setSprints] = useState<SprintResponse[]>([]);
+    /** '' every item, 'none' items without sprint, otherwise a sprint id */
+    const [sprint, setSprint] = useState('');
 
     const project = projects?.find((p) => p.id === projectId);
     const readOnly = isProjectReadOnly(project);
@@ -80,11 +85,23 @@ export const ActivitiesPage: React.FC = () => {
     }, [projectId]);
 
     useEffect(() => {
-        setQuery(''); setStatus(''); setType(''); setAssignee('');
+        setQuery(''); setStatus(''); setType(''); setAssignee(''); setSprint('');
         setProposals([]);
         load();
         loadProposals();
     }, [load, loadProposals]);
+
+    useEffect(() => {
+        setSprints([]);
+        if (!projectId || !sprintsEnabled) return;
+        workItemsService.sprints(projectId).then((r) => setSprints(r.data ?? []), () => setSprints([]));
+    }, [projectId, sprintsEnabled]);
+
+    const sprintChanged = (s: SprintResponse) => {
+        setSprints((list) => (list.some((x) => x.id === s.id) ? list.map((x) => (x.id === s.id ? s : x)) : [...list, s]));
+        setSprint(s.id);
+        if (s.status === SprintStatus.Closed) load(); // its open items left the sprint
+    };
 
     const nameOf = useCallback(
         (id: string | null | undefined) => (id ? members.find((m) => m.id === id)?.name ?? '—' : 'Sin asignar'),
@@ -97,8 +114,9 @@ export const ActivitiesPage: React.FC = () => {
             (!status || i.status === Number(status))
             && (!type || i.type === Number(type))
             && (!assignee || (assignee === 'none' ? !i.assigneeUserId : i.assigneeUserId === assignee))
+            && (!sprintsEnabled || !sprint || (sprint === 'none' ? !i.sprintId : i.sprintId === sprint))
             && (!q || norm(`${i.key} ${i.title}`).includes(q)));
-    }, [items, query, status, type, assignee]);
+    }, [items, query, status, type, assignee, sprint, sprintsEnabled]);
 
     const noPrefix = !!project && !project.keyPrefix;
     const canCreate = has('menu.platform.activities.create') && !readOnly && !noPrefix;
@@ -233,6 +251,16 @@ export const ActivitiesPage: React.FC = () => {
 
                 <AiProposalsPanel key={String(justGenerated)} defaultOpen={justGenerated} proposals={proposals} members={members} canDecide={canPropose || (isAdmin && !readOnly && !noPrefix)} onDecided={decided} onStale={loadProposals} />
 
+                {sprintsEnabled && (
+                    <SprintBar
+                        projectId={project.id}
+                        selected={sprints.find((s) => s.id === sprint) ?? null}
+                        items={items ?? []}
+                        canManage={canEdit}
+                        onChanged={sprintChanged}
+                    />
+                )}
+
                 <div role="tablist" aria-label="Vista de actividades" className="mb-3 flex gap-2">
                     {([['list', 'Backlog', Table2], ['board', 'Tablero', KanbanSquare]] as const).map(([key, label, Icon]) => (
                         <Button
@@ -250,7 +278,7 @@ export const ActivitiesPage: React.FC = () => {
                 </div>
 
                 <Card padding="none" className="overflow-hidden">
-                    <div className="grid grid-cols-2 gap-3 border-b border-slate-200 p-4 lg:grid-cols-4 dark:border-border-dark">
+                    <div className={`grid grid-cols-2 gap-3 border-b border-slate-200 p-4 dark:border-border-dark ${sprintsEnabled ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
                         <div className="col-span-2 lg:col-span-1">
                             <Input label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Clave o título" />
                         </div>
@@ -267,6 +295,13 @@ export const ActivitiesPage: React.FC = () => {
                             <option value="none">Sin asignar</option>
                             {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </Select>
+                        {sprintsEnabled && (
+                            <Select label="Sprint" value={sprint} onChange={(e) => setSprint(e.target.value)}>
+                                <option value="">Todos</option>
+                                <option value="none">Sin sprint</option>
+                                {sprints.map((s) => <option key={s.id} value={s.id}>{s.name} ({SPRINT_STATUS_LABELS[s.status]})</option>)}
+                            </Select>
+                        )}
                     </div>
 
                     {failed ? (
@@ -297,6 +332,7 @@ export const ActivitiesPage: React.FC = () => {
                     userId={user?.id}
                     highlightCommentId={search.get('comment')}
                     onEdit={canEdit ? (i) => { setSearch({}); openForm(i); } : undefined}
+                    sprintName={sprintsEnabled ? (id) => sprints.find((s) => s.id === id)?.name ?? 'Sin sprint' : undefined}
                 />
 
                 <GenerateProposalModal
@@ -313,6 +349,8 @@ export const ActivitiesPage: React.FC = () => {
                     item={editing}
                     members={members}
                     parents={parents}
+                    sprints={sprintsEnabled ? sprints : undefined}
+                    defaultSprintId={sprints.some((s) => s.id === sprint && s.status !== SprintStatus.Closed) ? sprint : ''}
                     onSaved={saved}
                 />
             </>)}

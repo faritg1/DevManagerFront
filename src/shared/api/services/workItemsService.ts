@@ -5,6 +5,8 @@ import type {
   ConfirmProposalResponse,
   ProposalItemEdit,
   ProposalResponse,
+  SprintRequest,
+  SprintResponse,
   CreateWorkItemRequest,
   MoveWorkItemRequest,
   MyWorkItemResponse,
@@ -15,7 +17,8 @@ import type {
   WorkItemSummaryResponse,
 } from "../types";
 
-const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT } = API_ENDPOINTS.WORK_ITEMS;
+const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT,
+  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -71,4 +74,20 @@ export const workItemsService = {
     apiClient.post<ConfirmProposalResponse>(PROPOSAL_CONFIRM(actionId), items ? { items } : {}),
 
   rejectProposal: (actionId: string): Promise<ApiResponse<void>> => apiClient.post<void>(PROPOSAL_REJECT(actionId), {}),
+
+  /** Sprints of the project with their progress (readable even when the organization has them off). */
+  sprints: (projectId: string): Promise<ApiResponse<SprintResponse[]>> => apiClient.get<SprintResponse[]>(SPRINTS(projectId)),
+
+  createSprint: (projectId: string, data: SprintRequest): Promise<ApiResponse<SprintResponse>> =>
+    apiClient.post<SprintResponse>(SPRINTS(projectId), data),
+
+  updateSprint: (id: string, data: SprintRequest): Promise<ApiResponse<SprintResponse>> => apiClient.put<SprintResponse>(SPRINT(id), data),
+
+  removeSprint: (id: string): Promise<ApiResponse<void>> => apiClient.delete<void>(SPRINT(id)),
+
+  /** Planned to active; only one active sprint per project. */
+  startSprint: (id: string): Promise<ApiResponse<SprintResponse>> => apiClient.post<SprintResponse>(SPRINT_START(id), {}),
+
+  /** Its open items go back to "no sprint". */
+  closeSprint: (id: string): Promise<ApiResponse<SprintResponse>> => apiClient.post<SprintResponse>(SPRINT_CLOSE(id), {}),
 };

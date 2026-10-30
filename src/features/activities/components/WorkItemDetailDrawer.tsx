@@ -22,6 +22,8 @@ interface Props {
     highlightCommentId?: string | null;
     /** Opens the edit form; omitted when the user cannot edit. */
     onEdit?: (item: WorkItemResponse) => void;
+    /** Sprint name of an id (null: no sprint); omitted when sprints are off. */
+    sprintName?: (sprintId: string | null | undefined) => string;
 }
 
 const TOKEN = /@\[([^\]]*)\]\(user:([0-9a-fA-F-]{36})\)/g;
@@ -34,7 +36,7 @@ const withChips = (c: WorkItemCommentResponse) =>
 const CHIP_CLASS = '[&_code]:rounded [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:text-primary [&_code::before]:content-none [&_code::after]:content-none';
 
 /** Detail of one activity: comments with @mentions and the change history. */
-export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit }) => {
+export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, nameOf, canComment, userId, highlightCommentId, onEdit, sprintName }) => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const [tab, setTab] = useState<'comments' | 'history'>('comments');
@@ -104,6 +106,7 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
                             ['Reportó', nameOf(item.reporterUserId)],
                             ['Estimado', item.estimateHours != null ? `${item.estimateHours} h` : '—'],
                             ['Vence', formatDate(item.dueDate)],
+                            ...(sprintName ? [['Sprint', sprintName(item.sprintId)]] : []),
                             ['Creada', formatDate(item.createdAt)],
                             ...(item.completedAt ? [['Completada', formatDate(item.completedAt)]] : []),
                         ] as [string, string][]).map(([k, v]) => (

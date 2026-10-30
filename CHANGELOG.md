@@ -1,5 +1,11 @@
 # Novedades
 
+## Sprints opcionales en Actividades
+
+- En **Organización**, el grupo "Módulo de actividades" tiene la opción **Habilitar sprints** (desactivada por defecto). Mientras esté apagada nada cambia.
+- Con los sprints habilitados, la pantalla de **Actividades** filtra por sprint ("Todos", "Sin sprint" o un sprint) y muestra una barra con las fechas y el avance del sprint elegido. Quien puede editar actividades crea, edita, inicia y cierra sprints; solo puede haber un sprint activo por proyecto.
+- Una actividad puede pertenecer a un sprint (campo opcional en el formulario y visible en el detalle). Al cerrar un sprint, sus actividades abiertas quedan sin sprint.
+
 ## Actividades en proyectos y "Mis actividades"
 
 - El detalle del proyecto muestra una sección **Actividades**: avance, cantidad por estado, vencidas, por vencer y acceso al tablero.

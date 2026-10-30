@@ -77,6 +77,8 @@ export interface OrganizationDto {
 export interface ActivitiesSettings {
   showOnProjectDetail: boolean;
   showMyWorkOnDashboard: boolean;
+  /** Per-project sprints (optional for items); off by default */
+  sprintsEnabled: boolean;
 }
 
 export interface UpdateOrganizationRequest {
@@ -1512,6 +1514,7 @@ export interface WorkItemResponse {
   dueDate?: string | null;
   estimateHours?: number | null;
   parentId?: string | null;
+  sprintId?: string | null;
   completedAt?: string | null;
   createdAt: string;
 }
@@ -1533,10 +1536,40 @@ export interface CreateWorkItemRequest {
   estimateHours?: number | null;
   /** Required for a Subtask, forbidden otherwise */
   parentId?: string | null;
+  /** Optional sprint of the same project (not closed); on edit send the current one to keep it */
+  sprintId?: string | null;
 }
 
 /** Type, parent and status do not change here (status uses move). */
 export type UpdateWorkItemRequest = Omit<CreateWorkItemRequest, "type" | "parentId">;
+
+// Mirror Domain.Enums.SprintStatus
+export enum SprintStatus { Planned = 1, Active = 2, Closed = 3 }
+
+export interface SprintRequest {
+  name: string;
+  goal?: string | null;
+  /** yyyy-mm-dd */
+  startDate: string;
+  endDate: string;
+}
+
+/** Sprint with the progress of its items (done / non-cancelled, estimated hours). */
+export interface SprintResponse {
+  id: string;
+  projectId: string;
+  name: string;
+  goal?: string | null;
+  startDate: string;
+  endDate: string;
+  status: SprintStatus;
+  total: number;
+  done: number;
+  cancelled: number;
+  progressPercent: number | null;
+  estimateHours: number;
+  doneEstimateHours: number;
+}
 
 export interface MoveWorkItemRequest {
   status: WorkItemStatus;

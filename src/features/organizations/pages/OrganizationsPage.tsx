@@ -73,7 +73,7 @@ const toForm = (o: OrganizationDto): EditForm => ({
     legalName: o.legalName ?? '',
     nit: o.nit ?? '',
     entityType: o.entityType ?? '',
-    dueSoonDays: String(o.workItemDueSoonDays ?? 1),
+    dueSoonDays: String(o.workItemDueSoonDays ?? 2),
     overdueNotice: o.workItemOverdueNotice ?? true,
 });
 

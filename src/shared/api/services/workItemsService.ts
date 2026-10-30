@@ -5,6 +5,12 @@ import type {
   ConfirmProposalResponse,
   ProposalItemEdit,
   ProposalResponse,
+  SprintRequest,
+  SprintResponse,
+  TimeEntryRequest,
+  TimeEntryResponse,
+  WorkItemLinkRequest,
+  WorkItemLinksResponse,
   CreateWorkItemRequest,
   MoveWorkItemRequest,
   MyWorkItemResponse,
@@ -15,7 +21,8 @@ import type {
   WorkItemSummaryResponse,
 } from "../types";
 
-const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT } = API_ENDPOINTS.WORK_ITEMS;
+const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT,
+  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE, TIME_ENTRIES, TIME_ENTRY, LINKS, LINK } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -71,4 +78,38 @@ export const workItemsService = {
     apiClient.post<ConfirmProposalResponse>(PROPOSAL_CONFIRM(actionId), items ? { items } : {}),
 
   rejectProposal: (actionId: string): Promise<ApiResponse<void>> => apiClient.post<void>(PROPOSAL_REJECT(actionId), {}),
+
+  /** Sprints of the project with their progress (readable even when the organization has them off). */
+  sprints: (projectId: string): Promise<ApiResponse<SprintResponse[]>> => apiClient.get<SprintResponse[]>(SPRINTS(projectId)),
+
+  createSprint: (projectId: string, data: SprintRequest): Promise<ApiResponse<SprintResponse>> =>
+    apiClient.post<SprintResponse>(SPRINTS(projectId), data),
+
+  updateSprint: (id: string, data: SprintRequest): Promise<ApiResponse<SprintResponse>> => apiClient.put<SprintResponse>(SPRINT(id), data),
+
+  removeSprint: (id: string): Promise<ApiResponse<void>> => apiClient.delete<void>(SPRINT(id)),
+
+  /** Planned to active; only one active sprint per project. */
+  startSprint: (id: string): Promise<ApiResponse<SprintResponse>> => apiClient.post<SprintResponse>(SPRINT_START(id), {}),
+
+  /** Its open items go back to "no sprint". */
+  closeSprint: (id: string): Promise<ApiResponse<SprintResponse>> => apiClient.post<SprintResponse>(SPRINT_CLOSE(id), {}),
+
+  /** Hours logged on the item (readable even when the organization has time tracking off). */
+  timeEntries: (id: string): Promise<ApiResponse<TimeEntryResponse[]>> => apiClient.get<TimeEntryResponse[]>(TIME_ENTRIES(id)),
+
+  addTimeEntry: (id: string, data: TimeEntryRequest): Promise<ApiResponse<TimeEntryResponse>> =>
+    apiClient.post<TimeEntryResponse>(TIME_ENTRIES(id), data),
+
+  /** Own entries only; org admins may delete any. */
+  removeTimeEntry: (entryId: string): Promise<ApiResponse<void>> => apiClient.delete<void>(TIME_ENTRY(entryId)),
+
+  /** Items this one blocks and is blocked by (readable even when the organization has dependencies off). */
+  links: (id: string): Promise<ApiResponse<WorkItemLinksResponse>> => apiClient.get<WorkItemLinksResponse>(LINKS(id)),
+
+  /** Same project only; no self or reverse links; returns the item's links after adding. */
+  addLink: (id: string, data: WorkItemLinkRequest): Promise<ApiResponse<WorkItemLinksResponse>> =>
+    apiClient.post<WorkItemLinksResponse>(LINKS(id), data),
+
+  removeLink: (linkId: string): Promise<ApiResponse<void>> => apiClient.delete<void>(LINK(linkId)),
 };

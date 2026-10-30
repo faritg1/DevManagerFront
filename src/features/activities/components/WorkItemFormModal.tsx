@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { workItemsService, WorkItemPriority, WorkItemType, type WorkItemResponse } from '../../../shared/api';
+import { SprintStatus, workItemsService, WorkItemPriority, WorkItemType, type SprintResponse, type WorkItemResponse } from '../../../shared/api';
 import { Button, Input, Modal, Select, Textarea } from '../../../shared/ui';
 import { dayOf, PRIORITY_LABELS, TYPE_LABELS } from '../workItemMeta';
 
@@ -14,32 +14,38 @@ interface Props {
     members: Member[];
     /** Candidate parents for a subtask (top-level items). */
     parents: WorkItemResponse[];
+    /** Sprints of the project; undefined hides the field (sprints off). The item's sprint is kept either way. */
+    sprints?: SprintResponse[];
+    /** Sprint preselected for a new item (the filtered one). */
+    defaultSprintId?: string;
     onSaved: (item: WorkItemResponse) => void;
 }
 
 interface Form {
     type: WorkItemType; title: string; description: string; assignee: string;
-    priority: WorkItemPriority; dueDate: string; estimate: string; parentId: string;
+    priority: WorkItemPriority; dueDate: string; estimate: string; parentId: string; sprint: string;
 }
 
-const blank = (): Form => ({
+const blank = (sprint = ''): Form => ({
     type: WorkItemType.Task, title: '', description: '', assignee: '',
-    priority: WorkItemPriority.Medium, dueDate: '', estimate: '', parentId: '',
+    priority: WorkItemPriority.Medium, dueDate: '', estimate: '', parentId: '', sprint,
 });
 
 const fromItem = (i: WorkItemResponse): Form => ({
     type: i.type, title: i.title, description: i.description ?? '', assignee: i.assigneeUserId ?? '',
     priority: i.priority, dueDate: dayOf(i.dueDate), estimate: i.estimateHours?.toString() ?? '', parentId: i.parentId ?? '',
+    sprint: i.sprintId ?? '',
 });
 
 const numbers = <E extends number>(e: Record<string, string | E>): E[] => Object.values(e).filter((v): v is E => typeof v === 'number');
 
-export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId, item, members, parents, onSaved }) => {
+export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId, item, members, parents, sprints, defaultSprintId = '', onSaved }) => {
     const [form, setForm] = useState<Form>(blank);
     const [saving, setSaving] = useState(false);
     const isSubtask = form.type === WorkItemType.Subtask;
 
-    useEffect(() => { if (isOpen) setForm(item ? fromItem(item) : blank()); }, [isOpen, item]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the default only matters when the form opens
+    useEffect(() => { if (isOpen) setForm(item ? fromItem(item) : blank(defaultSprintId)); }, [isOpen, item]);
 
     const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -51,6 +57,7 @@ export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId,
             priority: form.priority,
             dueDate: form.dueDate || null,
             estimateHours: form.estimate === '' ? null : Number(form.estimate),
+            sprintId: form.sprint || null,
         };
         setSaving(true);
         try {
@@ -105,6 +112,14 @@ export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId,
                 </Select>
                 <Input label="Fecha límite" type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
                 <Input label="Estimación (horas)" type="number" min={0} max={9999.99} step={0.25} value={form.estimate} onChange={(e) => set('estimate', e.target.value)} />
+                {sprints && (
+                    <Select label="Sprint" value={form.sprint} onChange={(e) => set('sprint', e.target.value)}>
+                        <option value="">Sin sprint</option>
+                        {/* A closed sprint takes no new items; the item's own one still shows */}
+                        {sprints.filter((s) => s.status !== SprintStatus.Closed || s.id === item?.sprintId)
+                            .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </Select>
+                )}
             </div>
         </Modal>
     );

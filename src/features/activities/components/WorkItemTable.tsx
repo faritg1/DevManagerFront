@@ -1,4 +1,5 @@
 import React from 'react';
+import { Lock } from 'lucide-react';
 import { WorkItemType, type WorkItemResponse } from '../../../shared/api';
 import { formatDate, formatNumber } from '../../../shared/format';
 import {
@@ -14,9 +15,11 @@ interface Props {
     nameOf: (userId: string | null | undefined) => string;
     /** Menu entries for a row (empty hides the menu). */
     actionsFor: (item: WorkItemResponse) => ActionMenuItem[];
+    /** Shows the "Bloqueada" badge on items with open blockers (dependencies on). */
+    showBlocked?: boolean;
 }
 
-export const WorkItemTable: React.FC<Props> = ({ items, allItems, nameOf, actionsFor }) => {
+export const WorkItemTable: React.FC<Props> = ({ items, allItems, nameOf, actionsFor, showBlocked }) => {
     const keyOf = new Map(allItems.map((i) => [i.id, i.key]));
     return (
         <div className="overflow-x-auto">
@@ -43,6 +46,7 @@ export const WorkItemTable: React.FC<Props> = ({ items, allItems, nameOf, action
                                     <span className={`${TD_TRUNCATE_CLASS} font-medium text-slate-900 dark:text-white`} title={i.title}>{i.title}</span>
                                     <span className="mt-1 flex items-center gap-2">
                                         <Badge variant={TYPE_VARIANTS[i.type]}>{TYPE_LABELS[i.type]}</Badge>
+                                        {showBlocked && (i.blockedByOpenCount ?? 0) > 0 && <Badge variant="warning" icon={Lock}>Bloqueada</Badge>}
                                         {i.type === WorkItemType.Subtask && i.parentId && (
                                             <span className="text-xs text-slate-500 dark:text-slate-400">de {keyOf.get(i.parentId) ?? '—'}</span>
                                         )}

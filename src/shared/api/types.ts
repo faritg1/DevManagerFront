@@ -77,6 +77,12 @@ export interface OrganizationDto {
 export interface ActivitiesSettings {
   showOnProjectDetail: boolean;
   showMyWorkOnDashboard: boolean;
+  /** Per-project sprints (optional for items); off by default */
+  sprintsEnabled: boolean;
+  /** Members log real hours on items; off by default (logged hours stay readable) */
+  timeTrackingEnabled: boolean;
+  /** "Blocks / blocked by" links between items of a project; off by default (existing links stay readable) */
+  dependenciesEnabled: boolean;
 }
 
 export interface UpdateOrganizationRequest {
@@ -614,6 +620,8 @@ export interface WorkItemSummaryResponse {
   progressPercent: number | null;
   estimateHours: number;
   doneEstimateHours: number;
+  /** Hours logged on the project's items. */
+  spentHours?: number;
   /** Count per WorkItemStatus (JSON keys are the status numbers as strings). */
   byStatus: Partial<Record<WorkItemStatus, number>>;
   /** Open items past their due date. */
@@ -1512,6 +1520,11 @@ export interface WorkItemResponse {
   dueDate?: string | null;
   estimateHours?: number | null;
   parentId?: string | null;
+  sprintId?: string | null;
+  /** Hours logged on the item (0 when none). */
+  spentHours?: number;
+  /** Blockers not Done/Cancelled (a warning, never a block). */
+  blockedByOpenCount?: number;
   completedAt?: string | null;
   createdAt: string;
 }
@@ -1533,15 +1546,86 @@ export interface CreateWorkItemRequest {
   estimateHours?: number | null;
   /** Required for a Subtask, forbidden otherwise */
   parentId?: string | null;
+  /** Optional sprint of the same project (not closed); on edit send the current one to keep it */
+  sprintId?: string | null;
 }
 
 /** Type, parent and status do not change here (status uses move). */
 export type UpdateWorkItemRequest = Omit<CreateWorkItemRequest, "type" | "parentId">;
 
+// Mirror Domain.Enums.SprintStatus
+export enum SprintStatus { Planned = 1, Active = 2, Closed = 3 }
+
+export interface SprintRequest {
+  name: string;
+  goal?: string | null;
+  /** yyyy-mm-dd */
+  startDate: string;
+  endDate: string;
+}
+
+/** Sprint with the progress of its items (done / non-cancelled, estimated hours). */
+export interface SprintResponse {
+  id: string;
+  projectId: string;
+  name: string;
+  goal?: string | null;
+  startDate: string;
+  endDate: string;
+  status: SprintStatus;
+  total: number;
+  done: number;
+  cancelled: number;
+  progressPercent: number | null;
+  estimateHours: number;
+  doneEstimateHours: number;
+  /** Hours logged on the sprint's items. */
+  spentHours?: number;
+}
+
 export interface MoveWorkItemRequest {
   status: WorkItemStatus;
   afterId?: string | null;
   beforeId?: string | null;
+}
+
+/** One of the two: blockedItemId ("this item blocks that one") or blockerItemId ("this item is blocked by that one"). */
+export interface WorkItemLinkRequest {
+  blockedItemId?: string;
+  blockerItemId?: string;
+}
+
+export interface LinkedWorkItem {
+  linkId: string;
+  itemId: string;
+  key: string;
+  title: string;
+  status: WorkItemStatus;
+}
+
+export interface WorkItemLinksResponse {
+  /** Items this one blocks. */
+  blocks: LinkedWorkItem[];
+  /** Items blocking this one. */
+  blockedBy: LinkedWorkItem[];
+}
+
+/** Log hours on an item: a day not in the future (yyyy-mm-dd), more than 0 and up to 24 hours. */
+export interface TimeEntryRequest {
+  workDate: string;
+  hours: number;
+  note?: string | null;
+}
+
+export interface TimeEntryResponse {
+  id: string;
+  workItemId: string;
+  userId: string;
+  userName: string;
+  workDate: string;
+  hours: number;
+  note?: string | null;
+  createdAt: string;
 }
 
 export interface WorkItemCommentResponse {

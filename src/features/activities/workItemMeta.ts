@@ -1,4 +1,4 @@
-import { ProjectStatus, WorkItemPriority, WorkItemStatus, WorkItemType, type ProjectResponse, type WorkItemResponse } from '../../shared/api/types';
+import { ProjectStatus, SprintStatus, WorkItemPriority, WorkItemStatus, WorkItemType, type ProjectResponse, type WorkItemResponse } from '../../shared/api/types';
 import type { BadgeVariant } from '../../shared/ui';
 
 export const TYPE_LABELS: Record<WorkItemType, string> = {
@@ -64,3 +64,9 @@ export const dayOf = (d: string | null | undefined) => d?.slice(0, 10) ?? '';
 export const isOverdue = (i: WorkItemResponse) =>
     !!i.dueDate && i.status !== WorkItemStatus.Done && i.status !== WorkItemStatus.Cancelled
     && dayOf(i.dueDate) < new Date().toLocaleDateString('en-CA');
+
+export const SPRINT_STATUS_LABELS: Record<SprintStatus, string> = {
+    [SprintStatus.Planned]: 'Planeado',
+    [SprintStatus.Active]: 'Activo',
+    [SprintStatus.Closed]: 'Cerrado',
+};

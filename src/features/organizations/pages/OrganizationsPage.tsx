@@ -356,6 +356,9 @@ export const OrganizationsPage: React.FC = () => {
                             {([
                                 ['showOnProjectDetail', 'Mostrar actividades en el detalle del proyecto'],
                                 ['showMyWorkOnDashboard', 'Mostrar «Mis actividades» en el dashboard'],
+                                ['sprintsEnabled', 'Habilitar sprints'],
+                                ['timeTrackingEnabled', 'Habilitar registro de horas'],
+                                ['dependenciesEnabled', 'Habilitar dependencias entre actividades'],
                             ] as const).map(([key, label]) => (
                                 <label key={key} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                                     <input

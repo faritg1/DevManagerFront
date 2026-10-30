@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Lock } from 'lucide-react';
 import { WorkItemStatus, type WorkItemResponse } from '../../../shared/api';
 import { formatDate } from '../../../shared/format';
 import { ActionMenu, Badge, type ActionMenuItem } from '../../../shared/ui';
@@ -13,10 +14,12 @@ interface Props {
     onMove: (item: WorkItemResponse, status: WorkItemStatus, beforeId?: string) => void;
     /** Menu entries of a card ("Mover a…" and the like); the keyboard and touch alternative to dragging. */
     actionsFor: (item: WorkItemResponse) => ActionMenuItem[];
+    /** Shows the "Bloqueada" badge on items with open blockers (dependencies on). */
+    showBlocked?: boolean;
 }
 
 /** One column per status; cards move with native HTML5 drag and drop, or with the "Mover a…" card menu. */
-export const KanbanBoard: React.FC<Props> = ({ items, nameOf, canMove, onMove, actionsFor }) => {
+export const KanbanBoard: React.FC<Props> = ({ items, nameOf, canMove, onMove, actionsFor, showBlocked }) => {
     const [dragging, setDragging] = useState<WorkItemResponse | null>(null);
     const [over, setOver] = useState<WorkItemStatus | null>(null);
 
@@ -71,6 +74,7 @@ export const KanbanBoard: React.FC<Props> = ({ items, nameOf, canMove, onMove, a
                                             <Badge variant={TYPE_VARIANTS[i.type]}>{TYPE_LABELS[i.type]}</Badge>
                                             <Badge variant={PRIORITY_VARIANTS[i.priority]}>{PRIORITY_LABELS[i.priority]}</Badge>
                                             {isOverdue(i) && <Badge variant="danger">Vencida</Badge>}
+                                            {showBlocked && (i.blockedByOpenCount ?? 0) > 0 && <Badge variant="warning" icon={Lock}>Bloqueada</Badge>}
                                         </div>
                                         <p className="mt-2 flex justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
                                             <span className="truncate">{nameOf(i.assigneeUserId)}</span>

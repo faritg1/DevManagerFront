@@ -131,6 +131,14 @@ export const API_ENDPOINTS = {
     PROPOSAL: (actionId: string) => `/work-items/proposals/${actionId}`,
     PROPOSAL_CONFIRM: (actionId: string) => `/work-items/proposals/${actionId}/confirm`,
     PROPOSAL_REJECT: (actionId: string) => `/work-items/proposals/${actionId}/reject`,
+    SPRINTS: (projectId: string) => `/projects/${projectId}/sprints`,
+    SPRINT: (id: string) => `/sprints/${id}`,
+    SPRINT_START: (id: string) => `/sprints/${id}/start`,
+    SPRINT_CLOSE: (id: string) => `/sprints/${id}/close`,
+    TIME_ENTRIES: (id: string) => `/work-items/${id}/time-entries`,
+    TIME_ENTRY: (entryId: string) => `/time-entries/${entryId}`,
+    LINKS: (id: string) => `/work-items/${id}/links`,
+    LINK: (linkId: string) => `/work-item-links/${linkId}`,
   },
 
   // General change history (audit.ChangeLog)

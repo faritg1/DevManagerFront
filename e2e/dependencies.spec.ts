@@ -2,7 +2,7 @@ import { expect, test, type Route } from '@playwright/test';
 import { mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
-const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.edit', 'menu.platform.activities.move'] };
+const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.edit', 'menu.platform.activities.move', 'menu.platform.activities.dependencies'] };
 const org = (dependenciesEnabled: boolean) =>
     ok({ id: 'o1', name: 'Cooperativa Demo', activitiesSettings: { showOnProjectDetail: true, showMyWorkOnDashboard: true, sprintsEnabled: false, timeTrackingEnabled: false, dependenciesEnabled } });
 
@@ -86,4 +86,22 @@ test('moving a blocked card warns about its open dependencies and still moves it
     await expect(page.getByText('DEV-3 tiene 2 dependencias abiertas')).toBeVisible();
     await expect(page.getByRole('region', { name: /^En progreso/ }).getByText('DEV-3')).toBeVisible();
     expect(moves).toEqual([expect.objectContaining({ status: 3 })]);
+});
+
+test('without the dependencies permission the links are read-only', async ({ page }) => {
+    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.edit'] }, {
+        'GET /organizations/me': org(true),
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([blocker, { ...blocked, blockedByOpenCount: 1 }]),
+        'GET /work-items/w3/links': ok({ blocks: [], blockedBy: [{ linkId: 'l1', itemId: 'w1', key: 'DEV-1', title: 'API de pagos', status: 3 }] }),
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1?item=w3');
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Bloqueada por');
+    await expect(dialog).toContainText('API de pagos');
+    await expect(dialog.getByRole('button', { name: 'DEV-1 API de pagos' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Quitar dependencia con DEV-1' })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Agregar dependencia' })).toHaveCount(0);
 });

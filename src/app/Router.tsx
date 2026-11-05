@@ -60,6 +60,7 @@ const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPag
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
+const TimeReportPage = page(() => import("../features/activities"), "TimeReportPage");
 
 export const AppRouter: React.FC = () => {
   return (
@@ -105,6 +106,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />
+                    <Route path={ROUTES.TIME_REPORT} element={<TimeReportPage />} />
                     <Route path={ROUTES.ASSOCIATES} element={<AssociatesPage />} />
                     <Route path={ROUTES.ASSOCIATE_DETAIL} element={<AssociateDetailPage />} />
                     <Route path={ROUTES.DATA_POLICIES} element={<DataPoliciesPage />} />

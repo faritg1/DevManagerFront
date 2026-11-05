@@ -45,6 +45,7 @@ export const ROUTES = {
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
     MY_ACTIVITIES: '/my-activities',
+    TIME_REPORT: '/activities/time-report',
 } as const;
 
 export const NAV_SECTIONS = {

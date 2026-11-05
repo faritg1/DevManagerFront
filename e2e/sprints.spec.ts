@@ -2,7 +2,7 @@ import { expect, test, type Route } from '@playwright/test';
 import { mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
-const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.create', 'menu.platform.activities.edit'] };
+const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.create', 'menu.platform.activities.edit', 'menu.platform.activities.sprints'] };
 const org = (sprintsEnabled: boolean) =>
     ok({ id: 'o1', name: 'Cooperativa Demo', activitiesSettings: { showOnProjectDetail: true, showMyWorkOnDashboard: true, sprintsEnabled } });
 
@@ -68,4 +68,50 @@ test('filters the backlog by sprint and creates a sprint', async ({ page }) => {
     await expect(page.getByText('Sprint creado')).toBeVisible();
     expect(created).toEqual([{ name: 'Sprint 2', goal: null, startDate: '2026-11-16', endDate: '2026-11-27' }]);
     await expect(filter.locator('option', { hasText: 'Sprint 2' })).toHaveCount(1);
+});
+
+test('without the sprints permission the sprint bar is read-only', async ({ page }) => {
+    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.edit'] }, {
+        'GET /organizations/me': org(true),
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok(items),
+        'GET /projects/p1/sprints': ok([sprint]),
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1');
+
+    await page.getByLabel('Sprint', { exact: true }).selectOption('s1');
+    const bar = page.getByRole('region', { name: 'Sprint seleccionado' });
+    await expect(bar).toContainText('0 de 1 hechas');
+    // Only the read-only burndown remains
+    await expect(bar.getByRole('button')).toHaveText(['Burndown']);
+    await expect(page.getByRole('button', { name: 'Nuevo sprint' })).toHaveCount(0);
+});
+
+test('burndown plots remaining estimate hours per day against the ideal line', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-11-05T12:00:00'));
+    const sprintItems = [
+        { ...items[0], status: 5, completedAt: '2026-11-03T15:00:00Z' },
+        { ...base, id: 'w3', key: 'DEV-3', number: 3, title: 'Abierta', sprintId: 's1', estimateHours: 6 },
+        { ...base, id: 'w4', key: 'DEV-4', number: 4, title: 'Cancelada', sprintId: 's1', status: 6, estimateHours: 50 },
+    ];
+    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.activities'] }, {
+        'GET /organizations/me': org(true),
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok(sprintItems),
+        'GET /projects/p1/sprints': ok([sprint]),
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1');
+
+    await page.getByLabel('Sprint', { exact: true }).selectOption('s1');
+    await page.getByRole('button', { name: 'Burndown' }).click();
+
+    await expect(page.getByRole('img', { name: 'Burndown de Sprint 1' })).toBeVisible();
+    // 12 days (Nov 2-13); cancelled items do not count; days after today have no actual value
+    const remaining = page.getByRole('dialog').getByRole('table').locator('tbody tr td:nth-child(2)');
+    await expect(remaining).toHaveCount(12);
+    await expect(remaining).toHaveText(['10', '6', '6', '6', '—', '—', '—', '—', '—', '—', '—', '—']);
+    await expect(page.getByRole('dialog').getByRole('table').locator('tbody tr').first().locator('td').nth(2)).toHaveText('10');
+    await expect(page.getByRole('dialog').getByRole('table').locator('tbody tr').last().locator('td').nth(2)).toHaveText('0');
 });

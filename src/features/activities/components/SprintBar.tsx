@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Edit2, Play, Plus } from 'lucide-react';
+import { CheckCircle2, Edit2, LineChart, Play, Plus } from 'lucide-react';
 import {
     SprintStatus, workItemsService, WorkItemStatus, type SprintResponse, type WorkItemResponse,
 } from '../../../shared/api';
@@ -8,6 +8,7 @@ import { formatDate } from '../../../shared/format';
 import { useConfirm } from '../../../shared/hooks';
 import { Badge, Button, Input, Modal, ProgressBar, Textarea } from '../../../shared/ui';
 import { dayOf, SPRINT_STATUS_LABELS } from '../workItemMeta';
+import { SprintBurndown } from './SprintBurndown';
 
 interface Props {
     projectId: string;
@@ -27,6 +28,7 @@ export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canMana
     const toast = useToast();
     const { confirm } = useConfirm();
     const [form, setForm] = useState<SprintResponse | 'new' | null>(null);
+    const [chart, setChart] = useState(false);
 
     if (!selected && !canManage) return null;
 
@@ -64,6 +66,7 @@ export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canMana
                     <span className="text-slate-600 dark:text-slate-400">{done.length} de {mine.length} hechas · {hours(done)} / {hours(mine)} h</span>
                     {showSpent && <span className="text-slate-600 dark:text-slate-400">{spent} h dedicadas</span>}
                     <ProgressBar value={percent} size="sm" variant="success" className="w-32" />
+                    <Button size="sm" variant="ghost" icon={LineChart} onClick={() => setChart(true)}>Burndown</Button>
                     {selected.goal && <span className="w-full truncate text-slate-500 dark:text-slate-400">{selected.goal}</span>}
                 </div>
             )}
@@ -78,6 +81,11 @@ export const SprintBar: React.FC<Props> = ({ projectId, selected, items, canMana
                     </>)}
                     <Button size="sm" icon={Plus} onClick={() => setForm('new')}>Nuevo sprint</Button>
                 </div>
+            )}
+            {selected && (
+                <Modal isOpen={chart} onClose={() => setChart(false)} size="lg" title={`Burndown · ${selected.name}`}>
+                    <div className="p-4"><SprintBurndown sprint={selected} items={items} /></div>
+                </Modal>
             )}
             <SprintFormModal
                 projectId={projectId}

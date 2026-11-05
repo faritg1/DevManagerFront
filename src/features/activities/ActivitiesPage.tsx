@@ -268,7 +268,7 @@ export const ActivitiesPage: React.FC = () => {
                         projectId={project.id}
                         selected={sprints.find((s) => s.id === sprint) ?? null}
                         items={items ?? []}
-                        canManage={canEdit}
+                        canManage={has('menu.platform.activities.sprints') && !readOnly}
                         showSpent={timeTrackingEnabled}
                         onChanged={sprintChanged}
                     />
@@ -347,13 +347,13 @@ export const ActivitiesPage: React.FC = () => {
                     onEdit={canEdit ? (i) => { setSearch({}); openForm(i); } : undefined}
                     sprintName={sprintsEnabled ? (id) => sprints.find((s) => s.id === id)?.name ?? 'Sin sprint' : undefined}
                     timeTracking={timeTrackingEnabled ? {
-                        canLog: has('menu.platform.activities') && !readOnly,
+                        canLog: has('menu.platform.activities.hours') && !readOnly,
                         isAdmin,
                         onSpentChange: (id, spentHours) => setItems((list) => list?.map((i) => (i.id === id ? { ...i, spentHours } : i)) ?? null),
                     } : undefined}
                     dependencies={dependenciesEnabled ? {
                         items: items ?? [],
-                        canEdit,
+                        canEdit: has('menu.platform.activities.dependencies') && !readOnly,
                         onOpenItem: (id) => setSearch({ item: id }),
                         onChange: refreshItems,
                     } : undefined}

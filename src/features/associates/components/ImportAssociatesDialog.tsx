@@ -93,7 +93,7 @@ export const ImportAssociatesDialog: React.FC<Props> = ({ onClose, onImported })
                         <Button variant="outline" icon={Download} onClick={() => exportToCsv([], TEMPLATE_COLUMNS, 'plantilla-asociados')}>
                             Descargar plantilla
                         </Button>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Separado por ";", máximo 1 MB y 1.000 filas.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Separado por ";", máximo 1 MB y 200 filas.</p>
                     </div>
                     <Input
                         label="Archivo CSV"

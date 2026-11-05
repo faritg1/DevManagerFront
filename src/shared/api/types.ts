@@ -719,6 +719,21 @@ export interface CreateAssociateRequest {
   applicationDate?: string;
 }
 
+export interface AssociateImportRow {
+  /** Row as Excel shows it (header = 1). */
+  rowNumber: number;
+  name: string;
+  email: string;
+  errors: string[];
+}
+
+export interface AssociateImportReport {
+  rows: AssociateImportRow[];
+  validCount: number;
+  errorCount: number;
+  imported: number;
+}
+
 export interface TransitionRequest {
   toStatus: AssociateStatus;
   effectiveDate?: string;

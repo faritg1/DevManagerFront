@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
     BASE: "/associates",
     BY_ID: (userId: string) => `/associates/${userId}`,
     TRANSITIONS: (userId: string) => `/associates/${userId}/transitions`,
+    IMPORT: "/associates/import",
+    IMPORT_PREVIEW: "/associates/import/preview",
   },
 
   // Cooperative education

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
+import { Upload, UserPlus } from 'lucide-react';
 import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState, ExportButton } from '../../../shared/ui';
 import { useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
@@ -8,6 +8,7 @@ import { associatesService, usersService } from '../../../shared/api';
 import type { AssociateDto, AssociateStatus, UserResponse } from '../../../shared/api/types';
 import { associateDetailPath } from '../../../shared/config/constants';
 import { DOCUMENT_TYPES, ROLE_LABELS, STATUS_LABELS, STATUS_VARIANTS, errorText, formatDate, needsLocalToast } from '../labels';
+import { ImportAssociatesDialog } from '../components/ImportAssociatesDialog';
 import { AskAiButton } from '../../ai/AskAiButton';
 import type { CsvColumn } from '../../../shared/export';
 
@@ -21,10 +22,12 @@ const EXPORT_COLUMNS: CsvColumn<AssociateDto>[] = [
 ];
 
 export const AssociatesPage: React.FC = () => {
-    const canCreate = usePermission().has('menu.solidarity.associates.create');
+    const { has, isAdmin } = usePermission();
+    const canCreate = has('menu.solidarity.associates.create');
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const createModal = useModal();
+    const importModal = useModal();
     const [items, setItems] = useState<AssociateDto[]>([]);
     const [status, setStatus] = useState<AssociateStatus | ''>('');
     const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +87,7 @@ export const AssociatesPage: React.FC = () => {
             <PageHeader
                 title="Asociados"
                 description="Ciclo de vida de membresía y consentimiento de datos."
-                actions={<><AskAiButton moduleKey="associates" />{canCreate && <Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>}</>}
+                actions={<><AskAiButton moduleKey="associates" />{canCreate && isAdmin && <Button variant="outline" icon={Upload} onClick={importModal.open}>Importar CSV</Button>}{canCreate && <Button icon={UserPlus} onClick={openCreate}>Nuevo asociado</Button>}</>}
             />
 
             <Card padding="none" className="overflow-hidden">
@@ -173,6 +176,7 @@ export const AssociatesPage: React.FC = () => {
                     />
                 </div>
             </Modal>
+            {importModal.isOpen && <ImportAssociatesDialog onClose={importModal.close} onImported={load} />}
         </PageContainer>
     );
 };

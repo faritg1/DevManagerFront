@@ -1,6 +1,6 @@
 import React from 'react';
 import { WorkItemStatus, type SprintResponse, type WorkItemResponse } from '../../../shared/api';
-import { formatDate } from '../../../shared/format';
+import { asUtc, formatDate } from '../../../shared/format';
 import { dayOf } from '../workItemMeta';
 
 interface Point { day: string; ideal: number; remaining: number | null }
@@ -20,7 +20,7 @@ export const burndown = (sprint: SprintResponse, items: WorkItemResponse[], toda
         day,
         ideal: days.length > 1 ? total * (1 - n / (days.length - 1)) : 0,
         remaining: day > today ? null : total - mine
-            .filter((i) => i.status === WorkItemStatus.Done && i.completedAt && new Date(i.completedAt).toLocaleDateString('en-CA') <= day)
+            .filter((i) => i.status === WorkItemStatus.Done && i.completedAt && new Date(asUtc(i.completedAt)).toLocaleDateString('en-CA') <= day)
             .reduce((s, i) => s + size(i), 0),
     }));
     return { points, total, unit: byHours ? 'h' : 'actividades' };

@@ -508,7 +508,7 @@ export const BienestarPage: React.FC = () => {
                         </Select>
                     )}
                     <Select label="Tipo de auxilio *" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
-                        {Object.entries(AID_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        {Object.entries(AID_TYPE_LABEL).filter(([k]) => k !== '3').map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
                     <Select label="Programa" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
                         <option value="">Sin programa</option>

@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from "../endpoints";
 import type {
   AssociateDto,
   AssociateDetailDto,
+  AssociateImportReport,
   AssociateStatus,
   CreateAssociateRequest,
   TransitionRequest,
@@ -24,6 +25,14 @@ export const associatesService = {
 
   async create(data: CreateAssociateRequest): Promise<ApiResponse<AssociateDetailDto>> {
     return apiClient.post<AssociateDetailDto>(API_ENDPOINTS.ASSOCIATES.BASE, data);
+  },
+
+  async previewImport(file: File): Promise<ApiResponse<AssociateImportReport>> {
+    return apiClient.postFile<AssociateImportReport>(API_ENDPOINTS.ASSOCIATES.IMPORT_PREVIEW, file);
+  },
+
+  async importFile(file: File): Promise<ApiResponse<AssociateImportReport>> {
+    return apiClient.postFile<AssociateImportReport>(API_ENDPOINTS.ASSOCIATES.IMPORT, file);
   },
 
   async transition(

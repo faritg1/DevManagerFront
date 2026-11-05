@@ -11,6 +11,7 @@ export interface ApiError {
 }
 
 const TIMEOUT_MS = 30000;
+const UPLOAD_TIMEOUT_MS = 120000;
 
 export const API_URL: string = import.meta.env.VITE_API_URL || "https://devmanagerapi.runasp.net/api";
 
@@ -82,13 +83,17 @@ class ApiClient {
   private async request<T>(method: string, url: string, body?: unknown, timeoutMs = TIMEOUT_MS): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const isForm = body instanceof FormData;
+    const headers = buildHeaders();
+    // The browser sets the multipart Content-Type with its boundary.
+    if (isForm) headers.delete("Content-Type");
 
     let response: Response;
     try {
       response = await fetch(url, {
         method,
-        headers: buildHeaders(),
-        body: body ? JSON.stringify(body) : undefined,
+        headers,
+        body: isForm ? body : body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
     } finally {
@@ -109,6 +114,13 @@ class ApiClient {
 
   post<T>(endpoint: string, body?: unknown, timeoutMs?: number): Promise<ApiResponse<T>> {
     return this.request<T>("POST", `${this.baseUrl}${endpoint}`, body, timeoutMs);
+  }
+
+  /** Sends `file` as the multipart field "file"; a whole import can outlast the default timeout. */
+  postFile<T>(endpoint: string, file: File): Promise<ApiResponse<T>> {
+    const form = new FormData();
+    form.append("file", file);
+    return this.request<T>("POST", `${this.baseUrl}${endpoint}`, form, UPLOAD_TIMEOUT_MS);
   }
 
   put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {

@@ -2,7 +2,7 @@ import { expect, test, type Route } from '@playwright/test';
 import { mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
-const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.comment'] };
+const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.comment', 'menu.platform.activities.hours'] };
 const org = (timeTrackingEnabled: boolean) =>
     ok({ id: 'o1', name: 'Cooperativa Demo', activitiesSettings: { showOnProjectDetail: true, showMyWorkOnDashboard: true, sprintsEnabled: false, timeTrackingEnabled } });
 
@@ -61,4 +61,23 @@ test('logs time on an item and updates the hours spent', async ({ page }) => {
     await expect(dialog).toContainText('Pruebas');
     await expect(dialog).toContainText('9.5 h de 8 h');
     await expect(dialog.getByRole('button', { name: 'Eliminar' })).toHaveCount(1);
+});
+
+test('without the hours permission the Horas tab is read-only', async ({ page }) => {
+    const own = { ...entry, id: 't2', userId: 'u1', userName: 'Ana López' };
+    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.activities'] }, {
+        'GET /organizations/me': org(true),
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([item]),
+        'GET /work-items/w1/time-entries': ok([entry, own]),
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1?item=w1');
+
+    const dialog = page.getByRole('dialog');
+    await page.getByRole('tab', { name: 'Horas' }).click();
+    await expect(dialog).toContainText('Luis Pérez');
+    await expect(dialog).toContainText('Ana López');
+    await expect(dialog.getByRole('button', { name: 'Registrar horas' })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Eliminar' })).toHaveCount(0);
 });

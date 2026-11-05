@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ListTodo } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Clock, ListTodo } from 'lucide-react';
+import { ROUTES } from '../../shared/config/constants';
 import { workItemsService, type MyWorkItemResponse } from '../../shared/api';
 import { formatDate } from '../../shared/format';
 import {
@@ -12,6 +13,7 @@ import { DueStateBadge, workItemLink } from './components/DueStateBadge';
 
 /** Open activities assigned to the current user across their projects, soonest due first. */
 export const MyActivitiesPage: React.FC = () => {
+    const navigate = useNavigate();
     /** undefined = loading, null = failed. */
     const [items, setItems] = useState<MyWorkItemResponse[] | null | undefined>(undefined);
     const [projectId, setProjectId] = useState('');
@@ -34,6 +36,7 @@ export const MyActivitiesPage: React.FC = () => {
                 icon={<ListTodo size={28} className="text-primary" />}
                 title="Mis actividades"
                 description="Actividades abiertas asignadas a ti en todos tus proyectos, las que vencen primero arriba."
+                actions={<Button variant="outline" icon={Clock} onClick={() => navigate(ROUTES.TIME_REPORT)}>Reporte de horas</Button>}
             />
 
             {items === undefined ? (

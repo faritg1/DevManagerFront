@@ -1,4 +1,4 @@
-import { apiClient } from "../client";
+import { API_URL, apiClient, buildHeaders, readApiError } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
   ApiResponse,
@@ -9,6 +9,8 @@ import type {
   SprintResponse,
   TimeEntryRequest,
   TimeEntryResponse,
+  TimeReportQuery,
+  TimeReportResponse,
   WorkItemLinkRequest,
   WorkItemLinksResponse,
   CreateWorkItemRequest,
@@ -22,7 +24,7 @@ import type {
 } from "../types";
 
 const { SUMMARY, MINE, BY_PROJECT, BY_ID, MOVE, COMMENTS, COMMENT, HISTORY, PROPOSALS, PROPOSAL, PROPOSAL_CONFIRM, PROPOSAL_REJECT,
-  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE, TIME_ENTRIES, TIME_ENTRY, LINKS, LINK } = API_ENDPOINTS.WORK_ITEMS;
+  SPRINTS, SPRINT, SPRINT_START, SPRINT_CLOSE, TIME_ENTRIES, TIME_ENTRY, TIME_REPORT, TIME_REPORT_EXPORT, LINKS, LINK } = API_ENDPOINTS.WORK_ITEMS;
 
 /** Actividades de un proyecto: solo las ven sus miembros y los administradores. */
 export const workItemsService = {
@@ -106,6 +108,19 @@ export const workItemsService = {
 
   /** Items this one blocks and is blocked by (readable even when the organization has dependencies off). */
   links: (id: string): Promise<ApiResponse<WorkItemLinksResponse>> => apiClient.get<WorkItemLinksResponse>(LINKS(id)),
+
+  /** Hours of the visible projects with totals; without the reports permission only the caller's own. */
+  timeReport: (query: TimeReportQuery): Promise<ApiResponse<TimeReportResponse>> =>
+    apiClient.get<TimeReportResponse>(TIME_REPORT, { ...query }),
+
+  /** Same filters as timeReport, as the API's CSV file (UTF-8 with BOM). Throws the ApiError on failure. */
+  async exportTimeReport(query: TimeReportQuery): Promise<Blob> {
+    const url = new URL(`${API_URL}${TIME_REPORT_EXPORT}`);
+    Object.entries(query).forEach(([key, value]) => value && url.searchParams.append(key, value));
+    const response = await fetch(url, { headers: buildHeaders() });
+    if (!response.ok) throw await readApiError(response);
+    return response.blob();
+  },
 
   /** Same project only; no self or reverse links; returns the item's links after adding. */
   addLink: (id: string, data: WorkItemLinkRequest): Promise<ApiResponse<WorkItemLinksResponse>> =>

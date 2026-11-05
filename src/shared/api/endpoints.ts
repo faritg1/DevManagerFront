@@ -137,6 +137,8 @@ export const API_ENDPOINTS = {
     SPRINT_CLOSE: (id: string) => `/sprints/${id}/close`,
     TIME_ENTRIES: (id: string) => `/work-items/${id}/time-entries`,
     TIME_ENTRY: (entryId: string) => `/time-entries/${entryId}`,
+    TIME_REPORT: "/work-items/time-report",
+    TIME_REPORT_EXPORT: "/work-items/time-report/export",
     LINKS: (id: string) => `/work-items/${id}/links`,
     LINK: (linkId: string) => `/work-item-links/${linkId}`,
   },

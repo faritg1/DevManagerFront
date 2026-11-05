@@ -1628,6 +1628,43 @@ export interface TimeEntryResponse {
   createdAt: string;
 }
 
+/** Filters of the hours report (dates yyyy-MM-dd); without dates the API uses the current month. */
+export interface TimeReportQuery {
+  from?: string;
+  to?: string;
+  projectId?: string;
+  userId?: string;
+}
+
+export interface TimeReportEntry {
+  id: string;
+  workDate: string;
+  hours: number;
+  note?: string | null;
+  userId: string;
+  userName: string;
+  projectId: string;
+  projectName: string;
+  workItemId: string;
+  workItemKey: string;
+  workItemTitle: string;
+}
+
+export interface TimeReportTotal {
+  id: string;
+  name: string;
+  hours: number;
+}
+
+export interface TimeReportResponse {
+  from: string;
+  to: string;
+  totalHours: number;
+  entries: TimeReportEntry[];
+  byUser: TimeReportTotal[];
+  byProject: TimeReportTotal[];
+}
+
 export interface WorkItemCommentResponse {
   id: string;
   workItemId: string;

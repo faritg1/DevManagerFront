@@ -24,6 +24,8 @@ const education = () => import("../features/education");
 
 const LoginPage = page(auth, "LoginPage");
 const RegisterPage = page(auth, "RegisterPage");
+const ForgotPasswordPage = page(auth, "ForgotPasswordPage");
+const ResetPasswordPage = page(auth, "ResetPasswordPage");
 const DashboardPage = page(() => import("../features/dashboard"), "DashboardPage");
 const CreateProjectPage = page(projects, "CreateProjectPage");
 const ProjectsPage = page(projects, "ProjectsPage");
@@ -74,7 +76,13 @@ export const AppRouter: React.FC = () => {
                 <Route element={<AuthLayout />}>
                   <Route path={ROUTES.LOGIN} element={<LoginPage />} />
                   <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+                  <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
                 </Route>
+              </Route>
+
+              {/* Outside PublicRoute, which would send whoever has a session open to the dashboard */}
+              <Route element={<AuthLayout />}>
+                <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>

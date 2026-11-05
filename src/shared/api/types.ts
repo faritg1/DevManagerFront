@@ -41,6 +41,10 @@ export interface RegisterOrganizationResponse {
   token: string;
 }
 
+export interface ChangePasswordResponse {
+  token: string;
+}
+
 // ============ ORGANIZATIONS ============
 /** 1 CTA, 2 Ahorro y crédito, 3 Multiactiva, 4 Mutual, 5 Fondo de empleados, 6 Otra */
 export type OrganizationEntityType = 1 | 2 | 3 | 4 | 5 | 6;

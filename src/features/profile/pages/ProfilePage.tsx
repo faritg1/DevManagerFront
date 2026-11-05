@@ -14,6 +14,7 @@ import {
   BioCard,
   ProfessionalInfoCard,
   LinksCard,
+  ChangePasswordCard,
   RolesPermissionsCard,
   SkillsSection,
   CertificationsSection,
@@ -27,7 +28,7 @@ import type {
 } from "../../../shared/api/types";
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, impersonation } = useAuth();
   const { showNotification } = useNotification();
   const { catalogs } = useConfig();
 
@@ -169,6 +170,11 @@ export const ProfilePage: React.FC = () => {
             Crear mi Perfil
           </button>
         </div>
+        {!impersonation && (
+          <div className="max-w-md w-full mt-6">
+            <ChangePasswordCard />
+          </div>
+        )}
       </div>
     );
   }
@@ -250,6 +256,7 @@ export const ProfilePage: React.FC = () => {
               effectivePerms={effectivePerms}
               permsLoading={permsLoading}
             />
+            {!impersonation && <ChangePasswordCard />}
           </div>
           <div className="xl:col-span-4 space-y-6">
             <SkillsSection

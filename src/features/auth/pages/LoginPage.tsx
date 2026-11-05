@@ -84,6 +84,10 @@ export const LoginPage: React.FC = () => {
               required
             />
 
+            <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm font-medium text-primary hover:underline self-end">
+              ¿Olvidaste tu contraseña?
+            </Link>
+
             <Button
               type="submit"
               fullWidth

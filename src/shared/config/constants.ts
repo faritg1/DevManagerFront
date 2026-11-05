@@ -1,6 +1,8 @@
 export const ROUTES = {
     LOGIN: '/',
     REGISTER: '/register',
+    FORGOT_PASSWORD: '/recuperar-contrasena',
+    RESET_PASSWORD: '/restablecer-contrasena',
     
     DASHBOARD: '/dashboard',
     

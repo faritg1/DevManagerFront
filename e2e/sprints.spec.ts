@@ -1,6 +1,9 @@
 import { expect, test, type Route } from '@playwright/test';
 import { mockApi, signIn } from './mockApi';
 
+// Burndown days depend on the browser time zone
+test.use({ timezoneId: 'America/Bogota' });
+
 const ok = (data: unknown) => ({ success: true, message: '', data });
 const USER = { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.create', 'menu.platform.activities.edit', 'menu.platform.activities.sprints'] };
 const org = (sprintsEnabled: boolean) =>
@@ -91,7 +94,8 @@ test('without the sprints permission the sprint bar is read-only', async ({ page
 test('burndown plots remaining estimate hours per day against the ideal line', async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-11-05T12:00:00'));
     const sprintItems = [
-        { ...items[0], status: 5, completedAt: '2026-11-03T15:00:00Z' },
+        // API timestamps come without Z: 02:00 UTC on Nov 4 is still Nov 3 in Bogota
+        { ...items[0], status: 5, completedAt: '2026-11-04T02:00:00' },
         { ...base, id: 'w3', key: 'DEV-3', number: 3, title: 'Abierta', sprintId: 's1', estimateHours: 6 },
         { ...base, id: 'w4', key: 'DEV-4', number: 4, title: 'Cancelada', sprintId: 's1', status: 6, estimateHours: 50 },
     ];

@@ -2,7 +2,7 @@ import { Edit2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { workItemsService, type WorkItemCommentResponse, type WorkItemHistoryEntry, type WorkItemResponse } from '../../../shared/api';
 import { useToast } from '../../../shared/context';
-import { formatDate, formatDateTime } from '../../../shared/format';
+import { asUtc, formatDate, formatDateTime } from '../../../shared/format';
 import { useConfirm } from '../../../shared/hooks';
 import { Badge, Button, LoadingBlock, Markdown, Modal } from '../../../shared/ui';
 import { isOverdue, PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VARIANTS, TYPE_LABELS, TYPE_VARIANTS } from '../workItemMeta';
@@ -128,7 +128,7 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
                             ['Vence', formatDate(item.dueDate)],
                             ...(sprintName ? [['Sprint', sprintName(item.sprintId)]] : []),
                             ['Creada', formatDate(item.createdAt)],
-                            ...(item.completedAt ? [['Completada', formatDate(item.completedAt)]] : []),
+                            ...(item.completedAt ? [['Completada', formatDate(asUtc(item.completedAt))]] : []),
                         ] as [string, string, string?][]).map(([k, v, tone]) => (
                             <div key={k} className="min-w-0">
                                 <dt className="text-xs text-slate-500 dark:text-slate-400">{k}</dt>

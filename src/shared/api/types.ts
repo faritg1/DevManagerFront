@@ -1749,3 +1749,88 @@ export interface ConfirmProposalResponse {
   actionId: string;
   created: WorkItemResponse[];
 }
+
+// Control documental
+export type DocumentVersionStatus = "Draft" | "InReview" | "Approved" | "Obsolete";
+
+export interface DocumentFilter {
+  q?: string;
+  type?: string;
+  process?: string;
+  status?: DocumentVersionStatus;
+}
+
+export interface UpdateDocumentRequest {
+  title: string;
+  type: string;
+  process: string;
+  ownerUserId: string;
+  reviewDate: string | null;
+}
+
+export interface CreateDocumentRequest extends UpdateDocumentRequest {
+  code: string;
+}
+
+export interface DocumentListItem {
+  id: string;
+  code: string;
+  title: string;
+  type: string;
+  process: string;
+  ownerUserId: string;
+  ownerName: string | null;
+  reviewDate: string | null;
+  currentVersionId: string | null;
+  currentVersionNumber: number | null;
+  approvedAt: string | null;
+  approvedByName: string | null;
+  /** Draft or InReview; only for whoever sees every version */
+  openVersionStatus: DocumentVersionStatus | null;
+}
+
+export interface DocumentVersion {
+  id: string;
+  versionNumber: number;
+  status: DocumentVersionStatus;
+  changeSummary: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  elaboratedByUserId: string;
+  elaboratedByName: string | null;
+  approvedByName: string | null;
+  approvedAt: string | null;
+  rejectedByName: string | null;
+  rejectedAt: string | null;
+  rejectionComment: string | null;
+  createdAt: string;
+}
+
+export interface DocumentDetail {
+  id: string;
+  code: string;
+  title: string;
+  type: string;
+  process: string;
+  ownerUserId: string;
+  ownerName: string | null;
+  reviewDate: string | null;
+  createdAt: string;
+  /** Newest first, only those the caller may see */
+  versions: DocumentVersion[];
+}
+
+export interface PendingRead {
+  documentId: string;
+  versionId: string;
+  code: string;
+  title: string;
+  versionNumber: number;
+}
+
+export interface DocumentRead {
+  userId: string;
+  userName: string;
+  confirmedAt: string | null;
+}

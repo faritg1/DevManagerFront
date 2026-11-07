@@ -33,5 +33,6 @@ export {
   aiService,
   platformService,
   auditService,
+  documentsService,
   workItemsService,
 } from "./services";

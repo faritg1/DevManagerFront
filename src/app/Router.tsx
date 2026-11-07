@@ -59,7 +59,9 @@ const CompetenciasPage = page(() => import("../features/competencias"), "Compete
 const ReportesSupersolidariaPage = page(() => import("../features/reportes-supersolidaria"), "ReportesSupersolidariaPage");
 const AsistentePage = page(() => import("../features/asistente"), "AsistentePage");
 const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPage");
-const DocumentsPage = page(() => import("../features/documents"), "DocumentsPage");
+const documents = () => import("../features/documents");
+const DocumentsPage = page(documents, "DocumentsPage");
+const DocumentDetailPage = page(documents, "DocumentDetailPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
@@ -123,6 +125,9 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
                     <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
 
+                    <Route element={<PermissionGuard require="menu.platform.documents" />}>
+                      <Route path={ROUTES.DOCUMENT_DETAIL} element={<DocumentDetailPage />} />
+                    </Route>
                     <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
                     </Route>

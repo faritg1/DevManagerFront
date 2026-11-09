@@ -525,7 +525,7 @@ export const ReportsPage: React.FC = () => {
                     <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
                       {utilization.unallocatedEmployees} miembros sin proyectos asignados
                     </p>
-                    <p className="text-xs text-amber-600/70 dark:text-amber-500/60">
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
                       Disponibles para nuevas asignaciones
                     </p>
                   </div>

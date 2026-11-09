@@ -174,7 +174,7 @@ export const SkillsSection: React.FC<Props> = ({
                                 ) : (
                                     <>
                                         <Clock className="text-slate-400" size={12} />
-                                        <span className="text-slate-500 dark:text-slate-400">
+                                        <span className="text-slate-600 dark:text-slate-400">
                                             Pendiente de validación
                                         </span>
                                     </>

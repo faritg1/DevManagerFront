@@ -128,7 +128,7 @@ export const ProjectsPage: React.FC = () => {
                 ) : (
                     <>
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
                                 Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
                             </p>
                             <ExportButton rows={filteredProjects} columns={EXPORT_COLUMNS} filename="proyectos" />

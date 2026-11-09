@@ -33,7 +33,7 @@ export const PermissionsPage: React.FC = () => {
             role="tab"
             aria-selected={tab === key}
             onClick={() => setSearchParams(key === "history" ? { tab: "history" } : {})}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === key ? "border-primary text-primary-600 dark:text-primary" : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === key ? "border-primary text-primary-600 dark:text-primary" : "border-transparent text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
           >
             {label}
           </button>

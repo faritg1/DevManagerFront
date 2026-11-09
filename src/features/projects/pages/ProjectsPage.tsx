@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, FolderOpen, AlertCircle } from 'lucide-react';
-import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Button, buttonClasses, Input, PageContainer, PageHeader, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_COMPLEXITY_LABELS, type ProjectResponse } from '../../../shared/api/types';
@@ -82,10 +82,8 @@ export const ProjectsPage: React.FC = () => {
                             />
                         </div>
                         {canCreate && (
-                            <Link to={ROUTES.CREATE_PROJECT}>
-                                <Button icon={Plus}>
-                                    Nuevo Proyecto
-                                </Button>
+                            <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses()}>
+                                <Plus size={16} aria-hidden="true" />Nuevo Proyecto
                             </Link>
                         )}
                     </div></>}
@@ -127,8 +125,8 @@ export const ProjectsPage: React.FC = () => {
                         title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
                         description={searchQuery ? 'Intenta con otros términos de búsqueda.' : canCreate ? 'Crea tu primer proyecto para comenzar.' : undefined}
                         action={!searchQuery && canCreate && (
-                            <Link to={ROUTES.CREATE_PROJECT}>
-                                <Button icon={Plus}>Crear Proyecto</Button>
+                            <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses()}>
+                                <Plus size={16} aria-hidden="true" />Crear Proyecto
                             </Link>
                         )}
                     />

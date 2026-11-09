@@ -402,7 +402,7 @@ export const OrganosPage: React.FC = () => {
                         </button>
                         <Badge variant="purple">{BODY_TYPE_LABEL[selected.type] ?? selected.type}</Badge>
                     </div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">{selected.name}</h2>
+                    <h2 className="text-xl font-extrabold text-slate-900 dark:text-white mb-1">{selected.name}</h2>
                     <p className="text-sm text-slate-500 mb-6 dark:text-slate-400">
                         Constituido: {formatDate(selected.constitutionDate)}
                     </p>

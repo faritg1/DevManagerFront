@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { StatCard, Badge, Button, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { StatCard, Badge, Button, buttonClasses, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService, workItemsService } from '../../../shared/api';
 import { useAuth } from '../../../shared/context';
@@ -85,8 +85,8 @@ export const DashboardPage: React.FC = () => {
                 title={user?.name ? `Hola, ${user.name.split(' ')[0]}` : 'Dashboard General'}
                 description="Resumen general de tu organización y proyectos."
                 actions={canCreateProject && (
-                    <Link to={ROUTES.CREATE_PROJECT}>
-                        <Button icon={Plus}>Nuevo Proyecto</Button>
+                    <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses()}>
+                        <Plus size={16} aria-hidden="true" />Nuevo Proyecto
                     </Link>
                 )}
             />
@@ -223,8 +223,8 @@ export const DashboardPage: React.FC = () => {
                             title="No hay proyectos"
                             description={canCreateProject ? 'Comienza creando tu primer proyecto.' : undefined}
                             action={canCreateProject && (
-                                <Link to={ROUTES.CREATE_PROJECT}>
-                                    <Button icon={Plus}>Crear Proyecto</Button>
+                                <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses()}>
+                                    <Plus size={16} aria-hidden="true" />Crear Proyecto
                                 </Link>
                             )}
                         />

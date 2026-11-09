@@ -46,7 +46,7 @@ export const LoginPage: React.FC = () => {
             <Hexagon fill="currentColor" className="w-full h-full" />
           </div>
           <div>
-            <h1 className="text-slate-900 dark:text-white text-3xl sm:text-4xl font-black leading-tight tracking-tight mb-2">
+            <h1 className="text-slate-900 dark:text-white text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-2">
               Bienvenido de vuelta
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-base">

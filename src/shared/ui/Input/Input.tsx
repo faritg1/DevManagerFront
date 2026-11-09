@@ -1,10 +1,10 @@
 import React, { forwardRef, useId, useState } from 'react';
-import { Eye, EyeOff, LucideIcon } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LucideIcon } from 'lucide-react';
 import { SELECT_CLASS, TEXTAREA_CLASS } from '../formStyles';
 
-const LABEL_CLASS = 'text-slate-700 dark:text-white text-sm font-bold';
+const LABEL_CLASS = 'text-slate-700 dark:text-slate-200 text-sm font-semibold';
 // Important so it beats the base border color of the shared select/textarea classes.
-const ERROR_BORDER = '!border-rose-500 focus:ring-rose-500';
+const ERROR_BORDER = '!border-rose-600 dark:!border-rose-400 focus:ring-rose-600/30';
 
 interface FieldProps {
     label?: string;
@@ -66,11 +66,15 @@ const useField = (id: string | undefined, { error, hint }: FieldProps, described
 const Field: React.FC<FieldProps & { controlId: string; messageId: string; children: React.ReactNode }> = ({
     label, error, hint, controlId, messageId, children,
 }) => (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-1.5 w-full">
         {label && <label htmlFor={controlId} className={LABEL_CLASS}>{label}</label>}
         {children}
-        {error && <span id={messageId} className="text-rose-500 text-xs font-medium">{error}</span>}
-        {hint && !error && <span id={messageId} className="text-slate-500 dark:text-slate-400 text-xs">{hint}</span>}
+        {error && (
+            <span id={messageId} className="flex items-start gap-1 text-rose-600 dark:text-rose-400 text-xs font-medium">
+                <AlertCircle size={14} className="mt-px shrink-0" aria-hidden="true" />{error}
+            </span>
+        )}
+        {hint && !error && <span id={messageId} className="text-slate-600 dark:text-slate-400 text-xs">{hint}</span>}
     </div>
 );
 
@@ -81,8 +85,8 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 const sizeStyles = {
-    sm: 'h-9 text-sm',
-    md: 'h-12 text-base',
+    sm: 'h-10 [@media(pointer:coarse)]:h-11 text-sm',
+    md: 'h-11 text-base',
     lg: 'h-14 text-lg',
 };
 
@@ -116,12 +120,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                     {...aria}
                     className={`
                         w-full rounded-xl border
-                        ${shownError ? ERROR_BORDER : 'border-slate-300 dark:border-border-dark focus:ring-primary focus:border-primary dark:focus:border-primary'}
+                        ${shownError ? ERROR_BORDER : 'border-control-border dark:border-input-border focus:ring-primary/30 focus:border-primary dark:focus:border-primary'}
                         bg-slate-50 dark:bg-background-dark
                         text-slate-900 dark:text-white
-                        placeholder:text-slate-500 dark:placeholder:text-slate-500
+                        placeholder:text-slate-500 dark:placeholder:text-slate-400
                         ${paddingLeft} ${paddingRight}
-                        outline-none focus:ring-1 transition-all
+                        outline-none focus:ring-2 transition-[border-color,box-shadow] duration-[120ms] ease-standard
                         disabled:opacity-50 disabled:cursor-not-allowed
                         ${sizeStyles[inputSize]}
                         ${className}
@@ -146,7 +150,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                         aria-label={revealed ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                         aria-pressed={revealed}
                         aria-controls={controlId}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex size-9 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex size-9 [@media(pointer:coarse)]:size-11 [@media(pointer:coarse)]:right-0 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         {revealed ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                     </button>

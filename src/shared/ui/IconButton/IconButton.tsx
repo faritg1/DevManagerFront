@@ -10,9 +10,9 @@ interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElem
 }
 
 const variantStyles = {
-    default: 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5',
-    primary: 'text-primary hover:bg-primary/10',
-    danger: 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/10',
+    default: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5',
+    primary: 'text-primary-600 hover:bg-primary/10 dark:text-primary',
+    danger: 'text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/10',
 };
 
 /** Botón de solo icono (acciones de fila, barras compactas) con tooltip y nombre accesible. */
@@ -31,7 +31,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
         aria-label={label}
         title={label}
         disabled={disabled || isLoading}
-        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 ${variantStyles[variant]} ${className}`}
+        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors duration-[120ms] ease-standard [@media(pointer:coarse)]:size-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 ${variantStyles[variant]} ${className}`}
         {...props}
     >
         {isLoading ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Icon size={16} aria-hidden="true" />}

@@ -18,7 +18,7 @@ export const AuthCard: React.FC<Props> = ({ title, subtitle, children }) => (
           <Hexagon fill="currentColor" className="w-full h-full" />
         </div>
         <div>
-          <h1 className="text-slate-900 dark:text-white text-3xl font-black leading-tight tracking-tight mb-2">{title}</h1>
+          <h1 className="text-slate-900 dark:text-white text-3xl font-extrabold leading-tight tracking-tight mb-2">{title}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-base">{subtitle}</p>
         </div>
       </div>

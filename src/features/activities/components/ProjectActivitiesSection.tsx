@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { KanbanSquare } from 'lucide-react';
 import { workItemsService, type WorkItemSummaryResponse } from '../../../shared/api';
 import { useActivitiesSettings, usePermission } from '../../../shared/hooks';
-import { Badge, Button, Card } from '../../../shared/ui';
+import { Badge, buttonClasses, Card } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { STATUS_LABELS, STATUS_ORDER, STATUS_VARIANTS } from '../workItemMeta';
 import { ProgressMeter } from './ProjectProgress';
@@ -30,8 +30,8 @@ export const ProjectActivitiesSection: React.FC<{ projectId: string }> = ({ proj
     if (!allowed || !showOnProjectDetail || !summary || (summary.total === 0 && !canCreate)) return null;
 
     const board = (
-        <Link to={`${ROUTES.ACTIVITIES}/${projectId}`}>
-            <Button variant="outline" size="sm" icon={KanbanSquare}>Ver tablero</Button>
+        <Link to={`${ROUTES.ACTIVITIES}/${projectId}`} className={buttonClasses('outline', 'sm')}>
+            <KanbanSquare size={14} aria-hidden="true" />Ver tablero
         </Link>
     );
 

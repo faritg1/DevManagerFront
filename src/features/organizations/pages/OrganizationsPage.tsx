@@ -189,11 +189,11 @@ export const OrganizationsPage: React.FC = () => {
             <Card className="mb-6">
                 <div className="flex flex-col gap-6 md:flex-row md:items-center">
                     <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-400 text-2xl font-black text-white shadow-lg">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-400 text-2xl font-extrabold text-white shadow-lg">
                             {org.name.trim().charAt(0).toUpperCase() || 'O'}
                         </div>
                         <div className="min-w-0">
-                            <h2 className="truncate text-xl font-black text-slate-900 dark:text-white sm:text-2xl">{org.name}</h2>
+                            <h2 className="truncate text-xl font-extrabold text-slate-900 dark:text-white sm:text-2xl">{org.name}</h2>
                             <div className="mt-2 flex flex-wrap items-center gap-2">
                                 <Badge variant={org.isActive ? 'success' : 'default'} dot>
                                     {org.isActive ? 'Activa' : 'Inactiva'}

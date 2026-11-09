@@ -57,7 +57,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {before && <div className="mb-4">{before}</div>}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
-                <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                     {icon}
                     <span className="min-w-0 break-words">{title}</span>
                 </h1>

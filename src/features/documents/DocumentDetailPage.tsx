@@ -209,16 +209,13 @@ export const DocumentDetailPage: React.FC = () => {
                                             </p>
                                         )}
                                     </div>
-                                    <div className="grid shrink-0 grid-cols-2 gap-2 [&>*]:w-full [&>*:last-child:nth-child(odd)]:col-span-2 sm:flex sm:flex-wrap sm:[&>*]:w-auto lg:justify-end">
-                                        <Button variant="outline" size="sm" icon={Download} aria-label={`Descargar v${v.versionNumber}`} isLoading={busy === `file-${v.id}`} onClick={() => download(v)}>
-                                            Descargar
-                                        </Button>
-                                        {canCreate && v.status === 'Draft' && <>
-                                            <Button variant="outline" size="sm" icon={Pencil} aria-label={`Corregir v${v.versionNumber}`} onClick={() => setVersionForm(v)}>Corregir</Button>
+                                    {/* Primary actions first in the DOM: on top on mobile and leftmost on desktop, so visual order matches focus order. */}
+                                    <div className="grid shrink-0 grid-cols-2 gap-2 [&>*]:w-full [&>*:first-child]:col-span-2 [&>*:last-child:nth-child(even)]:col-span-2 sm:flex sm:flex-wrap sm:[&>*]:w-auto lg:justify-end">
+                                        {canCreate && v.status === 'Draft' && (
                                             <Button size="sm" icon={Send} isLoading={busy === `submit-${v.id}`} onClick={() => act(`submit-${v.id}`, () => documentsService.submit(id, v.id), 'Versión enviada a revisión')}>
                                                 Enviar a revisión
                                             </Button>
-                                        </>}
+                                        )}
                                         {canApprove && !impersonating && v.status === 'InReview' && <>
                                             {v.elaboratedByUserId !== user?.id && (
                                                 <Button variant="success" size="sm" icon={CheckCircle2} aria-label={`Aprobar v${v.versionNumber}`} isLoading={busy === `approve-${v.id}`} onClick={() => approve(v)}>
@@ -233,6 +230,12 @@ export const DocumentDetailPage: React.FC = () => {
                                             <Button size="sm" icon={CheckCircle2} isLoading={busy === 'read'} onClick={() => act('read', () => documentsService.confirmRead(id, v.id), 'Lectura confirmada')}>
                                                 Confirmar lectura
                                             </Button>
+                                        )}
+                                        <Button variant="outline" size="sm" icon={Download} aria-label={`Descargar v${v.versionNumber}`} isLoading={busy === `file-${v.id}`} onClick={() => download(v)}>
+                                            Descargar
+                                        </Button>
+                                        {canCreate && v.status === 'Draft' && (
+                                            <Button variant="outline" size="sm" icon={Pencil} aria-label={`Corregir v${v.versionNumber}`} onClick={() => setVersionForm(v)}>Corregir</Button>
                                         )}
                                     </div>
                                 </li>
@@ -293,8 +296,8 @@ export const DocumentDetailPage: React.FC = () => {
                 onSubmit={reject}
                 title={`Rechazar versión ${rejecting?.versionNumber ?? ''}`}
                 footer={<>
-                    <Button variant="ghost" onClick={() => setRejecting(null)}>Cancelar</Button>
                     <Button type="submit" variant="danger" isLoading={busy === 'reject'}>Rechazar</Button>
+                    <Button variant="ghost" onClick={() => setRejecting(null)}>Cancelar</Button>
                 </>}
             >
                 <Textarea label="Comentario" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={500} rows={3} required />

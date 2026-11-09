@@ -47,7 +47,7 @@ const ToastViewport: React.FC<{ notifications: Notification[]; leaving: Readonly
     <div
         aria-live="polite"
         aria-label="Notificaciones"
-        className="fixed bottom-4 inset-x-4 sm:bottom-auto sm:top-4 sm:inset-x-auto sm:right-4 sm:w-96 z-[100] flex flex-col gap-2 sm:gap-3 pointer-events-none"
+        className="fixed top-[4.25rem] inset-x-4 sm:top-4 sm:inset-x-auto sm:right-4 sm:w-96 z-[100] flex flex-col gap-2 sm:gap-3 pointer-events-none"
     >
         {notifications.map(n => {
             const { icon: Icon, accent } = TOAST_STYLES[n.type];

@@ -65,8 +65,8 @@ export const DistributeDialog: React.FC<{ documentId: string; onClose: () => voi
             onSubmit={save}
             title="Distribuir documento"
             footer={<>
-                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
                 <Button type="submit" isLoading={saving} disabled={userIds.size + roleIds.size === 0}>Distribuir</Button>
+                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
             </>}
         >
             {!users ? <LoadingBlock label="Cargando destinatarios…" /> : (

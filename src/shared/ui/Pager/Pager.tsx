@@ -11,7 +11,7 @@ export const Pager: React.FC<{ pager: PagedFilter<unknown>; className?: string }
     const from = (page - 1) * pageSize + 1;
     const to = Math.min(page * pageSize, total);
     return (
-        <nav aria-label="Paginación" className={`flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-500 dark:border-border-dark dark:text-slate-400 ${className}`}>
+        <nav aria-label="Paginación" className={`flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600 dark:border-border-dark dark:text-slate-400 ${className}`}>
             <p aria-live="polite">Mostrando {from}–{to} de {total}</p>
             <div className="flex gap-2">
                 <Button variant="outline" size="sm" icon={ChevronLeft} disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</Button>

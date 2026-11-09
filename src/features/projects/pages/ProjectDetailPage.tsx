@@ -25,7 +25,7 @@ import {
 } from '../../../shared/api/types';
 
 import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
-import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
+import { getProjectTint, getProjectInitials } from '../utils/projectAvatar';
 import { formatDate as formatLongDate } from '../../../shared/format';
 
 import { ProjectActivitiesSection } from '../../activities/components/ProjectActivitiesSection';
@@ -200,7 +200,7 @@ export const ProjectDetailPage: React.FC = () => {
             <PageHeader
                 backTo={ROUTES.PROJECTS}
                 icon={
-                    <span className={`size-12 rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0`} aria-hidden="true">
+                    <span className={`size-12 rounded-xl ${getProjectTint(project.name)} flex items-center justify-center font-bold text-lg shrink-0`} aria-hidden="true">
                         {getProjectInitials(project.name)}
                     </span>
                 }

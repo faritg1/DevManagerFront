@@ -5,7 +5,6 @@ interface AvatarProps {
     alt?: string;
     name?: string;
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-    gradient?: string;
     className?: string;
 }
 
@@ -31,7 +30,6 @@ export const Avatar: React.FC<AvatarProps> = ({
     alt = 'Avatar',
     name,
     size = 'md',
-    gradient = 'from-primary to-primary-dark',
     className = '',
 }) => {
     if (src) {
@@ -49,9 +47,9 @@ export const Avatar: React.FC<AvatarProps> = ({
             className={`
                 ${sizeStyles[size]} 
                 shrink-0 rounded-full 
-                bg-gradient-to-br ${gradient}
+                bg-primary-600
                 flex items-center justify-center 
-                text-white font-bold
+                text-white font-semibold
                 ${className}
             `}
         >

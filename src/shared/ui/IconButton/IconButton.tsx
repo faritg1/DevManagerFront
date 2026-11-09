@@ -1,5 +1,6 @@
 import React from 'react';
 import { Loader2, type LucideIcon } from 'lucide-react';
+import { TD_ACTIONS_CLASS } from '../tableStyles';
 
 interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
     icon: LucideIcon;
@@ -40,7 +41,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
 /** Celda de acciones de una tabla: alineada a la derecha, sin saltos de línea y sin propagar el clic a la fila. */
 export const TableActions: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-    <td className={`w-px whitespace-nowrap px-4 py-2 text-right ${className}`} onClick={(e) => e.stopPropagation()}>
+    <td className={`w-px whitespace-nowrap px-4 py-2 text-right ${TD_ACTIONS_CLASS} ${className}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-end gap-1">{children}</div>
     </td>
 );

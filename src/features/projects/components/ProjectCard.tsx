@@ -6,7 +6,7 @@ import { Badge, type BadgeVariant } from '../../../shared/ui';
 import { ProjectStatus, PROJECT_STATUS_LABELS, type ProjectResponse } from '../../../shared/api/types';
 import { formatDate } from '../../../shared/format';
 import { getComplexityConfig } from '../utils/complexityConfig';
-import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
+import { getProjectTint, getProjectInitials } from '../utils/projectAvatar';
 
 const STATUS_VARIANTS: Record<ProjectStatus, BadgeVariant> = {
     [ProjectStatus.Draft]: 'default',
@@ -27,7 +27,7 @@ export const ProjectCard: React.FC<{ project: ProjectResponse }> = ({ project })
             <div className="flex min-w-0 items-start gap-4">
                 <span
                     aria-hidden="true"
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} text-lg font-bold text-white shadow-lg`}
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${getProjectTint(project.name)} text-lg font-bold`}
                 >
                     {getProjectInitials(project.name)}
                 </span>

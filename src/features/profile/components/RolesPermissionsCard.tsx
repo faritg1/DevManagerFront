@@ -61,7 +61,7 @@ export const RolesPermissionsCard: React.FC<Props> = ({ effectivePerms, permsLoa
                                 aria-controls={detailId}
                                 disabled={count === 0}
                                 onClick={() => setOpen((v) => !v)}
-                                className="flex shrink-0 items-center gap-1.5 self-start rounded-lg px-2 py-1 text-sm font-medium text-primary hover:bg-primary/10 disabled:cursor-default disabled:text-slate-500 disabled:hover:bg-transparent sm:self-auto"
+                                className="flex shrink-0 items-center gap-1.5 self-start rounded-lg px-2 py-1 text-sm font-medium text-primary-600 dark:text-primary hover:bg-primary/10 disabled:cursor-default disabled:text-slate-500 disabled:hover:bg-transparent sm:self-auto"
                             >
                                 {count} {count === 1 ? 'permiso' : 'permisos'}
                                 {count > 0 && <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />}

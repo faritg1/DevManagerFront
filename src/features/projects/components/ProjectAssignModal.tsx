@@ -132,7 +132,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
       onClose={onClose}
       onSubmit={handleAssign}
       title={assignment ? `Reasignar puesto de ${assignment.userName}` : "Asignar Miembro al Proyecto"}
-      icon={<UserPlus className="text-emerald-500" size={20} />}
+      icon={<UserPlus className="text-emerald-700 dark:text-emerald-400" size={20} />}
       size="lg"
       footer={
         <>
@@ -199,7 +199,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
                   {user.roleName}
                 </Badge>
                 {selectedUserId === user.id && (
-                  <CheckCircle2 className="text-primary shrink-0" size={20} aria-hidden="true" />
+                  <CheckCircle2 className="text-primary-600 dark:text-primary shrink-0" size={20} aria-hidden="true" />
                 )}
               </label>
             ))}

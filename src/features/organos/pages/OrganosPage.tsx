@@ -365,7 +365,7 @@ export const OrganosPage: React.FC = () => {
     if (error && !selected) {
         return (
             <div className="flex flex-col items-center justify-center h-full py-20">
-                <AlertCircle className="w-10 h-10 text-rose-500 mb-4" />
+                <AlertCircle className="w-10 h-10 text-rose-600 dark:text-rose-400 mb-4" />
                 <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">{error}</p>
                 <Button variant="outline" onClick={loadBodies}>Reintentar</Button>
             </div>
@@ -396,7 +396,7 @@ export const OrganosPage: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={() => setSelected(null)}
-                            className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary dark:text-slate-400"
+                            className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary-600 dark:hover:text-primary dark:text-slate-400"
                         >
                             <ChevronLeft size={16} /> Volver
                         </button>
@@ -649,7 +649,7 @@ export const OrganosPage: React.FC = () => {
                 onClose={() => setConveneOpen(false)}
                 onSubmit={handleConvene}
                 title="Convocar Asamblea"
-                icon={<Building2 className="text-primary" size={20} />}
+                icon={<Building2 className="text-primary-600 dark:text-primary" size={20} />}
                 size="lg"
                 footer={
                     <>
@@ -674,7 +674,7 @@ export const OrganosPage: React.FC = () => {
                 isOpen={!!assembly}
                 onClose={() => setAssembly(null)}
                 title="Detalle de la Asamblea"
-                icon={<Building2 className="text-primary" size={20} />}
+                icon={<Building2 className="text-primary-600 dark:text-primary" size={20} />}
                 size="2xl"
                 footer={<Button variant="outline" onClick={() => setAssembly(null)}>Cerrar</Button>}
             >
@@ -726,7 +726,7 @@ export const OrganosPage: React.FC = () => {
                                     </Select>
                                 )}
                                 {hasVoted ? (
-                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                    <p className="text-emerald-700 dark:text-emerald-400 font-bold">
                                         {voterId ? 'Este asociado ya votó en esta asamblea.' : 'Ya registraste tu voto en esta asamblea.'}
                                     </p>
                                 ) : (

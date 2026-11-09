@@ -178,9 +178,9 @@ export const ProjectApplicationsSection: React.FC<ProjectApplicationsSectionProp
         title={reviewAction === "approve" ? "Aprobar Postulación" : "Rechazar Postulación"}
         icon={
           reviewAction === "approve" ? (
-            <CheckCircle2 className="text-emerald-500" size={20} />
+            <CheckCircle2 className="text-emerald-700 dark:text-emerald-400" size={20} />
           ) : (
-            <XCircle className="text-rose-500" size={20} />
+            <XCircle className="text-rose-600 dark:text-rose-400" size={20} />
           )
         }
         size="md"

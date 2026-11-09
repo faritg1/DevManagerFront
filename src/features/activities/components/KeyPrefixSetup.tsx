@@ -31,7 +31,7 @@ export const KeyPrefixSetup: React.FC<Props> = ({ projectId, canSet, onSaved }) 
     return (
         <Card className="mb-4 border-amber-300 dark:border-amber-500/40">
             <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 shrink-0 text-amber-500" size={20} aria-hidden="true" />
+                <AlertTriangle className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" size={20} aria-hidden="true" />
                 <div className="min-w-0 flex-1">
                     <p className="font-bold text-slate-900 dark:text-white">Este proyecto aún no tiene prefijo de claves</p>
                     {canSet ? (

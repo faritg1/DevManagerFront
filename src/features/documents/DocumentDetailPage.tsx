@@ -209,7 +209,7 @@ export const DocumentDetailPage: React.FC = () => {
                                             </p>
                                         )}
                                     </div>
-                                    <div className="grid shrink-0 grid-cols-2 gap-2 [&>*]:w-full sm:flex sm:flex-wrap sm:[&>*]:w-auto lg:justify-end">
+                                    <div className="grid shrink-0 grid-cols-2 gap-2 [&>*]:w-full [&>*:last-child:nth-child(odd)]:col-span-2 sm:flex sm:flex-wrap sm:[&>*]:w-auto lg:justify-end">
                                         <Button variant="outline" size="sm" icon={Download} aria-label={`Descargar v${v.versionNumber}`} isLoading={busy === `file-${v.id}`} onClick={() => download(v)}>
                                             Descargar
                                         </Button>

@@ -116,7 +116,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ label, items }) => {
                                 onClick={() => { close(); onSelect(); }}
                                 className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 outline-none ${
                                     danger
-                                        ? 'text-rose-500 hover:bg-rose-50 focus:bg-rose-50 dark:hover:bg-rose-500/10 dark:focus:bg-rose-500/10'
+                                        ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 focus:bg-rose-50 dark:hover:bg-rose-500/10 dark:focus:bg-rose-500/10'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 focus:bg-slate-100 dark:hover:bg-background-dark dark:focus:bg-background-dark'
                                 }`}
                             >

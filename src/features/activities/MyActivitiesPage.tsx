@@ -70,7 +70,7 @@ export const MyActivitiesPage: React.FC = () => {
                                     <tr key={i.id} className={TR_CLASS}>
                                         <td className={`${TD_CLASS} font-mono text-xs font-semibold`}>{i.key}</td>
                                         <td className={TD_CLASS}>
-                                            <Link to={workItemLink(i)} className={`${TD_TRUNCATE_CLASS} font-medium text-slate-900 hover:text-primary hover:underline dark:text-white`} title={i.title}>
+                                            <Link to={workItemLink(i)} className={`${TD_TRUNCATE_CLASS} font-medium text-slate-900 hover:text-primary-600 dark:hover:text-primary hover:underline dark:text-white`} title={i.title}>
                                                 {i.title}
                                             </Link>
                                             <span className="mt-1 flex"><Badge variant={TYPE_VARIANTS[i.type]}>{TYPE_LABELS[i.type]}</Badge></span>

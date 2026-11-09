@@ -64,7 +64,7 @@ export const SuperAdminPage: React.FC = () => {
             <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
                 <Card padding="none" className="lg:col-span-2">
                     <div className="flex items-center gap-2 p-6 pb-3">
-                        <Building2 className="text-primary" size={20} aria-hidden="true" />
+                        <Building2 className="text-primary-600 dark:text-primary" size={20} aria-hidden="true" />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Organizaciones</h2>
                     </div>
                     <div className="px-6 pb-4">

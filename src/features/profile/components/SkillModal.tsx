@@ -90,7 +90,7 @@ export const SkillModal: React.FC<Props> = ({
                         onSelect={(id) => setForm(prev => ({ ...prev, level: id }))}
                     />
                     {requiresEvidence && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1">
                             <Award size={12} />
                             Nivel avanzado: requiere evidencias obligatorias
                         </p>

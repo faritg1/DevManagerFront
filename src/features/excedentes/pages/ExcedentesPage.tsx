@@ -121,7 +121,7 @@ export const ExcedentesPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Distribuciones" value={distributions.length} icon={Coins} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
-                <StatCard title="Aprobadas" value={approvedCount} icon={CheckCircle2} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Aprobadas" value={approvedCount} icon={CheckCircle2} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
                 <StatCard title="Total excedentes" value={currency(totalSurplus)} icon={PiggyBank} iconColor="text-purple-500" iconBgColor="bg-purple-100 dark:bg-purple-500/10" />
             </div>
 
@@ -210,7 +210,7 @@ export const ExcedentesPage: React.FC = () => {
                 onClose={() => setApproving(null)}
                 onSubmit={handleApprove}
                 title="Aprobar en Asamblea General"
-                icon={<CheckCircle2 className="text-emerald-500" size={20} />}
+                icon={<CheckCircle2 className="text-emerald-700 dark:text-emerald-400" size={20} />}
                 size="md"
                 footer={
                     <>

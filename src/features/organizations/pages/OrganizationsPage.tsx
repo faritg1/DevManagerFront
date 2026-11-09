@@ -155,7 +155,7 @@ export const OrganizationsPage: React.FC = () => {
     if (error || !org) {
         return (
             <div className="flex h-full flex-col items-center justify-center py-20">
-                <AlertCircle className="mb-4 h-10 w-10 text-rose-500" />
+                <AlertCircle className="mb-4 h-10 w-10 text-rose-600 dark:text-rose-400" />
                 <p className="mb-2 font-semibold text-slate-700 dark:text-slate-300">
                     {error || 'No se encontró la organización'}
                 </p>
@@ -176,7 +176,7 @@ export const OrganizationsPage: React.FC = () => {
     return (
         <PageContainer>
             <PageHeader
-                icon={<Building2 size={28} className="text-primary" />}
+                icon={<Building2 size={28} className="text-primary-600 dark:text-primary" />}
                 title="Organización"
                 description="Datos de tu entidad solidaria y resumen de su actividad."
                 actions={isAdmin && (
@@ -189,7 +189,7 @@ export const OrganizationsPage: React.FC = () => {
             <Card className="mb-6">
                 <div className="flex flex-col gap-6 md:flex-row md:items-center">
                     <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-400 text-2xl font-extrabold text-white shadow-lg">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary-600 text-2xl font-extrabold text-white">
                             {org.name.trim().charAt(0).toUpperCase() || 'O'}
                         </div>
                         <div className="min-w-0">
@@ -242,7 +242,7 @@ export const OrganizationsPage: React.FC = () => {
                         </div>
                     }
                     icon={UserCheck}
-                    tone="bg-emerald-100 text-emerald-500 dark:bg-emerald-500/10"
+                    tone="bg-emerald-100 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-500/10"
                 />
                 <StatLink
                     to={ROUTES.USERS}
@@ -274,7 +274,7 @@ export const OrganizationsPage: React.FC = () => {
                     value={stats.educationPrograms}
                     hint="Educación cooperativa"
                     icon={GraduationCap}
-                    tone="bg-rose-100 text-rose-500 dark:bg-rose-500/10"
+                    tone="bg-rose-100 text-rose-600 dark:text-rose-400 dark:bg-rose-500/10"
                 />
             </div>
 

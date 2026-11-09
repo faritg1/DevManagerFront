@@ -224,7 +224,7 @@ export const AuditPage: React.FC = () => {
                                                             onClick={() => toggle(e.id)}
                                                             aria-expanded={open}
                                                             aria-controls={`diff-${e.id}`}
-                                                            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                                                            className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary hover:underline"
                                                         >
                                                             {open ? <ChevronDown size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}
                                                             {open ? 'Ocultar' : 'Ver'} {e.changes.length} {e.changes.length === 1 ? 'campo' : 'campos'}

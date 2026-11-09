@@ -278,7 +278,7 @@ export const BienestarPage: React.FC = () => {
             <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{s.reason}</p>
             {s.resolutionNotes && <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{s.resolutionNotes}</p>}
             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                     {currency(s.approvedAmount ?? s.requestedAmount)}
                     {s.approvedAmount != null && s.approvedAmount !== s.requestedAmount && (
                         <span className="text-xs text-slate-500 font-normal dark:text-slate-400"> (solicitado {currency(s.requestedAmount)})</span>
@@ -309,9 +309,9 @@ export const BienestarPage: React.FC = () => {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <StatCard title="Programas" value={programs.length} icon={Heart} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
+                <StatCard title="Programas" value={programs.length} icon={Heart} iconColor="text-rose-600 dark:text-rose-400" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
                 <StatCard title={canApprove ? 'Solicitudes pendientes' : 'Mis solicitudes'} value={canApprove ? pending.length : requests.length} icon={HandCoins} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
-                <StatCard title="Saldo del fondo" value={fund ? currency(fund.availableBalance) : '—'} icon={Wallet} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Saldo del fondo" value={fund ? currency(fund.availableBalance) : '—'} icon={Wallet} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
             </div>
 
             <Card className="mb-6">
@@ -321,7 +321,7 @@ export const BienestarPage: React.FC = () => {
                 </div>
                 {fund ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Saldo disponible</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(fund.availableBalance)}</p></div>
+                        <div><p className="text-xs text-slate-500 dark:text-slate-400">Saldo disponible</p><p className="font-bold text-emerald-700 dark:text-emerald-400">{currency(fund.availableBalance)}</p></div>
                         <div><p className="text-xs text-slate-500 dark:text-slate-400">Aporte del período</p><p className="font-bold">{currency(fund.contribution)}</p></div>
                         <div><p className="text-xs text-slate-500 dark:text-slate-400">Saldo trasladado</p><p className="font-bold">{currency(fund.carriedOver)}</p></div>
                         <div><p className="text-xs text-slate-500 dark:text-slate-400">Total desembolsado</p><p className="font-bold">{currency(fund.totalDisbursed)}</p></div>
@@ -347,7 +347,7 @@ export const BienestarPage: React.FC = () => {
             <Card padding="none" className="overflow-hidden mb-6">
                 <div className={`${TD_CLASS} border-b border-slate-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
                     <div className="flex items-center gap-2">
-                        <Heart className="text-rose-500" size={20} />
+                        <Heart className="text-rose-600 dark:text-rose-400" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programas de Bienestar</h2>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -445,7 +445,7 @@ export const BienestarPage: React.FC = () => {
                                             {a.requiresRepayment && <> · Reintegro {formatDate(a.repaymentDueDate)}</>}
                                         </p>
                                     </div>
-                                    <p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(a.amount)}</p>
+                                    <p className="font-bold text-emerald-700 dark:text-emerald-400">{currency(a.amount)}</p>
                                 </div>
                             ))}
                         </div>
@@ -458,7 +458,7 @@ export const BienestarPage: React.FC = () => {
                 onClose={() => setProgramOpen(false)}
                 onSubmit={handleCreateProgram}
                 title="Nuevo Programa de Bienestar"
-                icon={<Heart className="text-rose-500" size={20} />}
+                icon={<Heart className="text-rose-600 dark:text-rose-400" size={20} />}
                 size="lg"
                 footer={
                     <>
@@ -527,7 +527,7 @@ export const BienestarPage: React.FC = () => {
                 onClose={() => setResolving(null)}
                 onSubmit={handleResolve}
                 title={resolving?.action === 'aprobar' ? 'Aprobar solicitud' : resolving?.action === 'rechazar' ? 'Rechazar solicitud' : 'Entregar auxilio'}
-                icon={resolving?.action === 'rechazar' ? <XCircle className="text-rose-500" size={20} /> : <CheckCircle2 className="text-emerald-500" size={20} />}
+                icon={resolving?.action === 'rechazar' ? <XCircle className="text-rose-600 dark:text-rose-400" size={20} /> : <CheckCircle2 className="text-emerald-700 dark:text-emerald-400" size={20} />}
                 size="md"
                 footer={
                     <>

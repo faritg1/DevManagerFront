@@ -151,7 +151,7 @@ export const ReportsPage: React.FC = () => {
     return (
       <div className="p-6 md:p-10 flex flex-col items-center justify-center py-20">
         <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-          <AlertTriangle className="w-10 h-10 text-rose-500" />
+          <AlertTriangle className="w-10 h-10 text-rose-600 dark:text-rose-400" />
         </div>
         <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">
           {error || "No hay datos de reportes disponibles"}
@@ -180,7 +180,7 @@ export const ReportsPage: React.FC = () => {
   return (
     <PageContainer className="space-y-6">
       <PageHeader
-        icon={<BarChart2 size={28} className="text-primary" />}
+        icon={<BarChart2 size={28} className="text-primary-600 dark:text-primary" />}
         title="Reportes y Analítica"
         description="Análisis de habilidades, proyectos y métricas de equipo"
         actions={<><AskAiButton moduleKey="reports" /><Button variant="outline" icon={RefreshCw} onClick={handleRefresh}>
@@ -190,7 +190,7 @@ export const ReportsPage: React.FC = () => {
 
       <EducationCoverageCard />
 
-      <Card className="border-l-4 border-l-primary bg-gradient-to-br from-primary/5 to-blue-500/5">
+      <Card className="border-l-4 border-l-primary bg-primary/5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -222,7 +222,7 @@ export const ReportsPage: React.FC = () => {
           <LoadingBlock label="Generando insights..." className="py-6" />
         ) : aiSummaryFailed ? (
           <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-            <AlertTriangle size={20} className="text-amber-500 mx-auto mb-2" />
+            <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400 mx-auto mb-2" />
             <p className="text-sm text-slate-600 dark:text-slate-400">
               No pudimos generar insights en este momento. Intenta más tarde.
             </p>
@@ -261,7 +261,7 @@ export const ReportsPage: React.FC = () => {
         title="Proyectos en Riesgo"
           value={projectMetrics.projectsAtRisk}
         icon={AlertTriangle}
-          iconColor="text-amber-500"
+          iconColor="text-amber-600 dark:text-amber-400"
           iconBgColor="bg-amber-50 dark:bg-amber-500/10"
           trend={
             projectMetrics.projectsAtRisk > 0
@@ -276,7 +276,7 @@ export const ReportsPage: React.FC = () => {
         title="Utilización"
           value={`${utilizationRate}%`}
         icon={Target}
-          iconColor="text-emerald-500"
+          iconColor="text-emerald-700 dark:text-emerald-400"
           iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
           trend={{
             value: `${utilization.allocatedEmployees} de ${utilization.totalEmployees} asignados`,
@@ -311,13 +311,13 @@ export const ReportsPage: React.FC = () => {
                     <div className="flex-1 relative">
                       <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-500 flex items-center justify-end px-2"
+                          className="h-full bg-primary-600 rounded-full transition-[width] duration-500 flex items-center justify-end px-2"
                           style={{
                             width: `${Math.min((skill.totalEmployees / maxSkillCount) * 100, 100)}%`,
                             minWidth: "2rem",
                           }}
                         >
-                          <span className="text-[10px] font-bold text-white">
+                          <span className="text-xs font-bold text-white">
                             {skill.totalEmployees}
                           </span>
                         </div>
@@ -356,7 +356,7 @@ export const ReportsPage: React.FC = () => {
       {(projectMetrics.atRiskProjects?.length ?? 0) > 0 && (
         <Card>
           <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
-            <AlertTriangle size={20} className="text-amber-500" />
+            <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400" />
             Proyectos en riesgo
             {projectMetrics.averageProgressPercent != null && (
               <Badge variant="info">Avance promedio: {formatNumber(projectMetrics.averageProgressPercent)}%</Badge>
@@ -368,7 +368,7 @@ export const ReportsPage: React.FC = () => {
           <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-800">
             {projectMetrics.atRiskProjects!.map((p) => (
               <li key={p.projectId} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                <Link to={`${ROUTES.ACTIVITIES}/${p.projectId}`} className="font-medium text-primary hover:underline">{p.name}</Link>
+                <Link to={`${ROUTES.ACTIVITIES}/${p.projectId}`} className="font-medium text-primary-600 dark:text-primary hover:underline">{p.name}</Link>
                 <span className="text-xs text-slate-500 dark:text-slate-400">
                   Avance {p.progressPercent != null ? `${formatNumber(p.progressPercent)}%` : 'sin datos'}
                   {p.elapsedPercent != null && ` vs ${formatNumber(p.elapsedPercent)}% del tiempo`}
@@ -383,7 +383,7 @@ export const ReportsPage: React.FC = () => {
       <Card>
         <SectionHeader
         title="Demanda de Habilidades en Proyectos"
-        icon={<Briefcase size={20} className="text-amber-500" />}
+        icon={<Briefcase size={20} className="text-amber-600 dark:text-amber-400" />}
           section="projects"
           badge={`${projectMetrics.totalActiveProjects} proyectos activos`}
         />
@@ -406,7 +406,7 @@ export const ReportsPage: React.FC = () => {
                   </div>
                   <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-500"
+                      className="h-full bg-amber-500 rounded-full transition-[width] duration-500"
                       style={{ width: `${(skill.requiredInProjects / maxDemand) * 100}%` }}
                     />
                   </div>
@@ -440,7 +440,7 @@ export const ReportsPage: React.FC = () => {
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-400 rounded-full transition-all duration-500"
+                        className="h-full bg-purple-500 rounded-full transition-[width] duration-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -520,7 +520,7 @@ export const ReportsPage: React.FC = () => {
 
               {utilization.unallocatedEmployees > 0 && (
                 <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-200 dark:border-amber-500/20">
-                  <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+                  <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
                       {utilization.unallocatedEmployees} miembros sin proyectos asignados

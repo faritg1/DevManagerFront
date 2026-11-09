@@ -24,7 +24,7 @@ class ErrorBoundary extends React.Component<{ resetKey: string; children: React.
         return (
             <PageContainer narrow>
                 <Card className="mx-auto mt-10 flex max-w-lg flex-col items-center gap-3 text-center">
-                    <div className="rounded-full bg-rose-100 p-3 text-rose-500 dark:bg-rose-500/10">
+                    <div className="rounded-full bg-rose-100 p-3 text-rose-600 dark:text-rose-400 dark:bg-rose-500/10">
                         <AlertTriangle size={28} aria-hidden="true" />
                     </div>
                     <h1 className="text-lg font-bold text-slate-900 dark:text-white">Algo salió mal</h1>

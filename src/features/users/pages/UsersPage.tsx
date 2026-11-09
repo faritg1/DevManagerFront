@@ -445,7 +445,7 @@ export const UsersPage: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center h-full py-20">
                 <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                    <AlertCircle className="w-10 h-10 text-rose-500" />
+                    <AlertCircle className="w-10 h-10 text-rose-600 dark:text-rose-400" />
                 </div>
                 <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">{error}</p>
                 <Button variant="outline" onClick={fetchUsers}>
@@ -479,7 +479,7 @@ export const UsersPage: React.FC = () => {
                 </Card>
                 <Card className="flex items-center gap-4">
                     <div className="p-3 bg-emerald-100 dark:bg-emerald-500/10 rounded-xl">
-                        <UserCheck className="text-emerald-500" size={24} />
+                        <UserCheck className="text-emerald-700 dark:text-emerald-400" size={24} />
                     </div>
                     <div>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">{activeUsers}</p>
@@ -748,7 +748,7 @@ export const UsersPage: React.FC = () => {
                 isOpen={deleteModal.isOpen}
                 onClose={deleteModal.close}
                 title="Eliminar Usuario"
-                icon={<Trash2 className="text-rose-500" size={20} />}
+                icon={<Trash2 className="text-rose-600 dark:text-rose-400" size={20} />}
                 size="sm"
                 footer={
                     <>
@@ -896,7 +896,7 @@ export const UsersPage: React.FC = () => {
                                                 : 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-700'
                                         }`}>
                                             {o.isGranted
-                                                ? <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                                ? <CheckCircle2 size={14} className="text-emerald-700 dark:text-emerald-400 shrink-0" />
                                                 : <ShieldOff size={14} className="text-rose-600 shrink-0" />
                                             }
                                             <span className={`font-semibold text-xs ${o.isGranted ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
@@ -1049,7 +1049,7 @@ export const UsersPage: React.FC = () => {
                                                 <button aria-label="Bajar nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.max(1, prev - 1))}
-                                                    className="p-0.5 hover:text-primary"
+                                                    className="p-0.5 hover:text-primary-600 dark:hover:text-primary"
                                                 >
                                                     <ChevronDown size={16} />
                                                 </button>
@@ -1059,7 +1059,7 @@ export const UsersPage: React.FC = () => {
                                                 <button aria-label="Subir nivel"
                                                     type="button"
                                                     onClick={() => setAdjustLevel((prev) => Math.min(5, prev + 1))}
-                                                    className="p-0.5 hover:text-primary"
+                                                    className="p-0.5 hover:text-primary-600 dark:hover:text-primary"
                                                 >
                                                     <ChevronUp size={16} />
                                                 </button>

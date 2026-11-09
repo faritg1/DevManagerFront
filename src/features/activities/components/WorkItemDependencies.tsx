@@ -64,7 +64,7 @@ export const WorkItemDependencies: React.FC<Props> = ({ itemId, items, canEdit, 
             <ul className="mt-1 space-y-1">
                 {list.map((l) => (
                     <li key={l.linkId} className="flex items-center gap-2 text-sm">
-                        <button type="button" className="min-w-0 truncate text-left text-primary hover:underline" onClick={() => onOpenItem(l.itemId)}>
+                        <button type="button" className="min-w-0 truncate text-left text-primary-600 dark:text-primary hover:underline" onClick={() => onOpenItem(l.itemId)}>
                             <span className="font-mono text-xs font-semibold">{l.key}</span> {l.title}
                         </button>
                         <Badge variant={STATUS_VARIANTS[l.status]}>{STATUS_LABELS[l.status]}</Badge>

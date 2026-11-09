@@ -18,7 +18,7 @@ interface Props {
 const getLevelColor = (level: number): string => {
     if (level >= 5) return 'text-purple-500';
     if (level >= 4) return 'text-blue-500';
-    if (level >= 3) return 'text-emerald-500';
+    if (level >= 3) return 'text-emerald-700 dark:text-emerald-400';
     if (level >= 2) return 'text-yellow-500';
     return 'text-slate-400';
 };
@@ -155,7 +155,7 @@ export const SkillsSection: React.FC<Props> = ({
                                         href={skill.evidenceUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
+                                        className="text-primary-600 dark:text-primary hover:underline"
                                     >
                                         Ver evidencia
                                     </a>
@@ -166,8 +166,8 @@ export const SkillsSection: React.FC<Props> = ({
                             <div className="flex items-center gap-1.5 text-xs">
                                 {skill.lastValidatedAt ? (
                                     <>
-                                        <CheckCircle2 className="text-emerald-500" size={12} />
-                                        <span className="text-emerald-600 dark:text-emerald-400">
+                                        <CheckCircle2 className="text-emerald-700 dark:text-emerald-400" size={12} />
+                                        <span className="text-emerald-700 dark:text-emerald-400">
                                             Validado por {skill.validatedByName}
                                         </span>
                                     </>

@@ -142,7 +142,7 @@ export const ProfilePage: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-20 text-center px-4">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mb-4" />
+        <AlertTriangle className="w-12 h-12 text-amber-600 dark:text-amber-400 mb-4" />
         <p className="text-slate-700 dark:text-slate-300 mb-4">{error}</p>
         <Button onClick={reload}>Reintentar</Button>
       </div>

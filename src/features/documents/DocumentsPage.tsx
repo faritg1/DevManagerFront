@@ -16,7 +16,7 @@ import { DocumentFormDialog } from './components/DocumentFormDialog';
 import { PERMISSIONS, STATUS } from './labels';
 
 // Nine columns must fit at 1280 px: tighter cells, and long text is cut with "…" (full value in `title`).
-const TD = `${TD_CLASS} !px-3 first:!pl-5 last:!pr-5`;
+const TD = `${TD_CLASS} md:!px-3 md:first:!pl-5 md:last:!pr-5`;
 const TH = `${TH_CLASS} !px-3 first:!pl-5 last:!pr-5`;
 const NARROW_TRUNCATE = 'block max-w-[7rem] truncate';
 

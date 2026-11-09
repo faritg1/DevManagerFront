@@ -49,7 +49,7 @@ export const ProposalConfirmCard: React.FC<{ actionId: string; projectId: string
                 />
             </>)}
             {status && <p role="status" className="mt-2 text-slate-700 dark:text-slate-200">{status}</p>}
-            <Link to={`${ROUTES.ACTIVITIES}/${projectId}`} className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+            <Link to={`${ROUTES.ACTIVITIES}/${projectId}`} className="mt-2 inline-block text-xs font-semibold text-primary-600 dark:text-primary hover:underline">
                 Abrir en Actividades (editar antes de confirmar)
             </Link>
         </div>

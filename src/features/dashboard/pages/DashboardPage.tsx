@@ -104,7 +104,7 @@ export const DashboardPage: React.FC = () => {
                             {...kpi(pendingApplications, n => n)}
                             subtitle="por revisar"
                             icon={UserPlus}
-                            iconColor="text-amber-500"
+                            iconColor="text-amber-600 dark:text-amber-400"
                             iconBgColor="bg-amber-50 dark:bg-amber-500/10"
                         />
                         <StatCard
@@ -118,8 +118,8 @@ export const DashboardPage: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
                         <StatCard compact title="Borradores" {...count(ProjectStatus.Draft)} icon={FileText} iconColor="text-slate-500" iconBgColor="bg-slate-100 dark:bg-slate-500/10" />
-                        <StatCard compact title="Abiertos" {...count(ProjectStatus.Open)} icon={CheckCircle2} iconColor="text-emerald-500" iconBgColor="bg-emerald-50 dark:bg-emerald-500/10" />
-                        <StatCard compact title="En progreso" {...count(ProjectStatus.InProgress)} icon={Clock} iconColor="text-amber-500" iconBgColor="bg-amber-50 dark:bg-amber-500/10" />
+                        <StatCard compact title="Abiertos" {...count(ProjectStatus.Open)} icon={CheckCircle2} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-50 dark:bg-emerald-500/10" />
+                        <StatCard compact title="En progreso" {...count(ProjectStatus.InProgress)} icon={Clock} iconColor="text-amber-600 dark:text-amber-400" iconBgColor="bg-amber-50 dark:bg-amber-500/10" />
                         <StatCard compact title="Cerrados" {...count(ProjectStatus.Closed)} icon={TrendingUp} iconColor="text-blue-500" iconBgColor="bg-blue-50 dark:bg-blue-500/10" />
                         <StatCard compact title="Skills" {...kpi(totalSkills, n => n)} icon={Award} iconColor="text-purple-500" iconBgColor="bg-purple-50 dark:bg-purple-500/10" />
                     </div>
@@ -136,7 +136,7 @@ export const DashboardPage: React.FC = () => {
                             {...kpi(latestSurplus, v => (v === 'none' ? '—' : currency(v)))}
                             subtitle={latestSurplus === 'none' ? 'Sin distribuciones' : undefined}
                             icon={PiggyBank}
-                            iconColor="text-emerald-500"
+                            iconColor="text-emerald-700 dark:text-emerald-400"
                             iconBgColor="bg-emerald-50 dark:bg-emerald-500/10"
                         />
                         {canAttendArco && (
@@ -145,7 +145,7 @@ export const DashboardPage: React.FC = () => {
                                 title="Solicitudes ARCO pendientes"
                                 {...kpi(pendingArco, n => n)}
                                 icon={Shield}
-                                iconColor="text-amber-500"
+                                iconColor="text-amber-600 dark:text-amber-400"
                                 iconBgColor="bg-amber-50 dark:bg-amber-500/10"
                             />
                         )}
@@ -154,7 +154,7 @@ export const DashboardPage: React.FC = () => {
                             title="Programas de bienestar"
                             {...kpi(welfarePrograms, n => n)}
                             icon={HeartHandshake}
-                            iconColor="text-rose-500"
+                            iconColor="text-rose-600 dark:text-rose-400"
                             iconBgColor="bg-rose-50 dark:bg-rose-500/10"
                         />
                     </div>
@@ -195,7 +195,7 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <QuickLink to={ROUTES.AGENTS} icon={Bot} iconClass="bg-purple-50 text-purple-500 dark:bg-purple-500/10" title="Asistente IA" description="Consulta en lenguaje natural" />
-                    <QuickLink to={ROUTES.PROFILE} icon={Briefcase} iconClass="bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10" title="Mi Perfil" description="Skills y configuración" />
+                    <QuickLink to={ROUTES.PROFILE} icon={Briefcase} iconClass="bg-emerald-50 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-500/10" title="Mi Perfil" description="Skills y configuración" />
                 </div>
 
                 <section aria-labelledby="dash-projects" className="flex flex-col gap-4 pb-12">

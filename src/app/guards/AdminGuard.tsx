@@ -13,7 +13,7 @@ export const AdminGuard: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center h-full py-20">
             <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                <ShieldX className="w-10 h-10 text-rose-500" />
+                <ShieldX className="w-10 h-10 text-rose-600 dark:text-rose-400" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                 Acceso denegado

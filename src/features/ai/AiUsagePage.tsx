@@ -64,9 +64,9 @@ export const AiUsagePage: React.FC = () => {
             </Card>
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <StatCard title="Disponible este mes" value={formatNumber(usage.remaining, 0)} subtitle="tokens" icon={Sparkles} iconColor="text-primary" iconBgColor="bg-primary/10" />
+                <StatCard title="Disponible este mes" value={formatNumber(usage.remaining, 0)} subtitle="tokens" icon={Sparkles} iconColor="text-primary-600 dark:text-primary" iconBgColor="bg-primary/10" />
                 <StatCard title="Consumo de hoy" value={formatNumber(usage.usedToday, 0)} subtitle={`de ${tokens(usage.dailyBudget)} diarios`} icon={Zap} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
-                <StatCard title="Días con consumo" value={usage.daily.filter(d => d.tokens > 0).length} subtitle={`de ${usage.daily.length} transcurridos`} icon={CalendarDays} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Días con consumo" value={usage.daily.filter(d => d.tokens > 0).length} subtitle={`de ${usage.daily.length} transcurridos`} icon={CalendarDays} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

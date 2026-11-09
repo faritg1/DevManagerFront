@@ -84,8 +84,8 @@ export const AsistentePage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard title="Modo" value="Consultar" icon={BookOpen} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 <StatCard title="Reporte" value={reporteAnio} icon={FileBarChart2} iconColor="text-purple-500" iconBgColor="bg-purple-100 dark:bg-purple-500/10" />
-                <StatCard title="Áreas verificadas" value="3" icon={ShieldCheck} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
-                <StatCard title="Asistente IA" value="Activo" icon={Bot} iconColor="text-primary" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
+                <StatCard title="Áreas verificadas" value="3" icon={ShieldCheck} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Asistente IA" value="Activo" icon={Bot} iconColor="text-primary-600 dark:text-primary" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
             </div>
 
             <div className="flex flex-wrap gap-2 mb-6">
@@ -95,7 +95,7 @@ export const AsistentePage: React.FC = () => {
                         onClick={() => setTab(t.id)}
                         aria-pressed={tab === t.id}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${tab === t.id
-                            ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                            ? 'bg-primary-600 text-white shadow-sm'
                             : 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-background-dark'}`}
                     >
                         <t.icon size={16} />
@@ -174,7 +174,7 @@ export const AsistentePage: React.FC = () => {
                                     <div>
                                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 dark:text-slate-400">Fortalezas</p>
                                         {reporteRes.strengths.map((f, i) => (
-                                            <p key={i} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-start gap-1.5">
+                                            <p key={i} className="text-sm text-emerald-700 dark:text-emerald-400 flex items-start gap-1.5">
                                                 <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> {f}
                                             </p>
                                         ))}
@@ -192,7 +192,7 @@ export const AsistentePage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <div className="flex items-center gap-2 mb-4">
-                            <ShieldCheck className="text-emerald-500" size={20} />
+                            <ShieldCheck className="text-emerald-700 dark:text-emerald-400" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Verificar Cumplimiento</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-3">

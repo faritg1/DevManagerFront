@@ -42,7 +42,7 @@ interface Props {
 const spentLabel = (i: WorkItemResponse): [string, string] => {
     const spent = i.spentHours ?? 0;
     const over = i.estimateHours != null && spent > i.estimateHours;
-    return [i.estimateHours != null ? `${spent} h de ${i.estimateHours} h` : `${spent} h`, over ? 'text-amber-600 dark:text-amber-400' : ''];
+    return [i.estimateHours != null ? `${spent} h de ${i.estimateHours} h` : `${spent} h`, over ? 'text-amber-700 dark:text-amber-400' : ''];
 };
 
 const TOKEN = /@\[([^\]]*)\]\(user:([0-9a-fA-F-]{36})\)/g;

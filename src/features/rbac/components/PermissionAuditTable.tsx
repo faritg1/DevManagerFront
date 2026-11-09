@@ -78,7 +78,7 @@ export const PermissionAuditTable: React.FC<{ roleId?: string }> = ({ roleId }) 
                 <td className={TD_CLASS}>
                   {e.actorName}
                   {e.impersonatedUserId && (
-                    <span className="block text-xs text-amber-600 dark:text-amber-400">Superadmin actuando como {e.impersonatedUserName ?? "usuario eliminado"}</span>
+                    <span className="block text-xs text-amber-700 dark:text-amber-400">Superadmin actuando como {e.impersonatedUserName ?? "usuario eliminado"}</span>
                   )}
                 </td>
                 <td className={TD_CLASS}>

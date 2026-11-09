@@ -9,11 +9,16 @@ import { type CsvColumn } from '../../shared/export';
 import { asUtc, formatDate, formatDateTime } from '../../shared/format';
 import { usePermission } from '../../shared/hooks';
 import {
-    Badge, Button, Card, EmptyState, ExportButton, IconButton, Input, LoadingBlock, PageContainer, PageHeader, Select,
-    TABLE_CLASS, TBODY_CLASS, TD_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, TH_ACTIONS_CLASS, TH_CLASS, TR_CLASS,
+    Badge, Button, Card, EmptyState, ExportButton, IconButton, Input, PageContainer, PageHeader, Select, SkeletonRows,
+    TABLE_CLASS, TBODY_CLASS, TD_ACTIONS_CLASS, TD_CLASS, THEAD_CLASS, TH_ACTIONS_CLASS, TH_CLASS, TR_CLASS,
 } from '../../shared/ui';
 import { DocumentFormDialog } from './components/DocumentFormDialog';
 import { PERMISSIONS, STATUS } from './labels';
+
+// Nine columns must fit at 1280 px: tighter cells, and long text is cut with "…" (full value in `title`).
+const TD = `${TD_CLASS} !px-3 first:!pl-5 last:!pr-5`;
+const TH = `${TH_CLASS} !px-3 first:!pl-5 last:!pr-5`;
+const NARROW_TRUNCATE = 'block max-w-[7rem] truncate';
 
 const currentLabel = (d: DocumentListItem) => (d.currentVersionNumber == null ? '' : `v${d.currentVersionNumber}`);
 
@@ -79,24 +84,24 @@ export const DocumentsPage: React.FC = () => {
     return (
         <PageContainer>
             <PageHeader
-                icon={<FolderOpen className="text-primary" size={26} aria-hidden="true" />}
+                icon={<FolderOpen className="shrink-0 text-primary" size={24} aria-hidden="true" />}
                 title="Documentos"
                 description="Listado maestro: versión vigente, quién la aprobó y qué está en curso."
                 actions={<>
                     <ExportButton rows={rows ?? []} columns={EXPORT_COLUMNS} filename="documentos" />
-                    {canCreate && <Button size="sm" icon={Plus} onClick={() => setEditing(null)}>Nuevo documento</Button>}
+                    {canCreate && <Button icon={Plus} onClick={() => setEditing(null)}>Nuevo documento</Button>}
                 </>}
             />
 
             {pending.length > 0 && (
-                <Card className="mb-4 border-orange-200 dark:border-orange-500/30">
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">
+                <Card padding="sm" className="mb-4 border-orange-200 bg-orange-50/60 dark:border-orange-500/30 dark:bg-orange-500/5">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         Tienes {pending.length} {pending.length === 1 ? 'documento' : 'documentos'} por confirmar
                     </p>
                     <ul className="mt-2 space-y-1 text-sm">
                         {pending.map((p) => (
                             <li key={p.versionId} className="break-words">
-                                <Link className="text-primary hover:underline" to={`${documentDetailPath(p.documentId)}?version=${p.versionId}`}>
+                                <Link className="text-primary-600 dark:text-primary hover:underline underline-offset-2" to={`${documentDetailPath(p.documentId)}?version=${p.versionId}`}>
                                     {p.code} v{p.versionNumber}: {p.title}
                                 </Link>
                             </li>
@@ -108,8 +113,8 @@ export const DocumentsPage: React.FC = () => {
             <Card padding="none" className="overflow-hidden">
                 <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-border-dark">
                     <Input label="Buscar" value={filters.q} onChange={set('q')} placeholder="Código o título" />
-                    <Input label="Tipo" value={filters.type} onChange={set('type')} />
-                    <Input label="Proceso" value={filters.process} onChange={set('process')} />
+                    <Input label="Tipo" value={filters.type} onChange={set('type')} placeholder="Ej. Procedimiento" />
+                    <Input label="Proceso" value={filters.process} onChange={set('process')} placeholder="Ej. Gestión humana" />
                     <Select label="Estado" value={filters.status} onChange={set('status')}>
                         <option value="">Todos los estados</option>
                         {Object.entries(STATUS).map(([k, [label]]) => <option key={k} value={k}>{label}</option>)}
@@ -119,7 +124,7 @@ export const DocumentsPage: React.FC = () => {
                 {failed ? (
                     <EmptyState title="No se pudieron cargar los documentos" />
                 ) : !rows ? (
-                    <LoadingBlock label="Cargando documentos…" />
+                    <SkeletonRows />
                 ) : rows.length === 0 ? (
                     <EmptyState
                         icon={FolderOpen}
@@ -131,36 +136,36 @@ export const DocumentsPage: React.FC = () => {
                         <table className={TABLE_CLASS}>
                             <thead className={THEAD_CLASS}>
                                 <tr>
-                                    <th className={TH_CLASS}>Código</th>
-                                    <th className={TH_CLASS}>Título</th>
-                                    <th className={TH_CLASS}>Tipo</th>
-                                    <th className={TH_CLASS}>Proceso</th>
-                                    <th className={TH_CLASS}>Responsable</th>
-                                    <th className={TH_CLASS}>Vigente</th>
-                                    <th className={TH_CLASS}>Aprobación</th>
-                                    <th className={TH_CLASS}>En curso</th>
+                                    <th className={TH}>Código</th>
+                                    <th className={TH}>Título</th>
+                                    <th className={TH}>Tipo</th>
+                                    <th className={TH}>Proceso</th>
+                                    <th className={TH}>Responsable</th>
+                                    <th className={TH}>Vigente</th>
+                                    <th className={TH}>Aprobación</th>
+                                    <th className={TH}>En curso</th>
                                     {canCreate && <th className={TH_ACTIONS_CLASS}>Acciones</th>}
                                 </tr>
                             </thead>
                             <tbody className={TBODY_CLASS}>
                                 {rows.map((d) => (
                                     <tr key={d.id} className={TR_CLASS}>
-                                        <td className={TD_CLASS}>
-                                            <Link className="font-semibold text-primary hover:underline" to={documentDetailPath(d.id)}>{d.code}</Link>
+                                        <td className={TD}>
+                                            <Link className="font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:inline-flex [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:items-center" to={documentDetailPath(d.id)}>{d.code}</Link>
                                         </td>
-                                        <td className={TD_CLASS}><span className={TD_TRUNCATE_CLASS} title={d.title}>{d.title}</span></td>
-                                        <td className={TD_CLASS}><span className={TD_TRUNCATE_CLASS} title={d.type}>{d.type}</span></td>
-                                        <td className={TD_CLASS}><span className={TD_TRUNCATE_CLASS} title={d.process}>{d.process}</span></td>
-                                        <td className={TD_CLASS}>{d.ownerName ?? '—'}</td>
-                                        <td className={TD_CLASS}>{currentLabel(d) || '—'}</td>
-                                        <td className={TD_CLASS}>
-                                            {d.approvedAt ? <>{formatDate(asUtc(d.approvedAt))}<span className="block text-xs text-slate-500 dark:text-slate-400">{d.approvedByName}</span></> : '—'}
+                                        <td className={TD}><span className="block max-w-[10rem] truncate 2xl:max-w-[16rem]" title={d.title}>{d.title}</span></td>
+                                        <td className={TD}><span className={NARROW_TRUNCATE} title={d.type}>{d.type}</span></td>
+                                        <td className={TD}><span className={NARROW_TRUNCATE} title={d.process}>{d.process}</span></td>
+                                        <td className={TD}><span className="block max-w-[8rem] truncate" title={d.ownerName ?? undefined}>{d.ownerName ?? '—'}</span></td>
+                                        <td className={TD}>{currentLabel(d) || '—'}</td>
+                                        <td className={TD}>
+                                            {d.approvedAt ? <>{formatDate(asUtc(d.approvedAt))}<span className="block max-w-[8rem] truncate text-xs text-slate-500 dark:text-slate-400" title={d.approvedByName ?? undefined}>{d.approvedByName}</span></> : '—'}
                                         </td>
-                                        <td className={TD_CLASS}>
+                                        <td className={TD}>
                                             {d.openVersionStatus ? <Badge variant={STATUS[d.openVersionStatus][1]}>{STATUS[d.openVersionStatus][0]}</Badge> : '—'}
                                         </td>
                                         {canCreate && (
-                                            <td className={`${TD_CLASS} text-right`}>
+                                            <td className={`${TD} text-right ${TD_ACTIONS_CLASS}`}>
                                                 <IconButton icon={Pencil} label={`Editar ${d.code}`} onClick={() => setEditing(d)} />
                                             </td>
                                         )}

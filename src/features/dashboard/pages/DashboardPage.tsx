@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, FolderOpen, Users, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
-import { StatCard, Badge, Button, buttonClasses, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { Plus, FolderOpen, Users, ArrowRight, Clock, CheckCircle2, FileText, Award, Bot, Briefcase, UserPlus, TrendingUp, PiggyBank, Shield, HeartHandshake } from 'lucide-react';
+import { StatCard, Badge, buttonClasses, PageContainer, PageHeader, LoadingBlock, EmptyState, ErrorState } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService, applicationsService, usersService, skillsService, excedentesService, habeasDataService, bienestarService, workItemsService } from '../../../shared/api';
 import { useAuth } from '../../../shared/context';
@@ -27,15 +27,15 @@ const kpi = <T,>(value: Kpi<T>, render: (v: T) => string | number) => ({
 });
 
 const QuickLink: React.FC<{ to: string; icon: typeof Bot; iconClass: string; title: string; description: string }> = ({ to, icon: Icon, iconClass, title, description }) => (
-    <Link to={to} className="group flex min-w-0 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:border-primary/50 hover:shadow-md dark:border-border-dark dark:bg-card-dark dark:hover:border-primary">
-        <div className={`shrink-0 rounded-xl p-3 ${iconClass}`}>
-            <Icon size={24} aria-hidden="true" />
+    <Link to={to} className="group flex min-w-0 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-[border-color,box-shadow] duration-[120ms] ease-standard hover:border-slate-300 hover:shadow-sm dark:border-border-dark dark:bg-card-dark dark:hover:border-input-border">
+        <div className={`shrink-0 rounded-xl p-2.5 ${iconClass}`}>
+            <Icon size={20} aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-            <p className="truncate font-bold text-slate-900 transition-colors group-hover:text-primary dark:text-white">{title}</p>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">{description}</p>
+            <p className="truncate font-semibold text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary">{title}</p>
+            <p className="truncate text-[13px] leading-[18px] text-slate-500 dark:text-slate-400">{description}</p>
         </div>
-        <ArrowRight aria-hidden="true" size={18} className="shrink-0 text-slate-400 transition-colors group-hover:text-primary" />
+        <ArrowRight aria-hidden="true" size={18} className="shrink-0 text-slate-400 transition-[color,transform] duration-[120ms] group-hover:translate-x-0.5 group-hover:text-primary" />
     </Link>
 );
 
@@ -90,9 +90,9 @@ export const DashboardPage: React.FC = () => {
                     </Link>
                 )}
             />
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 sm:gap-8">
                 <section aria-label="Indicadores principales" className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
                         <StatCard
                             title="Proyectos activos"
                             {...activeProjects}
@@ -116,7 +116,7 @@ export const DashboardPage: React.FC = () => {
                             iconBgColor="bg-indigo-50 dark:bg-indigo-500/10"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
                         <StatCard compact title="Borradores" {...count(ProjectStatus.Draft)} icon={FileText} iconColor="text-slate-500" iconBgColor="bg-slate-100 dark:bg-slate-500/10" />
                         <StatCard compact title="Abiertos" {...count(ProjectStatus.Open)} icon={CheckCircle2} iconColor="text-emerald-500" iconBgColor="bg-emerald-50 dark:bg-emerald-500/10" />
                         <StatCard compact title="En progreso" {...count(ProjectStatus.InProgress)} icon={Clock} iconColor="text-amber-500" iconBgColor="bg-amber-50 dark:bg-amber-500/10" />
@@ -126,10 +126,10 @@ export const DashboardPage: React.FC = () => {
                 </section>
 
                 <section aria-labelledby="dash-solidaria">
-                    <h2 id="dash-solidaria" className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <h2 id="dash-solidaria" className="mb-3 text-lg leading-7 font-bold text-slate-900 dark:text-white">
                         Gestión Solidaria
                     </h2>
-                    <div className={`grid grid-cols-1 gap-4 ${canAttendArco ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                    <div className={`grid grid-cols-1 gap-3 sm:gap-4 ${canAttendArco ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
                         <StatCard
                             compact
                             title="Excedentes del último período"
@@ -163,8 +163,8 @@ export const DashboardPage: React.FC = () => {
                 {showMyWork && (
                     <section aria-labelledby="dash-my-work" className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-border-dark dark:bg-card-dark">
                         <div className="mb-3 flex items-center justify-between gap-3">
-                            <h2 id="dash-my-work" className="text-lg font-bold text-slate-900 dark:text-white">Mis actividades</h2>
-                            <Link to={ROUTES.MY_ACTIVITIES} className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                            <h2 id="dash-my-work" className="text-lg leading-7 font-bold text-slate-900 dark:text-white">Mis actividades</h2>
+                            <Link to={ROUTES.MY_ACTIVITIES} className="inline-flex items-center gap-1 rounded text-sm font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:min-h-11">
                                 Ver todas <ArrowRight size={14} aria-hidden="true" />
                             </Link>
                         </div>
@@ -178,7 +178,7 @@ export const DashboardPage: React.FC = () => {
                             <ul className="divide-y divide-slate-100 dark:divide-border-dark">
                                 {myWork.slice(0, 5).map(i => (
                                     <li key={i.id}>
-                                        <Link to={workItemLink(i)} className="flex min-w-0 items-center gap-3 py-2 hover:text-primary">
+                                        <Link to={workItemLink(i)} className="-mx-2 flex min-w-0 items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-white/[.03]">
                                             <span className="shrink-0 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">{i.key}</span>
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">{i.title}</span>
@@ -200,22 +200,14 @@ export const DashboardPage: React.FC = () => {
 
                 <section aria-labelledby="dash-projects" className="flex flex-col gap-4 pb-12">
                     <div className="flex items-center justify-between gap-3">
-                        <h2 id="dash-projects" className="text-lg font-bold text-slate-900 dark:text-white">Proyectos</h2>
+                        <h2 id="dash-projects" className="text-lg leading-7 font-bold text-slate-900 dark:text-white">Proyectos</h2>
                         {projects && projects.length > 0 && <Badge variant="default">{projects.length} total</Badge>}
                     </div>
 
                     {projects === undefined ? (
                         <LoadingBlock label="Cargando proyectos…" className="py-20" />
                     ) : projects === null ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                                <AlertTriangle className="w-10 h-10 text-rose-500" />
-                            </div>
-                            <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">Error al cargar proyectos</p>
-                            <Button variant="outline" onClick={() => window.location.reload()}>
-                                Reintentar
-                            </Button>
-                        </div>
+                        <ErrorState title="Error al cargar proyectos" onRetry={() => window.location.reload()} className="py-20" />
                     ) : projects.length === 0 ? (
                         <EmptyState
                             icon={FolderOpen}
@@ -223,13 +215,13 @@ export const DashboardPage: React.FC = () => {
                             title="No hay proyectos"
                             description={canCreateProject ? 'Comienza creando tu primer proyecto.' : undefined}
                             action={canCreateProject && (
-                                <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses()}>
+                                <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses('secondary')}>
                                     <Plus size={16} aria-hidden="true" />Crear Proyecto
                                 </Link>
                             )}
                         />
                     ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                             {projects.map(project => <ProjectCard key={project.id} project={project} />)}
                             {canCreateProject && <NewProjectTile />}
                         </div>

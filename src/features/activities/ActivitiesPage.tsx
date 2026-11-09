@@ -227,7 +227,8 @@ export const ActivitiesPage: React.FC = () => {
                 )}
             />
 
-            <Card className="mb-4">
+            <Card padding="sm" className="mb-4">
+                <div className="max-w-md">
                 <Select
                     label="Proyecto"
                     value={projectId ?? ''}
@@ -237,10 +238,11 @@ export const ActivitiesPage: React.FC = () => {
                     <option value="">Selecciona un proyecto…</option>
                     {projects?.map((p) => <option key={p.id} value={p.id}>{p.keyPrefix ? `${p.keyPrefix} · ` : ''}{p.name}</option>)}
                 </Select>
+                </div>
             </Card>
 
             {!projectId ? (
-                <EmptyState icon={ListChecks} title="Elige un proyecto" description="Selecciona un proyecto para ver y gestionar sus actividades." />
+                <EmptyState icon={ListChecks} className="py-16 sm:py-20" title="Elige un proyecto" description="Selecciona un proyecto para ver y gestionar sus actividades." />
             ) : !projects ? (
                 <LoadingBlock label="Cargando proyectos…" />
             ) : !project ? (

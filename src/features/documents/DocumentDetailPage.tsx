@@ -28,7 +28,7 @@ const saveBlob = (blob: Blob, name: string) => {
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
     <div className="min-w-0">
-        <dt className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</dt>
+        <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</dt>
         <dd className="mt-0.5 break-words text-sm text-slate-800 dark:text-slate-100">{children}</dd>
     </div>
 );
@@ -151,13 +151,13 @@ export const DocumentDetailPage: React.FC = () => {
     return (
         <PageContainer>
             <PageHeader
-                icon={<FileText className="shrink-0 text-primary" size={26} aria-hidden="true" />}
+                icon={<FileText className="shrink-0 text-primary" size={24} aria-hidden="true" />}
                 title={`${doc.code} · ${doc.title}`}
                 backTo={ROUTES.DOCUMENTS}
                 backLabel="Documentos"
                 actions={<>
-                    {canCreate && !hasOpenVersion && <Button size="sm" icon={Upload} onClick={() => setVersionForm(null)}>Subir versión</Button>}
-                    {canDistribute && current && <Button variant="outline" size="sm" icon={Share2} onClick={() => setDistributing(true)}>Distribuir</Button>}
+                    {canCreate && !hasOpenVersion && <Button icon={Upload} onClick={() => setVersionForm(null)}>Subir versión</Button>}
+                    {canDistribute && current && <Button variant="outline" icon={Share2} onClick={() => setDistributing(true)}>Distribuir</Button>}
                 </>}
             />
 
@@ -179,7 +179,7 @@ export const DocumentDetailPage: React.FC = () => {
             </Card>
 
             <Card padding="none" className="mb-4 overflow-hidden">
-                <h2 className="border-b border-slate-200 px-4 py-3 text-base font-bold text-slate-900 sm:px-6 dark:border-border-dark dark:text-white">Versiones</h2>
+                <h2 className="border-b border-slate-200 px-4 py-3 text-lg leading-7 font-bold text-slate-900 sm:px-5 dark:border-border-dark dark:text-white">Versiones</h2>
                 {doc.versions.length === 0 ? (
                     <EmptyState title="Aún no hay versiones" description={canCreate ? 'Sube la primera para enviarla a revisión.' : undefined} />
                 ) : (
@@ -190,26 +190,26 @@ export const DocumentDetailPage: React.FC = () => {
                                 <li
                                     key={v.id}
                                     aria-current={v.id === linkedVersion ? 'true' : undefined}
-                                    className={`flex flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-start lg:justify-between ${v.id === linkedVersion ? 'bg-primary/5' : ''}`}
+                                    className={`relative flex flex-col gap-3 px-4 py-4 sm:px-5 lg:flex-row lg:items-start lg:justify-between ${v.id === linkedVersion ? 'bg-primary/5 before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-primary' : ''}`}
                                 >
                                     <div className="min-w-0 flex-1 space-y-1 break-words text-sm">
-                                        <p className="flex flex-wrap items-center gap-2 font-bold text-slate-900 dark:text-white">
+                                        <p className="flex flex-wrap items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
                                             Versión {v.versionNumber} <Badge variant={variant}>{label}</Badge>
                                         </p>
                                         <p className="text-slate-700 dark:text-slate-200">{v.changeSummary}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        <p className="text-[13px] leading-[18px] text-slate-500 dark:text-slate-400">
                                             {v.fileName} · {formatSize(v.sizeBytes)} · Elaboró {v.elaboratedByName ?? '—'}, {formatDateTime(asUtc(v.createdAt))}
                                         </p>
                                         {v.approvedAt && (
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">Aprobó {v.approvedByName ?? '—'}, {formatDateTime(asUtc(v.approvedAt))}</p>
+                                            <p className="text-[13px] leading-[18px] text-slate-500 dark:text-slate-400">Aprobó {v.approvedByName ?? '—'}, {formatDateTime(asUtc(v.approvedAt))}</p>
                                         )}
                                         {v.rejectionComment && (
-                                            <p className="text-xs text-rose-700 dark:text-rose-400">
+                                            <p className="text-[13px] leading-[18px] text-rose-700 dark:text-rose-400">
                                                 Rechazó {v.rejectedByName ?? '—'}{v.rejectedAt ? `, ${formatDateTime(asUtc(v.rejectedAt))}` : ''}: {v.rejectionComment}
                                             </p>
                                         )}
                                     </div>
-                                    <div className="flex shrink-0 flex-wrap gap-2">
+                                    <div className="grid shrink-0 grid-cols-2 gap-2 [&>*]:w-full sm:flex sm:flex-wrap sm:[&>*]:w-auto lg:justify-end">
                                         <Button variant="outline" size="sm" icon={Download} aria-label={`Descargar v${v.versionNumber}`} isLoading={busy === `file-${v.id}`} onClick={() => download(v)}>
                                             Descargar
                                         </Button>
@@ -244,8 +244,8 @@ export const DocumentDetailPage: React.FC = () => {
 
             {canDistribute && (
                 <Card padding="none" className="overflow-hidden">
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 sm:px-6 dark:border-border-dark">
-                        <h2 className="text-base font-bold text-slate-900 dark:text-white">Lecturas</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 sm:px-5 dark:border-border-dark">
+                        <h2 className="text-lg leading-7 font-bold text-slate-900 dark:text-white">Lecturas</h2>
                         {!!reads?.length && <span className="text-sm text-slate-500 dark:text-slate-400">{confirmedCount} de {reads.length} confirmaron</span>}
                     </div>
                     {readsFailed ? (

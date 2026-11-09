@@ -37,7 +37,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         viewBox="0 0 24 24"
                         strokeWidth={2}
                         stroke="currentColor"
-                        className="w-6 h-6 text-rose-500"
+                        className="w-6 h-6 shrink-0 text-rose-600 dark:text-rose-400"
                     >
                         <path
                             strokeLinecap="round"

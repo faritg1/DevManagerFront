@@ -103,24 +103,24 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
     return (
         <>
-        <header className="print:hidden h-16 border-b border-slate-200 dark:border-border-dark bg-white/80 dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+        <header className="print:hidden h-14 md:h-16 border-b border-slate-200 dark:border-border-dark bg-white/85 dark:bg-background-dark/85 backdrop-blur-md flex items-center justify-between px-3 sm:px-4 md:px-6 shrink-0 z-10">
             {/* Left: Hamburger + Title (mobile) / Breadcrumbs (desktop) */}
             <div className="flex items-center gap-2 min-w-0">
                 <button aria-label="Abrir menú" 
                     onClick={onMenuClick}
-                    className="md:hidden p-2 -ml-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="md:hidden inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                    <Menu size={24} />
+                    <Menu size={22} aria-hidden="true" />
                 </button>
 
                 <h1 className="md:hidden text-base font-semibold text-slate-900 dark:text-white truncate">
                     {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : 'DevManager'}
                 </h1>
             
-                <nav className="hidden md:flex text-sm text-slate-500 dark:text-slate-400 font-medium items-center gap-1">
+                <nav aria-label="Migas de pan" className="hidden md:flex min-w-0 text-sm text-slate-600 dark:text-slate-400 items-center gap-1">
                     <Link 
                         to={ROUTES.DASHBOARD} 
-                        className="text-slate-900 dark:text-white font-semibold hover:text-primary dark:hover:text-primary transition-colors"
+                        className="text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary transition-colors"
                     >
                         DevManager
                     </Link>
@@ -131,13 +131,13 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
                         return (
                             <React.Fragment key={crumb.path}>
-                                <ChevronRight size={14} className="text-slate-400 mx-1" />
+                                <ChevronRight size={14} className="text-slate-400 dark:text-slate-500 mx-0.5 shrink-0" aria-hidden="true" />
                                 {index === breadcrumbs.length - 1 ? (
-                                    <span className="text-slate-500 dark:text-slate-400">{displayName}</span>
+                                    <span aria-current="page" className="truncate font-semibold text-slate-900 dark:text-white">{displayName}</span>
                                 ) : (
                                     <Link 
                                         to={linkTo}
-                                        className="hover:text-primary dark:hover:text-primary transition-colors"
+                                        className="hover:text-primary-600 dark:hover:text-primary transition-colors"
                                     >
                                         {displayName}
                                     </Link>
@@ -152,30 +152,31 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 type="button"
                 onClick={() => setPaletteOpen(true)}
                 aria-keyshortcuts="Control+K Meta+K"
-                className="hidden lg:flex flex-1 max-w-md mx-8 h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-card-dark px-3 text-sm text-slate-500 dark:text-slate-400 hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="hidden lg:flex flex-1 max-w-md mx-8 h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-card-dark px-3 text-sm text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-input-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
                 <Search size={18} aria-hidden="true" />
                 <span className="flex-1 text-left">Buscar pantallas y acciones…</span>
                 <kbd className="rounded border border-slate-300 dark:border-border-dark px-1.5 font-sans text-xs">Ctrl K</kbd>
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
                 <button
                     type="button"
                     onClick={() => setPaletteOpen(true)}
                     aria-label="Buscar pantallas y acciones"
                     title="Buscar (Ctrl+K)"
-                    className="lg:hidden p-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="lg:hidden inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                     <Search size={20} aria-hidden="true" />
                 </button>
-                <button 
+                <button
+                    type="button"
                     onClick={toggleTheme}
-                    className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                     aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                 >
-                    {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                    {resolvedTheme === 'dark' ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
                 </button>
 
                 <NotificationBell />

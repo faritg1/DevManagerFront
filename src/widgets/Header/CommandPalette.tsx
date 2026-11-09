@@ -101,7 +101,7 @@ export const CommandPalette: React.FC<{ isOpen: boolean; onClose: () => void }> 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKeyDown}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 text-sm text-slate-900 outline-none placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-white dark:placeholder:text-slate-400"
+                className="h-11 w-full rounded-xl border border-control-border bg-slate-50 px-4 text-sm text-slate-900 outline-none placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-input-border dark:bg-background-dark dark:text-white dark:placeholder:text-slate-400"
             />
             {results.length === 0 ? (
                 <p role="status" className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">Sin resultados para “{query}”.</p>
@@ -116,7 +116,7 @@ export const CommandPalette: React.FC<{ isOpen: boolean; onClose: () => void }> 
                             onMouseMove={() => setActive(i)}
                             onClick={() => go(entry)}
                             className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
-                                i === active ? 'bg-primary/10 text-primary' : 'text-slate-700 dark:text-slate-200'
+                                i === active ? 'bg-primary/10 text-primary-600 dark:text-primary' : 'text-slate-700 dark:text-slate-200'
                             }`}
                         >
                             <entry.icon size={18} className="shrink-0" aria-hidden="true" />

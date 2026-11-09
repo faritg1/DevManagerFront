@@ -33,17 +33,17 @@ const NotificationContext = createContext<NotificationContextValue | undefined>(
 let nextId = 0;
 
 const TOAST_STYLES: Record<NotificationType, { icon: LucideIcon; accent: string }> = {
-    success: { icon: CheckCircle2, accent: 'border-l-emerald-500 text-emerald-600 dark:text-emerald-400' },
-    error: { icon: XCircle, accent: 'border-l-rose-500 text-rose-600 dark:text-rose-400' },
-    warning: { icon: AlertTriangle, accent: 'border-l-amber-500 text-amber-600 dark:text-amber-400' },
-    info: { icon: Info, accent: 'border-l-primary text-primary' },
+    success: { icon: CheckCircle2, accent: 'border-l-emerald-600 text-emerald-700 dark:text-emerald-400' },
+    error: { icon: XCircle, accent: 'border-l-rose-600 text-rose-600 dark:text-rose-400' },
+    warning: { icon: AlertTriangle, accent: 'border-l-amber-500 text-amber-700 dark:text-amber-400' },
+    info: { icon: Info, accent: 'border-l-primary text-primary-600 dark:text-primary' },
 };
 
 const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: string) => void }> = ({ notifications, onClose }) => (
     <div
         aria-live="polite"
         aria-label="Notificaciones"
-        className="fixed top-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-96 z-[100] flex flex-col gap-3 pointer-events-none"
+        className="fixed bottom-4 inset-x-4 sm:bottom-auto sm:top-4 sm:inset-x-auto sm:right-4 sm:w-96 z-[100] flex flex-col gap-2 sm:gap-3 pointer-events-none"
     >
         {notifications.map(n => {
             const { icon: Icon, accent } = TOAST_STYLES[n.type];
@@ -51,20 +51,20 @@ const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: str
                 <div
                     key={n.id}
                     role={n.type === 'error' ? 'alert' : 'status'}
-                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-4 border-slate-200 dark:border-border-dark ${accent} bg-white dark:bg-card-dark p-4 shadow-lg`}
+                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-[3px] border-slate-200 dark:border-border-dark ${accent} bg-white dark:bg-surface-dark p-4 shadow-lg shadow-slate-900/5 dark:shadow-black/40 animate-slide-up`}
                 >
                     <Icon size={20} className="shrink-0 mt-0.5" aria-hidden="true" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">{n.title}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{n.title}</p>
                         {n.message && <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300 break-words">{n.message}</p>}
                     </div>
                     <button
                         type="button"
                         onClick={() => onClose(n.id)}
                         aria-label="Cerrar notificación"
-                        className="shrink-0 -m-1 p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="shrink-0 -my-1.5 -mr-1.5 inline-flex size-8 [@media(pointer:coarse)]:size-11 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                        <X size={16} />
+                        <X size={16} aria-hidden="true" />
                     </button>
                 </div>
             );

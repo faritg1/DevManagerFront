@@ -98,7 +98,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
 
             {footer && (
-                <div className="bg-slate-50 dark:bg-background-dark/50 px-4 sm:px-6 py-4 flex flex-row-reverse flex-wrap gap-3 border-t border-slate-200 dark:border-border-dark">
+                <div className="bg-slate-50 dark:bg-black/10 px-4 sm:px-6 py-4 flex flex-col gap-2 [&>*]:w-full sm:flex-row-reverse sm:flex-wrap sm:gap-3 sm:[&>*]:w-auto border-t border-slate-200 dark:border-border-dark">
                     {footer}
                 </div>
             )}
@@ -107,22 +107,22 @@ export const Modal: React.FC<ModalProps> = ({
 
     const header = title && (
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-border-dark flex items-center justify-between gap-3">
-            <h3 id={titleId} className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 min-w-0">
+            <h3 id={titleId} className="text-base sm:text-lg font-semibold sm:font-bold text-slate-900 dark:text-white flex items-center gap-2 min-w-0">
                 {icon}
                 {title}
             </h3>
             <button type="button" aria-label="Cerrar"
                 onClick={onClose}
-                className="shrink-0 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-background-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="shrink-0 -mr-2 inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
             </button>
         </div>
     );
 
     const backdrop = (
         <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-0"
+            className="fixed inset-0 bg-slate-950/50 backdrop-blur-[2px] animate-fade-in z-0"
             onClick={onClose}
             aria-hidden="true"
         />
@@ -143,7 +143,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {backdrop}
                 <div
                     {...dialogProps}
-                    className={`fixed inset-y-0 right-0 z-20 flex w-full ${sizeStyles[size]} flex-col bg-white dark:bg-card-dark border-l border-slate-200 dark:border-border-dark shadow-2xl focus:outline-none`}
+                    className={`fixed inset-y-0 right-0 z-20 flex w-full ${sizeStyles[size]} flex-col bg-white dark:bg-surface-dark border-l border-slate-200 dark:border-border-dark shadow-2xl shadow-slate-900/10 dark:shadow-black/50 animate-slide-in-right focus:outline-none`}
                 >
                     {header}
                     {content}
@@ -154,7 +154,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+            <div className="flex items-end justify-center min-h-[100dvh] pt-8 text-center sm:block sm:p-0">
                 {backdrop}
                 
                 {/* Centering trick for older browsers */}
@@ -165,9 +165,10 @@ export const Modal: React.FC<ModalProps> = ({
                 <div
                     {...dialogProps}
                     className={`
-                        inline-block align-bottom bg-white dark:bg-card-dark 
-                        rounded-2xl text-left overflow-hidden 
-                        shadow-2xl transform transition-all 
+                        inline-block align-bottom bg-white dark:bg-surface-dark
+                        rounded-t-2xl sm:rounded-2xl text-left
+                        max-h-[90dvh] overflow-y-auto sm:max-h-none sm:overflow-hidden
+                        shadow-2xl shadow-slate-900/10 dark:shadow-black/50 animate-slide-up sm:animate-scale-in
                         sm:my-8 sm:align-middle ${sizeStyles[size]} w-full 
                         border border-slate-200 dark:border-border-dark 
                         relative z-20 focus:outline-none

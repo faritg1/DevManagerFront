@@ -19,6 +19,7 @@ import { PERMISSIONS, STATUS } from './labels';
 const TD = `${TD_CLASS} md:!px-3 md:first:!pl-5 md:last:!pr-5`;
 const TH = `${TH_CLASS} !px-3 first:!pl-5 last:!pr-5`;
 const NARROW_TRUNCATE = 'block max-w-[7rem] truncate';
+const SHORT_DATE: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
 
 const currentLabel = (d: DocumentListItem) => (d.currentVersionNumber == null ? '' : `v${d.currentVersionNumber}`);
 
@@ -141,10 +142,8 @@ export const DocumentsPage: React.FC = () => {
                                     <th className={TH}>Tipo</th>
                                     <th className={TH}>Proceso</th>
                                     <th className={TH}>Responsable</th>
-                                    <th className={TH}>Vigente</th>
-                                    <th className={TH}>Aprobación</th>
-                                    <th className={TH}>En curso</th>
-                                    {canCreate && <th className={TH_ACTIONS_CLASS}>Acciones</th>}
+                                    <th className={`${TH} whitespace-normal`}>Vigente y aprobación</th>
+                                    {canCreate && <th className={`${TH_ACTIONS_CLASS} !px-3 last:!pr-5`}>Acciones</th>}
                                 </tr>
                             </thead>
                             <tbody className={TBODY_CLASS}>
@@ -153,16 +152,32 @@ export const DocumentsPage: React.FC = () => {
                                         <td className={TD}>
                                             <Link className="font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:inline-flex [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:items-center" to={documentDetailPath(d.id)}>{d.code}</Link>
                                         </td>
-                                        <td className={TD}><span className="block max-w-[10rem] truncate 2xl:max-w-[16rem]" title={d.title}>{d.title}</span></td>
+                                        <td className={TD}>
+                                            <span className="block max-w-[10rem] truncate 2xl:max-w-[18rem]" title={d.title}>{d.title}</span>
+                                            {d.openVersionStatus && (
+                                                <span className="mt-1 block">
+                                                    <Badge variant={STATUS[d.openVersionStatus][1]}>En curso: {STATUS[d.openVersionStatus][0]}</Badge>
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className={TD}><span className={NARROW_TRUNCATE} title={d.type}>{d.type}</span></td>
                                         <td className={TD}><span className={NARROW_TRUNCATE} title={d.process}>{d.process}</span></td>
-                                        <td className={TD}><span className="block max-w-[8rem] truncate" title={d.ownerName ?? undefined}>{d.ownerName ?? '—'}</span></td>
-                                        <td className={TD}>{currentLabel(d) || '—'}</td>
+                                        <td className={TD}><span className="block max-w-[7rem] truncate 2xl:max-w-[12rem]" title={d.ownerName ?? undefined}>{d.ownerName ?? '—'}</span></td>
+                                        {/* Current version, approval date and approver in one two-line cell, so the table fits at 1280 px. */}
                                         <td className={TD}>
-                                            {d.approvedAt ? <>{formatDate(asUtc(d.approvedAt))}<span className="block max-w-[8rem] truncate text-xs text-slate-500 dark:text-slate-400" title={d.approvedByName ?? undefined}>{d.approvedByName}</span></> : '—'}
-                                        </td>
-                                        <td className={TD}>
-                                            {d.openVersionStatus ? <Badge variant={STATUS[d.openVersionStatus][1]}>{STATUS[d.openVersionStatus][0]}</Badge> : '—'}
+                                            {currentLabel(d) || d.approvedAt ? (
+                                                <>
+                                                    <span className="block font-medium text-slate-900 dark:text-white">
+                                                        {currentLabel(d) || '—'}
+                                                        {d.approvedAt && <span className="font-normal text-slate-600 dark:text-slate-400" title={formatDate(asUtc(d.approvedAt))}> · {formatDate(asUtc(d.approvedAt), SHORT_DATE)}</span>}
+                                                    </span>
+                                                    {d.approvedByName && (
+                                                        <span className="block max-w-[8rem] truncate text-xs text-slate-500 dark:text-slate-400" title={`Aprobó ${d.approvedByName}`}>
+                                                            Aprobó <span>{d.approvedByName}</span>
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : '—'}
                                         </td>
                                         {canCreate && (
                                             <td className={`${TD} text-right ${TD_ACTIONS_CLASS}`}>

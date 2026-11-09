@@ -10,6 +10,7 @@ import {
     Code2,
     HeartHandshake,
     FileText,
+    FolderOpen,
     Wallet,
     GraduationCap,
     Scale,
@@ -70,6 +71,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
             { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
             { key: 'ai-usage', permission: 'menu.platform.ai_usage', label: 'Uso de IA', icon: Gauge, to: ROUTES.AI_USAGE },
+            { key: 'documents', permission: 'menu.platform.documents', label: 'Documentos', icon: FolderOpen, to: ROUTES.DOCUMENTS },
         ],
     },
     {

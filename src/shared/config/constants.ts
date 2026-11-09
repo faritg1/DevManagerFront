@@ -1,6 +1,8 @@
 export const ROUTES = {
     LOGIN: '/',
     REGISTER: '/register',
+    FORGOT_PASSWORD: '/recuperar-contrasena',
+    RESET_PASSWORD: '/restablecer-contrasena',
     
     DASHBOARD: '/dashboard',
     
@@ -42,6 +44,8 @@ export const ROUTES = {
     ASISTENTE: '/asistente',
     SUPER_ADMIN: '/superadmin',
     AUDIT: '/audit',
+    DOCUMENTS: '/documentos',
+    DOCUMENT_DETAIL: '/documentos/:id',
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
     MY_ACTIVITIES: '/my-activities',
@@ -70,4 +74,5 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const associateDetailPath = (userId: string): string => `/associates/${userId}`;
+export const documentDetailPath = (id: string): string => `/documentos/${id}`;
 export const educationProgramPath = (programId: string): string => `/education/${programId}`;

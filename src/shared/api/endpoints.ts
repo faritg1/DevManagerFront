@@ -3,6 +3,9 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER_ORGANIZATION: "/auth/register-organization",
+    CHANGE_PASSWORD: "/auth/change-password",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    RESET_PASSWORD: "/auth/reset-password",
   },
 
   // Organización del usuario (la del token)
@@ -149,6 +152,17 @@ export const API_ENDPOINTS = {
   AUDIT: {
     CHANGES: "/audit/changes",
   },
+  // Control documental
+  DOCUMENTS: {
+    BASE: "/documents",
+    BY_ID: (id: string) => `/documents/${id}`,
+    PENDING_READS: "/documents/pending-reads",
+    READS: (id: string) => `/documents/${id}/reads`,
+    DISTRIBUTION: (id: string) => `/documents/${id}/distribution`,
+    VERSIONS: (id: string) => `/documents/${id}/versions`,
+    VERSION: (id: string, versionId: string) => `/documents/${id}/versions/${versionId}`,
+  },
+
 
   // In-app notifications of the current user
   NOTIFICATIONS: {

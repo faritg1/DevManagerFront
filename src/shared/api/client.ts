@@ -123,6 +123,11 @@ class ApiClient {
     return this.request<T>("POST", `${this.baseUrl}${endpoint}`, form, UPLOAD_TIMEOUT_MS);
   }
 
+  /** Multipart with its own fields; a large file can outlast the default timeout. */
+  sendForm<T>(method: "POST" | "PUT", endpoint: string, form: FormData): Promise<ApiResponse<T>> {
+    return this.request<T>(method, `${this.baseUrl}${endpoint}`, form, UPLOAD_TIMEOUT_MS);
+  }
+
   put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>("PUT", `${this.baseUrl}${endpoint}`, body);
   }

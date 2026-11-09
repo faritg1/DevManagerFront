@@ -24,6 +24,8 @@ const education = () => import("../features/education");
 
 const LoginPage = page(auth, "LoginPage");
 const RegisterPage = page(auth, "RegisterPage");
+const ForgotPasswordPage = page(auth, "ForgotPasswordPage");
+const ResetPasswordPage = page(auth, "ResetPasswordPage");
 const DashboardPage = page(() => import("../features/dashboard"), "DashboardPage");
 const CreateProjectPage = page(projects, "CreateProjectPage");
 const ProjectsPage = page(projects, "ProjectsPage");
@@ -57,6 +59,9 @@ const CompetenciasPage = page(() => import("../features/competencias"), "Compete
 const ReportesSupersolidariaPage = page(() => import("../features/reportes-supersolidaria"), "ReportesSupersolidariaPage");
 const AsistentePage = page(() => import("../features/asistente"), "AsistentePage");
 const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPage");
+const documents = () => import("../features/documents");
+const DocumentsPage = page(documents, "DocumentsPage");
+const DocumentDetailPage = page(documents, "DocumentDetailPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
@@ -74,7 +79,13 @@ export const AppRouter: React.FC = () => {
                 <Route element={<AuthLayout />}>
                   <Route path={ROUTES.LOGIN} element={<LoginPage />} />
                   <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+                  <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
                 </Route>
+              </Route>
+
+              {/* Outside PublicRoute, which would send whoever has a session open to the dashboard */}
+              <Route element={<AuthLayout />}>
+                <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>
@@ -103,6 +114,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.SUPER_ADMIN} element={<SuperAdminPage />} />
                     {/* menu.admin.audit or the super admin (navConfig allowSuperAdmin), as the API */}
                     <Route path={ROUTES.AUDIT} element={<AuditPage />} />
+                    <Route path={ROUTES.DOCUMENTS} element={<DocumentsPage />} />
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />
@@ -113,6 +125,9 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
                     <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
 
+                    <Route element={<PermissionGuard require="menu.platform.documents" />}>
+                      <Route path={ROUTES.DOCUMENT_DETAIL} element={<DocumentDetailPage />} />
+                    </Route>
                     <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />
                     </Route>

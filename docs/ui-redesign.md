@@ -399,7 +399,7 @@ Aplicada en la rama `Edwin` en cinco commits (`181e55b` tokens, botones y formul
 | 10. Login y auth | Hecho | Sin manchas difuminadas; tarjeta plana; enlaces a 44 px. |
 | 11. Dashboard | Hecho | KPI principales en 2 + 1 en móvil, títulos de sección h2, un solo CTA primario (el del estado vacío pasa a `secondary`), `ErrorState` con la recarga que ya existía. |
 | 12. Proyectos | Hecho | Buscador h-10 junto al botón h-10, pestañas como control segmentado, complejidad en `outline`, `ErrorState`. |
-| 13. Documentos | Parcial | Acciones de cabecera en `md`, placeholders de Tipo y Proceso, `SkeletonRows`, acciones fijas, truncado de Título, Tipo, Proceso, Responsable y aprobador, celdas más estrechas. **A 1280 px con el menú expandido se ven 7 de 9 columnas** (antes 5): Aprobación y En curso siguen tras el scroll horizontal; la columna de acciones ya no desaparece. Para ver las 9 habría que ocultar o fusionar columnas (fuera de alcance, sección 6). Los filtros se quedan en h-11 (los cuatro iguales) porque `Select` no tiene tamaño `sm`. Detalle: las acciones de versión van en rejilla de 2 en móvil **sin reordenar** la primaria arriba, para no separar el orden visual del orden de foco. |
+| 13. Documentos | Hecho (cerrado en 7.3) | Acciones de cabecera en `md`, placeholders de Tipo y Proceso, `SkeletonRows`, acciones fijas, truncado de Título, Tipo, Proceso, Responsable y aprobador, celdas más estrechas. **A 1280 px con el menú expandido se ven 7 de 9 columnas** (antes 5): Aprobación y En curso siguen tras el scroll horizontal; la columna de acciones ya no desaparece. Para ver las 9 habría que ocultar o fusionar columnas (fuera de alcance, sección 6). Los filtros se quedan en h-11 (los cuatro iguales) porque `Select` no tiene tamaño `sm`. Detalle: las acciones de versión van en rejilla de 2 en móvil **sin reordenar** la primaria arriba, para no separar el orden visual del orden de foco. |
 | 14. Actividades, Asociados, Perfil | Hecho | Selector de proyecto `max-w-md`; Asociados toma la rejilla del paso 9 y su buscador y select ya miden 40 px; tarjeta de perfil plana con CTA `primary-600`. |
 | 15. Barrido | Hecho | 26 `text-rose-500`, 31 `text-emerald-500`, 14 `text-emerald-600`, 6 `text-amber-600`, 4 `text-[10/11px]` y 39 textos `text-primary`/`hover:text-primary` con su par oscuro. Los iconos `text-amber-500` pasan a `amber-600` (3.19, pasa 3:1 como gráfico). Degradados eliminados en organizaciones, reportes, chat de IA y asistente; sombras de color fuera de `ProgressBar`. |
 
@@ -426,13 +426,21 @@ Aplicada en la rama `Edwin` en cinco commits (`181e55b` tokens, botones y formul
 
 Áreas táctiles: la auditoría de Playwright a 390 px con `hasTouch` no encuentra ningún control visible por debajo de 44 × 44 en dashboard, actividades, proyectos, asociados, documentos y perfil (antes fallaban el header, los botones de página, la edición de fila, los enlaces de código, el cierre de toast y el cajón; hallazgo 6).
 
-### 7.3 Pendiente
+### 7.3 Cierre de pendientes (autorizado por Edwin)
 
-- Animación de salida de toasts y del modal (requiere retrasar el desmontaje).
-- Documentos a 1280 px: Aprobación y En curso quedan tras el scroll (ver paso 13).
-- Quedan unos 67 `text-primary` en iconos y logotipos a propósito (acento de marca) y algunos en cadenas multilínea o condicionales que el barrido no tocó; revisar a mano si aparecen como texto.
-- `text-slate-500` directamente sobre `#f6f7f8` fuera de `PageHeader` y `EmptyState`: no se detecta de forma automática; revisar pantalla a pantalla.
-- Los iconos de KPI en `amber-600`, `emerald-700`, etc. se dejaron como estaban en tono, sin auditar uno a uno.
-- La tarjeta de proyecto en el detalle (`ProjectDetailPage`) mantiene la complejidad con color de estado.
+Commits , ,  y . La suite e2e sigue en 52 de 52.
 
-Capturas de después: mismos nombres que las de la fase 1 con el sufijo `-after` (por ejemplo `dashboard-movil-light-admin-after.png`, `menu-movil-movil-dark-admin-after.png`).
+- **Salida de toasts:** al cerrarse (por tiempo o a mano), el toast se marca como saliente, anima 150 ms () y luego se desmonta. Con  se desmonta al instante. La duración visible (5 s por defecto), los textos y el cierre manual no cambian. El modal sigue sin animación de salida: su desmontaje lo controla cada pantalla con .
+- **Documentos a 1280 px:** las 9 piezas de información caben sin scroll horizontal (tabla de 958 px en un contenedor de 958). Vigente, fecha y aprobador van en una celda de dos líneas «Vigente y aprobación» ( / ; la fecha larga queda en ) y la versión en curso pasa a un badge «En curso: …» bajo el título. El CSV no cambia.  no usa los encabezados; el aprobador se pinta en su propio  para que «Carla Díaz» siga siendo una sola coincidencia de texto.
+- **Barrido de grises:** se midió en el navegador el contraste real de cada texto visible contra su fondo compuesto (alfa incluido), en claro y oscuro, en todas las rutas del menú más el detalle de documento, el perfil y Mis actividades, con admin y con Carolina. Fallaban 5: «Mostrando N proyectos» (4.44), la pestaña inactiva de Permisos (4.44), «Pendiente de validación» en el perfil (4.37) y el aviso  de Reportes (2.17 en claro, 3.25 en oscuro). Pasan a  y /. **Quedan 0.** No se auditaron los modales ni los estados que solo aparecen tras una acción.
+- **Revisión móvil (390 px, claro y oscuro):** la hoja inferior recibe el foco al abrir, se cierra con Escape y tocando fuera, y devuelve el foco al botón que la abrió. Se corrigió que los cuatro diálogos de Documentos pusieran «Cancelar» antes que la acción primaria (en móvil quedaba arriba y en escritorio a la derecha). Los toasts abajo tapaban el pie de las hojas inferiores (Guardar), así que en móvil pasan a anclarse bajo la cabecera (): no tapan la navegación ni los botones de la hoja.
+- **Acción primaria en el detalle de Documentos:** sí se pudo subir sin separar el orden visual del de foco. Las acciones primarias (Enviar a revisión, Aprobar y Rechazar, Confirmar lectura) van primero en el DOM; en móvil la primera ocupa toda la fila arriba y en escritorio queda a la izquierda del grupo, sin  ni .
+
+### 7.4 Pendiente
+
+- Quedan unos 67  en iconos y logotipos a propósito (acento de marca).
+- Los iconos de KPI (, …) cumplen 3:1 como gráficos, pero no se auditaron uno a uno.
+- La complejidad del proyecto en  sigue con color de estado.
+- Contraste dentro de modales y de estados posteriores a una acción: falta una pasada.
+
+Capturas de después: mismos nombres que las de la fase 1 con el sufijo `-after` (por ejemplo `dashboard-movil-light-admin-after.png`, `menu-movil-movil-dark-admin-after.png`). Las del cierre: `documentos-desk-light-admin-after2.png`, `documento-detalle-movil-<light|dark>-admin-after2.png`, `modal-hoja-movil-<light|dark>-after.png`, `confirmar-movil-<light|dark>-after.png` y `toast-movil-<light|dark>-after.png`.

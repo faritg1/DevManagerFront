@@ -39,7 +39,11 @@ const TOAST_STYLES: Record<NotificationType, { icon: LucideIcon; accent: string 
     info: { icon: Info, accent: 'border-l-primary text-primary-600 dark:text-primary' },
 };
 
-const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: string) => void }> = ({ notifications, onClose }) => (
+/** Exit animation length; the toast is unmounted after it (instantly when the user turns motion off). */
+const EXIT_MS = 150;
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+const ToastViewport: React.FC<{ notifications: Notification[]; leaving: ReadonlySet<string>; onClose: (id: string) => void }> = ({ notifications, leaving, onClose }) => (
     <div
         aria-live="polite"
         aria-label="Notificaciones"
@@ -51,7 +55,7 @@ const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: str
                 <div
                     key={n.id}
                     role={n.type === 'error' ? 'alert' : 'status'}
-                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-[3px] border-slate-200 dark:border-border-dark ${accent} bg-white dark:bg-surface-dark p-4 shadow-lg shadow-slate-900/5 dark:shadow-black/40 animate-slide-up`}
+                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border border-l-[3px] border-slate-200 dark:border-border-dark ${accent} bg-white dark:bg-surface-dark p-4 shadow-lg shadow-slate-900/5 dark:shadow-black/40 ${leaving.has(n.id) ? 'animate-toast-out' : 'animate-slide-up'}`}
                 >
                     <Icon size={20} className="shrink-0 mt-0.5" aria-hidden="true" />
                     <div className="flex-1 min-w-0">
@@ -74,9 +78,16 @@ const ToastViewport: React.FC<{ notifications: Notification[]; onClose: (id: str
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [leaving, setLeaving] = useState<ReadonlySet<string>>(() => new Set());
 
     const removeNotification = useCallback((id: string) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
+        const drop = () => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+            setLeaving(prev => { if (!prev.has(id)) return prev; const next = new Set(prev); next.delete(id); return next; });
+        };
+        if (reducedMotion()) { drop(); return; }
+        setLeaving(prev => (prev.has(id) ? prev : new Set(prev).add(id)));
+        setTimeout(drop, EXIT_MS);
     }, []);
 
     const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
@@ -110,7 +121,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     return (
         <NotificationContext.Provider value={{ notifications, addNotification, removeNotification, clearAll, showNotification }}>
             {children}
-            <ToastViewport notifications={notifications} onClose={removeNotification} />
+            <ToastViewport notifications={notifications} leaving={leaving} onClose={removeNotification} />
         </NotificationContext.Provider>
     );
 };

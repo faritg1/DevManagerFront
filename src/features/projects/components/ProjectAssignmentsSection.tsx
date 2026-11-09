@@ -58,7 +58,7 @@ export const ProjectAssignmentsSection: React.FC<ProjectAssignmentsSectionProps>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Users className="text-emerald-500" size={20} />
+          <Users className="text-emerald-700 dark:text-emerald-400" size={20} />
           Miembros Asignados
           {assignments.length > 0 && <Badge variant="default">{assignments.length}</Badge>}
         </CardTitle>

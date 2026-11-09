@@ -195,7 +195,7 @@ export const NominaPage: React.FC = () => {
                                         <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(c.period, { month: 'long', year: 'numeric' })}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(c.calculatedValue)}</p>
+                                        <p className="font-bold text-emerald-700 dark:text-emerald-400">{currency(c.calculatedValue)}</p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
                                             {c.model === 1 ? `${c.baseValue} días × ${currency(c.dailyRate ?? 0)}` : `Base: ${currency(c.baseValue)}`}
                                         </p>
@@ -248,7 +248,7 @@ export const NominaPage: React.FC = () => {
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">Salud</p><p className="font-bold">{currency(pilaResult.healthContribution)}</p></div>
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">Pensión</p><p className="font-bold">{currency(pilaResult.pensionContribution)}</p></div>
                                     <div><p className="text-xs text-slate-500 dark:text-slate-400">ARL</p><p className="font-bold">{currency(pilaResult.arlContribution)}</p></div>
-                                    <div className="col-span-2 sm:col-span-4"><p className="text-xs text-slate-500 dark:text-slate-400">Total</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{currency(pilaResult.total)}</p></div>
+                                    <div className="col-span-2 sm:col-span-4"><p className="text-xs text-slate-500 dark:text-slate-400">Total</p><p className="font-bold text-emerald-700 dark:text-emerald-400">{currency(pilaResult.total)}</p></div>
                                 </div>
                             )}
                         </div>
@@ -288,7 +288,7 @@ export const NominaPage: React.FC = () => {
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.healthContribution)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.pensionContribution)}</td>
                                         <td className={`${TD_CLASS} text-slate-500 dark:text-slate-400`}>{currency(p.arlContribution)}</td>
-                                        <td className={`${TD_CLASS} font-bold text-emerald-600 dark:text-emerald-400`}>{currency(p.total)}</td>
+                                        <td className={`${TD_CLASS} font-bold text-emerald-700 dark:text-emerald-400`}>{currency(p.total)}</td>
                                     </tr>
                                 ))}
                             </tbody>

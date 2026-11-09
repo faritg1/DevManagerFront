@@ -44,8 +44,8 @@ export const VersionFormDialog: React.FC<Props> = ({ documentId, version, onClos
             onSubmit={save}
             title={version ? `Corregir versión ${version.versionNumber}` : 'Subir versión'}
             footer={<>
-                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
                 <Button type="submit" isLoading={saving}>Guardar</Button>
+                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
             </>}
         >
             <div className="space-y-4">

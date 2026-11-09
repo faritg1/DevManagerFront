@@ -25,7 +25,7 @@ import {
 } from '../../../shared/api/types';
 
 import { getComplexityConfig as getSharedComplexityConfig } from '../utils/complexityConfig';
-import { getProjectGradient, getProjectInitials } from '../utils/projectAvatar';
+import { getProjectTint, getProjectInitials } from '../utils/projectAvatar';
 import { formatDate as formatLongDate } from '../../../shared/format';
 
 import { ProjectActivitiesSection } from '../../activities/components/ProjectActivitiesSection';
@@ -181,7 +181,7 @@ export const ProjectDetailPage: React.FC = () => {
                 <BackButton to={ROUTES.PROJECTS} />
                 <div className="flex flex-col items-center justify-center py-20">
                     <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                        <AlertCircle className="w-10 h-10 text-rose-500" />
+                        <AlertCircle className="w-10 h-10 text-rose-600 dark:text-rose-400" />
                     </div>
                     <p className="text-slate-700 dark:text-slate-300 font-semibold">
                         {error || 'Proyecto no encontrado'}
@@ -200,7 +200,7 @@ export const ProjectDetailPage: React.FC = () => {
             <PageHeader
                 backTo={ROUTES.PROJECTS}
                 icon={
-                    <span className={`size-12 rounded-xl bg-gradient-to-br ${getProjectGradient(project.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0`} aria-hidden="true">
+                    <span className={`size-12 rounded-xl ${getProjectTint(project.name)} flex items-center justify-center font-bold text-lg shrink-0`} aria-hidden="true">
                         {getProjectInitials(project.name)}
                     </span>
                 }
@@ -276,9 +276,9 @@ export const ProjectDetailPage: React.FC = () => {
                                 'bg-emerald-50 dark:bg-emerald-500/10'
                             }`}>
                                 <Target className={`${
-                                    complexityConfig.variant === 'danger' ? 'text-rose-500' :
+                                    complexityConfig.variant === 'danger' ? 'text-rose-600 dark:text-rose-400' :
                                     complexityConfig.variant === 'warning' ? 'text-orange-500' :
-                                    'text-emerald-500'
+                                    'text-emerald-700 dark:text-emerald-400'
                                 }`} size={24} />
                             </div>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Complejidad</p>

@@ -109,7 +109,7 @@ export const UserDetailPage: React.FC = () => {
         <BackButton to={ROUTES.USERS} />
         <div className="flex flex-col items-center justify-center py-20">
           <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-            <AlertTriangle className="w-10 h-10 text-rose-500" />
+            <AlertTriangle className="w-10 h-10 text-rose-600 dark:text-rose-400" />
           </div>
           <p className="text-slate-700 dark:text-slate-300 font-semibold">
             {error || "Usuario no encontrado"}
@@ -163,7 +163,7 @@ export const UserDetailPage: React.FC = () => {
                 <Badge variant="default">{skills.length}</Badge>
               </h2>
               {validatedCount > 0 && (
-                <span className="text-xs text-emerald-500">
+                <span className="text-xs text-emerald-700 dark:text-emerald-400">
                   {validatedCount} validadas
                 </span>
               )}
@@ -212,7 +212,7 @@ export const UserDetailPage: React.FC = () => {
                         </Badge>
                         {skill.lastValidatedAt ? (
                           <span title={`Validado por ${skill.validatedByName || "manager"}`}>
-                            <CheckCircle2 size={14} className="text-emerald-500" />
+                            <CheckCircle2 size={14} className="text-emerald-700 dark:text-emerald-400" />
                           </span>
                         ) : (
                           <span title="Pendiente de validación">
@@ -274,7 +274,7 @@ export const UserDetailPage: React.FC = () => {
 
           <Card>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-              <Star size={20} className="text-amber-500" />
+              <Star size={20} className="text-amber-600 dark:text-amber-400" />
               Resumen
             </h2>
             <div className="space-y-3">
@@ -286,7 +286,7 @@ export const UserDetailPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-500 dark:text-slate-400">Validadas</span>
-                <span className="text-sm font-bold text-emerald-500">
+                <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                   {validatedCount}
                 </span>
               </div>

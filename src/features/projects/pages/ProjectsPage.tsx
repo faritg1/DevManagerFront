@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, FolderOpen, AlertCircle } from 'lucide-react';
-import { Button, Input, PageContainer, PageHeader, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Plus, Search, FolderOpen } from 'lucide-react';
+import { buttonClasses, Input, PageContainer, PageHeader, EmptyState, ErrorState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
 import { projectsService } from '../../../shared/api';
 import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_COMPLEXITY_LABELS, type ProjectResponse } from '../../../shared/api/types';
@@ -72,54 +72,47 @@ export const ProjectsPage: React.FC = () => {
             <PageHeader
                 title="Proyectos"
                 description="Gestiona y monitorea todos los proyectos de la organización."
-                actions={<><AskAiButton moduleKey="projects" /><div className="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+                actions={<><AskAiButton moduleKey="projects" /><div className="col-span-2 flex items-center gap-2 flex-wrap w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <Input
                                 placeholder="Buscar proyectos..." aria-label="Buscar proyectos"
+                                inputSize="sm"
                                 icon={Search}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         {canCreate && (
-                            <Link to={ROUTES.CREATE_PROJECT}>
-                                <Button icon={Plus}>
-                                    Nuevo Proyecto
-                                </Button>
+                            <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses('primary', 'md', 'w-full sm:w-auto')}>
+                                <Plus size={16} aria-hidden="true" />Nuevo Proyecto
                             </Link>
                         )}
                     </div></>}
             />
-            <div className="flex flex-col gap-8">
-                <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex flex-col gap-6">
+                <div className="-mx-1 overflow-x-auto px-1 py-1">
+                <div className="inline-flex gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-border-dark dark:bg-card-dark">
                     {STATUS_TABS.map((tab) => (
                         <button
                             key={tab.label}
                             onClick={() => setActiveTab(tab.value)}
                             aria-pressed={activeTab === tab.value}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                            className={`h-9 [@media(pointer:coarse)]:h-11 px-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                 activeTab === tab.value
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                                    : 'bg-slate-100 dark:bg-card-dark text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-surface-dark'
+                                    ? 'bg-white text-slate-900 font-semibold shadow-sm dark:bg-surface-dark dark:text-white'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
+                </div>
 
                 {isLoading ? (
                     <LoadingBlock label="Cargando proyectos…" className="py-20" />
                 ) : error ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="p-4 rounded-full bg-rose-100 dark:bg-rose-500/10 mb-4">
-                            <AlertCircle className="w-10 h-10 text-rose-500" />
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 font-semibold mb-2">{error}</p>
-                        <Button variant="outline" onClick={() => window.location.reload()}>
-                            Reintentar
-                        </Button>
-                    </div>
+                    <ErrorState title={error} onRetry={() => window.location.reload()} className="py-20" />
                 ) : filteredProjects.length === 0 ? (
                     <EmptyState
                         icon={FolderOpen}
@@ -127,15 +120,15 @@ export const ProjectsPage: React.FC = () => {
                         title={searchQuery ? 'No se encontraron proyectos' : 'No hay proyectos'}
                         description={searchQuery ? 'Intenta con otros términos de búsqueda.' : canCreate ? 'Crea tu primer proyecto para comenzar.' : undefined}
                         action={!searchQuery && canCreate && (
-                            <Link to={ROUTES.CREATE_PROJECT}>
-                                <Button icon={Plus}>Crear Proyecto</Button>
+                            <Link to={ROUTES.CREATE_PROJECT} className={buttonClasses('secondary')}>
+                                <Plus size={16} aria-hidden="true" />Crear Proyecto
                             </Link>
                         )}
                     />
                 ) : (
                     <>
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
                                 Mostrando {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}
                             </p>
                             <ExportButton rows={filteredProjects} columns={EXPORT_COLUMNS} filename="proyectos" />

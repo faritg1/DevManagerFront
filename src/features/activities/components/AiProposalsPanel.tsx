@@ -26,7 +26,7 @@ export const AiProposalsPanel: React.FC<Props> = ({ proposals, members, canDecid
                 <summary className="flex cursor-pointer list-none items-center gap-2 p-4 [&::-webkit-details-marker]:hidden">
                     <Sparkles size={18} className="text-primary" aria-hidden="true" />
                     <h2 className="text-base font-bold text-slate-900 dark:text-white">Propuestas de IA</h2>
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-600 dark:text-primary">
                         {proposals.length} pendiente{proposals.length === 1 ? '' : 's'}
                     </span>
                     <ChevronDown size={18} className="ml-auto text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />

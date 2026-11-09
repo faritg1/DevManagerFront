@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-    variant?: 'default' | 'elevated' | 'bordered' | 'gradient';
+    variant?: 'default' | 'elevated' | 'bordered';
     padding?: 'none' | 'sm' | 'md' | 'lg';
     hoverable?: boolean;
     children: React.ReactNode;
@@ -9,9 +9,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const variantStyles = {
     default: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark',
-    elevated: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark shadow-lg',
+    elevated: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark shadow-sm',
     bordered: 'bg-transparent border-2 border-slate-200 dark:border-border-dark',
-    gradient: 'bg-gradient-to-br from-primary to-primary-dark text-white border-0',
 };
 
 const paddingStyles = {
@@ -30,7 +29,7 @@ export const Card: React.FC<CardProps> = ({
     ...props
 }) => {
     const hoverStyles = hoverable 
-        ? 'hover:shadow-xl hover:border-primary/50 dark:hover:border-primary transition-all cursor-pointer transform hover:-translate-y-1 duration-300' 
+        ? 'hover:shadow-sm hover:border-slate-300 dark:hover:border-input-border transition-[border-color,box-shadow] duration-[120ms] ease-standard cursor-pointer'
         : '';
 
     return (
@@ -62,7 +61,7 @@ export const CardTitle: React.FC<{ children: React.ReactNode; className?: string
     children, 
     className = '' 
 }) => (
-    <h3 className={`text-lg font-bold text-slate-900 dark:text-white ${className}`}>
+    <h3 className={`text-base font-semibold text-slate-900 dark:text-white ${className}`}>
         {children}
     </h3>
 );

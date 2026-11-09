@@ -50,11 +50,11 @@ export const SprintBurndown: React.FC<{ sprint: SprintResponse; items: WorkItemR
                 {[0, total / 2, total].map((v) => (
                     <g key={v}>
                         <line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} className="stroke-slate-200 dark:stroke-white/10" />
-                        <text x={PAD.l - 6} y={y(v) + 4} textAnchor="end" className="fill-slate-500 text-[11px]">{round(v)}</text>
+                        <text x={PAD.l - 6} y={y(v) + 4} textAnchor="end" className="fill-slate-500 text-xs">{round(v)}</text>
                     </g>
                 ))}
                 {ticks.map((n) => (
-                    <text key={n} x={x(n)} y={H - 8} textAnchor="middle" className="fill-slate-500 text-[11px]">{formatDate(points[n].day)}</text>
+                    <text key={n} x={x(n)} y={H - 8} textAnchor="middle" className="fill-slate-500 text-xs">{formatDate(points[n].day)}</text>
                 ))}
                 <path d={line(points.map((p, n) => ({ n, v: p.ideal })))} fill="none" strokeWidth={2} strokeDasharray="5 4" className="stroke-slate-400" />
                 <path d={line(actual.map((p) => ({ n: p.n, v: p.remaining! })))} fill="none" strokeWidth={2} className="stroke-primary" />

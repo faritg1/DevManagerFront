@@ -9,6 +9,10 @@ import { NAV_CONFIG, visibleNav, type NavItemConfig } from './navConfig';
 
 const CollapsedContext = createContext(false);
 
+const ITEM = 'relative flex items-center gap-3 px-3 h-10 [@media(pointer:coarse)]:h-11 rounded-lg transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const ACTIVE = 'bg-primary/10 text-primary-600 dark:text-primary font-semibold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-primary';
+const IDLE = 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5';
+
 interface NavItemProps {
     to: string;
     icon: LucideIcon;
@@ -23,14 +27,10 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, isActive }) =>
         to={to}
         title={collapsed ? label : undefined}
         aria-current={isActive ? 'page' : undefined}
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${collapsed ? 'justify-center' : ''} ${
-            isActive 
-                ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm' 
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-        }`}
+        className={`${ITEM} ${collapsed ? 'justify-center' : ''} ${isActive ? ACTIVE : IDLE}`}
     >
-        <Icon size={20} className={`shrink-0 ${isActive ? 'fill-current' : ''}`} />
-        <span className={collapsed ? 'sr-only' : 'text-sm font-medium'}>{label}</span>
+        <Icon size={20} className="shrink-0" aria-hidden="true" />
+        <span className={collapsed ? 'sr-only' : 'truncate text-sm'}>{label}</span>
     </Link>
     );
 };
@@ -79,16 +79,16 @@ const NavSection: React.FC<NavSectionProps> = ({ title, id, open, onToggle, chil
                 onClick={onToggle}
                 aria-expanded={open}
                 aria-controls={id}
-                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:text-white"
+                className="flex w-full h-9 [@media(pointer:coarse)]:h-11 items-center justify-between rounded-lg px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors duration-[120ms] hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:text-white"
             >
                 {title}
-                <ChevronDown size={14} aria-hidden="true" className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+                <ChevronDown size={14} aria-hidden="true" className={`transition-transform duration-[180ms] ease-standard ${open ? '' : '-rotate-90'}`} />
             </button>
             {/* grid-rows 0fr↔1fr anima la altura sin medirla; inert saca del tabulado los ítems ocultos. */}
             <div
                 id={id}
                 inert={!open}
-                className={`grid transition-[grid-template-rows] duration-200 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                className={`grid transition-[grid-template-rows] duration-[180ms] ease-standard ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
             >
                 <div className="min-h-0 space-y-1 overflow-hidden">{children}</div>
             </div>
@@ -216,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     // idPrefix evita ids duplicados: el menú se pinta dos veces (escritorio y cajón móvil).
     const renderContent = (compact: boolean, idPrefix: string) => (
         <CollapsedContext.Provider value={compact}>
-            <div className={`p-6 flex items-center ${compact ? 'justify-center' : 'justify-between'}`}>
+            <div className={`px-5 py-5 flex items-center ${compact ? 'justify-center' : 'justify-between'}`}>
                 <div className="flex items-center gap-3">
                     <div className="size-8 text-primary shrink-0">
                         <Hexagon fill="currentColor" className="w-full h-full" />
@@ -226,23 +226,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="md:hidden p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
+                        className="md:hidden inline-flex size-11 -mr-2 items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         aria-label="Cerrar menú"
                     >
-                        <X size={20} />
+                        <X size={20} aria-hidden="true" />
                     </button>
                 )}
             </div>
 
-            <div className={compact ? 'px-3 pb-6 flex justify-center' : 'px-6 pb-6'} title={compact ? user?.name : undefined}>
-                <div className={`flex items-center gap-3 ${compact ? 'p-1.5' : 'p-3'} bg-slate-50 dark:bg-card-dark rounded-xl border border-slate-100 dark:border-border-dark`}>
+            <div className={compact ? 'px-3 pb-4 flex justify-center' : 'px-4 pb-4'} title={compact ? user?.name : undefined}>
+                <div className={`flex items-center gap-3 ${compact ? 'p-1.5' : 'p-2.5'} bg-slate-50 dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark`}>
                     <Avatar 
                         src={user?.avatar} 
                         name={user?.name || 'Usuario'} 
                         size="sm"
                     />
                     <div className={compact ? 'sr-only' : 'flex flex-col overflow-hidden'}>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                             {user?.name || 'Usuario'}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -252,9 +252,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 flex flex-col gap-3 overflow-y-auto" aria-label="Menú principal" aria-busy={access.isLoading}>
+            <nav className="flex-1 px-3 flex flex-col gap-2 overflow-y-auto" aria-label="Menú principal" aria-busy={access.isLoading}>
                 {access.isLoading && [0, 1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-9 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" aria-hidden="true" />
+                    <div key={i} className="h-10 rounded-lg bg-slate-100 dark:bg-white/5 animate-pulse" aria-hidden="true" />
                 ))}
                 {sections.map((section) => (
                     <NavSection
@@ -272,17 +272,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                                     aria-expanded={openGroups.has(item.key)}
                                     aria-controls={`${idPrefix}-nav-group-${item.key}`}
                                     title={compact ? item.label : undefined}
-                                    className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : 'justify-between'} ${
-                                        itemActive(item)
-                                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                                    }`}
+                                    className={`w-full ${ITEM} ${compact ? 'justify-center' : 'justify-between'} ${itemActive(item) ? 'bg-primary/10 text-primary-600 dark:text-primary font-semibold' : IDLE}`}
                                 >
                                     <span className="flex items-center gap-3">
                                         <item.icon size={20} className="shrink-0" aria-hidden="true" />
-                                        <span className={compact ? 'sr-only' : 'text-sm font-medium'}>{item.label}</span>
+                                        <span className={compact ? 'sr-only' : 'text-sm'}>{item.label}</span>
                                     </span>
-                                    {!compact && <ChevronDown size={18} aria-hidden="true" className={`transition-transform ${openGroups.has(item.key) ? 'rotate-180' : ''}`} />}
+                                    {!compact && <ChevronDown size={18} aria-hidden="true" className={`transition-transform duration-[180ms] ease-standard ${openGroups.has(item.key) ? 'rotate-180' : ''}`} />}
                                 </button>
                                 <div
                                     id={`${idPrefix}-nav-group-${item.key}`}
@@ -300,15 +296,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-slate-200 dark:border-border-dark mt-auto space-y-1">
+            <div className="p-3 border-t border-slate-200 dark:border-border-dark mt-auto space-y-1">
                 <NavItem to={ROUTES.PROFILE} icon={User} label="Mi Perfil" isActive={isActive(ROUTES.PROFILE)} />
                 <button
                     onClick={handleLogout}
                     title={compact ? 'Cerrar Sesión' : undefined}
-                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'justify-center' : ''}`}
+                    className={`w-full ${ITEM} text-slate-600 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 ${compact ? 'justify-center' : ''}`}
                 >
-                    <LogOut size={20} className="shrink-0" />
-                    <span className={compact ? 'sr-only' : 'text-sm font-medium'}>Cerrar Sesión</span>
+                    <LogOut size={20} className="shrink-0" aria-hidden="true" />
+                    <span className={compact ? 'sr-only' : 'text-sm'}>Cerrar Sesión</span>
                 </button>
             </div>
         </CollapsedContext.Provider>
@@ -322,8 +318,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             </aside>
 
             <div
-                className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ${
-                    isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                className={`fixed inset-0 bg-slate-950/50 z-40 md:hidden transition-opacity ${
+                    isOpen ? 'opacity-100 duration-[220ms] ease-enter' : 'opacity-0 pointer-events-none duration-150 ease-exit'
                 }`}
                 onClick={onClose}
                 aria-hidden="true"
@@ -335,8 +331,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 aria-label="Menú"
                 // Off-screen while closed: inert keeps its links out of the tab order and the accessibility tree.
                 inert={!isOpen}
-                className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-border-dark flex flex-col shadow-2xl shadow-slate-900/10 dark:shadow-black/50 transform transition-transform md:hidden ${
+                    isOpen ? 'translate-x-0 duration-[220ms] ease-enter' : '-translate-x-full duration-150 ease-exit'
                 }`}
             >
                 {renderContent(false, 'drawer')}

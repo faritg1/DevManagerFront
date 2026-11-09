@@ -130,7 +130,7 @@ export const SettingsPage: React.FC = () => {
                 <div
                   className={`p-3 rounded-full ${
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-primary/10 text-primary-600 dark:text-primary"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                   }`}
                 >
@@ -139,7 +139,7 @@ export const SettingsPage: React.FC = () => {
                 <span
                   className={`text-sm font-medium ${
                     isActive
-                      ? "text-primary"
+                      ? "text-primary-600 dark:text-primary"
                       : "text-slate-600 dark:text-slate-400"
                   }`}
                 >
@@ -156,7 +156,7 @@ export const SettingsPage: React.FC = () => {
 
       <Card>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-          <HardDrive size={20} className="text-emerald-500" />
+          <HardDrive size={20} className="text-emerald-700 dark:text-emerald-400" />
           Interfaz
         </h2>
 
@@ -193,7 +193,7 @@ export const SettingsPage: React.FC = () => {
       </Card>
 
       <Card className="border-rose-200 dark:border-rose-500/20">
-        <h2 className="text-lg font-bold text-rose-500 flex items-center gap-2 mb-4">
+        <h2 className="text-lg font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 mb-4">
           <LogOut size={20} />
           Sesión
         </h2>

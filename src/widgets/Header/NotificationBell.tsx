@@ -7,9 +7,9 @@ import { Button, EmptyState, IconButton, LoadingBlock } from '../../shared/ui';
 import { timeAgo } from '../../shared/format';
 
 const KIND_STYLES: Record<NotificationKind, { icon: LucideIcon; className: string }> = {
-    1: { icon: Info, className: 'bg-primary/10 text-primary' },
-    2: { icon: CheckCircle2, className: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' },
-    3: { icon: AlertTriangle, className: 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' },
+    1: { icon: Info, className: 'bg-primary/10 text-primary-600 dark:text-primary' },
+    2: { icon: CheckCircle2, className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' },
+    3: { icon: AlertTriangle, className: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' },
     4: { icon: XCircle, className: 'bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' },
 };
 
@@ -71,11 +71,11 @@ export const NotificationBell: React.FC = () => {
                 aria-haspopup="dialog"
                 aria-label={unreadCount ? `Notificaciones, ${badge} sin leer` : 'Notificaciones'}
                 title="Notificaciones"
-                className="relative p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="relative inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors duration-[120ms] ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
                 <Bell size={20} aria-hidden="true" />
                 {unreadCount > 0 && (
-                    <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-[18px] text-center border-2 border-white dark:border-background-dark box-content">
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-xs font-semibold leading-5 text-center tabular-nums border-2 border-white dark:border-background-dark box-content">
                         {badge}
                     </span>
                 )}
@@ -88,7 +88,7 @@ export const NotificationBell: React.FC = () => {
                     role="dialog"
                     aria-label="Notificaciones"
                     tabIndex={-1}
-                    className="absolute inset-x-0 top-full z-50 flex max-h-[calc(100dvh-4rem)] flex-col border-b border-slate-200 bg-white shadow-2xl outline-none dark:border-border-dark dark:bg-card-dark sm:inset-x-auto sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[70vh] sm:rounded-2xl sm:border"
+                    className="absolute inset-x-0 top-full z-50 flex max-h-[calc(100dvh-4rem)] flex-col border-b border-slate-200 bg-white shadow-lg shadow-slate-900/5 outline-none animate-fade-in dark:border-border-dark dark:bg-surface-dark dark:shadow-black/40 sm:inset-x-auto sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[70vh] sm:rounded-2xl sm:border"
                 >
                     <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 dark:border-border-dark">
                         <h2 className="text-sm font-bold text-slate-900 dark:text-white">Notificaciones</h2>

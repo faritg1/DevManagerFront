@@ -164,7 +164,7 @@ export const CertificationsSection: React.FC<Props> = ({
                       </div>
                       
                       {cert.expirationDate && (
-                        <div className={`flex items-center gap-1 ${isExpired(cert.expirationDate) ? 'text-rose-500' : ''}`}>
+                        <div className={`flex items-center gap-1 ${isExpired(cert.expirationDate) ? 'text-rose-600 dark:text-rose-400' : ''}`}>
                           <Calendar size={12} />
                           <span>
                             Expira: {formatDate(cert.expirationDate)}
@@ -178,7 +178,7 @@ export const CertificationsSection: React.FC<Props> = ({
                           href={cert.evidenceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline"
+                          className="flex items-center gap-1 text-primary-600 dark:text-primary hover:underline"
                         >
                           <ExternalLink size={12} />
                           <span>Ver evidencia</span>

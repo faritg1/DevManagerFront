@@ -15,19 +15,25 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25',
-    secondary: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-background-dark',
-    ghost: 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5',
-    danger: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25',
-    success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25',
-    outline: 'bg-transparent border border-slate-300 dark:border-border-dark text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-card-dark',
+    primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm',
+    secondary: 'bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-100 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-input-border',
+    ghost: 'bg-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm',
+    success: 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm',
+    outline: 'bg-transparent border border-slate-300 dark:border-border-dark text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
     sm: 'h-8 px-3 text-xs gap-1.5',
-    md: 'h-10 px-5 text-sm gap-2',
+    md: 'h-10 px-4 text-sm gap-2',
     lg: 'h-12 px-6 text-base gap-2.5',
 };
+
+const BASE_STYLES = 'inline-flex items-center justify-center whitespace-nowrap font-semibold rounded-xl transition-[color,background-color,border-color,box-shadow,transform] duration-[120ms] ease-standard active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-background-dark disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 [@media(pointer:coarse)]:min-h-11';
+
+/** Button look for a non-button element (e.g. a router <Link>), so actions never nest a <button> inside an <a>. */
+export const buttonClasses = (variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className = '') =>
+    `${BASE_STYLES} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
 const iconSizes: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 18 };
 
@@ -45,13 +51,12 @@ export const Button: React.FC<ButtonProps> = ({
     type = 'button',
     ...props
 }) => {
-    const baseStyles = 'inline-flex items-center justify-center whitespace-nowrap font-bold rounded-xl transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-background-dark disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
     const iconSize = iconSizes[size];
 
     return (
         <button
             type={type}
-            className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+            className={buttonClasses(variant, size, `${fullWidth ? 'w-full' : ''} ${className}`)}
             disabled={disabled || isLoading}
             aria-busy={isLoading || undefined}
             {...props}

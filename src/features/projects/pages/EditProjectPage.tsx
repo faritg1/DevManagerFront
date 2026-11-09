@@ -357,7 +357,7 @@ export const EditProjectPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between w-full">
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="text-emerald-500" size={24} />
+                  <Target className="text-emerald-700 dark:text-emerald-400" size={24} />
                   Requisitos de Habilidades
                   <Badge variant="default">{requirements.length}</Badge>
                 </CardTitle>
@@ -490,7 +490,7 @@ export const EditProjectPage: React.FC = () => {
               type="checkbox"
               checked={newSkillMandatory}
               onChange={(e) => setNewSkillMandatory(e.target.checked)}
-              className="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary"
+              className="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary-600 dark:text-primary focus:ring-primary"
             />
             <span className="text-slate-700 dark:text-white text-sm font-medium">
               ¿Es obligatorio?

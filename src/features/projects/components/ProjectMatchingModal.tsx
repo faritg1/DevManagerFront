@@ -23,9 +23,9 @@ interface ProjectMatchingModalProps {
 }
 
 const getScoreColor = (score: number): string => {
-  if (score >= 90) return "text-emerald-600 dark:text-emerald-400";
+  if (score >= 90) return "text-emerald-700 dark:text-emerald-400";
   if (score >= 70) return "text-indigo-600 dark:text-indigo-400";
-  if (score >= 50) return "text-amber-600 dark:text-amber-400";
+  if (score >= 50) return "text-amber-700 dark:text-amber-400";
   return "text-rose-600 dark:text-rose-400";
 };
 
@@ -166,7 +166,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   { label: "Candidatos", value: stats.total, icon: <Users size={16} className="text-slate-500 dark:text-slate-400" /> },
-                  { label: "Excelentes (≥90%)", value: stats.above90, icon: <CheckCircle2 size={16} className="text-emerald-500" /> },
+                  { label: "Excelentes (≥90%)", value: stats.above90, icon: <CheckCircle2 size={16} className="text-emerald-700 dark:text-emerald-400" /> },
                   { label: "Score promedio", value: `${formatNumber(stats.avgScore, 0)}%`, icon: <TrendingUp size={16} className="text-indigo-500" /> },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
@@ -174,7 +174,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                       {item.icon}
                     </div>
                     <div>
-                      <p className="text-xl font-black text-slate-900 dark:text-white leading-none">{item.value}</p>
+                      <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{item.value}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{item.label}</p>
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             </div>
 
                             <div className={`px-3 py-2 rounded-lg shrink-0 text-center ${getScoreBadgeClass(candidate.matchScore)}`}>
-                              <p className={`text-2xl font-black leading-none ${getScoreColor(candidate.matchScore)}`}>
+                              <p className={`text-2xl font-extrabold leading-none ${getScoreColor(candidate.matchScore)}`}>
                                 {candidate.matchScore}%
                               </p>
                               <p className="text-xs opacity-70 mt-0.5">match</p>
@@ -256,13 +256,13 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
 
                           <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-700 border-b border-slate-100 dark:border-slate-700 text-center">
                             <div className="py-3 px-4">
-                              <p className={`text-lg font-black ${mandatoryMet === mandatoryTotal ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                              <p className={`text-lg font-extrabold ${mandatoryMet === mandatoryTotal ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
                                 {mandatoryMet}/{mandatoryTotal}
                               </p>
                               <p className="text-xs text-slate-500 dark:text-slate-400">Obligatorias cubiertas</p>
                             </div>
                             <div className="py-3 px-4">
-                              <p className="text-lg font-black text-slate-700 dark:text-slate-200">
+                              <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">
                                 {strengths.length}/{candidate.skillAlignments.length}
                               </p>
                               <p className="text-xs text-slate-500 dark:text-slate-400">Skills cumplidas</p>
@@ -273,7 +273,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             {strengths.length > 0 && (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-2">
-                                  <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                                  <CheckCircle2 size={13} className="text-emerald-700 dark:text-emerald-400 shrink-0" />
                                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Fortalezas</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">

@@ -151,7 +151,7 @@ export const SkillsCatalogPage: React.FC = () => {
     type === 0 ? (
       <Globe size={14} className="text-blue-500" />
     ) : (
-      <Building2 size={14} className="text-amber-500" />
+      <Building2 size={14} className="text-amber-600 dark:text-amber-400" />
     );
 
   const renderSkillTypeBadge = (type: number) =>
@@ -185,7 +185,7 @@ export const SkillsCatalogPage: React.FC = () => {
   return (
     <PageContainer className="space-y-6">
       <PageHeader
-        icon={<Code2 size={28} className="text-primary" />}
+        icon={<Code2 size={28} className="text-primary-600 dark:text-primary" />}
         title="Catálogo de Habilidades"
         description="Gestiona las habilidades globales y organizacionales"
         actions={<><AskAiButton moduleKey="skills" />{has("menu.platform.skills.create") && <Button icon={Plus} onClick={handleCreate}>
@@ -214,7 +214,7 @@ export const SkillsCatalogPage: React.FC = () => {
         </Card>
         <Card className="flex items-center gap-4 p-4">
           <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-            <Building2 size={20} className="text-amber-500" />
+            <Building2 size={20} className="text-amber-600 dark:text-amber-400" />
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.organizational}</p>
@@ -223,7 +223,7 @@ export const SkillsCatalogPage: React.FC = () => {
         </Card>
         <Card className="flex items-center gap-4 p-4">
           <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-            <Tag size={20} className="text-emerald-500" />
+            <Tag size={20} className="text-emerald-700 dark:text-emerald-400" />
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.categoriesCount}</p>

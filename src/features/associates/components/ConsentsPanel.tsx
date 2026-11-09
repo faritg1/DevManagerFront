@@ -100,7 +100,7 @@ export const ConsentsPanel: React.FC<Props> = ({ userId, onChanged }) => {
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
                                         placeholder="Motivo de la revocación *" aria-label="Motivo de la revocación"
-                                        className="flex-1 h-10 rounded-xl border border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-3 text-sm"
+                                        className="flex-1 h-10 rounded-xl border border-control-border dark:border-input-border bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white px-3 text-sm"
                                     />
                                     <Button
                                         size="sm"

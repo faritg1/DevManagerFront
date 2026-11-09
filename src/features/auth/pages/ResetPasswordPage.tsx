@@ -65,7 +65,7 @@ export const ResetPasswordPage: React.FC = () => {
       ) : (
         <p role="alert" className="text-slate-700 dark:text-slate-300 text-sm">
           El enlace no es válido o ya expiró.{" "}
-          <Link to={ROUTES.FORGOT_PASSWORD} className="text-primary hover:underline">Solicita uno nuevo.</Link>
+          <Link to={ROUTES.FORGOT_PASSWORD} className="text-primary-600 dark:text-primary hover:underline">Solicita uno nuevo.</Link>
         </p>
       )}
     </AuthCard>

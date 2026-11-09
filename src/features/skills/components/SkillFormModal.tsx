@@ -129,7 +129,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
       onClose={onClose}
       onSubmit={handleSubmit}
       title={isEditing ? "Editar Habilidad" : "Nueva Habilidad"}
-      icon={<Code2 size={20} className="text-primary" />}
+      icon={<Code2 size={20} className="text-primary-600 dark:text-primary" />}
       size="md"
       footer={
         <div className="flex justify-end gap-3">
@@ -197,7 +197,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
               <Building2
                 size={20}
                 className={
-                  skillType === 1 ? "text-amber-500" : "text-slate-400"
+                  skillType === 1 ? "text-amber-600 dark:text-amber-400" : "text-slate-400"
                 }
               />
               <div className="text-left">

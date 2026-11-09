@@ -24,16 +24,16 @@ export const StatCard: React.FC<StatCardProps> = ({
     value,
     subtitle,
     icon: Icon,
-    iconColor = 'text-primary',
+    iconColor = 'text-primary-600 dark:text-primary',
     iconBgColor = 'bg-blue-50 dark:bg-blue-500/10',
     trend,
     compact = false,
     error,
     className = '',
 }) => (
-    <div className={`flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300 hover:shadow-md dark:border-border-dark dark:bg-card-dark dark:hover:border-input-border ${compact ? 'gap-2 p-4' : 'gap-4 p-5 sm:p-6'} ${className}`}>
+    <div className={`flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white dark:border-border-dark dark:bg-card-dark ${compact ? 'gap-2 p-4' : 'gap-3 p-4 sm:p-5'} ${className}`}>
         <div className="flex items-start justify-between gap-2">
-            <p title={title} className={`min-w-0 flex-1 break-words hyphens-auto font-bold uppercase leading-snug text-slate-500 dark:text-slate-400 ${compact ? 'text-[11px] tracking-wide' : 'text-xs tracking-wider sm:text-sm'}`}>
+            <p title={title} className={`min-w-0 flex-1 break-words hyphens-auto font-semibold uppercase text-xs leading-4 tracking-wider text-slate-500 dark:text-slate-400`}>
                 {title}
             </p>
             {Icon && (
@@ -43,19 +43,19 @@ export const StatCard: React.FC<StatCardProps> = ({
             )}
         </div>
         <div className="mt-auto flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-            <p className={`min-w-0 break-words font-bold leading-none tabular-nums text-slate-900 dark:text-white ${compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}`}>
+            <p className={`min-w-0 break-words font-bold leading-none tabular-nums text-slate-900 dark:text-white ${compact ? 'text-2xl' : 'text-3xl'}`}>
                 {error ? '—' : value}
             </p>
             {error ? (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400">
                     <AlertTriangle size={12} aria-hidden="true" /> {error}
                 </span>
             ) : trend ? (
-                <span className={`text-sm font-semibold ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                <span className={`text-sm font-semibold ${trend.isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     {trend.value}
                 </span>
             ) : subtitle && (
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{subtitle}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</span>
             )}
         </div>
     </div>

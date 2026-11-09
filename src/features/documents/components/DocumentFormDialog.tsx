@@ -57,8 +57,8 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
             title={document ? `Editar ${document.code}` : 'Nuevo documento'}
             size="lg"
             footer={<>
-                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
                 <Button type="submit" isLoading={saving}>Guardar</Button>
+                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
             </>}
         >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -41,7 +41,7 @@ const Turn: React.FC<{ t: ChatTurn; caps: AiCapabilities | null }> = ({ t, caps 
     if (t.role === 'user') {
         return (
             <div className="flex justify-end">
-                <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-white">{t.text}</p>
+                <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-primary-600 px-4 py-2.5 text-sm text-white">{t.text}</p>
             </div>
         );
     }
@@ -59,7 +59,7 @@ const Turn: React.FC<{ t: ChatTurn; caps: AiCapabilities | null }> = ({ t, caps 
     }
     return (
         <div className="flex gap-2 sm:gap-3">
-            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-400" aria-hidden="true">
+            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-600" aria-hidden="true">
                 <Bot className="text-white" size={16} />
             </div>
             <div className="min-w-0 flex-1 space-y-2">

@@ -148,10 +148,10 @@ export const HabeasDataPage: React.FC = () => {
                 <StatCard title={canManage ? 'ARCO pendientes' : 'Mis solicitudes pendientes'} value={pendingCount} icon={FileText} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
                 <Card>
                     <div className="flex items-center gap-2">
-                        <ShieldCheck className="text-emerald-500" size={20} />
+                        <ShieldCheck className="text-emerald-700 dark:text-emerald-400" size={20} />
                         <p className="text-sm text-slate-600 dark:text-slate-300">
                             Los consentimientos se gestionan por política versionada
-                            {has('menu.solidarity.data_policies') && <> en <Link className="text-primary font-bold" to={ROUTES.DATA_POLICIES}>Políticas de datos</Link> y en el detalle de cada asociado</>}.
+                            {has('menu.solidarity.data_policies') && <> en <Link className="text-primary-600 dark:text-primary font-bold" to={ROUTES.DATA_POLICIES}>Políticas de datos</Link> y en el detalle de cada asociado</>}.
                         </p>
                     </div>
                 </Card>

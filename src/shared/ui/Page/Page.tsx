@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Inbox, Loader2, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Inbox, Loader2, RotateCw, type LucideIcon } from 'lucide-react';
+import { Button } from '../Button';
 
 interface PageContainerProps {
     children: React.ReactNode;
@@ -19,7 +20,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
     className = '',
 }) => (
     <div
-        className={`p-4 sm:p-6 md:p-10 ${narrow ? 'max-w-5xl' : 'max-w-7xl'} mx-auto w-full ${
+        className={`p-4 sm:p-6 md:p-8 ${narrow ? 'max-w-5xl' : 'max-w-7xl'} mx-auto w-full ${
             fullHeight ? 'h-full flex flex-col' : ''
         } ${className}`}
     >
@@ -57,15 +58,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {before && <div className="mb-4">{before}</div>}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
-                <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="flex items-center gap-2 text-2xl leading-8 font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-[28px] sm:leading-9">
                     {icon}
                     <span className="min-w-0 break-words">{title}</span>
                 </h1>
                 {description && (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{description}</p>
                 )}
             </div>
-            {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
+            {actions && <div className="grid grid-cols-2 gap-2 [&>*:last-child:nth-child(odd)]:col-span-2 sm:flex sm:flex-wrap sm:items-center sm:shrink-0">{actions}</div>}
         </div>
     </div>
 );
@@ -91,7 +92,7 @@ export const BackButton: React.FC<{ to: string; label?: string; className?: stri
         <button
             type="button"
             onClick={goBack}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white ${className}`}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 [@media(pointer:coarse)]:min-h-11 -ml-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white ${className}`}
         >
             <ArrowLeft size={16} aria-hidden="true" />
             {label}
@@ -115,7 +116,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon
             <Icon size={24} aria-hidden="true" />
         </div>
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</p>
-        {description && <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+        {description && <p className="max-w-sm text-sm text-slate-600 dark:text-slate-400">{description}</p>}
         {action && <div className="mt-2">{action}</div>}
     </div>
 );
@@ -124,6 +125,34 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon
 export const LoadingBlock: React.FC<{ label?: string; className?: string }> = ({ label, className = 'py-12' }) => (
     <div role="status" className={`flex flex-col items-center justify-center gap-3 ${className}`}>
         <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
-        {label ? <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p> : <span className="sr-only">Cargando…</span>}
+        {label ? <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p> : <span className="sr-only">Cargando…</span>}
+    </div>
+);
+
+/** Placeholder rows with the real row height for tables and lists, so the layout does not jump when data arrives. */
+export const SkeletonRows: React.FC<{ rows?: number; className?: string }> = ({ rows = 5, className = '' }) => (
+    <div role="status" className={`divide-y divide-slate-100 dark:divide-border-dark ${className}`}>
+        <span className="sr-only">Cargando…</span>
+        {Array.from({ length: rows }, (_, i) => (
+            <div key={i} className="flex h-12 items-center gap-4 px-5" aria-hidden="true">
+                <div className="h-3 w-24 rounded bg-slate-100 dark:bg-white/5 animate-pulse" />
+                <div className="h-3 flex-1 rounded bg-slate-100 dark:bg-white/5 animate-pulse" />
+                <div className="hidden h-3 w-32 rounded bg-slate-100 dark:bg-white/5 animate-pulse sm:block" />
+            </div>
+        ))}
+    </div>
+);
+
+/** Error state for a block that failed to load; pass `onRetry` only where the page already has a reload function. */
+export const ErrorState: React.FC<{ title: string; message?: React.ReactNode; onRetry?: () => void; retryLabel?: string; className?: string }> = ({
+    title, message, onRetry, retryLabel = 'Reintentar', className = 'py-12',
+}) => (
+    <div className={`flex flex-col items-center justify-center gap-2 px-4 text-center ${className}`}>
+        <div className="mb-1 rounded-full bg-amber-100 p-3 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+            <AlertTriangle size={24} aria-hidden="true" />
+        </div>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
+        {message && <p className="max-w-sm text-sm text-slate-600 dark:text-slate-400">{message}</p>}
+        {onRetry && <Button variant="outline" icon={RotateCw} onClick={onRetry} className="mt-2">{retryLabel}</Button>}
     </div>
 );

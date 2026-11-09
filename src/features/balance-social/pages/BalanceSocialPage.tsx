@@ -108,7 +108,7 @@ export const BalanceSocialPage: React.FC = () => {
                 <div><p className="text-slate-500 dark:text-slate-400">Asambleas</p><p className="font-bold">{i.assemblyParticipations}</p></div>
                 <div><p className="text-slate-500 dark:text-slate-400">Órganos / comités</p><p className="font-bold">{i.committeeParticipations}</p></div>
                 <div><p className="text-slate-500 dark:text-slate-400">Beneficios</p><p className="font-bold">{currency(i.benefitsReceived)}</p></div>
-                <div><p className="text-slate-500 dark:text-slate-400">Índice</p><p className="font-bold text-primary">{i.index}</p></div>
+                <div><p className="text-slate-500 dark:text-slate-400">Índice</p><p className="font-bold text-primary-600 dark:text-primary">{i.index}</p></div>
             </div>
         </div>
     );
@@ -130,8 +130,8 @@ export const BalanceSocialPage: React.FC = () => {
 
             {isAdmin && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <StatCard title="Cumplen educación" value={compliantCount} icon={TrendingUp} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
-                    <StatCard title="No cumplen" value={nonCompliant.length} icon={TrendingDown} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
+                    <StatCard title="Cumplen educación" value={compliantCount} icon={TrendingUp} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                    <StatCard title="No cumplen" value={nonCompliant.length} icon={TrendingDown} iconColor="text-rose-600 dark:text-rose-400" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />
                     <StatCard title="Índice promedio" value={averageIndex} icon={Scale} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 </div>
             )}
@@ -167,7 +167,7 @@ export const BalanceSocialPage: React.FC = () => {
             {isAdmin && report && (
                 <Card className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <FileBarChart2 className="text-primary" size={20} />
+                        <FileBarChart2 className="text-primary-600 dark:text-primary" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Reporte {report.year} · {report.activeAssociates} asociados activos</h2>
                     </div>
                     {report.executiveSummary && <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{report.executiveSummary}</p>}
@@ -196,11 +196,11 @@ export const BalanceSocialPage: React.FC = () => {
                     {(report.strengths.length > 0 || report.improvementAreas.length > 0) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div>
-                                <p className="font-bold text-emerald-600 dark:text-emerald-400 mb-1">Fortalezas</p>
+                                <p className="font-bold text-emerald-700 dark:text-emerald-400 mb-1">Fortalezas</p>
                                 <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300">{report.strengths.map(s => <li key={s}>{s}</li>)}</ul>
                             </div>
                             <div>
-                                <p className="font-bold text-amber-600 dark:text-amber-400 mb-1">Oportunidades de mejora</p>
+                                <p className="font-bold text-amber-700 dark:text-amber-400 mb-1">Oportunidades de mejora</p>
                                 <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300">{report.improvementAreas.map(s => <li key={s}>{s}</li>)}</ul>
                             </div>
                         </div>
@@ -227,7 +227,7 @@ export const BalanceSocialPage: React.FC = () => {
 
                     <Card>
                         <div className="flex items-center gap-2 mb-4">
-                            <AlertCircle className="text-rose-500" size={20} />
+                            <AlertCircle className="text-rose-600 dark:text-rose-400" size={20} />
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Asociados que No Cumplen Educación</h2>
                         </div>
                         {isLoading ? (

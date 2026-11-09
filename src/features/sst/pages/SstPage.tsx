@@ -264,7 +264,7 @@ export const SstPage: React.FC = () => {
             <div className={`grid grid-cols-1 ${canAccidents ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
                 <StatCard title={canExams ? (examScope ? 'Exámenes del asociado' : 'Exámenes pendientes') : 'Mis exámenes'} value={exams.length} icon={Stethoscope} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
                 <StatCard title="Riesgos" value={risks.length} icon={ShieldAlert} iconColor="text-orange-500" iconBgColor="bg-orange-100 dark:bg-orange-500/10" />
-                {canAccidents && <StatCard title="Accidentes sin investigar" value={pendingInvestigation.length} icon={AlertCircle} iconColor="text-rose-500" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />}
+                {canAccidents && <StatCard title="Accidentes sin investigar" value={pendingInvestigation.length} icon={AlertCircle} iconColor="text-rose-600 dark:text-rose-400" iconBgColor="bg-rose-100 dark:bg-rose-500/10" />}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -298,7 +298,7 @@ export const SstPage: React.FC = () => {
                                             <p className="text-xs text-slate-500 dark:text-slate-400">Resultado: {EXAM_RESULT_LABEL[e.result]} ({formatDate(e.performedAt)})</p>
                                         )}
                                         {e.notes && <p className="text-xs text-slate-500 dark:text-slate-400">{e.notes}</p>}
-                                        {e.fileUrl && <a href={e.fileUrl} target="_blank" rel="noreferrer" className="text-xs text-primary font-bold">Ver soporte</a>}
+                                        {e.fileUrl && <a href={e.fileUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-600 dark:text-primary font-bold">Ver soporte</a>}
                                     </div>
                                     {e.performed ? (
                                         <Badge variant="success">Realizado</Badge>
@@ -344,7 +344,7 @@ export const SstPage: React.FC = () => {
             {canAccidents && (
                 <Card>
                     <div className="flex flex-wrap items-center gap-2 mb-4">
-                        <FileText className="text-rose-500" size={20} />
+                        <FileText className="text-rose-600 dark:text-rose-400" size={20} />
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Accidentes de Trabajo (FURAT)</h2>
                         <SearchInput pager={accidentPager} label="Buscar accidente" className="sm:ml-auto sm:max-w-xs" />
                         <ExportButton rows={accidentPager.filtered} columns={accidentColumns} filename="accidentes-sst" />
@@ -456,7 +456,7 @@ export const SstPage: React.FC = () => {
                 onClose={() => setAccidentOpen(false)}
                 onSubmit={handleReportAccident}
                 title="Reportar Accidente de Trabajo"
-                icon={<Siren className="text-rose-500" size={20} />}
+                icon={<Siren className="text-rose-600 dark:text-rose-400" size={20} />}
                 size="lg"
                 footer={
                     <>
@@ -523,7 +523,7 @@ export const SstPage: React.FC = () => {
                 onClose={() => setInvestigating(null)}
                 onSubmit={handleInvestigate}
                 title="Investigar Accidente"
-                icon={<ClipboardCheck className="text-rose-500" size={20} />}
+                icon={<ClipboardCheck className="text-rose-600 dark:text-rose-400" size={20} />}
                 size="lg"
                 footer={
                     <>

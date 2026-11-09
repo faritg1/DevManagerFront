@@ -230,7 +230,7 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
                             {!readOnly && optionOn && actionIds.length > 1 && (
                               <button
                                 type="button"
-                                className="text-xs font-medium text-primary hover:underline"
+                                className="text-xs font-medium text-primary-600 dark:text-primary hover:underline"
                                 onClick={() => setMany(actionIds, !allActionsOn)}
                               >
                                 {allActionsOn ? "Quitar todas" : "Todas"}

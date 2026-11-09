@@ -11,10 +11,10 @@ interface ProgressBarProps {
 }
 
 const variantStyles = {
-    primary: 'bg-primary shadow-primary/30',
-    success: 'bg-emerald-500 shadow-emerald-500/30',
-    warning: 'bg-orange-500 shadow-orange-500/30',
-    danger: 'bg-rose-500 shadow-rose-500/30',
+    primary: 'bg-primary',
+    success: 'bg-emerald-500',
+    warning: 'bg-orange-500',
+    danger: 'bg-rose-500',
 };
 
 const sizeStyles = {

@@ -130,7 +130,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <StatCard title="Reportes" value={reports.length} icon={FileBarChart2} iconColor="text-blue-500" iconBgColor="bg-blue-100 dark:bg-blue-500/10" />
-                <StatCard title="Enviados" value={sentCount} icon={Send} iconColor="text-emerald-500" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
+                <StatCard title="Enviados" value={sentCount} icon={Send} iconColor="text-emerald-700 dark:text-emerald-400" iconBgColor="bg-emerald-100 dark:bg-emerald-500/10" />
             </div>
 
             <Card padding="none" className="overflow-hidden">
@@ -170,7 +170,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                                             {has('menu.solidarity.supersolidaria_reports.send') && !r.isSent && (
                                                 <Button size="sm" icon={Send} onClick={() => handleSend(r.id)}>Enviar</Button>
                                             )}
-                                            {r.isSent && <CheckCircle2 size={18} className="mx-2 text-emerald-500" aria-label="Enviado" />}
+                                            {r.isSent && <CheckCircle2 size={18} className="mx-2 text-emerald-700 dark:text-emerald-400" aria-label="Enviado" />}
                                         </TableActions>
                                     </tr>
                                 ))

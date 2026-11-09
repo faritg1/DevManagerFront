@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AlertTriangle, Compass } from 'lucide-react';
-import { Button, Card, EmptyState, LoadingBlock, PageContainer } from '../ui';
+import { Button, buttonClasses, Card, EmptyState, LoadingBlock, PageContainer } from '../ui';
 import { ROUTES } from '../config/constants';
 
 class ErrorBoundary extends React.Component<{ resetKey: string; children: React.ReactNode }, { error: Error | null }> {
@@ -24,7 +24,7 @@ class ErrorBoundary extends React.Component<{ resetKey: string; children: React.
         return (
             <PageContainer narrow>
                 <Card className="mx-auto mt-10 flex max-w-lg flex-col items-center gap-3 text-center">
-                    <div className="rounded-full bg-rose-100 p-3 text-rose-500 dark:bg-rose-500/10">
+                    <div className="rounded-full bg-rose-100 p-3 text-rose-600 dark:text-rose-400 dark:bg-rose-500/10">
                         <AlertTriangle size={28} aria-hidden="true" />
                     </div>
                     <h1 className="text-lg font-bold text-slate-900 dark:text-white">Algo salió mal</h1>
@@ -33,7 +33,7 @@ class ErrorBoundary extends React.Component<{ resetKey: string; children: React.
                     </p>
                     <div className="mt-2 flex flex-wrap justify-center gap-2">
                         <Button onClick={() => this.setState({ error: null })}>Reintentar</Button>
-                        <Link to={ROUTES.DASHBOARD}><Button variant="outline">Ir al inicio</Button></Link>
+                        <Link to={ROUTES.DASHBOARD} className={buttonClasses('outline')}>Ir al inicio</Link>
                     </div>
                 </Card>
             </PageContainer>
@@ -60,7 +60,7 @@ export const NotFoundPage: React.FC = () => (
             className="py-24"
             title="Página no encontrada"
             description="La dirección que buscas no existe o fue movida."
-            action={<Link to={ROUTES.DASHBOARD}><Button>Volver al inicio</Button></Link>}
+            action={<Link to={ROUTES.DASHBOARD} className={buttonClasses()}>Volver al inicio</Link>}
         />
     </PageContainer>
 );

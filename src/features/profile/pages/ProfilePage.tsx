@@ -8,7 +8,7 @@ import { useModal, useConfirm } from "../../../shared/hooks";
 import { useProfile } from "../hooks/useProfile";
 import { useSkills } from "../hooks/useSkills";
 import { useCertifications } from "../hooks/useCertifications";
-import { Button, PageContainer, LoadingBlock } from "../../../shared/ui";
+import { Button, buttonClasses, PageContainer, LoadingBlock } from "../../../shared/ui";
 import {
   ProfileHeader,
   BioCard,
@@ -142,7 +142,7 @@ export const ProfilePage: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-20 text-center px-4">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mb-4" />
+        <AlertTriangle className="w-12 h-12 text-amber-600 dark:text-amber-400 mb-4" />
         <p className="text-slate-700 dark:text-slate-300 mb-4">{error}</p>
         <Button onClick={reload}>Reintentar</Button>
       </div>
@@ -152,20 +152,21 @@ export const ProfilePage: React.FC = () => {
   if (!profile && !isEditing && !isLoadingProfile) {
     return (
       <div className="flex flex-col h-full overflow-y-auto w-full items-center justify-center p-6">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-md w-full text-center">
-          <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-6">
-            <UserX className="w-8 h-8 text-slate-400" />
+        <div className="bg-white dark:bg-card-dark p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-border-dark max-w-md w-full text-center">
+          <div className="mx-auto w-14 h-14 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-5">
+            <UserX className="w-7 h-7 text-slate-500 dark:text-slate-400" aria-hidden="true" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          <h2 className="text-lg leading-7 font-bold text-slate-900 dark:text-white mb-2">
             Tu perfil no se encontró
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
             Aún no has configurado tu perfil profesional. Completalo para
             destacar en el equipo y compartir tus habilidades.
           </p>
           <button
+            type="button"
             onClick={startEditing}
-            className="bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-lg font-medium transition-colors w-full"
+            className={buttonClasses('primary', 'md', 'w-full')}
           >
             Crear mi Perfil
           </button>

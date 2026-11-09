@@ -33,7 +33,7 @@ export const PermissionsPage: React.FC = () => {
             role="tab"
             aria-selected={tab === key}
             onClick={() => setSearchParams(key === "history" ? { tab: "history" } : {})}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === key ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === key ? "border-primary text-primary-600 dark:text-primary" : "border-transparent text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"}`}
           >
             {label}
           </button>
@@ -45,7 +45,7 @@ export const PermissionsPage: React.FC = () => {
           {roleId && (
             <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
               Cambios del rol <strong>{searchParams.get("role") ?? ""}</strong> y sus asignaciones ·{" "}
-              <button type="button" className="font-medium text-primary hover:underline" onClick={() => setSearchParams({ tab: "history" })}>
+              <button type="button" className="font-medium text-primary-600 dark:text-primary hover:underline" onClick={() => setSearchParams({ tab: "history" })}>
                 Ver todos
               </button>
             </p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { BrandMark } from "../../../shared/components/BrandMark";
+import { useDemoEnabled } from "../../../shared/api";
 import { useAuth } from "../../../shared/context";
 import { Button, Input } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
@@ -12,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const demo = useDemoEnabled();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -105,6 +107,11 @@ export const LoginPage: React.FC = () => {
                 Registrar Organización
               </span>
             </Link>
+            {demo && (
+              <Link to="/demo" className="flex min-h-11 items-center justify-center rounded px-1 text-sm font-medium text-primary-600 dark:text-primary hover:underline underline-offset-2">
+                Ver demostración
+              </Link>
+            )}
           </div>
         </div>
       </div>

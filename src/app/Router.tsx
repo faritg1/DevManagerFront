@@ -10,6 +10,7 @@ import { ProtectedRoute, PublicRoute, AdminGuard, PermissionGuard } from "./guar
 import { ROUTES } from "../shared/config/constants";
 import { GlobalErrorListener } from "../shared/components/GlobalErrorListener";
 import { NotFoundPage } from "../shared/components/RouteBoundary";
+import { useDemoEnabled } from "../shared/api";
 
 /** Route-level code splitting: each feature module loads on first visit (Suspense lives in the layouts). */
 const page = <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M) =>
@@ -62,14 +63,22 @@ const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPag
 const documents = () => import("../features/documents");
 const DocumentsPage = page(documents, "DocumentsPage");
 const DocumentDetailPage = page(documents, "DocumentDetailPage");
+const DocumentsHomePage = page(documents, "DocumentsHomePage");
+const PendingReadsPage = page(documents, "PendingReadsPage");
+const AwaitingApprovalPage = page(documents, "AwaitingApprovalPage");
+const ClassificationPage = page(documents, "ClassificationPage");
+const DossiersPage = page(documents, "DossiersPage");
+const DossierDetailPage = page(documents, "DossierDetailPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
 const TimeReportPage = page(() => import("../features/activities"), "TimeReportPage");
-// Demo mode (docs/demo.md): the flag is replaced at build time, so without it the route and its chunk do not exist.
-const DemoPage = import.meta.env.VITE_DEMO_MODE === "true" ? page(() => import("../features/demo"), "DemoPage") : null;
+// Demo mode (docs/demo.md): its own chunk, downloaded only while the demo access is on.
+const DemoPage = page(() => import("../features/demo"), "DemoPage");
 
 export const AppRouter: React.FC = () => {
+  const demo = useDemoEnabled();
+
   return (
     <HashRouter>
       <AuthProvider>
@@ -89,7 +98,8 @@ export const AppRouter: React.FC = () => {
               <Route element={<AuthLayout />}>
                 <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
                 {/* Also outside PublicRoute: the presenter switches personas with a session open */}
-                {DemoPage && <Route path="/demo" element={<DemoPage />} />}
+                {/* Blank until the switch is known; off removes the route, so #/demo falls to the catch-all like any unknown path */}
+                {demo !== false && <Route path="/demo" element={demo ? <DemoPage /> : null} />}
               </Route>
 
               <Route element={<ProtectedRoute />}>
@@ -119,6 +129,11 @@ export const AppRouter: React.FC = () => {
                     {/* menu.admin.audit or the super admin (navConfig allowSuperAdmin), as the API */}
                     <Route path={ROUTES.AUDIT} element={<AuditPage />} />
                     <Route path={ROUTES.DOCUMENTS} element={<DocumentsPage />} />
+                    <Route path={ROUTES.DOCUMENTS_HOME} element={<DocumentsHomePage />} />
+                    <Route path={ROUTES.DOCUMENT_READS} element={<PendingReadsPage />} />
+                    <Route path={ROUTES.DOCUMENT_APPROVALS} element={<AwaitingApprovalPage />} />
+                    <Route path={ROUTES.DOCUMENT_CLASSIFICATION} element={<ClassificationPage />} />
+                    <Route path={ROUTES.DOSSIERS} element={<DossiersPage />} />
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />
@@ -129,8 +144,11 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
                     <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
 
-                    <Route element={<PermissionGuard require="menu.platform.documents" />}>
+                    <Route element={<PermissionGuard require="menu.documents.master_list" />}>
                       <Route path={ROUTES.DOCUMENT_DETAIL} element={<DocumentDetailPage />} />
+                    </Route>
+                    <Route element={<PermissionGuard require="menu.documents.dossiers" />}>
+                      <Route path={ROUTES.DOSSIER_DETAIL} element={<DossierDetailPage />} />
                     </Route>
                     <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />

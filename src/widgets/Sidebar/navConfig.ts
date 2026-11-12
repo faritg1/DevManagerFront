@@ -26,6 +26,11 @@ import {
     History,
     ListChecks,
     ListTodo,
+    Home,
+    BookOpenCheck,
+    FileCheck2,
+    FolderTree,
+    Archive,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -71,7 +76,6 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'skills', permission: 'menu.platform.skills', label: 'Habilidades', icon: Code2, to: ROUTES.SKILLS_CATALOG },
             { key: 'reports', permission: 'menu.platform.reports', label: 'Reportes IA', icon: BarChart2, to: ROUTES.REPORTS },
             { key: 'ai-usage', permission: 'menu.platform.ai_usage', label: 'Uso de IA', icon: Gauge, to: ROUTES.AI_USAGE },
-            { key: 'documents', permission: 'menu.platform.documents', label: 'Documentos', icon: FolderOpen, to: ROUTES.DOCUMENTS },
         ],
     },
     {
@@ -96,6 +100,18 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'balance-social', permission: 'menu.solidarity.social_balance', label: 'Balance Social', icon: Scale, to: ROUTES.BALANCE_SOCIAL },
             { key: 'reportes-supersolidaria', permission: 'menu.solidarity.supersolidaria_reports', label: 'Reportes Supersolidaria', icon: FileBarChart2, to: ROUTES.REPORTES_SUPERSOLIDARIA },
             { key: 'asistente', permission: 'menu.solidarity.assistant', label: 'Asistente', icon: Sparkles, to: ROUTES.ASISTENTE },
+        ],
+    },
+    {
+        key: 'documents', permission: 'menu.documents',
+        title: NAV_SECTIONS.DOCUMENTS,
+        items: [
+            { key: 'documents-home', permission: 'menu.documents.master_list', label: 'Inicio', icon: Home, to: ROUTES.DOCUMENTS_HOME },
+            { key: 'documents', permission: 'menu.documents.master_list', label: 'Listado maestro', icon: FolderOpen, to: ROUTES.DOCUMENTS },
+            { key: 'document-reads', permission: 'menu.documents.master_list', label: 'Mis lecturas', icon: BookOpenCheck, to: ROUTES.DOCUMENT_READS },
+            { key: 'document-approvals', permission: 'menu.documents.master_list.approve', label: 'Por aprobar', icon: FileCheck2, to: ROUTES.DOCUMENT_APPROVALS },
+            { key: 'document-classification', permission: 'menu.documents.classification', label: 'Cuadro de clasificación', icon: FolderTree, to: ROUTES.DOCUMENT_CLASSIFICATION },
+            { key: 'document-dossiers', permission: 'menu.documents.dossiers', label: 'Expedientes', icon: Archive, to: ROUTES.DOSSIERS },
         ],
     },
     {

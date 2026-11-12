@@ -6,6 +6,7 @@ import { asUtc, formatDateTime } from '../../shared/format';
 import { useConfirm } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS } from '../../shared/ui';
 import { AiQuotasCard } from './components/AiQuotasCard';
+import { DemoAccessCard } from './components/DemoAccessCard';
 
 /** Platform super administration: every organization, its users and the AI quotas (the API answers 403 to anyone else). */
 export const SuperAdminPage: React.FC = () => {
@@ -159,6 +160,8 @@ export const SuperAdminPage: React.FC = () => {
                     )}
                 </Card>
             </div>
+
+            <DemoAccessCard />
 
             <AiQuotasCard />
 

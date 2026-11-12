@@ -79,7 +79,7 @@ export const DemoPage: React.FC = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             autoComplete="off"
-                            hint="La contraseña de demo está en la documentación de los datos de prueba."
+                            hint="La que definió el superadministrador al encender el acceso demo."
                             required
                         />
 

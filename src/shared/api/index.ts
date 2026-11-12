@@ -1,6 +1,7 @@
 export { type ApiError } from "./client";
 export * from "./types";
 export * from "./impersonation";
+export { useDemoEnabled } from "./demoSwitch";
 
 export {
   authService,

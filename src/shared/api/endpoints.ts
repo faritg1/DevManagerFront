@@ -161,6 +161,14 @@ export const API_ENDPOINTS = {
     DISTRIBUTION: (id: string) => `/documents/${id}/distribution`,
     VERSIONS: (id: string) => `/documents/${id}/versions`,
     VERSION: (id: string, versionId: string) => `/documents/${id}/versions/${versionId}`,
+    CLASSIFICATION: "/document-classification",
+    CLASSIFICATION_NODES: "/document-classification/nodes",
+    CLASSIFICATION_NODE: (id: string) => `/document-classification/nodes/${id}`,
+    CLASSIFICATION_TYPES: (nodeId: string) => `/document-classification/nodes/${nodeId}/types`,
+    DOSSIERS: "/dossiers",
+    DOSSIER: (id: string) => `/dossiers/${id}`,
+    DOSSIER_ITEMS: (id: string) => `/dossiers/${id}/items`,
+    DOSSIER_ITEM: (id: string, itemId: string) => `/dossiers/${id}/items/${itemId}`,
   },
 
 
@@ -309,6 +317,9 @@ export const API_ENDPOINTS = {
       QUOTA: (organizationId: string) => `/ai/quotas/${organizationId}`,
     },
 
+    // Interruptor público del acceso demo (anónimo)
+    DEMO: "/demo",
+
     // Superadministración de la plataforma
     PLATFORM: {
       ORGANIZATIONS: "/platform/organizations",
@@ -316,6 +327,7 @@ export const API_ENDPOINTS = {
       IMPERSONATE: "/platform/impersonate",
       IMPERSONATE_STOP: "/platform/impersonate/stop",
       IMPERSONATIONS: "/platform/impersonations",
+      DEMO: "/platform/demo",
     },
 
     // Asistente Cooperativo

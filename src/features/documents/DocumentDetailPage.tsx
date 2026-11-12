@@ -15,18 +15,10 @@ import {
 import { errorText, needsLocalToast } from '../associates/labels';
 import { DistributeDialog } from './components/DistributeDialog';
 import { VersionFormDialog } from './components/VersionFormDialog';
-import { PERMISSIONS, STATUS, formatSize } from './labels';
+import { PERMISSIONS, STATUS, formatSize, retentionText, saveBlob, seriesLabel } from './labels';
 
-const saveBlob = (blob: Blob, name: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
-};
-
-const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+/** A label and its value inside a `dl`; the dossier detail uses it too. */
+export const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
     <div className="min-w-0">
         <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</dt>
         <dd className="mt-0.5 break-words text-sm text-slate-800 dark:text-slate-100">{children}</dd>
@@ -129,7 +121,7 @@ export const DocumentDetailPage: React.FC = () => {
     if (failure) {
         return (
             <PageContainer>
-                <PageHeader title="Documento" backTo={ROUTES.DOCUMENTS} backLabel="Documentos" />
+                <PageHeader title="Documento" backTo={ROUTES.DOCUMENTS} backLabel="Listado maestro" />
                 <Card>
                     {failure === 'missing'
                         ? <EmptyState title="Documento no encontrado" description="No existe o no tienes acceso a él." />
@@ -154,7 +146,7 @@ export const DocumentDetailPage: React.FC = () => {
                 icon={<FileText className="shrink-0 text-primary" size={24} aria-hidden="true" />}
                 title={`${doc.code} · ${doc.title}`}
                 backTo={ROUTES.DOCUMENTS}
-                backLabel="Documentos"
+                backLabel="Listado maestro"
                 actions={<>
                     {canCreate && !hasOpenVersion && <Button icon={Upload} onClick={() => setVersionForm(null)}>Subir versión</Button>}
                     {canDistribute && current && <Button variant="outline" icon={Share2} onClick={() => setDistributing(true)}>Distribuir</Button>}
@@ -175,6 +167,15 @@ export const DocumentDetailPage: React.FC = () => {
                     <Fact label="Proceso">{doc.process}</Fact>
                     <Fact label="Responsable">{doc.ownerName ?? '—'}</Fact>
                     <Fact label="Fecha de revisión">{formatDate(doc.reviewDate)}</Fact>
+                    <Fact label="Serie">{seriesLabel(doc) || 'Sin clasificar'}</Fact>
+                    {doc.classificationNodeId && (
+                        <div className="sm:col-span-2 lg:col-span-3">
+                            <Fact label="Retención">
+                                {retentionText(doc.retention) ?? 'Sin retención definida'}
+                                {doc.retention?.inherited && <Badge className="ml-2">Heredada de la serie</Badge>}
+                            </Fact>
+                        </div>
+                    )}
                 </dl>
             </Card>
 

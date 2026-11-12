@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ClipboardList, X } from 'lucide-react';
+import { useAuth } from '../../shared/context';
 import { usePermission } from '../../shared/hooks';
 import { Button, IconButton, Modal } from '../../shared/ui';
 import { visibleNav } from '../../widgets/Sidebar/navConfig';
-import { DEMO_SCRIPTS } from './catalog';
+import { DEMO_SCRIPTS, isDemoPersona } from './catalog';
 
 const LINK_CLASS = 'flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
 /**
- * Presenter aid mounted once in the main layout (demo mode only): a slim in-flow bar, so it never
+ * Presenter aid mounted once in the main layout (demo access on, catalog personas only): a slim in-flow bar, so it never
  * covers a screen action, that opens the script of the current module and the list of modules.
  */
 export const DemoGuide: React.FC = () => {
     const { pathname } = useLocation();
     const access = usePermission();
+    const { user } = useAuth();
     const [hidden, setHidden] = useState(false);
     const [open, setOpen] = useState(false);
-    if (hidden) return null;
+    if (hidden || !isDemoPersona(user?.email)) return null;
 
     // Same rule as the sidebar: a script is offered only when its screen is in the visible menu.
     const granted = new Set(access.isLoading ? [] : visibleNav(access).flatMap((s) => s.items.flatMap((i) => i.children ?? [i])).map((i) => i.permission));

@@ -2,43 +2,48 @@
 
 Sirve para presentar el sistema con datos de prueba: una entrada para elegir entidad y persona, y un guion por módulo a la mano mientras se muestra la pantalla.
 
-Está **apagado por defecto**. Solo existe cuando la aplicación arranca o se compila con `VITE_DEMO_MODE=true`. Con cualquier otro valor no hay ruta `#/demo`, no se muestra nada nuevo y el código del modo demo no entra en el paquete.
+Es un **acceso que se enciende y se apaga**, también en producción, sin recompilar ni tocar el hosting. Lo controla el superadministrador desde la pantalla **Plataforma**, y está **apagado por defecto**.
+
+| Acceso | Qué ve un visitante | Qué pueden hacer las cuentas demo |
+|---|---|---|
+| Apagado | Nada: `#/demo` es una dirección que no existe y no hay ningún texto ni enlace del demo | No pueden entrar; una sesión abierta deja de servir |
+| Encendido | El enlace «Ver demostración» en la pantalla de acceso, que abre `#/demo` | Entran con la contraseña definida al encender |
+
+El front pregunta el estado al API (`GET /api/demo`) una vez por carga de página. Si el API no responde, tarda más de 5 segundos o falla, el acceso se toma como apagado. Después de encender o apagar, recarga la página para ver el cambio en la pantalla de acceso.
+
+El código del modo demo va en un archivo aparte, que el navegador solo descarga con el acceso encendido. No contiene contraseñas, tokens ni llaves.
 
 ## 1. Cargar los datos
 
-Los datos salen del repositorio del API (`DevManagerAPI`), y solo se cargan en la base **local**:
+Los datos salen del repositorio del API (`DevManagerAPI`):
 
-1. `Infrastructure/Database/Seeders/DemoData.sql` crea las tres entidades, sus personas y los datos de cada módulo.
+1. `Infrastructure/Database/Seeders/DemoData.sql` crea las tres entidades, marcadas como organizaciones demo, sus personas y los datos de cada módulo.
 2. `Infrastructure/Database/Seeders/DemoDocumentFiles.mjs` crea en disco los archivos del control documental.
 
 El paso a paso y la limpieza están en `Infrastructure/Database/SETUP_DATABASE.md` del API. La carga se puede repetir sin duplicar datos.
 
-## 2. Encender el modo
+## 2. Encender el acceso
 
-Con el API local corriendo en el puerto 5073:
+1. Entra como superadministrador y abre **Plataforma** (`#/superadmin`).
+2. La tarjeta **Acceso demo** muestra el estado y cuántas organizaciones y usuarios demo hay. Si dice «No hay organizaciones demo cargadas», carga primero los datos: sin ellos no deja encender.
+3. Pulsa **Encender**, escribe dos veces la contraseña que tendrán las cuentas demo y confirma.
 
-```bash
-VITE_DEMO_MODE=true VITE_API_URL=http://localhost:5073/api VITE_AGENT_URL=http://localhost:5073 npm run dev
-```
+La contraseña demo **se define en ese momento**: queda asignada a todas las cuentas de las organizaciones demo y sus sesiones abiertas se cierran. Debe cumplir la política de contraseñas del sistema; si no la cumple, el mensaje del API lo explica. El front no la guarda, y nadie puede consultarla después: si se olvida, apaga y enciende de nuevo con otra.
 
-En PowerShell:
+Para **apagar**, pulsa **Apagar** en la misma tarjeta y confirma: se cierran las sesiones demo y esas cuentas dejan de poder entrar. Encender y apagar quedan en la auditoría, sin la contraseña.
 
-```powershell
-$env:VITE_DEMO_MODE='true'; $env:VITE_API_URL='http://localhost:5073/api'; $env:VITE_AGENT_URL='http://localhost:5073'; npm run dev
-```
-
-También se pueden poner las tres variables en `.env`. La variable se lee al arrancar: si la cambias, reinicia `npm run dev`.
-
-No lo enciendas en producción: la entrada `#/demo` muestra los correos de las personas de prueba.
+El acceso demo no cambia nada para los usuarios de las demás organizaciones.
 
 ## 3. Entrar
 
-1. Abre `http://localhost:3000/#/demo`.
+1. En la pantalla de acceso, pulsa «Ver demostración» (o abre `#/demo`).
 2. Elige la entidad y la persona.
-3. Escribe la contraseña. Es la que indica la documentación de los datos de prueba (`Infrastructure/Database/SETUP_DATABASE.md` del API); el front no la guarda ni la trae escrita.
+3. Escribe la contraseña que definió el superadministrador al encender el acceso.
 4. «Iniciar sesión demo» usa el mismo inicio de sesión de siempre y abre la aplicación.
 
 Para cambiar de persona vuelve a `#/demo` (o usa «Cambiar de persona» en el guion): el nuevo inicio de sesión reemplaza al anterior.
+
+En desarrollo local, con el API en el puerto 5073: `VITE_API_URL=http://localhost:5073/api VITE_AGENT_URL=http://localhost:5073 npm run dev` y abre `http://localhost:3000/#/demo`.
 
 ### Entidades
 
@@ -61,7 +66,7 @@ Son las mismas cuatro en cada entidad. El correo es `<persona>@<dominio>`, por e
 
 ## 4. El guion
 
-Con el modo encendido aparece una franja «Modo demo» bajo el encabezado, con el botón **Guion de demo**. Abre un panel con:
+Con el acceso encendido, las personas del catálogo demo ven una franja «Modo demo» bajo el encabezado, con el botón **Guion de demo**. Los usuarios reales no la ven nunca, tampoco el superadministrador. Abre un panel con:
 
 - los pasos del módulo que estás mostrando, y
 - la lista de módulos con guion, que sirve de acceso directo.
@@ -112,7 +117,7 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 3. Genere el balance social con recomendaciones.
 4. Aclare que el asistente responde con los datos de la entidad en sesión.
 
-### Control documental (`#/documentos`, permiso `menu.platform.documents`)
+### Control documental (`#/documentos`, permiso `menu.documents.master_list`, sección «Gestión documental»)
 
 1. Muestre el listado: documentos de la entidad en borrador, en revisión, aprobados y obsoletos.
 2. Abra un documento aprobado: versión vigente, historial de versiones y descarga del archivo.
@@ -120,6 +125,28 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 4. Con Gerencia, apruébela: quien elabora no aprueba y la versión anterior pasa a obsoleta.
 5. Distribuya el documento y muestre quién confirmó la lectura.
 6. Entre como Colaborador y confirme una lectura pendiente.
+
+### Cuadro de clasificación (`#/cuadro-clasificacion`, permiso `menu.documents.classification`, sección «Gestión documental»)
+
+1. Con Calidad, abra el cuadro: secciones, series y subseries de la entidad con su código.
+2. Señale en una serie sus tiempos en gestión y en central y su disposición final; una subserie sin tiempos propios hereda los de su serie.
+3. Muestre los tipos documentales de una serie: son los que se ofrecen al incorporar un documento a un expediente.
+4. Lea el aviso: los tiempos los define la entidad y DevManager no valida su cumplimiento legal.
+5. Agregue un tipo documental a una serie y exporte la tabla de retención.
+6. Entre como Colaborador: no tiene el permiso y la entrada no aparece en su menú.
+
+### Expedientes (`#/expedientes`, permiso `menu.documents.dossiers`, sección «Gestión documental»)
+
+1. Con Calidad, muestre la lista: expedientes abiertos y cerrados, cada uno con su serie, su etapa y la fecha en que termina.
+2. Filtre por «Cerrado» y recorra las etapas: EXP-ACT-001 en gestión, EXP-MAN-001 con transferencia en 10 días, EXP-REG-001 en central y EXP-PRO-001 con disposición final pendiente.
+3. Descargue el «Inventario de expedientes»: un reporte interno de la lista filtrada.
+4. Abra EXP-ASA-001: sus datos, la retención de su serie y sus tres documentos. Descargue uno.
+5. Incorpore un documento con su archivo, su tipo documental y su fecha, y descargue el «Índice del expediente».
+6. Cierre el expediente: la confirmación advierte que no se puede deshacer. Muestre la etapa y las fechas de gestión, central y disposición final.
+7. Abra EXP-PLA-001 e intente cerrarlo: está vacío y su serie no tiene retención, así que el sistema explica por qué no se puede.
+8. Vuelva al inicio de Gestión documental: la tarjeta cuenta los expedientes con transferencia o disposición próxima. El sistema solo avisa: no elimina nada.
+
+Calidad tiene los dos permisos del cuadro y los dos de expedientes; el Colaborador no tiene ninguno. Crear un expediente pide además el permiso del cuadro, porque la serie se elige de ahí. El índice y el inventario son reportes internos en CSV.
 
 ## Cambiar el catálogo o los guiones
 
@@ -139,5 +166,16 @@ Todo está en `src/features/demo/catalog.ts`: entidades, personas y guiones son 
 | Mutual Demo Familia | Nuevo plan exequial familiar | REG-AUX-001 |
 
 En cada entidad hay una versión en revisión elaborada por Calidad, que aprueba Gerencia, y otra elaborada por Gerencia, que aprueba Calidad.
+
+Cada entidad trae además su cuadro de clasificación y seis expedientes:
+
+| Expediente | Estado | Para mostrar |
+|---|---|---|
+| EXP-ASA-001 | Abierto, con tres documentos | Incorporar un documento y cerrarlo en vivo |
+| EXP-ACT-001 | Cerrado | Etapa de gestión |
+| EXP-MAN-001 | Cerrado | Transferencia al archivo central en 10 días |
+| EXP-REG-001 | Cerrado hace seis años | Etapa de archivo central |
+| EXP-PRO-001 | Cerrado, retención terminada hace 20 días | Disposición final pendiente (eliminación) |
+| EXP-PLA-001 | Abierto, vacío y en una serie sin retención | Por qué no se puede cerrar |
 
 Después de una demo, los datos vuelven a su estado inicial ejecutando `DemoData_Cleanup.sql` y luego `DemoData.sql` y `DemoDocumentFiles.mjs` (repositorio del API). La limpieza borra todo lo creado dentro de las tres entidades de demostración.

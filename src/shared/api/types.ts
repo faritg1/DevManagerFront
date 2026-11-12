@@ -1461,6 +1461,16 @@ export interface ImpersonationResponse {
   organizationName: string;
 }
 
+/** GET /platform/demo: the demo access switch and how many demo organizations and users exist */
+export interface DemoAccess {
+  enabled: boolean;
+  organizations: number;
+  users: number;
+}
+
+/** PUT /platform/demo: turning it on sets that password on every demo account */
+export type DemoAccessChange = { enabled: true; password: string } | { enabled: false };
+
 /** GET /platform/impersonations: newest first */
 export interface ImpersonationLogEntry {
   id: string;

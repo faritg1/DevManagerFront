@@ -317,6 +317,9 @@ export const API_ENDPOINTS = {
       QUOTA: (organizationId: string) => `/ai/quotas/${organizationId}`,
     },
 
+    // Interruptor público del acceso demo (anónimo)
+    DEMO: "/demo",
+
     // Superadministración de la plataforma
     PLATFORM: {
       ORGANIZATIONS: "/platform/organizations",
@@ -324,6 +327,7 @@ export const API_ENDPOINTS = {
       IMPERSONATE: "/platform/impersonate",
       IMPERSONATE_STOP: "/platform/impersonate/stop",
       IMPERSONATIONS: "/platform/impersonations",
+      DEMO: "/platform/demo",
     },
 
     // Asistente Cooperativo

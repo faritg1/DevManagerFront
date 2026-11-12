@@ -1,6 +1,6 @@
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
-import type { ApiResponse, ImpersonationLogEntry, ImpersonationResponse, PlatformOrganization, PlatformUser } from "../types";
+import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, PlatformOrganization, PlatformUser } from "../types";
 
 const E = API_ENDPOINTS.PLATFORM;
 
@@ -18,4 +18,9 @@ export const platformService = {
   stopImpersonation: (): Promise<ApiResponse<void>> => apiClient.post(E.IMPERSONATE_STOP),
 
   listImpersonations: (): Promise<ApiResponse<ImpersonationLogEntry[]>> => apiClient.get(E.IMPERSONATIONS),
+
+  getDemoAccess: (): Promise<ApiResponse<DemoAccess>> => apiClient.get(E.DEMO),
+
+  /** Either way the API closes the sessions of the demo users; it never returns the password. */
+  setDemoAccess: (change: DemoAccessChange): Promise<ApiResponse<unknown>> => apiClient.put(E.DEMO, change),
 };

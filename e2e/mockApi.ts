@@ -30,6 +30,9 @@ export async function mockApi(page: Page, user: MockUser = ADMIN, overrides: Rec
         'GET /notifications/unread-count': ok({ count: 0 }),
         'GET /applications/pending-count': ok({ count: 0 }),
         'GET /ai/capabilities': ok({ allowed: [], denied: [] }),
+        // Demo access is off unless a test turns it on (docs/demo.md).
+        'GET /demo': ok({ enabled: false }),
+        'GET /platform/demo': ok({ enabled: false, organizations: 0, users: 0 }),
     };
     await page.route(`${API}/**`, async (route) => {
         const url = new URL(route.request().url());

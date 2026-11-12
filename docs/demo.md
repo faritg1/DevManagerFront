@@ -2,43 +2,48 @@
 
 Sirve para presentar el sistema con datos de prueba: una entrada para elegir entidad y persona, y un guion por módulo a la mano mientras se muestra la pantalla.
 
-Está **apagado por defecto**. Solo existe cuando la aplicación arranca o se compila con `VITE_DEMO_MODE=true`. Con cualquier otro valor no hay ruta `#/demo`, no se muestra nada nuevo y el código del modo demo no entra en el paquete.
+Es un **acceso que se enciende y se apaga**, también en producción, sin recompilar ni tocar el hosting. Lo controla el superadministrador desde la pantalla **Plataforma**, y está **apagado por defecto**.
+
+| Acceso | Qué ve un visitante | Qué pueden hacer las cuentas demo |
+|---|---|---|
+| Apagado | Nada: `#/demo` es una dirección que no existe y no hay ningún texto ni enlace del demo | No pueden entrar; una sesión abierta deja de servir |
+| Encendido | El enlace «Ver demostración» en la pantalla de acceso, que abre `#/demo` | Entran con la contraseña definida al encender |
+
+El front pregunta el estado al API (`GET /api/demo`) una vez por carga de página. Si el API no responde, tarda más de 5 segundos o falla, el acceso se toma como apagado. Después de encender o apagar, recarga la página para ver el cambio en la pantalla de acceso.
+
+El código del modo demo va en un archivo aparte, que el navegador solo descarga con el acceso encendido. No contiene contraseñas, tokens ni llaves.
 
 ## 1. Cargar los datos
 
-Los datos salen del repositorio del API (`DevManagerAPI`), y solo se cargan en la base **local**:
+Los datos salen del repositorio del API (`DevManagerAPI`):
 
-1. `Infrastructure/Database/Seeders/DemoData.sql` crea las tres entidades, sus personas y los datos de cada módulo.
+1. `Infrastructure/Database/Seeders/DemoData.sql` crea las tres entidades, marcadas como organizaciones demo, sus personas y los datos de cada módulo.
 2. `Infrastructure/Database/Seeders/DemoDocumentFiles.mjs` crea en disco los archivos del control documental.
 
 El paso a paso y la limpieza están en `Infrastructure/Database/SETUP_DATABASE.md` del API. La carga se puede repetir sin duplicar datos.
 
-## 2. Encender el modo
+## 2. Encender el acceso
 
-Con el API local corriendo en el puerto 5073:
+1. Entra como superadministrador y abre **Plataforma** (`#/superadmin`).
+2. La tarjeta **Acceso demo** muestra el estado y cuántas organizaciones y usuarios demo hay. Si dice «No hay organizaciones demo cargadas», carga primero los datos: sin ellos no deja encender.
+3. Pulsa **Encender**, escribe dos veces la contraseña que tendrán las cuentas demo y confirma.
 
-```bash
-VITE_DEMO_MODE=true VITE_API_URL=http://localhost:5073/api VITE_AGENT_URL=http://localhost:5073 npm run dev
-```
+La contraseña demo **se define en ese momento**: queda asignada a todas las cuentas de las organizaciones demo y sus sesiones abiertas se cierran. Debe cumplir la política de contraseñas del sistema; si no la cumple, el mensaje del API lo explica. El front no la guarda, y nadie puede consultarla después: si se olvida, apaga y enciende de nuevo con otra.
 
-En PowerShell:
+Para **apagar**, pulsa **Apagar** en la misma tarjeta y confirma: se cierran las sesiones demo y esas cuentas dejan de poder entrar. Encender y apagar quedan en la auditoría, sin la contraseña.
 
-```powershell
-$env:VITE_DEMO_MODE='true'; $env:VITE_API_URL='http://localhost:5073/api'; $env:VITE_AGENT_URL='http://localhost:5073'; npm run dev
-```
-
-También se pueden poner las tres variables en `.env`. La variable se lee al arrancar: si la cambias, reinicia `npm run dev`.
-
-No lo enciendas en producción: la entrada `#/demo` muestra los correos de las personas de prueba.
+El acceso demo no cambia nada para los usuarios de las demás organizaciones.
 
 ## 3. Entrar
 
-1. Abre `http://localhost:3000/#/demo`.
+1. En la pantalla de acceso, pulsa «Ver demostración» (o abre `#/demo`).
 2. Elige la entidad y la persona.
-3. Escribe la contraseña. Es la que indica la documentación de los datos de prueba (`Infrastructure/Database/SETUP_DATABASE.md` del API); el front no la guarda ni la trae escrita.
+3. Escribe la contraseña que definió el superadministrador al encender el acceso.
 4. «Iniciar sesión demo» usa el mismo inicio de sesión de siempre y abre la aplicación.
 
 Para cambiar de persona vuelve a `#/demo` (o usa «Cambiar de persona» en el guion): el nuevo inicio de sesión reemplaza al anterior.
+
+En desarrollo local, con el API en el puerto 5073: `VITE_API_URL=http://localhost:5073/api VITE_AGENT_URL=http://localhost:5073 npm run dev` y abre `http://localhost:3000/#/demo`.
 
 ### Entidades
 
@@ -61,7 +66,7 @@ Son las mismas cuatro en cada entidad. El correo es `<persona>@<dominio>`, por e
 
 ## 4. El guion
 
-Con el modo encendido aparece una franja «Modo demo» bajo el encabezado, con el botón **Guion de demo**. Abre un panel con:
+Con el acceso encendido, las personas del catálogo demo ven una franja «Modo demo» bajo el encabezado, con el botón **Guion de demo**. Los usuarios reales no la ven nunca, tampoco el superadministrador. Abre un panel con:
 
 - los pasos del módulo que estás mostrando, y
 - la lista de módulos con guion, que sirve de acceso directo.

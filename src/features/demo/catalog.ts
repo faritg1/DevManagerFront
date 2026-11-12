@@ -43,6 +43,10 @@ export const DEMO_PERSONAS: DemoPersona[] = [
 export const demoEmail = (persona: DemoPersona, organization: DemoOrganization): string =>
     `${persona.key}@${organization.slug}.example`;
 
+/** True for the email of a catalog persona: the script bar is theirs only, never a real user's. */
+export const isDemoPersona = (email: string | undefined): boolean =>
+    DEMO_ORGANIZATIONS.some((o) => DEMO_PERSONAS.some((p) => demoEmail(p, o) === email?.trim().toLowerCase()));
+
 export const DEMO_SCRIPTS: DemoScript[] = [
     {
         key: 'projects', title: 'Proyectos y sprints', route: ROUTES.PROJECTS, permission: 'menu.platform.projects',

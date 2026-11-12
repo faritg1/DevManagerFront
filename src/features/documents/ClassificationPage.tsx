@@ -3,7 +3,7 @@ import { FolderPlus, FolderTree, Info, Pencil, Plus, Tag, X } from 'lucide-react
 import { documentsService, type ClassificationNode, type DocumentaryType } from '../../shared/api';
 import { useNotification } from '../../shared/context';
 import { type CsvColumn } from '../../shared/export';
-import { usePermission } from '../../shared/hooks';
+import { useConfirm, usePermission } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, ExportButton, IconButton, Input, Modal, PageContainer, PageHeader, SkeletonRows } from '../../shared/ui';
 import { errorText, needsLocalToast } from '../associates/labels';
 import { ClassificationNodeDialog, type NodeTarget } from './components/ClassificationNodeDialog';
@@ -103,6 +103,7 @@ const NodeItem: React.FC<{ node: ClassificationNode; actions?: Actions }> = ({ n
 export const ClassificationPage: React.FC = () => {
     const canManage = usePermission().has(PERMISSIONS.CLASSIFICATION_MANAGE);
     const { showNotification } = useNotification();
+    const { confirm } = useConfirm();
     const [reload, setReload] = useState(0);
     // A new function after each change makes `useRows` ask for the tree again.
     const load = useCallback(() => documentsService.classification(), [reload]);
@@ -138,7 +139,15 @@ export const ClassificationPage: React.FC = () => {
     const actions: Actions | undefined = canManage ? {
         open: setTarget,
         addType: (node) => { setTypeName(''); setTypeFor(node); },
-        removeType: (node, type) => { void changeTypes(() => documentsService.removeType(node.id, type.id), 'Tipo documental quitado'); },
+        removeType: async (node, type) => {
+            const yes = await confirm({
+                title: `Quitar el tipo ${type.name}`,
+                message: `Deja de ofrecerse en ${node.code} · ${node.name}. Si algún documento de un expediente lo usa, no se puede quitar.`,
+                confirmText: 'Quitar tipo',
+                cancelText: 'Cancelar',
+            });
+            if (yes) void changeTypes(() => documentsService.removeType(node.id, type.id), 'Tipo documental quitado');
+        },
     } : undefined;
 
     return (

@@ -202,7 +202,12 @@ test.describe('classification chart', () => {
         await expect(dialog).toBeVisible();
         await dialog.getByRole('button', { name: 'Cancelar' }).click();
 
+        // Quitting asks first: cancelling removes nothing.
         await page.getByRole('button', { name: 'Quitar tipo Citación de ACT' }).click();
+        await page.getByRole('button', { name: 'Cancelar' }).click();
+        expect(removed).toEqual([]);
+        await page.getByRole('button', { name: 'Quitar tipo Citación de ACT' }).click();
+        await page.getByRole('button', { name: 'Quitar tipo', exact: true }).click();
         await expect.poll(() => removed).toEqual(['/api/document-classification/nodes/n1/types/t2']);
     });
 

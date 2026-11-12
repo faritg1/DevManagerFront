@@ -37,6 +37,16 @@ export const seriesOptions = (tree: ClassificationNode[]): { id: string; label: 
 /** Same window as the API's DocumentReviewNotifier. */
 export const REVIEW_WINDOW_DAYS = 30;
 
+// ponytail: the browser's local date, not the API's Colombia clock; a count can differ by one document around midnight.
+export const reviewLimit = (): string => new Date(Date.now() + REVIEW_WINDOW_DAYS * 86_400_000).toLocaleDateString('en-CA');
+
+/** The date a dossier's current stage ends: the transfer to the central archive, then the final disposition. Null once both passed. */
+export const stageEnd = (d: { stage: string | null; managementUntil: string | null; centralUntil: string | null }): string | null =>
+    d.stage === 'Management' ? d.managementUntil : d.stage === 'Central' ? d.centralUntil : null;
+
+/** Closed dossiers whose current stage already ended or ends within the window: what the home card counts and the list filters. */
+export const retentionDue = (d: Parameters<typeof stageEnd>[0], limit = reviewLimit()): boolean => (stageEnd(d) ?? '9999') <= limit;
+
 /** Document code that opens its detail; 44 px tall on touch screens. */
 export const CODE_LINK_CLASS = 'font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:inline-flex [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:items-center';
 

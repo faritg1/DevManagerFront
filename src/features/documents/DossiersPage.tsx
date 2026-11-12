@@ -13,7 +13,7 @@ import {
 import { DossierFormDialog } from './components/DossierFormDialog';
 import {
     CODE_LINK_CLASS, DISPOSITION, DOSSIER_STAGE, DOSSIER_STATUS, PERMISSIONS,
-    dossierNodeLabel, dossierSection, dossierSeries, dossierSubseries, seriesOptions, shortDate, stageText,
+    dossierNodeLabel, dossierSection, dossierSeries, dossierSubseries, retentionDue, seriesOptions, shortDate, stageText,
 } from './labels';
 import { loadClassification, useRows } from './useRows';
 
@@ -39,7 +39,7 @@ const INVENTORY_COLUMNS: CsvColumn<DossierListItem>[] = [
     { header: 'Disposición', value: (d) => (d.finalDisposition ? DISPOSITION[d.finalDisposition] : '') },
 ];
 
-const EMPTY = { q: '', series: '', status: '' };
+const EMPTY = { q: '', series: '', status: '', due: '' };
 
 const toQuery = (f: typeof EMPTY): DossierFilter => ({
     q: f.q.trim() || undefined,
@@ -53,10 +53,10 @@ export const DossiersPage: React.FC = () => {
     const canManage = has(PERMISSIONS.DOSSIERS_MANAGE);
     // `?estado=` opens the list already filtered: the card of the module home links here.
     const [search] = useSearchParams();
-    const [filters, setFilters] = useState(() => ({ ...EMPTY, status: search.get('estado') ?? '' }));
+    const [filters, setFilters] = useState(() => ({ ...EMPTY, status: search.get('estado') ?? '', due: search.get('retencion') === 'proxima' ? '1' : '' }));
     // The series come from the chart, which the dossiers permission also reads.
     const series = seriesOptions(useRows(loadClassification, true) ?? []);
-    const [rows, setRows] = useState<DossierListItem[] | null>(null);
+    const [loaded, setRows] = useState<DossierListItem[] | null>(null);
     const [failed, setFailed] = useState(false);
     // undefined closed, null new, a row to edit it.
     const [editing, setEditing] = useState<DossierListItem | null | undefined>(undefined);
@@ -79,9 +79,11 @@ export const DossiersPage: React.FC = () => {
             );
         }, 300);
         return () => { live = false; clearTimeout(id); };
-    }, [filters, reload]);
+    }, [filters.q, filters.series, filters.status, reload]);
 
     const filtered = Object.values(filters).some(Boolean);
+    // Retention is filtered here: the API has no such filter and the list is already loaded.
+    const rows = filters.due ? loaded?.filter((d) => retentionDue(d)) ?? null : loaded;
 
     return (
         <PageContainer>
@@ -104,7 +106,7 @@ export const DossiersPage: React.FC = () => {
             />
 
             <Card padding="none" className="overflow-hidden">
-                <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-3 dark:border-border-dark">
+                <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-border-dark">
                     <Input label="Buscar" value={filters.q} onChange={set('q')} placeholder="Código o título" />
                     <Select label="Serie" value={filters.series} onChange={set('series')}>
                         <option value="">Todas las series</option>
@@ -113,6 +115,10 @@ export const DossiersPage: React.FC = () => {
                     <Select label="Estado" value={filters.status} onChange={set('status')}>
                         <option value="">Todos los estados</option>
                         {Object.entries(DOSSIER_STATUS).map(([k, [label]]) => <option key={k} value={k}>{label}</option>)}
+                    </Select>
+                    <Select label="Retención" value={filters.due} onChange={set('due')}>
+                        <option value="">Todas</option>
+                        <option value="1">Vencida o por vencer en 30 días</option>
                     </Select>
                 </div>
 
@@ -150,7 +156,7 @@ export const DossiersPage: React.FC = () => {
                                             <span className="block md:max-w-[15rem] md:truncate 2xl:max-w-[24rem]" title={d.title}>{d.title}</span>
                                             <span className="block text-xs text-slate-600 md:max-w-[15rem] md:truncate 2xl:max-w-[24rem] dark:text-slate-400" title={dossierNodeLabel(d)}>{dossierNodeLabel(d)}</span>
                                         </td>
-                                        <td className={TD}><span className="block max-w-[7rem] truncate 2xl:max-w-[12rem]" title={d.ownerName ?? undefined}>{d.ownerName ?? '—'}</span></td>
+                                        <td className={TD}><span className="block md:max-w-[7rem] md:truncate 2xl:max-w-[12rem]" title={d.ownerName ?? undefined}>{d.ownerName ?? '—'}</span></td>
                                         <td className={`${TD} text-right tabular-nums`}>{d.itemCount}</td>
                                         <td className={`${TD} whitespace-normal`}>
                                             <Badge variant={DOSSIER_STATUS[d.status][1]}>{DOSSIER_STATUS[d.status][0]}</Badge>

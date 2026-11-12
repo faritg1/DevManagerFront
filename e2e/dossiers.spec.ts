@@ -115,6 +115,22 @@ test.describe('dossier list', () => {
         expect(new Set(queries)).toEqual(new Set(['status=Closed']));
     });
 
+    test('`?retencion=proxima` keeps only the dossiers whose stage ended or ends within 30 days', async ({ page }) => {
+        const soon = new Date(Date.now() + 10 * 86_400_000).toLocaleDateString('en-CA');
+        await mockApi(page, { permissions: VIEW }, {
+            [LIST]: ok([
+                dossier({ ...CLOSED_DOSSIER, id: 'x2', code: 'EXP-LEJ-001' }),
+                dossier({ ...CLOSED_DOSSIER, id: 'x3', code: 'EXP-PRO-001', managementUntil: soon }),
+                dossier({ ...CLOSED_DOSSIER, id: 'x4', code: 'EXP-VEN-001', stage: 'Central', centralUntil: '2020-01-01' }),
+            ]),
+        });
+        await openList(page, '?estado=Closed&retencion=proxima');
+        await expect(page.getByLabel('Retención')).toHaveValue('1');
+        await expect(page.getByRole('link', { name: /^EXP-/ })).toHaveText(['EXP-PRO-001', 'EXP-VEN-001']);
+        await page.getByLabel('Retención').selectOption('');
+        await expect(page.getByRole('link', { name: /^EXP-/ })).toHaveCount(3);
+    });
+
     test('shows empty and error states, and only reads without .manage', async ({ page }) => {
         await mockApi(page, { permissions: VIEW }, { [LIST]: ok([dossier()]), [TREE]: ok(CLASSIFICATION_TREE) });
         await openList(page);

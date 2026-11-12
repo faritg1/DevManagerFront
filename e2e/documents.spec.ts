@@ -665,7 +665,7 @@ test.describe('module section', () => {
         const card = page.getByRole('main').getByRole('link', { name: /^Expedientes con disposición o transferencia próxima/ });
         // Within 30 days of the end of its current stage: a and c.
         await expect(card).toHaveText(/2$/);
-        await expect(card).toHaveAttribute('href', '#/expedientes?estado=Closed');
+        await expect(card).toHaveAttribute('href', '#/expedientes?estado=Closed&retencion=proxima');
         expect(new Set(queries)).toEqual(new Set(['status=Closed']));
     });
 

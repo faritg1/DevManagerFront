@@ -1,24 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Archive, BookOpenCheck, CalendarClock, FileCheck2, FolderOpen, FolderTree, Home, type LucideIcon } from 'lucide-react';
-import { documentsService, type DossierListItem } from '../../shared/api';
+import { documentsService } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { usePermission } from '../../shared/hooks';
 import { PageContainer, PageHeader, StatCard } from '../../shared/ui';
-import { PERMISSIONS, REVIEW_WINDOW_DAYS, UNCLASSIFIED } from './labels';
+import { PERMISSIONS, REVIEW_WINDOW_DAYS, UNCLASSIFIED, retentionDue, reviewLimit } from './labels';
 import { useRows } from './useRows';
 
 const loadPending = () => documentsService.pendingReads();
 const loadInReview = () => documentsService.list({ status: 'InReview' });
 const loadAll = () => documentsService.list({});
 const loadClosedDossiers = () => documentsService.dossiers({ status: 'Closed' });
-
-// ponytail: the browser's local date, not the API's Colombia clock; a count can differ by one document around midnight.
-const reviewLimit = (): string => new Date(Date.now() + REVIEW_WINDOW_DAYS * 86_400_000).toLocaleDateString('en-CA');
-
-/** The date its current stage ends: the transfer to the central archive, then the final disposition. Null once both passed. */
-const stageEnd = (d: DossierListItem): string | null =>
-    d.stage === 'Management' ? d.managementUntil : d.stage === 'Central' ? d.centralUntil : null;
 
 const CountCard: React.FC<{ title: string; to: string; icon: LucideIcon; count: number | null | undefined }> = ({ title, to, icon, count }) => (
     <Link to={to} className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-background-dark">
@@ -70,9 +63,9 @@ export const DocumentsHomePage: React.FC = () => {
                 {canSeeDossiers && (
                     <CountCard
                         title="Expedientes con disposición o transferencia próxima"
-                        to={`${ROUTES.DOSSIERS}?estado=Closed`}
+                        to={`${ROUTES.DOSSIERS}?estado=Closed&retencion=proxima`}
                         icon={Archive}
-                        count={closedDossiers && closedDossiers.filter((d) => (stageEnd(d) ?? '9999') <= limit).length}
+                        count={closedDossiers && closedDossiers.filter((d) => retentionDue(d, limit)).length}
                     />
                 )}
             </div>

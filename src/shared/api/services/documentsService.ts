@@ -1,11 +1,14 @@
 import { API_URL, apiClient, buildHeaders, readApiError } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
 import type {
-  ApiResponse, CreateDocumentRequest, DocumentDetail, DocumentFilter, DocumentListItem, DocumentRead, DocumentVersion,
-  PendingRead, UpdateDocumentRequest,
+  ApiResponse, ClassificationNode, CreateClassificationNodeRequest, CreateDocumentRequest, DocumentDetail, DocumentFilter, DocumentListItem,
+  DocumentRead, DocumentVersion, DocumentaryType, PendingRead, UpdateClassificationNodeRequest, UpdateDocumentRequest,
 } from "../types";
 
-const { BASE, BY_ID, PENDING_READS, READS, DISTRIBUTION, VERSIONS, VERSION } = API_ENDPOINTS.DOCUMENTS;
+const {
+  BASE, BY_ID, PENDING_READS, READS, DISTRIBUTION, VERSIONS, VERSION,
+  CLASSIFICATION, CLASSIFICATION_NODES, CLASSIFICATION_NODE, CLASSIFICATION_TYPES,
+} = API_ENDPOINTS.DOCUMENTS;
 
 const versionForm = (changeSummary: string, file?: File | null): FormData => {
   const form = new FormData();
@@ -55,4 +58,20 @@ export const documentsService = {
 
   confirmRead: (id: string, versionId: string): Promise<ApiResponse<{ confirmedAt: string }>> =>
     apiClient.post<{ confirmedAt: string }>(`${VERSION(id, versionId)}/read-confirmation`),
+
+  /** Sections with their series and subseries, inactive ones included. */
+  classification: (): Promise<ApiResponse<ClassificationNode[]>> => apiClient.get<ClassificationNode[]>(CLASSIFICATION),
+
+  createNode: (data: CreateClassificationNodeRequest): Promise<ApiResponse<ClassificationNode>> =>
+    apiClient.post<ClassificationNode>(CLASSIFICATION_NODES, data),
+
+  /** Replaces the whole node: a field left out is cleared. */
+  updateNode: (id: string, data: UpdateClassificationNodeRequest): Promise<ApiResponse<ClassificationNode>> =>
+    apiClient.put<ClassificationNode>(CLASSIFICATION_NODE(id), data),
+
+  addType: (nodeId: string, name: string): Promise<ApiResponse<DocumentaryType>> =>
+    apiClient.post<DocumentaryType>(CLASSIFICATION_TYPES(nodeId), { name }),
+
+  removeType: (nodeId: string, typeId: string): Promise<ApiResponse<unknown>> =>
+    apiClient.delete<unknown>(`${CLASSIFICATION_TYPES(nodeId)}/${typeId}`),
 };

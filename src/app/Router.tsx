@@ -65,6 +65,7 @@ const DocumentDetailPage = page(documents, "DocumentDetailPage");
 const DocumentsHomePage = page(documents, "DocumentsHomePage");
 const PendingReadsPage = page(documents, "PendingReadsPage");
 const AwaitingApprovalPage = page(documents, "AwaitingApprovalPage");
+const ClassificationPage = page(documents, "ClassificationPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
@@ -125,6 +126,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.DOCUMENTS_HOME} element={<DocumentsHomePage />} />
                     <Route path={ROUTES.DOCUMENT_READS} element={<PendingReadsPage />} />
                     <Route path={ROUTES.DOCUMENT_APPROVALS} element={<AwaitingApprovalPage />} />
+                    <Route path={ROUTES.DOCUMENT_CLASSIFICATION} element={<ClassificationPage />} />
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />

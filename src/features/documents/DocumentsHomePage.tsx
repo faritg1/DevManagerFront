@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpenCheck, CalendarClock, FileCheck2, FolderOpen, Home, type LucideIcon } from 'lucide-react';
+import { BookOpenCheck, CalendarClock, FileCheck2, FolderOpen, FolderTree, Home, type LucideIcon } from 'lucide-react';
 import { documentsService } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { usePermission } from '../../shared/hooks';
 import { PageContainer, PageHeader, StatCard } from '../../shared/ui';
-import { PERMISSIONS, REVIEW_WINDOW_DAYS } from './labels';
+import { PERMISSIONS, REVIEW_WINDOW_DAYS, UNCLASSIFIED } from './labels';
 import { useRows } from './useRows';
 
 const loadPending = () => documentsService.pendingReads();
@@ -52,6 +52,12 @@ export const DocumentsHomePage: React.FC = () => {
                     to={ROUTES.DOCUMENTS}
                     icon={CalendarClock}
                     count={all === undefined ? undefined : current?.filter((d) => d.reviewDate && d.reviewDate.slice(0, 10) <= limit).length ?? null}
+                />
+                <CountCard
+                    title="Sin clasificar"
+                    to={`${ROUTES.DOCUMENTS}?serie=${UNCLASSIFIED}`}
+                    icon={FolderTree}
+                    count={all && all.filter((d) => !d.classificationNodeId).length}
                 />
             </div>
         </PageContainer>

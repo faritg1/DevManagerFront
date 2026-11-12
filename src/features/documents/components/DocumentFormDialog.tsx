@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { documentsService, usersService, type DocumentListItem, type UserResponse } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
+import { usePermission } from '../../../shared/hooks';
 import { Button, Input, Modal, Select } from '../../../shared/ui';
 import { errorText, needsLocalToast } from '../../associates/labels';
+import { PERMISSIONS, seriesLabel, seriesOptions } from '../labels';
+import { loadClassification, useRows } from '../useRows';
 
 interface Props {
     /** Null creates a new document. */
@@ -20,9 +23,16 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
         process: document?.process ?? '',
         ownerUserId: document?.ownerUserId ?? '',
         reviewDate: document?.reviewDate ?? '',
+        classificationNodeId: document?.classificationNodeId ?? '',
     });
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [saving, setSaving] = useState(false);
+    // Without the chart permission there is no selector, and the form resends the series the document already had.
+    const canClassify = usePermission().has(PERMISSIONS.CLASSIFICATION);
+    const tree = useRows(loadClassification, canClassify);
+    const series = seriesOptions(tree ?? []);
+    // The document's own series is always an option: the chart may still be loading, or the series was deactivated later.
+    const ownSeries = document?.classificationNodeId && !series.some((s) => s.id === document.classificationNodeId) ? document : null;
 
     useEffect(() => {
         usersService.getAll().then((r) => setUsers((r.data ?? []).filter((u) => u.isActive)), () => setUsers([]));
@@ -37,7 +47,7 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
         if (saving) return;
         setSaving(true);
         const { code, ...fields } = form;
-        const data = { ...fields, reviewDate: form.reviewDate || null };
+        const data = { ...fields, reviewDate: form.reviewDate || null, classificationNodeId: form.classificationNodeId || null };
         try {
             await (document ? documentsService.update(document.id, data) : documentsService.create({ code, ...data }));
             showNotification({ type: 'success', message: document ? 'Documento actualizado' : 'Documento creado' });
@@ -71,6 +81,15 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
                     {users.map((u) => <option key={u.id} value={u.id}>{u.fullName}</option>)}
                 </Select>
                 <Input label="Fecha de revisión" type="date" value={form.reviewDate} onChange={set('reviewDate')} />
+                {canClassify && (
+                    <div className="sm:col-span-2">
+                        <Select label="Serie" value={form.classificationNodeId} onChange={set('classificationNodeId')} hint="Serie o subserie del cuadro de clasificación.">
+                            <option value="">Sin clasificar</option>
+                            {ownSeries && <option value={ownSeries.classificationNodeId ?? ''}>{seriesLabel(ownSeries)}{tree ? ' (inactiva)' : ''}</option>}
+                            {series.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                        </Select>
+                    </div>
+                )}
             </div>
         </Modal>
     );

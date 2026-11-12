@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FolderOpen, Pencil, Plus } from 'lucide-react';
 import {
     documentsService, type DocumentFilter, type DocumentListItem, type DocumentVersionStatus, type PendingRead,
@@ -13,7 +13,8 @@ import {
     TABLE_CLASS, TBODY_CLASS, TD_ACTIONS_CLASS, TD_CLASS, THEAD_CLASS, TH_ACTIONS_CLASS, TH_CLASS, TR_CLASS,
 } from '../../shared/ui';
 import { DocumentFormDialog } from './components/DocumentFormDialog';
-import { CODE_LINK_CLASS, PERMISSIONS, STATUS } from './labels';
+import { CODE_LINK_CLASS, PERMISSIONS, STATUS, UNCLASSIFIED, seriesLabel, seriesOptions } from './labels';
+import { loadClassification, useRows } from './useRows';
 
 // Nine columns must fit at 1280 px: tighter cells, and long text is cut with "…" (full value in `title`).
 const TD = `${TD_CLASS} md:!px-3 md:first:!pl-5 md:last:!pr-5`;
@@ -34,22 +35,30 @@ const EXPORT_COLUMNS: CsvColumn<DocumentListItem>[] = [
     { header: 'Aprobador', value: (d) => d.approvedByName },
     { header: 'Versión en curso', value: (d) => (d.openVersionStatus ? STATUS[d.openVersionStatus][0] : '') },
     { header: 'Fecha de revisión', value: (d) => (d.reviewDate ? formatDate(d.reviewDate) : '') },
+    { header: 'Serie', value: seriesLabel },
 ];
 
-const EMPTY = { q: '', type: '', process: '', status: '' };
+// `series` holds a node id, UNCLASSIFIED or nothing.
+const EMPTY = { q: '', type: '', process: '', status: '', series: '' };
 
 const toQuery = (f: typeof EMPTY): DocumentFilter => ({
     q: f.q.trim() || undefined,
     type: f.type.trim() || undefined,
     process: f.process.trim() || undefined,
     status: (f.status as DocumentVersionStatus) || undefined,
+    series: f.series && f.series !== UNCLASSIFIED ? f.series : undefined,
+    unclassified: f.series === UNCLASSIFIED || undefined,
 });
 
 /** Master list of the organization's documents: the API filters it and applies what the user may see. */
 export const DocumentsPage: React.FC = () => {
     const { has } = usePermission();
     const canCreate = has(PERMISSIONS.CREATE);
-    const [filters, setFilters] = useState(EMPTY);
+    const canClassify = has(PERMISSIONS.CLASSIFICATION);
+    // `?serie=` opens the list already filtered: the «Sin clasificar» card of the module home links here.
+    const [search] = useSearchParams();
+    const [filters, setFilters] = useState(() => ({ ...EMPTY, series: search.get('serie') ?? '' }));
+    const series = seriesOptions(useRows(loadClassification, canClassify) ?? []);
     const [rows, setRows] = useState<DocumentListItem[] | null>(null);
     const [failed, setFailed] = useState(false);
     const [pending, setPending] = useState<PendingRead[]>([]);
@@ -86,8 +95,8 @@ export const DocumentsPage: React.FC = () => {
         <PageContainer>
             <PageHeader
                 icon={<FolderOpen className="shrink-0 text-primary" size={24} aria-hidden="true" />}
-                title="Documentos"
-                description="Listado maestro: versión vigente, quién la aprobó y qué está en curso."
+                title="Listado maestro"
+                description="Documentos de la entidad: versión vigente, quién la aprobó y qué está en curso."
                 actions={<>
                     <ExportButton rows={rows ?? []} columns={EXPORT_COLUMNS} filename="documentos" />
                     {canCreate && <Button icon={Plus} onClick={() => setEditing(null)}>Nuevo documento</Button>}
@@ -112,13 +121,18 @@ export const DocumentsPage: React.FC = () => {
             )}
 
             <Card padding="none" className="overflow-hidden">
-                <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-border-dark">
+                <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 dark:border-border-dark">
                     <Input label="Buscar" value={filters.q} onChange={set('q')} placeholder="Código o título" />
                     <Input label="Tipo" value={filters.type} onChange={set('type')} placeholder="Ej. Procedimiento" />
                     <Input label="Proceso" value={filters.process} onChange={set('process')} placeholder="Ej. Gestión humana" />
                     <Select label="Estado" value={filters.status} onChange={set('status')}>
                         <option value="">Todos los estados</option>
                         {Object.entries(STATUS).map(([k, [label]]) => <option key={k} value={k}>{label}</option>)}
+                    </Select>
+                    <Select label="Serie" value={filters.series} onChange={set('series')}>
+                        <option value="">Todas las series</option>
+                        <option value={UNCLASSIFIED}>Sin clasificar</option>
+                        {series.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </Select>
                 </div>
 
@@ -130,7 +144,7 @@ export const DocumentsPage: React.FC = () => {
                     <EmptyState
                         icon={FolderOpen}
                         title={filtered ? 'Sin documentos con este filtro' : 'Aún no hay documentos'}
-                        description={filtered ? 'Prueba con otro código, tipo, proceso o estado.' : undefined}
+                        description={filtered ? 'Prueba con otro código, tipo, proceso, estado o serie.' : undefined}
                     />
                 ) : (
                     <div className="overflow-x-auto">

@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { ApiResponse } from '../../shared/api';
+import { documentsService, type ApiResponse } from '../../shared/api';
+
+/** Stable loader of the classification chart, for `useRows`. */
+export const loadClassification = () => documentsService.classification();
 
 /** Rows of one query: `undefined` while it loads, `null` when it failed. `load` must be a stable function. */
 export const useRows = <T,>(load: () => Promise<ApiResponse<T[]>>, enabled = true): T[] | null | undefined => {

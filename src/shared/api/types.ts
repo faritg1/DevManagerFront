@@ -1758,6 +1758,64 @@ export interface DocumentFilter {
   type?: string;
   process?: string;
   status?: DocumentVersionStatus;
+  /** Id of a series or subseries: exact match, it does not include its subseries */
+  series?: string;
+  unclassified?: true;
+}
+
+/** 1 total conservation, 2 elimination, 3 selection */
+export type FinalDisposition = 1 | 2 | 3;
+
+/** What a series or subseries defines; the three first values go together or not at all */
+export interface RetentionValues {
+  managementYears: number | null;
+  centralYears: number | null;
+  finalDisposition: FinalDisposition | null;
+  procedure: string | null;
+  legalBasis: string | null;
+}
+
+/** The retention that applies; `inherited` when a subseries uses the one of its series */
+export interface DocumentRetention extends RetentionValues {
+  inherited: boolean;
+}
+
+export interface DocumentaryType {
+  id: string;
+  name: string;
+}
+
+/** Whole node: the PUT replaces everything, and a section sends no retention */
+export interface UpdateClassificationNodeRequest extends Partial<RetentionValues> {
+  code: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface CreateClassificationNodeRequest extends UpdateClassificationNodeRequest {
+  level: 1 | 2 | 3;
+  parentId: string | null;
+}
+
+/** Section (1), series (2) or subseries (3); the tree includes the inactive ones */
+export interface ClassificationNode extends RetentionValues {
+  id: string;
+  parentId: string | null;
+  level: 1 | 2 | 3;
+  code: string;
+  name: string;
+  isActive: boolean;
+  retention: DocumentRetention | null;
+  types: DocumentaryType[];
+  children: ClassificationNode[];
+}
+
+/** Null on every field when the document is unclassified */
+export interface DocumentSeries {
+  classificationNodeId: string | null;
+  seriesCode: string | null;
+  seriesName: string | null;
+  retention: DocumentRetention | null;
 }
 
 export interface UpdateDocumentRequest {
@@ -1766,13 +1824,15 @@ export interface UpdateDocumentRequest {
   process: string;
   ownerUserId: string;
   reviewDate: string | null;
+  /** Always sent: the PUT replaces the whole sheet, so leaving it out unclassifies the document */
+  classificationNodeId: string | null;
 }
 
 export interface CreateDocumentRequest extends UpdateDocumentRequest {
   code: string;
 }
 
-export interface DocumentListItem {
+export interface DocumentListItem extends DocumentSeries {
   id: string;
   code: string;
   title: string;
@@ -1787,6 +1847,8 @@ export interface DocumentListItem {
   approvedByName: string | null;
   /** Draft or InReview; only for whoever sees every version */
   openVersionStatus: DocumentVersionStatus | null;
+  /** Who elaborated the version in review, when there is one */
+  inReviewElaboratedByName: string | null;
 }
 
 export interface DocumentVersion {
@@ -1807,7 +1869,7 @@ export interface DocumentVersion {
   createdAt: string;
 }
 
-export interface DocumentDetail {
+export interface DocumentDetail extends DocumentSeries {
   id: string;
   code: string;
   title: string;

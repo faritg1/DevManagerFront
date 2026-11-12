@@ -50,6 +50,7 @@ export const ROUTES = {
     DOCUMENTS_HOME: '/gestion-documental',
     DOCUMENT_READS: '/documentos-lecturas',
     DOCUMENT_APPROVALS: '/documentos-por-aprobar',
+    DOCUMENT_CLASSIFICATION: '/cuadro-clasificacion',
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
     MY_ACTIVITIES: '/my-activities',

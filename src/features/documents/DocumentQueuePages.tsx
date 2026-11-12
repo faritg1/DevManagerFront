@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpenCheck, FileCheck2, type LucideIcon } from 'lucide-react';
 import { documentsService } from '../../shared/api';
@@ -75,34 +75,19 @@ export const PendingReadsPage: React.FC = () => (
 );
 
 /** Documents with a version in review, for whoever may approve. */
-export const AwaitingApprovalPage: React.FC = () => {
-    const rows = useRows(loadInReview);
-    const [authors, setAuthors] = useState<Record<string, string | null>>({});
-
-    // ponytail: the list has no author, so each row reads its detail (N+1); move `elaboratedByName` into the list DTO if this queue grows.
-    useEffect(() => {
-        let live = true;
-        rows?.forEach((d) => documentsService.get(d.id).then(
-            (r) => { if (live) setAuthors((a) => ({ ...a, [d.id]: r.data?.versions.find((v) => v.status === 'InReview')?.elaboratedByName ?? null })); },
-            () => undefined,
-        ));
-        return () => { live = false; };
-    }, [rows]);
-
-    return (
-        <Queue
-            title="Por aprobar"
-            description="Versiones enviadas a revisión que esperan una decisión."
-            icon={FileCheck2}
-            rows={rows}
-            empty="No hay versiones esperando aprobación"
-            headers={['Código', 'Título', 'Elaborador']}
-            rowKey={(d) => d.id}
-            cells={(d) => [
-                <Link className={CODE_LINK_CLASS} to={documentDetailPath(d.id)}>{d.code}</Link>,
-                truncated(d.title),
-                authors[d.id] ?? '—',
-            ]}
-        />
-    );
-};
+export const AwaitingApprovalPage: React.FC = () => (
+    <Queue
+        title="Por aprobar"
+        description="Versiones enviadas a revisión que esperan una decisión."
+        icon={FileCheck2}
+        rows={useRows(loadInReview)}
+        empty="No hay versiones esperando aprobación"
+        headers={['Código', 'Título', 'Elaborador']}
+        rowKey={(d) => d.id}
+        cells={(d) => [
+            <Link className={CODE_LINK_CLASS} to={documentDetailPath(d.id)}>{d.code}</Link>,
+            truncated(d.title),
+            d.inReviewElaboratedByName ?? '—',
+        ]}
+    />
+);

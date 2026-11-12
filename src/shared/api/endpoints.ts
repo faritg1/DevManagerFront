@@ -161,6 +161,10 @@ export const API_ENDPOINTS = {
     DISTRIBUTION: (id: string) => `/documents/${id}/distribution`,
     VERSIONS: (id: string) => `/documents/${id}/versions`,
     VERSION: (id: string, versionId: string) => `/documents/${id}/versions/${versionId}`,
+    CLASSIFICATION: "/document-classification",
+    CLASSIFICATION_NODES: "/document-classification/nodes",
+    CLASSIFICATION_NODE: (id: string) => `/document-classification/nodes/${id}`,
+    CLASSIFICATION_TYPES: (nodeId: string) => `/document-classification/nodes/${nodeId}/types`,
   },
 
 

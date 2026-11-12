@@ -6,7 +6,7 @@ import { Button, IconButton, Modal } from '../../shared/ui';
 import { visibleNav } from '../../widgets/Sidebar/navConfig';
 import { DEMO_SCRIPTS } from './catalog';
 
-const LINK_CLASS = 'flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-primary-600 dark:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const LINK_CLASS = 'flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
 /**
  * Presenter aid mounted once in the main layout (demo mode only): a slim in-flow bar, so it never

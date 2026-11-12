@@ -47,8 +47,8 @@ export const DEMO_SCRIPTS: DemoScript[] = [
     {
         key: 'projects', title: 'Proyectos y sprints', route: ROUTES.PROJECTS, permission: 'menu.platform.projects',
         steps: [
-            'Muestre la lista: la entidad tiene proyectos en varios estados (asamblea, SARLAFT, balance social).',
-            'Filtre por «En progreso» y abra el proyecto de la asamblea.',
+            'Muestre la lista: la entidad tiene proyectos propios de su actividad en varios estados.',
+            'Filtre por «En progreso» y abra uno de los proyectos.',
             'Recorra el equipo asignado y el avance por actividades.',
             'Muestre el sprint activo y su burndown frente a la línea ideal.',
         ],
@@ -56,7 +56,7 @@ export const DEMO_SCRIPTS: DemoScript[] = [
     {
         key: 'activities', title: 'Actividades y horas', route: ROUTES.ACTIVITIES, permission: 'menu.platform.activities',
         steps: [
-            'Elija el proyecto de la asamblea para ver sus actividades en varios estados.',
+            'Elija un proyecto en progreso para ver sus actividades en varios estados.',
             'Abra una actividad vencida o por vencer: responsable, prioridad y dependencias.',
             'Registre horas en una actividad y muestre el historial.',
             'Pase a «Mis actividades»: lo que la persona tiene abierto hoy.',
@@ -101,7 +101,7 @@ export const DEMO_SCRIPTS: DemoScript[] = [
     {
         key: 'documents', title: 'Control documental', route: ROUTES.DOCUMENTS, permission: 'menu.platform.documents',
         steps: [
-            'Muestre el listado: documentos de calidad y SST en borrador, en revisión, aprobados y obsoletos.',
+            'Muestre el listado: documentos de la entidad en borrador, en revisión, aprobados y obsoletos.',
             'Abra un documento aprobado: versión vigente, historial de versiones y descarga del archivo.',
             'Con Calidad, suba una versión nueva y envíela a revisión.',
             'Con Gerencia, apruébela: quien elabora no aprueba y la versión anterior pasa a obsoleta.',

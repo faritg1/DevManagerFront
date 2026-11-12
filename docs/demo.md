@@ -72,14 +72,14 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 
 ### Proyectos y sprints (`#/projects`, permiso `menu.platform.projects`)
 
-1. Muestre la lista: la entidad tiene proyectos en varios estados (asamblea, SARLAFT, balance social).
-2. Filtre por «En progreso» y abra el proyecto de la asamblea.
+1. Muestre la lista: la entidad tiene proyectos propios de su actividad en varios estados.
+2. Filtre por «En progreso» y abra uno de los proyectos.
 3. Recorra el equipo asignado y el avance por actividades.
 4. Muestre el sprint activo y su burndown frente a la línea ideal.
 
 ### Actividades y horas (`#/activities`, permiso `menu.platform.activities`)
 
-1. Elija el proyecto de la asamblea para ver sus actividades en varios estados.
+1. Elija un proyecto en progreso para ver sus actividades en varios estados.
 2. Abra una actividad vencida o por vencer: responsable, prioridad y dependencias.
 3. Registre horas en una actividad y muestre el historial.
 4. Pase a «Mis actividades»: lo que la persona tiene abierto hoy.
@@ -114,7 +114,7 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 
 ### Control documental (`#/documentos`, permiso `menu.platform.documents`)
 
-1. Muestre el listado: documentos de calidad y SST en borrador, en revisión, aprobados y obsoletos.
+1. Muestre el listado: documentos de la entidad en borrador, en revisión, aprobados y obsoletos.
 2. Abra un documento aprobado: versión vigente, historial de versiones y descarga del archivo.
 3. Con Calidad, suba una versión nueva y envíela a revisión.
 4. Con Gerencia, apruébela: quien elabora no aprueba y la versión anterior pasa a obsoleta.
@@ -129,3 +129,15 @@ Todo está en `src/features/demo/catalog.ts`: entidades, personas y guiones son 
 
 - **Plataforma y superadministrador**: la guía lo marca como Conservar, pero ninguna persona de demo es superadministradora, así que no tiene guion.
 - Los módulos marcados como Terminar o Congelar (asociados, balance social, nómina, órganos, bienestar, excedentes, reportes Supersolidaria, SST) no tienen guion. Siguen en el menú para quien tenga el permiso.
+
+## Datos que trae cada entidad
+
+| Entidad | Proyectos en progreso | Lecturas pendientes del colaborador |
+|---|---|---|
+| Cooperativa Demo Los Andes | Asamblea General Ordinaria de Delegados, Implementación del SARLAFT | MAN-SAR-001, MAN-SST-001 |
+| Fondo de Empleados Demo Salud | Feria de vivienda y educación, Convenio de libranza con la entidad patronal | REG-CRE-001, PLA-EME-001 |
+| Mutual Demo Familia | Nuevo plan exequial familiar | REG-AUX-001 |
+
+En cada entidad hay una versión en revisión elaborada por Calidad, que aprueba Gerencia, y otra elaborada por Gerencia, que aprueba Calidad.
+
+Después de una demo, los datos vuelven a su estado inicial ejecutando `DemoData_Cleanup.sql` y luego `DemoData.sql` y `DemoDocumentFiles.mjs` (repositorio del API). La limpieza borra todo lo creado dentro de las tres entidades de demostración.

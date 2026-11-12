@@ -165,6 +165,10 @@ export const API_ENDPOINTS = {
     CLASSIFICATION_NODES: "/document-classification/nodes",
     CLASSIFICATION_NODE: (id: string) => `/document-classification/nodes/${id}`,
     CLASSIFICATION_TYPES: (nodeId: string) => `/document-classification/nodes/${nodeId}/types`,
+    DOSSIERS: "/dossiers",
+    DOSSIER: (id: string) => `/dossiers/${id}`,
+    DOSSIER_ITEMS: (id: string) => `/dossiers/${id}/items`,
+    DOSSIER_ITEM: (id: string, itemId: string) => `/dossiers/${id}/items/${itemId}`,
   },
 
 

@@ -68,6 +68,24 @@ test('the script control shows the script of the current module', async ({ page 
     await expect(dialog).toBeHidden();
 });
 
+test('the classification chart and the dossiers have their own script, also on a dossier detail', async ({ page }) => {
+    await mockApi(page);
+    await signIn(page);
+    await page.goto(`${DEMO}/#/expedientes/x1`);
+    await page.getByRole('button', { name: 'Guion de demo' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Guion de demo' });
+    await expect(dialog.getByRole('heading', { name: 'Expedientes' })).toBeVisible();
+    expect(await dialog.getByRole('list', { name: 'Pasos' }).getByRole('listitem').count()).toBeGreaterThanOrEqual(3);
+    await dialog.getByRole('link', { name: 'Cuadro de clasificación' }).click();
+    await expect(page).toHaveURL(/#\/cuadro-clasificacion$/);
+    await expect(dialog.getByRole('heading', { name: 'Cuadro de clasificación' })).toBeVisible();
+    expect(await dialog.getByRole('list', { name: 'Pasos' }).getByRole('listitem').count()).toBeGreaterThanOrEqual(3);
+    // The earlier modules keep their script.
+    for (const title of ['Proyectos y sprints', 'Actividades y horas', 'Reportes y analítica', 'Educación cooperativa', 'Habeas Data (ARCO)', 'Asistente IA', 'Control documental']) {
+        await expect(dialog.getByRole('link', { name: title })).toBeVisible();
+    }
+});
+
 test('a persona without the permission does not see that module script', async ({ page }) => {
     await mockApi(page, { permissions: ['menu.platform', 'menu.platform.dashboard', 'menu.documents', 'menu.documents.master_list'] });
     await signIn(page);

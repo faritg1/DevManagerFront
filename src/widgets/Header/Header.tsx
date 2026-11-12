@@ -25,6 +25,7 @@ const ROUTE_NAMES: Record<string, string> = {
     [ROUTES.AUDIT]: 'Auditoría',
     [ROUTES.DOCUMENTS]: 'Listado maestro',
     [ROUTES.DOCUMENT_CLASSIFICATION]: 'Cuadro de clasificación',
+    [ROUTES.DOSSIERS]: 'Expedientes',
     [ROUTES.DOCUMENTS_HOME]: 'Gestión documental',
     [ROUTES.DOCUMENT_READS]: 'Mis lecturas',
     [ROUTES.DOCUMENT_APPROVALS]: 'Por aprobar',

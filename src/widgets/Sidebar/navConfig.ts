@@ -30,6 +30,7 @@ import {
     BookOpenCheck,
     FileCheck2,
     FolderTree,
+    Archive,
     type LucideIcon,
 } from 'lucide-react';
 import { ROUTES, NAV_SECTIONS } from '../../shared/config/constants';
@@ -110,6 +111,7 @@ export const NAV_CONFIG: NavSectionConfig[] = [
             { key: 'document-reads', permission: 'menu.documents.master_list', label: 'Mis lecturas', icon: BookOpenCheck, to: ROUTES.DOCUMENT_READS },
             { key: 'document-approvals', permission: 'menu.documents.master_list.approve', label: 'Por aprobar', icon: FileCheck2, to: ROUTES.DOCUMENT_APPROVALS },
             { key: 'document-classification', permission: 'menu.documents.classification', label: 'Cuadro de clasificación', icon: FolderTree, to: ROUTES.DOCUMENT_CLASSIFICATION },
+            { key: 'document-dossiers', permission: 'menu.documents.dossiers', label: 'Expedientes', icon: Archive, to: ROUTES.DOSSIERS },
         ],
     },
     {

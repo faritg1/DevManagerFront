@@ -51,6 +51,8 @@ export const ROUTES = {
     DOCUMENT_READS: '/documentos-lecturas',
     DOCUMENT_APPROVALS: '/documentos-por-aprobar',
     DOCUMENT_CLASSIFICATION: '/cuadro-clasificacion',
+    DOSSIERS: '/expedientes',
+    DOSSIER_DETAIL: '/expedientes/:id',
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
     MY_ACTIVITIES: '/my-activities',
@@ -81,4 +83,5 @@ export const STORAGE_KEYS = {
 
 export const associateDetailPath = (userId: string): string => `/associates/${userId}`;
 export const documentDetailPath = (id: string): string => `/documentos/${id}`;
+export const dossierDetailPath = (id: string): string => `/expedientes/${id}`;
 export const educationProgramPath = (programId: string): string => `/education/${programId}`;

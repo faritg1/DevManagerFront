@@ -109,4 +109,28 @@ export const DEMO_SCRIPTS: DemoScript[] = [
             'Entre como Colaborador y confirme una lectura pendiente.',
         ],
     },
+    {
+        key: 'classification', title: 'Cuadro de clasificación', route: ROUTES.DOCUMENT_CLASSIFICATION, permission: 'menu.documents.classification',
+        steps: [
+            'Con Calidad, abra el cuadro: secciones, series y subseries de la entidad con su código.',
+            'Señale en una serie sus tiempos en gestión y en central y su disposición final; una subserie sin tiempos propios hereda los de su serie.',
+            'Muestre los tipos documentales de una serie: son los que se ofrecen al incorporar un documento a un expediente.',
+            'Lea el aviso: los tiempos los define la entidad y DevManager no valida su cumplimiento legal.',
+            'Agregue un tipo documental a una serie y exporte la tabla de retención.',
+            'Entre como Colaborador: no tiene el permiso y la entrada no aparece en su menú.',
+        ],
+    },
+    {
+        key: 'dossiers', title: 'Expedientes', route: ROUTES.DOSSIERS, permission: 'menu.documents.dossiers',
+        steps: [
+            'Con Calidad, muestre la lista: expedientes abiertos y cerrados, cada uno con su serie, su etapa y la fecha en que termina.',
+            'Filtre por «Cerrado» y recorra las etapas: EXP-ACT-001 en gestión, EXP-MAN-001 con transferencia en 10 días, EXP-REG-001 en central y EXP-PRO-001 con disposición final pendiente.',
+            'Descargue el «Inventario de expedientes»: un reporte interno de la lista filtrada.',
+            'Abra EXP-ASA-001: sus datos, la retención de su serie y sus tres documentos. Descargue uno.',
+            'Incorpore un documento con su archivo, su tipo documental y su fecha, y descargue el «Índice del expediente».',
+            'Cierre el expediente: la confirmación advierte que no se puede deshacer. Muestre la etapa y las fechas de gestión, central y disposición final.',
+            'Abra EXP-PLA-001 e intente cerrarlo: está vacío y su serie no tiene retención, así que el sistema explica por qué no se puede.',
+            'Vuelva al inicio de Gestión documental: la tarjeta cuenta los expedientes con transferencia o disposición próxima. El sistema solo avisa: no elimina nada.',
+        ],
+    },
 ];

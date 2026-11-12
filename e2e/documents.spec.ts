@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { CLASSIFICATION_TREE, mockApi, signIn } from './mockApi';
+import { CLASSIFICATION_TREE, CLOSED_DOSSIER, dossier, mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
 const BASE = ['menu.documents', 'menu.documents.master_list'];
@@ -643,6 +643,44 @@ test.describe('module section', () => {
         const card = page.getByRole('main').getByRole('link', { name: /^Sin clasificar/ });
         await expect(card).toHaveText(/2$/);
         await expect(card).toHaveAttribute('href', '#/documentos?serie=sin-clasificar');
+    });
+
+    test('the home counts the closed dossiers with a transfer or a disposition coming up', async ({ page }) => {
+        const queries: string[] = [];
+        const closed = (id: string, over: object) => dossier({ ...CLOSED_DOSSIER, id, code: id, ...over });
+        await mockApi(page, { permissions: [...BASE, 'menu.documents.dossiers'] }, {
+            'GET /dossiers': (route: Route, url: URL) => {
+                queries.push(url.searchParams.toString());
+                return route.fulfill({ json: ok([
+                    closed('a', { stage: 'Management', managementUntil: day(10) }),
+                    closed('b', { stage: 'Management', managementUntil: day(31) }),
+                    closed('c', { stage: 'Central', managementUntil: day(-400), centralUntil: day(30) }),
+                    closed('e', { stage: 'Central', managementUntil: day(-400), centralUntil: day(40) }),
+                    closed('f', { stage: 'FinalDispositionPending', managementUntil: day(-400), centralUntil: day(-20) }),
+                ]) });
+            },
+        });
+        await signIn(page);
+        await page.goto('/#/gestion-documental');
+        const card = page.getByRole('main').getByRole('link', { name: /^Expedientes con disposición o transferencia próxima/ });
+        // Within 30 days of the end of its current stage: a and c.
+        await expect(card).toHaveText(/2$/);
+        await expect(card).toHaveAttribute('href', '#/expedientes?estado=Closed');
+        expect(new Set(queries)).toEqual(new Set(['status=Closed']));
+    });
+
+    test('the home hides the dossier card without menu.documents.dossiers and does not ask for them', async ({ page }) => {
+        let asked = 0;
+        await mockApi(page, { permissions: BASE }, {
+            'GET /documents': listByStatus([row], []),
+            'GET /dossiers': (route: Route) => { asked++; return route.fulfill({ json: ok([]) }); },
+        });
+        await signIn(page);
+        await page.goto('/#/gestion-documental');
+        const main = page.getByRole('main');
+        await expect(main.getByRole('link', { name: /^Documentos vigentes/ })).toHaveText(/1$/);
+        await expect(main.getByRole('link', { name: /^Expedientes con/ })).toHaveCount(0);
+        expect(asked).toBe(0);
     });
 
     test('the home hides «Por aprobar» without the permission and does not ask for it', async ({ page }) => {

@@ -15,18 +15,10 @@ import {
 import { errorText, needsLocalToast } from '../associates/labels';
 import { DistributeDialog } from './components/DistributeDialog';
 import { VersionFormDialog } from './components/VersionFormDialog';
-import { PERMISSIONS, STATUS, formatSize, retentionText, seriesLabel } from './labels';
+import { PERMISSIONS, STATUS, formatSize, retentionText, saveBlob, seriesLabel } from './labels';
 
-const saveBlob = (blob: Blob, name: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
-};
-
-const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+/** A label and its value inside a `dl`; the dossier detail uses it too. */
+export const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
     <div className="min-w-0">
         <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</dt>
         <dd className="mt-0.5 break-words text-sm text-slate-800 dark:text-slate-100">{children}</dd>

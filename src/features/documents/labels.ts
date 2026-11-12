@@ -1,5 +1,7 @@
-import type { ClassificationNode, DocumentRetention, DocumentSeries, DocumentVersionStatus, FinalDisposition } from '../../shared/api';
-import { formatNumber } from '../../shared/format';
+import type {
+    ClassificationNode, DocumentRetention, DocumentSeries, DocumentVersionStatus, DocumentaryType, DossierListItem, DossierStage, DossierStatus, FinalDisposition,
+} from '../../shared/api';
+import { formatDate, formatNumber } from '../../shared/format';
 import type { BadgeVariant } from '../../shared/ui';
 
 export const PERMISSIONS = {
@@ -8,6 +10,8 @@ export const PERMISSIONS = {
     DISTRIBUTE: 'menu.documents.master_list.distribute',
     CLASSIFICATION: 'menu.documents.classification',
     CLASSIFICATION_MANAGE: 'menu.documents.classification.manage',
+    DOSSIERS: 'menu.documents.dossiers',
+    DOSSIERS_MANAGE: 'menu.documents.dossiers.manage',
 } as const;
 
 export const DISPOSITION: Record<FinalDisposition, string> = { 1: 'Conservación total', 2: 'Eliminación', 3: 'Selección' };
@@ -53,6 +57,49 @@ export const fileError = (file: File): string | null => {
     if (file.size === 0) return 'El archivo está vacío';
     if (file.size > MAX_FILE_MB * 1024 * 1024) return `El archivo supera el tamaño máximo de ${MAX_FILE_MB} MB`;
     return null;
+};
+
+/** Saves a downloaded file under its original name. */
+export const saveBlob = (blob: Blob, name: string): void => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+export const DOSSIER_STATUS: Record<DossierStatus, [string, BadgeVariant]> = { Open: ['Abierto', 'success'], Closed: ['Cerrado', 'default'] };
+
+export const DOSSIER_STAGE: Record<DossierStage, string> = { Management: 'Gestión', Central: 'Central', FinalDispositionPending: 'Disposición final pendiente' };
+
+/** "15/01/2026", or nothing: the date of the dossier screens and of their two CSV reports, which Excel reads as a date. */
+export const shortDate = (d: string | null | undefined): string => formatDate(d, { day: '2-digit', month: '2-digit', year: 'numeric' }, '');
+
+type DossierNodes = Pick<DossierListItem, 'sectionCode' | 'sectionName' | 'seriesCode' | 'seriesName' | 'subseriesCode' | 'subseriesName'>;
+
+export const dossierSection = (d: DossierNodes): string => `${d.sectionCode} · ${d.sectionName}`;
+export const dossierSeries = (d: DossierNodes): string => `${d.seriesCode} · ${d.seriesName}`;
+export const dossierSubseries = (d: DossierNodes): string => (d.subseriesCode ? `${d.subseriesCode} · ${d.subseriesName ?? ''}` : '');
+
+/** The node the dossier hangs from, written as its option of the series selector. */
+export const dossierNodeLabel = (d: DossierNodes): string => (d.subseriesCode ? `${d.seriesCode} / ${dossierSubseries(d)}` : dossierSeries(d));
+
+/** "Gestión hasta 01/04/2028", "Central hasta 01/04/2036" or "Disposición final pendiente: Eliminación"; nothing while open. */
+export const stageText = (d: DossierListItem): string => {
+    if (!d.stage) return '';
+    if (d.stage === 'FinalDispositionPending') return `${DOSSIER_STAGE[d.stage]}${d.finalDisposition ? `: ${DISPOSITION[d.finalDisposition]}` : ''}`;
+    return `${DOSSIER_STAGE[d.stage]} hasta ${shortDate(d.stage === 'Management' ? d.managementUntil : d.centralUntil)}`;
+};
+
+/** Types a document of the dossier may take: those of its series and, for a subseries, those of its parent series too. */
+export const dossierTypes = (tree: ClassificationNode[], nodeId: string): DocumentaryType[] => {
+    for (const series of tree.flatMap((section) => section.children)) {
+        if (series.id === nodeId) return series.types;
+        const subseries = series.children.find((n) => n.id === nodeId);
+        if (subseries) return [...subseries.types, ...series.types];
+    }
+    return [];
 };
 
 export const formatSize = (bytes: number): string =>

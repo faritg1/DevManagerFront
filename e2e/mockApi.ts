@@ -82,3 +82,27 @@ export const CLASSIFICATION_TREE = [
     }),
     classificationNode({ id: 's2', level: 1, code: 'FIN', name: 'Finanzas', isActive: false }),
 ];
+
+/** An open dossier under subseries ACT-01 of CLASSIFICATION_TREE, as a row of `GET /dossiers`. */
+export const dossier = (over: Record<string, unknown> = {}) => ({
+    id: 'x1', code: 'EXP-ACT-001', title: 'Actas de junta 2026', classificationNodeId: 'n2',
+    sectionCode: 'ADM', sectionName: 'Administración', seriesCode: 'ACT', seriesName: 'Actas', subseriesCode: 'ACT-01', subseriesName: 'Actas de junta',
+    ownerUserId: 'u2', ownerName: 'Beto Ruiz', openedOn: '2026-01-10', physicalLocation: 'Estante 2, caja 4', status: 'Open',
+    itemCount: 2, firstDocumentDate: '2026-01-15', lastDocumentDate: '2026-03-02',
+    stage: null, closedOn: null, managementUntil: null, centralUntil: null, finalDisposition: null, ...over,
+});
+
+/** What closing adds to a dossier: the dates copied from the retention of that day. */
+export const CLOSED_DOSSIER = { status: 'Closed', stage: 'Management', closedOn: '2026-04-01', managementUntil: '2028-04-01', centralUntil: '2036-04-01', finalDisposition: 2 };
+
+export const dossierItem = (over: Record<string, unknown> = {}) => ({
+    id: 'i1', position: 1, title: 'Acta 001', documentaryTypeId: 't1', documentaryTypeName: 'Acta de asamblea', documentDate: '2026-01-15',
+    fileName: 'acta 001.pdf', contentType: 'application/pdf', sizeBytes: 2_097_152, createdByUserId: 'u2', createdByName: 'Beto Ruiz', createdAt: '2026-01-16T15:00:00Z', ...over,
+});
+
+/** `GET /dossiers/{id}`: the row plus today's retention of its series and its documents by position. */
+export const dossierDetail = (over: Record<string, unknown> = {}) => ({
+    ...dossier(), retention: { ...OWN_RETENTION, inherited: true }, createdAt: '2026-01-10T15:00:00Z', closedByName: null,
+    items: [dossierItem(), dossierItem({ id: 'i2', position: 2, title: '=Citación', documentaryTypeId: null, documentaryTypeName: null, documentDate: '2026-03-02', fileName: 'citacion.docx', sizeBytes: 4096 })],
+    ...over,
+});

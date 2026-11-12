@@ -1896,3 +1896,88 @@ export interface DocumentRead {
   userName: string;
   confirmedAt: string | null;
 }
+
+export type DossierStatus = "Open" | "Closed";
+
+/** Computed by the API from today's date; null while the dossier is open */
+export type DossierStage = "Management" | "Central" | "FinalDispositionPending";
+
+export interface DossierFilter {
+  q?: string;
+  /** Id of a series or subseries: exact match */
+  series?: string;
+  status?: DossierStatus;
+}
+
+/** The PUT replaces the four fields; a closed dossier only admits another owner or physical location */
+export interface UpdateDossierRequest {
+  title: string;
+  ownerUserId: string;
+  openedOn: string;
+  physicalLocation: string | null;
+}
+
+/** Code and series never change after creation */
+export interface CreateDossierRequest extends UpdateDossierRequest {
+  code: string;
+  classificationNodeId: string;
+}
+
+/** A row of the list: everything the inventory needs */
+export interface DossierListItem {
+  id: string;
+  code: string;
+  title: string;
+  classificationNodeId: string;
+  sectionCode: string;
+  sectionName: string;
+  seriesCode: string;
+  seriesName: string;
+  subseriesCode: string | null;
+  subseriesName: string | null;
+  ownerUserId: string;
+  ownerName: string | null;
+  openedOn: string;
+  physicalLocation: string | null;
+  status: DossierStatus;
+  itemCount: number;
+  firstDocumentDate: string | null;
+  lastDocumentDate: string | null;
+  stage: DossierStage | null;
+  /** These four are copied from the retention of the closing day; null while open */
+  closedOn: string | null;
+  managementUntil: string | null;
+  centralUntil: string | null;
+  finalDisposition: FinalDisposition | null;
+}
+
+/** The PUT replaces the three fields: a type left out is cleared */
+export interface UpdateDossierItemRequest {
+  title: string;
+  documentaryTypeId: string | null;
+  documentDate: string;
+}
+
+export interface DossierItem {
+  id: string;
+  position: number;
+  title: string;
+  documentaryTypeId: string | null;
+  documentaryTypeName: string | null;
+  documentDate: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  createdByUserId: string;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface DossierDetail extends DossierListItem {
+  /** What its series has today, own or inherited */
+  retention: DocumentRetention | null;
+  createdAt: string;
+  closedByName: string | null;
+  /** By position */
+  items: DossierItem[];
+}

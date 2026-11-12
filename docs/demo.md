@@ -121,6 +121,28 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 5. Distribuya el documento y muestre quién confirmó la lectura.
 6. Entre como Colaborador y confirme una lectura pendiente.
 
+### Cuadro de clasificación (`#/cuadro-clasificacion`, permiso `menu.documents.classification`, sección «Gestión documental»)
+
+1. Con Calidad, abra el cuadro: secciones, series y subseries de la entidad con su código.
+2. Señale en una serie sus tiempos en gestión y en central y su disposición final; una subserie sin tiempos propios hereda los de su serie.
+3. Muestre los tipos documentales de una serie: son los que se ofrecen al incorporar un documento a un expediente.
+4. Lea el aviso: los tiempos los define la entidad y DevManager no valida su cumplimiento legal.
+5. Agregue un tipo documental a una serie y exporte la tabla de retención.
+6. Entre como Colaborador: no tiene el permiso y la entrada no aparece en su menú.
+
+### Expedientes (`#/expedientes`, permiso `menu.documents.dossiers`, sección «Gestión documental»)
+
+1. Con Calidad, muestre la lista: expedientes abiertos y cerrados, cada uno con su serie, su etapa y la fecha en que termina.
+2. Filtre por «Cerrado» y recorra las etapas: EXP-ACT-001 en gestión, EXP-MAN-001 con transferencia en 10 días, EXP-REG-001 en central y EXP-PRO-001 con disposición final pendiente.
+3. Descargue el «Inventario de expedientes»: un reporte interno de la lista filtrada.
+4. Abra EXP-ASA-001: sus datos, la retención de su serie y sus tres documentos. Descargue uno.
+5. Incorpore un documento con su archivo, su tipo documental y su fecha, y descargue el «Índice del expediente».
+6. Cierre el expediente: la confirmación advierte que no se puede deshacer. Muestre la etapa y las fechas de gestión, central y disposición final.
+7. Abra EXP-PLA-001 e intente cerrarlo: está vacío y su serie no tiene retención, así que el sistema explica por qué no se puede.
+8. Vuelva al inicio de Gestión documental: la tarjeta cuenta los expedientes con transferencia o disposición próxima. El sistema solo avisa: no elimina nada.
+
+Calidad tiene los dos permisos del cuadro y los dos de expedientes; el Colaborador no tiene ninguno. Crear un expediente pide además el permiso del cuadro, porque la serie se elige de ahí. El índice y el inventario son reportes internos en CSV.
+
 ## Cambiar el catálogo o los guiones
 
 Todo está en `src/features/demo/catalog.ts`: entidades, personas y guiones son datos. Cada guion lleva su ruta y su permiso de menú; si cambias un guion, actualiza también esta página.
@@ -139,5 +161,16 @@ Todo está en `src/features/demo/catalog.ts`: entidades, personas y guiones son 
 | Mutual Demo Familia | Nuevo plan exequial familiar | REG-AUX-001 |
 
 En cada entidad hay una versión en revisión elaborada por Calidad, que aprueba Gerencia, y otra elaborada por Gerencia, que aprueba Calidad.
+
+Cada entidad trae además su cuadro de clasificación y seis expedientes:
+
+| Expediente | Estado | Para mostrar |
+|---|---|---|
+| EXP-ASA-001 | Abierto, con tres documentos | Incorporar un documento y cerrarlo en vivo |
+| EXP-ACT-001 | Cerrado | Etapa de gestión |
+| EXP-MAN-001 | Cerrado | Transferencia al archivo central en 10 días |
+| EXP-REG-001 | Cerrado hace seis años | Etapa de archivo central |
+| EXP-PRO-001 | Cerrado, retención terminada hace 20 días | Disposición final pendiente (eliminación) |
+| EXP-PLA-001 | Abierto, vacío y en una serie sin retención | Por qué no se puede cerrar |
 
 Después de una demo, los datos vuelven a su estado inicial ejecutando `DemoData_Cleanup.sql` y luego `DemoData.sql` y `DemoDocumentFiles.mjs` (repositorio del API). La limpieza borra todo lo creado dentro de las tres entidades de demostración.

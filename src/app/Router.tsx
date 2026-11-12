@@ -66,6 +66,8 @@ const DocumentsHomePage = page(documents, "DocumentsHomePage");
 const PendingReadsPage = page(documents, "PendingReadsPage");
 const AwaitingApprovalPage = page(documents, "AwaitingApprovalPage");
 const ClassificationPage = page(documents, "ClassificationPage");
+const DossiersPage = page(documents, "DossiersPage");
+const DossierDetailPage = page(documents, "DossierDetailPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
@@ -127,6 +129,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.DOCUMENT_READS} element={<PendingReadsPage />} />
                     <Route path={ROUTES.DOCUMENT_APPROVALS} element={<AwaitingApprovalPage />} />
                     <Route path={ROUTES.DOCUMENT_CLASSIFICATION} element={<ClassificationPage />} />
+                    <Route path={ROUTES.DOSSIERS} element={<DossiersPage />} />
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />
@@ -139,6 +142,9 @@ export const AppRouter: React.FC = () => {
 
                     <Route element={<PermissionGuard require="menu.documents.master_list" />}>
                       <Route path={ROUTES.DOCUMENT_DETAIL} element={<DocumentDetailPage />} />
+                    </Route>
+                    <Route element={<PermissionGuard require="menu.documents.dossiers" />}>
+                      <Route path={ROUTES.DOSSIER_DETAIL} element={<DossierDetailPage />} />
                     </Route>
                     <Route element={<PermissionGuard require="menu.platform.projects.create" />}>
                       <Route path={ROUTES.CREATE_PROJECT} element={<CreateProjectPage />} />

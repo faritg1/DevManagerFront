@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .a { stroke: #0b6fb8 }
+    .b { fill: #1392ec }
+    @media (prefers-color-scheme: dark) {
+      .a { stroke: #1392ec }
+      .b { fill: #3aa3f0 }
+    }
+  </style>
+  <g id="mark" fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path class="a" d="M12 36V12h24"/><path class="a" d="M52 28v24H28"/><circle class="b" cx="32" cy="32" r="6"/></g>
+</svg>

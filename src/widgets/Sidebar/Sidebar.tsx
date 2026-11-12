@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, LogOut, Hexagon, X, ChevronDown, type LucideIcon } from 'lucide-react';
+import { User, LogOut, X, ChevronDown, type LucideIcon } from 'lucide-react';
+import { BrandMark } from '../../shared/components/BrandMark';
 import { ROUTES, STORAGE_KEYS } from '../../shared/config/constants';
 import { useAuth, useNotification } from '../../shared/context';
 import { useConfirm, usePermission } from '../../shared/hooks';
@@ -218,9 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
         <CollapsedContext.Provider value={compact}>
             <div className={`px-5 py-5 flex items-center ${compact ? 'justify-center' : 'justify-between'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="size-8 text-primary shrink-0">
-                        <Hexagon fill="currentColor" className="w-full h-full" />
-                    </div>
+                    <BrandMark size={32} />
                     <span className={compact ? 'sr-only' : 'text-xl font-bold tracking-tight text-slate-900 dark:text-white'}>DevManager</span>
                 </div>
                 {onClose && (

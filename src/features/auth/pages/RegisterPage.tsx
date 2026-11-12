@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Hexagon } from 'lucide-react';
+import { Building2, User, Mail } from 'lucide-react';
+import { BrandMark } from '../../../shared/components/BrandMark';
 import { useAuth } from '../../../shared/context';
 import { Button, Input, Select } from '../../../shared/ui';
 import { ROUTES } from '../../../shared/config/constants';
@@ -58,7 +59,7 @@ export const RegisterPage: React.FC = () => {
             <div className="w-full max-w-[500px] relative z-10">
                 <div className="mb-8 text-center sm:text-left flex flex-col gap-4">
                     <div className="size-12 text-primary mx-auto sm:mx-0">
-                        <Hexagon fill="currentColor" className="w-full h-full" />
+                        <BrandMark className="size-full" />
                     </div>
                     <div>
                         <h1 className="text-slate-900 dark:text-white text-2xl leading-8 sm:text-[28px] sm:leading-9 font-extrabold tracking-tight mb-2">

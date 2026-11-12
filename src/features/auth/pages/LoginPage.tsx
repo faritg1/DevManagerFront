@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Hexagon } from "lucide-react";
+import { Mail } from "lucide-react";
+import { BrandMark } from "../../../shared/components/BrandMark";
 import { useAuth } from "../../../shared/context";
 import { Button, Input } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
@@ -38,7 +39,7 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-[440px]">
         <div className="mb-6 sm:mb-8 text-center sm:text-left flex flex-col gap-4">
           <div className="size-10 sm:size-12 text-primary mx-auto sm:mx-0" aria-hidden="true">
-            <Hexagon fill="currentColor" className="w-full h-full" />
+            <BrandMark className="size-full" />
           </div>
           <div>
             <h1 className="text-slate-900 dark:text-white text-2xl leading-8 sm:text-[28px] sm:leading-9 font-extrabold tracking-tight mb-2">

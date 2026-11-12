@@ -66,6 +66,8 @@ const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
 const TimeReportPage = page(() => import("../features/activities"), "TimeReportPage");
+// Demo mode (docs/demo.md): the flag is replaced at build time, so without it the route and its chunk do not exist.
+const DemoPage = import.meta.env.VITE_DEMO_MODE === "true" ? page(() => import("../features/demo"), "DemoPage") : null;
 
 export const AppRouter: React.FC = () => {
   return (
@@ -86,6 +88,8 @@ export const AppRouter: React.FC = () => {
               {/* Outside PublicRoute, which would send whoever has a session open to the dashboard */}
               <Route element={<AuthLayout />}>
                 <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
+                {/* Also outside PublicRoute: the presenter switches personas with a session open */}
+                {DemoPage && <Route path="/demo" element={<DemoPage />} />}
               </Route>
 
               <Route element={<ProtectedRoute />}>

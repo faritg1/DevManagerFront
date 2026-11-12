@@ -1,10 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useCallback } from 'react';
 import { RouteBoundary } from '../../shared/components/RouteBoundary';
 import { Sidebar } from '../../widgets/Sidebar';
 import { Header, ImpersonationBanner } from '../../widgets/Header';
 
 import { ConfigProvider, PermissionsProvider, UserNotificationsProvider } from '../../shared/context';
 import { useTableCellLabels } from '../../shared/hooks';
+
+// Demo mode only (docs/demo.md): without the flag nothing is imported or rendered.
+const DemoGuide = import.meta.env.VITE_DEMO_MODE === 'true'
+    ? lazy(() => import('../../features/demo').then((m) => ({ default: m.DemoGuide })))
+    : null;
 
 export const MainLayout: React.FC = () => {
     useTableCellLabels();
@@ -26,6 +31,7 @@ export const MainLayout: React.FC = () => {
                 <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible">
                     <ImpersonationBanner />
                     <Header onMenuClick={openMobileMenu} />
+                    {DemoGuide && <Suspense fallback={null}><DemoGuide /></Suspense>}
 
                     <main id="main-content" tabIndex={-1} className="flex-1 outline-none overflow-y-auto bg-background-light dark:bg-background-dark scroll-smooth print:overflow-visible">
                         <RouteBoundary />

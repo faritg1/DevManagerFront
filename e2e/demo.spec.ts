@@ -69,7 +69,7 @@ test('the script control shows the script of the current module', async ({ page 
 });
 
 test('a persona without the permission does not see that module script', async ({ page }) => {
-    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.dashboard', 'menu.platform.documents'] });
+    await mockApi(page, { permissions: ['menu.platform', 'menu.platform.dashboard', 'menu.documents', 'menu.documents.master_list'] });
     await signIn(page);
     await page.goto(`${DEMO}/#/dashboard`);
     await page.getByRole('button', { name: 'Guion de demo' }).click();

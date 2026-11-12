@@ -99,7 +99,7 @@ export const DEMO_SCRIPTS: DemoScript[] = [
         ],
     },
     {
-        key: 'documents', title: 'Control documental', route: ROUTES.DOCUMENTS, permission: 'menu.platform.documents',
+        key: 'documents', title: 'Control documental', route: ROUTES.DOCUMENTS, permission: 'menu.documents.master_list',
         steps: [
             'Muestre el listado: documentos de la entidad en borrador, en revisión, aprobados y obsoletos.',
             'Abra un documento aprobado: versión vigente, historial de versiones y descarga del archivo.',

@@ -46,6 +46,10 @@ export const ROUTES = {
     AUDIT: '/audit',
     DOCUMENTS: '/documentos',
     DOCUMENT_DETAIL: '/documentos/:id',
+    // Flat routes: the menu matches an entry by the prefix 'route/', so these must not hang from /documentos.
+    DOCUMENTS_HOME: '/gestion-documental',
+    DOCUMENT_READS: '/documentos-lecturas',
+    DOCUMENT_APPROVALS: '/documentos-por-aprobar',
     ACTIVITIES: '/activities',
     ACTIVITIES_PROJECT: '/activities/:projectId',
     MY_ACTIVITIES: '/my-activities',
@@ -57,6 +61,7 @@ export const NAV_SECTIONS = {
     AGENTS: 'Agentes IA',
     ADMIN: 'Administración',
     SOLIDARIO: 'Gestión Solidaria',
+    DOCUMENTS: 'Gestión documental',
     SUPER_ADMIN: 'Superadministración',
 } as const;
 

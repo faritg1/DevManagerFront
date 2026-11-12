@@ -13,7 +13,7 @@ import {
     TABLE_CLASS, TBODY_CLASS, TD_ACTIONS_CLASS, TD_CLASS, THEAD_CLASS, TH_ACTIONS_CLASS, TH_CLASS, TR_CLASS,
 } from '../../shared/ui';
 import { DocumentFormDialog } from './components/DocumentFormDialog';
-import { PERMISSIONS, STATUS } from './labels';
+import { CODE_LINK_CLASS, PERMISSIONS, STATUS } from './labels';
 
 // Nine columns must fit at 1280 px: tighter cells, and long text is cut with "…" (full value in `title`).
 const TD = `${TD_CLASS} md:!px-3 md:first:!pl-5 md:last:!pr-5`;
@@ -150,7 +150,7 @@ export const DocumentsPage: React.FC = () => {
                                 {rows.map((d) => (
                                     <tr key={d.id} className={TR_CLASS}>
                                         <td className={TD}>
-                                            <Link className="font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:inline-flex [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:items-center" to={documentDetailPath(d.id)}>{d.code}</Link>
+                                            <Link className={CODE_LINK_CLASS} to={documentDetailPath(d.id)}>{d.code}</Link>
                                         </td>
                                         <td className={TD}>
                                             <span className="block max-w-[10rem] truncate 2xl:max-w-[18rem]" title={d.title}>{d.title}</span>

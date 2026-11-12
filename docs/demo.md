@@ -112,7 +112,7 @@ Tienen guion los módulos que la guía de la aplicación marca como **Conservar*
 3. Genere el balance social con recomendaciones.
 4. Aclare que el asistente responde con los datos de la entidad en sesión.
 
-### Control documental (`#/documentos`, permiso `menu.platform.documents`)
+### Control documental (`#/documentos`, permiso `menu.documents.master_list`, sección «Gestión documental»)
 
 1. Muestre el listado: documentos de la entidad en borrador, en revisión, aprobados y obsoletos.
 2. Abra un documento aprobado: versión vigente, historial de versiones y descarga del archivo.

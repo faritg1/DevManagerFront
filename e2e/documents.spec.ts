@@ -2,10 +2,10 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 import { mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
-const BASE = ['menu.platform', 'menu.platform.documents'];
-const CREATE = [...BASE, 'menu.platform.documents.create'];
-const APPROVE = [...BASE, 'menu.platform.documents.approve'];
-const DISTRIBUTE = [...BASE, 'menu.platform.documents.distribute'];
+const BASE = ['menu.documents', 'menu.documents.master_list'];
+const CREATE = [...BASE, 'menu.documents.master_list.create'];
+const APPROVE = [...BASE, 'menu.documents.master_list.approve'];
+const DISTRIBUTE = [...BASE, 'menu.documents.master_list.distribute'];
 
 const row = {
     id: 'd1', code: 'POL-001', title: '=Politica de calidad', type: 'Política', process: 'Calidad', ownerUserId: 'u2', ownerName: 'Beto Ruiz',
@@ -390,10 +390,162 @@ test.describe('detail', () => {
     });
 });
 
+test.describe('module section', () => {
+    const menu = (page: Page) => page.getByRole('navigation', { name: 'Menú principal' }).first();
+    const SECTION = 'Gestión documental';
+    const inReview = { ...row, id: 'd2', code: 'PRO-002', title: 'Procedimiento de compras', currentVersionId: null, currentVersionNumber: null, reviewDate: null, openVersionStatus: 'InReview' };
+    const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toLocaleDateString('en-CA');
+    /** The master list answers by its `status` filter, as the API does. */
+    const listByStatus = (all: unknown[], review: unknown[], seen: string[] = []) => (route: Route, url: URL) => {
+        seen.push(url.search);
+        return route.fulfill({ json: ok(url.searchParams.get('status') === 'InReview' ? review : all) });
+    };
+
+    test('shows its four entries and each route highlights its own', async ({ page }) => {
+        await mockApi(page, { permissions: APPROVE });
+        await signIn(page);
+        const entries: [string, string, string][] = [
+            ['Inicio', '/gestion-documental', 'Gestión documental'],
+            ['Listado maestro', '/documentos', 'Documentos'],
+            ['Mis lecturas', '/documentos-lecturas', 'Mis lecturas'],
+            ['Por aprobar', '/documentos-por-aprobar', 'Por aprobar'],
+        ];
+        for (const [label, path, heading] of entries) {
+            await page.goto(`/#${path}`);
+            await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
+            await expect(menu(page).getByRole('button', { name: SECTION })).toBeVisible();
+            for (const [other] of entries) {
+                const link = menu(page).getByRole('link', { name: other, exact: true });
+                if (other === label) await expect(link).toHaveAttribute('aria-current', 'page');
+                else await expect(link).not.toHaveAttribute('aria-current', 'page');
+            }
+        }
+        await expect(menu(page).getByRole('link', { name: 'Documentos', exact: true })).toHaveCount(0);
+    });
+
+    test('without .approve there is no «Por aprobar» and its URL redirects', async ({ page }) => {
+        await mockApi(page, { permissions: BASE });
+        await signIn(page);
+        await page.goto('/#/documentos-por-aprobar');
+        await expect(page).toHaveURL(/#\/gestion-documental$/);
+        await expect(menu(page).getByRole('link', { name: 'Mis lecturas', exact: true })).toBeVisible();
+        await expect(menu(page).getByRole('link', { name: 'Por aprobar', exact: true })).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Por aprobar' })).toHaveCount(0);
+    });
+
+    test('the section follows menu.documents, not menu.platform', async ({ page }) => {
+        await mockApi(page, { permissions: ['menu.platform', 'menu.platform.dashboard', 'menu.documents.master_list'] });
+        await signIn(page);
+        await page.goto('/#/dashboard');
+        await expect(menu(page).getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+        await expect(menu(page).getByRole('button', { name: SECTION })).toHaveCount(0);
+        await expect(menu(page).getByRole('link', { name: 'Listado maestro', exact: true })).toHaveCount(0);
+
+        await mockApi(page, { permissions: BASE });
+        await page.reload();
+        await expect(menu(page).getByRole('button', { name: SECTION })).toBeVisible();
+        await expect(menu(page).getByRole('link', { name: 'Listado maestro', exact: true })).toBeVisible();
+        await expect(menu(page).getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0);
+    });
+
+    test('«Mis lecturas» lists what is pending with a link to its version, or says there is nothing', async ({ page }) => {
+        await mockApi(page, { permissions: BASE });
+        await signIn(page);
+        await page.goto('/#/documentos-lecturas');
+        await expect(page.getByText('No tienes documentos por confirmar')).toBeVisible();
+
+        await mockApi(page, { permissions: BASE }, { 'GET /documents/pending-reads': ok([PENDING]) });
+        await page.reload();
+        const cells = page.getByRole('row').nth(1).getByRole('cell');
+        await expect(cells).toHaveText(['POL-001', 'v1', 'Política de calidad']);
+        await expect(page.getByRole('link', { name: 'POL-001' })).toHaveAttribute('href', '#/documentos/d1?version=v1');
+    });
+
+    test('«Por aprobar» lists the versions in review with who elaborated them, or says there is nothing', async ({ page }) => {
+        const seen: string[] = [];
+        await mockApi(page, { permissions: APPROVE }, { 'GET /documents': listByStatus([row, inReview], [], seen) });
+        await signIn(page);
+        await page.goto('/#/documentos-por-aprobar');
+        await expect(page.getByText('No hay versiones esperando aprobación')).toBeVisible();
+        expect(seen).toContain('?status=InReview');
+
+        await mockApi(page, { permissions: APPROVE }, {
+            'GET /documents': listByStatus([row, inReview], [inReview]),
+            'GET /documents/d2': ok({ ...detail([version({ id: 'v9', status: 'InReview', elaboratedByName: 'Elena Mora' })]), id: 'd2' }),
+        });
+        await page.reload();
+        const cells = page.getByRole('row').nth(1).getByRole('cell');
+        await expect(cells).toHaveText(['PRO-002', 'Procedimiento de compras', 'Elena Mora']);
+        await expect(page.getByRole('link', { name: 'PRO-002' })).toHaveAttribute('href', '#/documentos/d2');
+    });
+
+    test('the home counts each card from the two queries and the list', async ({ page }) => {
+        const current = (id: string, reviewDate: string | null) => ({ ...row, id, code: id, reviewDate, openVersionStatus: null });
+        const all = [current('a', day(-1)), current('b', day(30)), current('c', day(31)), current('e', null), inReview, { ...inReview, id: 'f', reviewDate: day(1) }];
+        await mockApi(page, { permissions: APPROVE }, {
+            'GET /documents': listByStatus(all, [inReview]),
+            'GET /documents/pending-reads': ok([PENDING, { ...PENDING, versionId: 'v2' }, { ...PENDING, versionId: 'v3' }]),
+        });
+        await signIn(page);
+        await page.goto('/#/gestion-documental');
+        const card = (name: string) => page.getByRole('main').getByRole('link', { name: new RegExp(`^${name}`) });
+        await expect(card('Por confirmar lectura')).toHaveText(/3$/);
+        await expect(card('Por confirmar lectura')).toHaveAttribute('href', '#/documentos-lecturas');
+        await expect(card('Por aprobar')).toHaveText(/1$/);
+        await expect(card('Por aprobar')).toHaveAttribute('href', '#/documentos-por-aprobar');
+        await expect(card('Documentos vigentes')).toHaveText(/4$/);
+        await expect(card('Documentos vigentes')).toHaveAttribute('href', '#/documentos');
+        // Current documents only, due within 30 days or already overdue: a and b.
+        await expect(card('Revisión próxima o vencida')).toHaveText(/2$/);
+    });
+
+    test('the home hides «Por aprobar» without the permission and does not ask for it', async ({ page }) => {
+        const seen: string[] = [];
+        await mockApi(page, { permissions: BASE }, { 'GET /documents': listByStatus([row], [inReview], seen) });
+        await signIn(page);
+        await page.goto('/#/gestion-documental');
+        const main = page.getByRole('main');
+        await expect(main.getByRole('link', { name: /^Documentos vigentes/ })).toHaveText(/1$/);
+        await expect(main.getByRole('link', { name: /^Por aprobar/ })).toHaveCount(0);
+        // Only the unfiltered list was asked for (twice under React StrictMode).
+        expect(seen.length).toBeGreaterThan(0);
+        expect(seen.filter(Boolean)).toEqual([]);
+    });
+
+    test('a failed query only breaks its own card on the home', async ({ page }) => {
+        await mockApi(page, { permissions: APPROVE }, {
+            'GET /documents': listByStatus([row], [inReview]),
+            'GET /documents/pending-reads': json(500, 'Fallo'),
+        });
+        await signIn(page);
+        await page.goto('/#/gestion-documental');
+        const card = (name: string) => page.getByRole('main').getByRole('link', { name: new RegExp(`^${name}`) });
+        await expect(card('Por confirmar lectura')).toContainText('No se pudo cargar');
+        await expect(card('Por aprobar')).toHaveText(/1$/);
+        await expect(card('Documentos vigentes')).toHaveText(/1$/);
+        await expect(page.getByText('No se pudo cargar')).toHaveCount(1);
+    });
+});
+
 test.describe('phone width', () => {
     test.use({ viewport: { width: 375, height: 700 } });
 
     const noSideScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+
+    test('the module home and its two lists fit without horizontal scroll', async ({ page }) => {
+        const review = { ...row, openVersionStatus: 'InReview' };
+        await mockApi(page, { permissions: APPROVE }, {
+            'GET /documents': ok([review]),
+            'GET /documents/d1': ok(detail([version({ status: 'InReview' })])),
+            'GET /documents/pending-reads': ok([PENDING]),
+        });
+        await signIn(page);
+        for (const [path, text] of [['/gestion-documental', 'Documentos vigentes'], ['/documentos-lecturas', 'POL-001'], ['/documentos-por-aprobar', 'POL-001']]) {
+            await page.goto(`/#${path}`);
+            await expect(page.getByRole('main').getByText(text).first()).toBeVisible();
+            expect(await noSideScroll(page)).toBe(true);
+        }
+    });
 
     test('list and detail fit without horizontal scroll, in both themes', async ({ page }) => {
         const long = 'Procedimiento-de-control-de-documentos-con-un-nombre-muy-largo-que-no-tiene-espacios.pdf';

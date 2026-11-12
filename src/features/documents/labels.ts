@@ -3,10 +3,16 @@ import { formatNumber } from '../../shared/format';
 import type { BadgeVariant } from '../../shared/ui';
 
 export const PERMISSIONS = {
-    CREATE: 'menu.platform.documents.create',
-    APPROVE: 'menu.platform.documents.approve',
-    DISTRIBUTE: 'menu.platform.documents.distribute',
+    CREATE: 'menu.documents.master_list.create',
+    APPROVE: 'menu.documents.master_list.approve',
+    DISTRIBUTE: 'menu.documents.master_list.distribute',
 } as const;
+
+/** Same window as the API's DocumentReviewNotifier. */
+export const REVIEW_WINDOW_DAYS = 30;
+
+/** Document code that opens its detail; 44 px tall on touch screens. */
+export const CODE_LINK_CLASS = 'font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2 [@media(pointer:coarse)]:inline-flex [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:items-center';
 
 export const STATUS: Record<DocumentVersionStatus, [string, BadgeVariant]> = {
     Draft: ['Borrador', 'default'],

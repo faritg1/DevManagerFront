@@ -62,6 +62,9 @@ const SuperAdminPage = page(() => import("../features/platform"), "SuperAdminPag
 const documents = () => import("../features/documents");
 const DocumentsPage = page(documents, "DocumentsPage");
 const DocumentDetailPage = page(documents, "DocumentDetailPage");
+const DocumentsHomePage = page(documents, "DocumentsHomePage");
+const PendingReadsPage = page(documents, "PendingReadsPage");
+const AwaitingApprovalPage = page(documents, "AwaitingApprovalPage");
 const AuditPage = page(() => import("../features/audit"), "AuditPage");
 const ActivitiesPage = page(() => import("../features/activities"), "ActivitiesPage");
 const MyActivitiesPage = page(() => import("../features/activities"), "MyActivitiesPage");
@@ -119,6 +122,9 @@ export const AppRouter: React.FC = () => {
                     {/* menu.admin.audit or the super admin (navConfig allowSuperAdmin), as the API */}
                     <Route path={ROUTES.AUDIT} element={<AuditPage />} />
                     <Route path={ROUTES.DOCUMENTS} element={<DocumentsPage />} />
+                    <Route path={ROUTES.DOCUMENTS_HOME} element={<DocumentsHomePage />} />
+                    <Route path={ROUTES.DOCUMENT_READS} element={<PendingReadsPage />} />
+                    <Route path={ROUTES.DOCUMENT_APPROVALS} element={<AwaitingApprovalPage />} />
                     <Route path={ROUTES.ACTIVITIES} element={<ActivitiesPage />} />
                     <Route path={ROUTES.ACTIVITIES_PROJECT} element={<ActivitiesPage />} />
                     <Route path={ROUTES.MY_ACTIVITIES} element={<MyActivitiesPage />} />
@@ -129,7 +135,7 @@ export const AppRouter: React.FC = () => {
                     <Route path={ROUTES.EDUCATION} element={<EducationProgramsPage />} />
                     <Route path={ROUTES.EDUCATION_PROGRAM} element={<ProgramDetailPage />} />
 
-                    <Route element={<PermissionGuard require="menu.platform.documents" />}>
+                    <Route element={<PermissionGuard require="menu.documents.master_list" />}>
                       <Route path={ROUTES.DOCUMENT_DETAIL} element={<DocumentDetailPage />} />
                     </Route>
                     <Route element={<PermissionGuard require="menu.platform.projects.create" />}>

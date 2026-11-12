@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { documentsService, type DossierDetail, type DossierItem } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import { today } from '../../../shared/format';
-import { usePermission } from '../../../shared/hooks';
 import { Button, Input, Modal, Select } from '../../../shared/ui';
 import { errorText, needsLocalToast } from '../../associates/labels';
-import { ACCEPTED_FILES, MAX_FILE_MB, PERMISSIONS, dossierTypes, fileError } from '../labels';
+import { ACCEPTED_FILES, MAX_FILE_MB, dossierTypes, fileError } from '../labels';
 import { loadClassification, useRows } from '../useRows';
 
 interface Props {
@@ -27,9 +26,8 @@ export const DossierItemDialog: React.FC<Props> = ({ dossier, item, onClose, onS
     const [file, setFile] = useState<File | null>(null);
     const [saving, setSaving] = useState(false);
     const error = file ? fileError(file) : null;
-    // The types come from the chart: without its permission there is no selector, and a correction resends the type the document has.
-    const canClassify = usePermission().has(PERMISSIONS.CLASSIFICATION);
-    const tree = useRows(loadClassification, canClassify);
+    // The types come from the chart, which the dossiers permission also reads.
+    const tree = useRows(loadClassification, true);
     const types = dossierTypes(tree ?? [], dossier.classificationNodeId);
     // The document's own type is always an option: the chart may still be loading.
     const ownType = item?.documentaryTypeId && !types.some((t) => t.id === item.documentaryTypeId) ? item : null;
@@ -68,13 +66,11 @@ export const DossierItemDialog: React.FC<Props> = ({ dossier, item, onClose, onS
         >
             <div className="space-y-4">
                 <Input label="Título" value={form.title} onChange={set('title')} maxLength={200} required />
-                {canClassify && (
-                    <Select label="Tipo documental" value={form.documentaryTypeId} onChange={set('documentaryTypeId')} hint="Tipos de la serie del expediente.">
-                        <option value="">Sin tipo</option>
-                        {ownType && <option value={ownType.documentaryTypeId ?? ''}>{ownType.documentaryTypeName ?? '—'}</option>}
-                        {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </Select>
-                )}
+                <Select label="Tipo documental" value={form.documentaryTypeId} onChange={set('documentaryTypeId')} hint="Tipos de la serie del expediente.">
+                    <option value="">Sin tipo</option>
+                    {ownType && <option value={ownType.documentaryTypeId ?? ''}>{ownType.documentaryTypeName ?? '—'}</option>}
+                    {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </Select>
                 <Input label="Fecha del documento" type="date" value={form.documentDate} onChange={set('documentDate')} max={today()} required />
                 {!item && (
                     <Input

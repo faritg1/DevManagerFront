@@ -31,13 +31,6 @@ const recorder = (body: unknown = dossierDetail(), status = 200) => {
     return { calls, handler };
 };
 
-/** Counts the requests of the classification chart, which only its own permission may trigger. */
-const forbiddenChart = () => {
-    const seen = { count: 0 };
-    const handler = (route: Route) => { seen.count++; return route.fulfill({ status: 403, json: { success: false, message: 'Sin permiso' } }); };
-    return { seen, handler };
-};
-
 const csvLines = async (download: Download) => (await (await download.createReadStream()).toArray()).join('').replace(/^﻿/, '').split('\r\n');
 
 const openList = async (page: Page, query = '') => {
@@ -123,15 +116,13 @@ test.describe('dossier list', () => {
     });
 
     test('shows empty and error states, and only reads without .manage', async ({ page }) => {
-        const chart = forbiddenChart();
-        await mockApi(page, { permissions: VIEW }, { [LIST]: ok([dossier()]), [TREE]: chart.handler });
+        await mockApi(page, { permissions: VIEW }, { [LIST]: ok([dossier()]), [TREE]: ok(CLASSIFICATION_TREE) });
         await openList(page);
         await expect(page.getByRole('link', { name: 'EXP-ACT-001' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Nuevo expediente' })).toHaveCount(0);
         await expect(page.getByRole('button', { name: 'Editar EXP-ACT-001' })).toHaveCount(0);
-        // The series filter comes from the chart, which needs its own permission.
-        await expect(page.getByLabel('Serie')).toHaveCount(0);
-        expect(chart.seen.count).toBe(0);
+        // The series filter comes from the chart, which the dossiers permission also reads.
+        await expect(page.getByLabel('Serie').getByRole('option', { name: 'CON · Contratos' })).toBeAttached();
 
         await mockApi(page, { permissions: VIEW }, { [LIST]: ok([]) });
         await page.reload();
@@ -173,9 +164,10 @@ test.describe('dossier list', () => {
         await expect(page.getByRole('main')).not.toContainText(/FUID|índice electrónico|AGN|validez legal/i);
     });
 
-    test('creates with .manage and the chart, and a repeated code keeps the form open', async ({ page }) => {
+    test('creates with .manage alone, and a repeated code keeps the form open', async ({ page }) => {
         const created = recorder(dossierDetail(), 201);
-        await mockApi(page, { permissions: [...MANAGE, CHART] }, {
+        // No chart permission: the dossiers one reads the series.
+        await mockApi(page, { permissions: MANAGE }, {
             [LIST]: ok([dossier()]), [TREE]: ok(CLASSIFICATION_TREE), 'GET /users': ok(USERS), 'POST /dossiers': created.handler,
         });
         await openList(page);
@@ -211,15 +203,12 @@ test.describe('dossier list', () => {
         await expect(dialog.getByLabel('Título')).toHaveValue('Repetido');
     });
 
-    test('without the chart permission it edits but offers no creation, and never asks for the chart', async ({ page }) => {
-        const chart = forbiddenChart();
+    test('edits title, owner and location, never the code or the series', async ({ page }) => {
         const updated = recorder();
         await mockApi(page, { permissions: MANAGE }, {
-            [LIST]: ok([dossier()]), [TREE]: chart.handler, 'GET /users': ok(USERS), 'PUT /dossiers/x1': updated.handler,
+            [LIST]: ok([dossier()]), [TREE]: ok(CLASSIFICATION_TREE), 'GET /users': ok(USERS), 'PUT /dossiers/x1': updated.handler,
         });
         await openList(page);
-        await expect(page.getByRole('button', { name: 'Editar EXP-ACT-001' })).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Nuevo expediente' })).toHaveCount(0);
 
         await page.getByRole('button', { name: 'Editar EXP-ACT-001' }).click();
         const dialog = page.getByRole('dialog');
@@ -233,7 +222,6 @@ test.describe('dossier list', () => {
         await dialog.getByRole('button', { name: 'Guardar' }).click();
         await expect(page.getByText('Expediente actualizado')).toBeVisible();
         expect(JSON.parse(updated.calls[0].body)).toEqual({ title: 'Actas de junta directiva 2026', ownerUserId: 'u1', openedOn: '2026-01-10', physicalLocation: null });
-        expect(chart.seen.count).toBe(0);
     });
 });
 
@@ -339,7 +327,8 @@ test.describe('dossier detail', () => {
 
     test('incorporates a document as multipart, validating the file first', async ({ page }) => {
         const added = recorder(dossierItem({ id: 'i3', position: 3 }), 201);
-        await mockApi(page, { permissions: [...MANAGE, CHART] }, {
+        // No chart permission: the dossiers one reads the types.
+        await mockApi(page, { permissions: MANAGE }, {
             [ONE]: ok(dossierDetail()), [TREE]: ok(CLASSIFICATION_TREE), 'POST /dossiers/x1/items': added.handler,
         });
         await openDetail(page);
@@ -407,33 +396,6 @@ test.describe('dossier detail', () => {
         await dialog.getByRole('button', { name: 'Guardar' }).click();
         await expect(page.getByText('Documento corregido')).toBeVisible();
         expect(JSON.parse(corrected.calls[0].body)).toEqual({ title: 'Acta 001 corregida', documentaryTypeId: null, documentDate: '2026-01-20' });
-    });
-
-    test('without the chart permission there is no type selector and a correction resends the current type', async ({ page }) => {
-        const chart = forbiddenChart();
-        const corrected = recorder(dossierItem());
-        const added = recorder(dossierItem({ id: 'i3', position: 3 }), 201);
-        await mockApi(page, { permissions: MANAGE }, {
-            [ONE]: ok(dossierDetail()), [TREE]: chart.handler, 'PUT /dossiers/x1/items/i1': corrected.handler, 'POST /dossiers/x1/items': added.handler,
-        });
-        await openDetail(page);
-        await page.getByRole('button', { name: 'Corregir documento 1' }).click();
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByLabel('Tipo documental')).toHaveCount(0);
-        await dialog.getByLabel('Título').fill('Acta 001 corregida');
-        await dialog.getByRole('button', { name: 'Guardar' }).click();
-        await expect(page.getByText('Documento corregido')).toBeVisible();
-        expect(JSON.parse(corrected.calls[0].body)).toEqual({ title: 'Acta 001 corregida', documentaryTypeId: 't1', documentDate: '2026-01-15' });
-
-        await page.getByRole('button', { name: 'Incorporar documento' }).click();
-        await expect(dialog.getByLabel('Tipo documental')).toHaveCount(0);
-        await dialog.getByLabel('Título').fill('Acta 003');
-        await dialog.getByLabel('Fecha del documento').fill('2026-05-20');
-        await dialog.getByLabel('Archivo').setInputFiles(pdf('acta 003.pdf'));
-        await dialog.getByRole('button', { name: 'Guardar' }).click();
-        await expect(page.getByText('Documento incorporado')).toBeVisible();
-        expect(added.calls[0].body).not.toContain('name="documentaryTypeId"');
-        expect(chart.seen.count).toBe(0);
     });
 
     test('closes after a confirmation that says it cannot be undone, and reloads', async ({ page }) => {

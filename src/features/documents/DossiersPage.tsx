@@ -51,12 +51,11 @@ const toQuery = (f: typeof EMPTY): DossierFilter => ({
 export const DossiersPage: React.FC = () => {
     const { has } = usePermission();
     const canManage = has(PERMISSIONS.DOSSIERS_MANAGE);
-    // The series come from the chart: without its permission there is no series filter and no creation.
-    const canClassify = has(PERMISSIONS.CLASSIFICATION);
     // `?estado=` opens the list already filtered: the card of the module home links here.
     const [search] = useSearchParams();
     const [filters, setFilters] = useState(() => ({ ...EMPTY, status: search.get('estado') ?? '' }));
-    const series = seriesOptions(useRows(loadClassification, canClassify) ?? []);
+    // The series come from the chart, which the dossiers permission also reads.
+    const series = seriesOptions(useRows(loadClassification, true) ?? []);
     const [rows, setRows] = useState<DossierListItem[] | null>(null);
     const [failed, setFailed] = useState(false);
     // undefined closed, null new, a row to edit it.
@@ -100,19 +99,17 @@ export const DossiersPage: React.FC = () => {
                     >
                         Inventario de expedientes
                     </Button>
-                    {canManage && canClassify && <Button icon={Plus} onClick={() => setEditing(null)}>Nuevo expediente</Button>}
+                    {canManage && <Button icon={Plus} onClick={() => setEditing(null)}>Nuevo expediente</Button>}
                 </>}
             />
 
             <Card padding="none" className="overflow-hidden">
                 <div className="grid grid-cols-1 gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-3 dark:border-border-dark">
                     <Input label="Buscar" value={filters.q} onChange={set('q')} placeholder="Código o título" />
-                    {canClassify && (
-                        <Select label="Serie" value={filters.series} onChange={set('series')}>
-                            <option value="">Todas las series</option>
-                            {series.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-                        </Select>
-                    )}
+                    <Select label="Serie" value={filters.series} onChange={set('series')}>
+                        <option value="">Todas las series</option>
+                        {series.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                    </Select>
                     <Select label="Estado" value={filters.status} onChange={set('status')}>
                         <option value="">Todos los estados</option>
                         {Object.entries(DOSSIER_STATUS).map(([k, [label]]) => <option key={k} value={k}>{label}</option>)}

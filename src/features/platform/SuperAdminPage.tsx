@@ -3,10 +3,11 @@ import { Building2, Crown, History, LogIn, Search, Users } from 'lucide-react';
 import { platformService, type ImpersonationLogEntry, type PlatformOrganization, type PlatformUser } from '../../shared/api';
 import { useAuth } from '../../shared/context';
 import { asUtc, formatDateTime } from '../../shared/format';
-import { useConfirm } from '../../shared/hooks';
+import { useConfirm, usePermission } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS } from '../../shared/ui';
 import { AiQuotasCard } from './components/AiQuotasCard';
 import { DemoAccessCard } from './components/DemoAccessCard';
+import { OrganizationPlanDialog } from './components/OrganizationPlanDialog';
 
 /** Platform super administration: every organization, its users and the AI quotas (the API answers 403 to anyone else). */
 export const SuperAdminPage: React.FC = () => {
@@ -16,8 +17,12 @@ export const SuperAdminPage: React.FC = () => {
     const [users, setUsers] = useState<PlatformUser[] | null>(null);
     const [history, setHistory] = useState<ImpersonationLogEntry[] | null>(null);
     const [entering, setEntering] = useState<string | null>(null);
-    const { startImpersonation } = useAuth();
+    const [planOf, setPlanOf] = useState<PlatformOrganization | null>(null);
+    const { startImpersonation, impersonation } = useAuth();
+    const { isSuperAdmin } = usePermission();
     const { confirm } = useConfirm();
+    // The API refuses the plan to anyone else, and its PUT during an impersonation.
+    const canEditPlan = isSuperAdmin && !impersonation;
 
     useEffect(() => {
         platformService.listImpersonations().then(r => setHistory(r.data ?? []), () => setHistory([]));
@@ -85,12 +90,12 @@ export const SuperAdminPage: React.FC = () => {
                     ) : (
                         <ul className="max-h-[28rem] divide-y divide-slate-100 overflow-y-auto dark:divide-border-dark">
                             {organizations.map((o) => (
-                                <li key={o.id}>
+                                <li key={o.id} className="flex items-center">
                                     <button
                                         type="button"
                                         onClick={() => setSelected(o)}
                                         aria-pressed={selected?.id === o.id}
-                                        className={`flex w-full items-center justify-between gap-3 px-6 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${selected?.id === o.id ? 'bg-primary/5' : ''}`}
+                                        className={`flex min-w-0 flex-1 items-center justify-between gap-3 px-6 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${selected?.id === o.id ? 'bg-primary/5' : ''}`}
                                     >
                                         <span className="min-w-0">
                                             <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{o.name}</span>
@@ -100,6 +105,11 @@ export const SuperAdminPage: React.FC = () => {
                                         </span>
                                         {!o.isActive && <Badge variant="warning">Inactiva</Badge>}
                                     </button>
+                                    {canEditPlan && (
+                                        <Button size="sm" variant="outline" className="mx-3 shrink-0" aria-label={`Plan y módulos de ${o.name}`} onClick={() => setPlanOf(o)}>
+                                            Plan y módulos
+                                        </Button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -160,6 +170,8 @@ export const SuperAdminPage: React.FC = () => {
                     )}
                 </Card>
             </div>
+
+            <OrganizationPlanDialog organization={planOf} onClose={() => setPlanOf(null)} />
 
             <DemoAccessCard />
 

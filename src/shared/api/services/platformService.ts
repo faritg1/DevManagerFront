@@ -1,6 +1,6 @@
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
-import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, PlatformOrganization, PlatformUser } from "../types";
+import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, OrganizationPlan, OrganizationPlanChange, PlatformOrganization, PlatformUser } from "../types";
 
 const E = API_ENDPOINTS.PLATFORM;
 
@@ -23,4 +23,10 @@ export const platformService = {
 
   /** Either way the API closes the sessions of the demo users; it never returns the password. */
   setDemoAccess: (change: DemoAccessChange): Promise<ApiResponse<unknown>> => apiClient.put(E.DEMO, change),
+
+  getPlan: (organizationId: string): Promise<ApiResponse<OrganizationPlan>> => apiClient.get(E.PLAN(organizationId)),
+
+  /** Replaces the disabled modules and both caps; answers the plan as the GET does. */
+  setPlan: (organizationId: string, change: OrganizationPlanChange): Promise<ApiResponse<OrganizationPlan>> =>
+    apiClient.put(E.PLAN(organizationId), change),
 };

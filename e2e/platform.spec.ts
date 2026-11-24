@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { mockApi, signIn } from './mockApi';
+import { ADMIN, mockApi, signIn } from './mockApi';
 
 const ok = (data: unknown) => ({ success: true, message: '', data });
 
@@ -122,5 +122,79 @@ test.describe('phone width', () => {
             await expect(page.getByRole('dialog').getByLabel('Confirmar contraseña', { exact: true })).toBeVisible();
             expect(await noSideScroll()).toBe(true);
         }
+    });
+});
+
+test.describe('plan and modules of an organization', () => {
+    const GB = 1024 ** 3;
+    const PLAN = 'GET /platform/organizations/o9/plan';
+    const SAVE = 'PUT /platform/organizations/o9/plan';
+    const node = (code: string, name: string, children: unknown[] = []) => ({ id: code, code, name, module: 'menu', children });
+    const TREE = [
+        node('menu.admin', 'Administración', [node('menu.admin.users', 'Usuarios')]),
+        node('menu.documents', 'Documentos', [
+            node('menu.documents.inbox', 'Radicados', [node('menu.documents.inbox.create', 'Crear radicado')]),
+            node('menu.documents.dossiers', 'Expedientes'),
+        ]),
+    ];
+    const CURRENT = { disabledModules: [], maxUsers: null, maxStorageBytes: null, activeUsers: 4, usedStorageBytes: 1.5 * GB };
+
+    /** Opens the dialog of the only organization; returns the bodies the PUT received. */
+    async function openPlan(page: Page, save?: (route: Route) => unknown) {
+        const sent: unknown[] = [];
+        await mockApi(page, SUPER_ADMIN, {
+            'GET /platform/organizations': ok([{ id: 'o9', name: 'Coop Uno', nit: '900', isActive: true, userCount: 4 }]),
+            'GET /permissions/tree': ok(TREE),
+            [PLAN]: ok(CURRENT),
+            [SAVE]: (route: Route) => {
+                sent.push(route.request().postDataJSON());
+                return save ? save(route) : route.fulfill({ json: ok({ ...CURRENT, ...route.request().postDataJSON() }) });
+            },
+        });
+        await signIn(page);
+        await page.goto('/#/superadmin');
+        await page.getByRole('button', { name: 'Plan y módulos de Coop Uno' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Plan y módulos' });
+        await expect(dialog.getByText('4 usuarios activos')).toBeVisible();
+        return { sent, dialog };
+    }
+
+    test('turning a section off and setting a cap sends the codes, the users and the storage in bytes', async ({ page }) => {
+        const { sent, dialog } = await openPlan(page);
+        await expect(dialog.getByText('1,5 GB usados')).toBeVisible();
+        // Two levels only, and Administración is locked on.
+        await expect(dialog.getByRole('switch')).toHaveCount(5);
+        await expect(dialog.getByRole('switch', { name: 'Administración' })).toBeDisabled();
+        await expect(dialog.getByRole('switch', { name: 'Usuarios' })).toBeDisabled();
+        await expect(dialog.getByRole('switch', { name: 'Usuarios' })).toBeChecked();
+
+        await dialog.getByRole('switch', { name: 'Documentos' }).click();
+        await expect(dialog.getByRole('switch', { name: 'Radicados' })).toBeDisabled();
+        await expect(dialog.getByRole('switch', { name: 'Radicados' })).not.toBeChecked();
+        await dialog.getByLabel('Tope de usuarios', { exact: true }).fill('5');
+        await dialog.getByLabel('Tope de almacenamiento (GB)', { exact: true }).fill('2');
+        await dialog.getByRole('button', { name: 'Guardar' }).click();
+
+        await expect(page.getByText('Plan actualizado')).toBeVisible();
+        await expect(dialog).toBeHidden();
+        expect(sent).toEqual([{ disabledModules: ['menu.documents'], maxUsers: 5, maxStorageBytes: 2 * GB }]);
+    });
+
+    test('the message of the API is shown when it refuses the plan, and the dialog stays open', async ({ page }) => {
+        const refusal = 'El tope debe ser mayor que cero';
+        const { sent, dialog } = await openPlan(page, (route) => route.fulfill({ status: 400, json: { success: false, message: refusal } }));
+        await dialog.getByRole('button', { name: 'Guardar' }).click();
+        await expect(page.getByRole('alert').filter({ hasText: refusal })).toBeVisible();
+        await expect(dialog).toBeVisible();
+        // Empty caps travel as null: no cap.
+        expect(sent).toEqual([{ disabledModules: [], maxUsers: null, maxStorageBytes: null }]);
+    });
+
+    test('someone who is not the super admin never gets the action', async ({ page }) => {
+        await mockApi(page, ADMIN, { 'GET /platform/organizations': ok([{ id: 'o9', name: 'Coop Uno', nit: '900', isActive: true, userCount: 4 }]) });
+        await signIn(page);
+        await page.goto('/#/superadmin');
+        await expect(page).not.toHaveURL(/superadmin/);
+        await expect(page.getByRole('button', { name: /Plan y módulos/ })).toHaveCount(0);
     });
 });

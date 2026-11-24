@@ -1471,6 +1471,20 @@ export interface DemoAccess {
 /** PUT /platform/demo: turning it on sets that password on every demo account */
 export type DemoAccessChange = { enabled: true; password: string } | { enabled: false };
 
+/** PUT /platform/organizations/{id}/plan: replaces the three values; null means no cap */
+export interface OrganizationPlanChange {
+  /** First or second level permission codes (sections or screens) turned off for the organization */
+  disabledModules: string[];
+  maxUsers: number | null;
+  maxStorageBytes: number | null;
+}
+
+/** GET /platform/organizations/{id}/plan: the plan plus the current usage */
+export interface OrganizationPlan extends OrganizationPlanChange {
+  activeUsers: number;
+  usedStorageBytes: number;
+}
+
 /** GET /platform/impersonations: newest first */
 export interface ImpersonationLogEntry {
   id: string;

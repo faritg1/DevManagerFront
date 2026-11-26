@@ -9,7 +9,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-/** Frame of the password recovery pages, with the way back to the login. */
+/** Frame of the register and password recovery pages, with the way back to the login. */
 export const AuthCard: React.FC<Props> = ({ title, subtitle, children }) => (
   <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-background-light dark:bg-background-dark">
     <div className="w-full max-w-[460px]">

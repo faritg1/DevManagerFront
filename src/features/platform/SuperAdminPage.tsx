@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Building2, Crown, History, LogIn, Search, Users } from 'lucide-react';
+import { Building2, Crown, History, LogIn, Plus, Search, Users } from 'lucide-react';
 import { platformService, type ImpersonationLogEntry, type PlatformOrganization, type PlatformUser } from '../../shared/api';
-import { useAuth } from '../../shared/context';
+import { useAuth, useNotification } from '../../shared/context';
 import { asUtc, formatDateTime } from '../../shared/format';
 import { useConfirm, usePermission } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS } from '../../shared/ui';
 import { AiQuotasCard } from './components/AiQuotasCard';
+import { CreateOrganizationDialog } from './components/CreateOrganizationDialog';
 import { DemoAccessCard } from './components/DemoAccessCard';
 import { OrganizationPlanDialog } from './components/OrganizationPlanDialog';
 
@@ -18,11 +19,41 @@ export const SuperAdminPage: React.FC = () => {
     const [history, setHistory] = useState<ImpersonationLogEntry[] | null>(null);
     const [entering, setEntering] = useState<string | null>(null);
     const [planOf, setPlanOf] = useState<PlatformOrganization | null>(null);
+    const [creating, setCreating] = useState(false);
+    const [deciding, setDeciding] = useState<string | null>(null);
     const { startImpersonation, impersonation } = useAuth();
     const { isSuperAdmin } = usePermission();
     const { confirm } = useConfirm();
-    // The API refuses the plan to anyone else, and its PUT during an impersonation.
-    const canEditPlan = isSuperAdmin && !impersonation;
+    const { showNotification } = useNotification();
+    // The API refuses the plan, a new organization, approving and rejecting to anyone else and during an impersonation.
+    const canManage = isSuperAdmin && !impersonation;
+
+    const loadOrganizations = () =>
+        platformService.listOrganizations(search).then(r => setOrganizations(r.data ?? []), () => setOrganizations([]));
+
+    /** Approves or rejects a pending organization, then reloads the list (also after a refusal: it was out of date). */
+    const decide = async (o: PlatformOrganization, reject: boolean) => {
+        if (reject) {
+            const ok = await confirm({
+                title: 'Rechazar solicitud',
+                message: `Vas a rechazar la solicitud de ${o.name}. Se eliminan la entidad y sus usuarios.`,
+                confirmText: 'Rechazar',
+                type: 'warning',
+            });
+            if (!ok) return;
+        }
+        setDeciding(o.id);
+        try {
+            const response = reject ? await platformService.rejectOrganization(o.id) : await platformService.approveOrganization(o.id);
+            showNotification({ type: 'success', message: response.message || (reject ? 'Solicitud rechazada' : 'Entidad aprobada') });
+            if (reject && selected?.id === o.id) setSelected(null);
+        } catch {
+            // el listener global muestra el error
+        } finally {
+            setDeciding(null);
+            loadOrganizations();
+        }
+    };
 
     useEffect(() => {
         platformService.listImpersonations().then(r => setHistory(r.data ?? []), () => setHistory([]));
@@ -47,10 +78,9 @@ export const SuperAdminPage: React.FC = () => {
 
     useEffect(() => {
         // Debounced search by name or NIT
-        const id = setTimeout(() => {
-            platformService.listOrganizations(search).then(r => setOrganizations(r.data ?? []), () => setOrganizations([]));
-        }, 300);
+        const id = setTimeout(loadOrganizations, 300);
         return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only when the search changes
     }, [search]);
 
     useEffect(() => {
@@ -71,7 +101,8 @@ export const SuperAdminPage: React.FC = () => {
                 <Card padding="none" className="lg:col-span-2">
                     <div className="flex items-center gap-2 p-6 pb-3">
                         <Building2 className="text-primary-600 dark:text-primary" size={20} aria-hidden="true" />
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Organizaciones</h2>
+                        <h2 className="flex-1 text-lg font-bold text-slate-900 dark:text-white">Organizaciones</h2>
+                        {canManage && <Button size="sm" icon={Plus} onClick={() => setCreating(true)}>Crear entidad</Button>}
                     </div>
                     <div className="px-6 pb-4">
                         <Input
@@ -90,12 +121,12 @@ export const SuperAdminPage: React.FC = () => {
                     ) : (
                         <ul className="max-h-[28rem] divide-y divide-slate-100 overflow-y-auto dark:divide-border-dark">
                             {organizations.map((o) => (
-                                <li key={o.id} className="flex items-center">
+                                <li key={o.id} className="flex flex-wrap items-center justify-end">
                                     <button
                                         type="button"
                                         onClick={() => setSelected(o)}
                                         aria-pressed={selected?.id === o.id}
-                                        className={`flex min-w-0 flex-1 items-center justify-between gap-3 px-6 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${selected?.id === o.id ? 'bg-primary/5' : ''}`}
+                                        className={`flex min-w-40 flex-1 items-center justify-between gap-3 px-6 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${selected?.id === o.id ? 'bg-primary/5' : ''}`}
                                     >
                                         <span className="min-w-0">
                                             <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{o.name}</span>
@@ -103,12 +134,26 @@ export const SuperAdminPage: React.FC = () => {
                                                 {o.nit ? `NIT ${o.nit} · ` : ''}{o.userCount} usuarios
                                             </span>
                                         </span>
-                                        {!o.isActive && <Badge variant="warning">Inactiva</Badge>}
+                                        {!o.isActive && <Badge variant="warning">Pendiente</Badge>}
                                     </button>
-                                    {canEditPlan && (
-                                        <Button size="sm" variant="outline" className="mx-3 shrink-0" aria-label={`Plan y módulos de ${o.name}`} onClick={() => setPlanOf(o)}>
-                                            Plan y módulos
-                                        </Button>
+                                    {canManage && (
+                                        <div className="flex flex-wrap justify-end gap-2 px-3 py-1">
+                                            {!o.isActive && (
+                                                <>
+                                                    <Button size="sm" aria-label={`Aprobar ${o.name}`} isLoading={deciding === o.id}
+                                                        disabled={deciding !== null} onClick={() => decide(o, false)}>
+                                                        Aprobar
+                                                    </Button>
+                                                    <Button size="sm" variant="outline" aria-label={`Rechazar ${o.name}`}
+                                                        disabled={deciding !== null} onClick={() => decide(o, true)}>
+                                                        Rechazar
+                                                    </Button>
+                                                </>
+                                            )}
+                                            <Button size="sm" variant="outline" aria-label={`Plan y módulos de ${o.name}`} onClick={() => setPlanOf(o)}>
+                                                Plan y módulos
+                                            </Button>
+                                        </div>
                                     )}
                                 </li>
                             ))}
@@ -172,6 +217,7 @@ export const SuperAdminPage: React.FC = () => {
             </div>
 
             <OrganizationPlanDialog organization={planOf} onClose={() => setPlanOf(null)} />
+            {creating && <CreateOrganizationDialog onClose={() => setCreating(false)} onCreated={loadOrganizations} />}
 
             <DemoAccessCard />
 

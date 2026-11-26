@@ -24,21 +24,23 @@ export interface LoginResponse {
   isSuperAdmin?: boolean;
 }
 
+/** Body of POST /auth/register-organization (public, left pending) and of POST /platform/organizations (super admin, active). */
 export interface RegisterOrganizationRequest {
   organizationName: string;
-  legalName?: string | null;
-  adminEmail: string;
-  adminPassword: string;
-  adminFullName: string;
-  entityType?: number | null;
+  legalName?: string;
+  nit?: string;
+  entityType?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
 }
 
+/** No token: registering never signs in. */
 export interface RegisterOrganizationResponse {
   organizationId: string;
-  organizationName: string;
   adminUserId: string;
-  adminEmail: string;
-  token: string;
 }
 
 export interface ChangePasswordResponse {

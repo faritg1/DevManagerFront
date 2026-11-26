@@ -1,169 +1,67 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail } from 'lucide-react';
-import { BrandMark } from '../../../shared/components/BrandMark';
-import { useAuth } from '../../../shared/context';
-import { Button, Input, Select } from '../../../shared/ui';
-import { ROUTES } from '../../../shared/config/constants';
-import { ENTITY_TYPES } from '../../associates/labels';
+import { authService, type ApiError } from '../../../shared/api';
+import { Button, Input } from '../../../shared/ui';
+import { EMPTY_ORGANIZATION, OrganizationFields, toOrganizationRequest } from '../components/OrganizationFields';
+import { AuthCard } from './AuthCard';
 
+/** Public request of a new organization: it stays pending until the super admin approves it, so nobody is signed in. */
 export const RegisterPage: React.FC = () => {
-    const navigate = useNavigate();
-    const { register, isLoading } = useAuth();
-    const [formData, setFormData] = useState({
-        organizationName: '',
-        entityType: '',
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    });
+    const [form, setForm] = useState(EMPTY_ORGANIZATION);
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [received, setReceived] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmPassword?: string }>({});
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-    };
+    const [isSending, setIsSending] = useState(false);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
         const errors: typeof fieldErrors = {};
-        if (formData.password.length < 8) errors.password = 'La contraseña debe tener al menos 8 caracteres';
-        if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
+        if (form.password.length < 8) errors.password = 'La contraseña debe tener al menos 8 caracteres';
+        if (form.password !== confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
         setFieldErrors(errors);
         if (Object.keys(errors).length > 0) return;
 
+        setIsSending(true);
         try {
-            await register({
-                name: formData.name,
-                email: formData.email,
-                password: formData.password,
-                organizationName: formData.organizationName,
-                entityType: formData.entityType ? Number(formData.entityType) : undefined,
-            });
-            navigate(ROUTES.DASHBOARD);
+            const response = await authService.registerOrganization(toOrganizationRequest(form));
+            setReceived(response.message || 'Solicitud recibida. La entidad queda pendiente de aprobación');
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Error al crear la cuenta. Intenta de nuevo.';
-            setError(message);
+            // API errors already raise the global toast
+            if (!(err as ApiError).status) setError('No fue posible conectar. Intenta de nuevo.');
+        } finally {
+            setIsSending(false);
         }
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background-light dark:bg-background-dark overflow-hidden">
-
-            <div className="w-full max-w-[500px] relative z-10">
-                <div className="mb-8 text-center sm:text-left flex flex-col gap-4">
-                    <div className="size-12 text-primary mx-auto sm:mx-0">
-                        <BrandMark className="size-full" />
-                    </div>
-                    <div>
-                        <h1 className="text-slate-900 dark:text-white text-2xl leading-8 sm:text-[28px] sm:leading-9 font-extrabold tracking-tight mb-2">
-                            Crea tu cuenta
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-base">
-                            Registra tu organización y comienza a gestionar tus agentes IA.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-border-dark p-6 sm:p-8">
-                    <form className="flex flex-col gap-5" onSubmit={handleRegister}>
-                        {error && (
-                            <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        <Input
-                            label="Nombre de la Organización"
-                            name="organizationName"
-                            value={formData.organizationName}
-                            onChange={handleChange}
-                            placeholder="Mi Empresa S.A.S"
-                            icon={Building2}
-                            required
-                        />
-
-                        <Select
-                            label="Tipo de entidad (opcional)"
-                            value={formData.entityType}
-                            onChange={(e) => setFormData(prev => ({ ...prev, entityType: e.target.value }))}
-                        >
-                            <option value="">No especificar</option>
-                            {Object.entries(ENTITY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                        </Select>
-
-                        <Input
-                            label="Tu Nombre"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="Juan Pérez"
-                            icon={User}
-                            required
-                        />
-
-                        <Input
-                            label="Email Corporativo"
-                            type="email"
-                            name="email"
-                            autoComplete="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="juan@empresa.com"
-                            icon={Mail}
-                            required
-                        />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Contraseña"
-                                name="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                autoComplete="new-password"
-                                error={fieldErrors.password}
-                                required
-                            />
-                            <Input
-                                label="Confirmar contraseña"
-                                name="confirmPassword"
-                                type="password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                autoComplete="new-password"
-                                error={fieldErrors.confirmPassword}
-                                required
-                            />
+        <AuthCard title="Crea tu cuenta" subtitle="Registra tu organización y comienza a gestionar tus agentes IA.">
+            {received ? (
+                <p role="status" className="text-slate-700 dark:text-slate-300 text-sm">{received}</p>
+            ) : (
+                <form className="flex flex-col gap-5" onSubmit={handleRegister}>
+                    {error && (
+                        <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
+                            {error}
                         </div>
-
-                        <Button 
-                            type="submit" 
-                            fullWidth 
-                            size="lg" 
-                            isLoading={isLoading}
-                            className="mt-2"
-                        >
-                            Crear Cuenta
-                        </Button>
-                    </form>
-
-                    <div className="mt-8 text-center">
-                        <Link to={ROUTES.LOGIN} className="inline-flex min-h-11 items-center rounded px-1 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                            ¿Ya tienes cuenta? <span className="ml-1 font-semibold text-primary-600 dark:text-primary hover:underline underline-offset-2">Iniciar Sesión</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </main>
+                    )}
+                    <OrganizationFields value={form} onChange={setForm} passwordError={fieldErrors.password} />
+                    <Input
+                        label="Confirmar contraseña"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        autoComplete="new-password"
+                        error={fieldErrors.confirmPassword}
+                        required
+                    />
+                    <Button type="submit" fullWidth size="lg" isLoading={isSending} className="mt-2">
+                        Crear Cuenta
+                    </Button>
+                </form>
+            )}
+        </AuthCard>
     );
 };
-

@@ -21,7 +21,6 @@ export interface AuthState {
 
 interface AuthContextValue extends AuthState {
     login: (email: string, password: string) => Promise<void>;
-    register: (data: RegisterData) => Promise<void>;
     logout: () => void;
     updateUser: (user: Partial<User>) => void;
     /** Set while a super admin acts as another user (persistent banner) */
@@ -30,14 +29,6 @@ interface AuthContextValue extends AuthState {
     startImpersonation: (userId: string) => Promise<void>;
     /** Restores the super admin's own session and returns to the super admin area */
     stopImpersonation: () => Promise<void>;
-}
-
-interface RegisterData {
-    name: string;
-    email: string;
-    password: string;
-    organizationName?: string;
-    entityType?: number;
 }
 
 const initialState: AuthState = {
@@ -100,94 +91,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, []);
 
+    // `isLoading` is only the restore of the stored session: raising it here makes the route guards swap the
+    // login screen for a loader, and the screen comes back without the error it was about to show.
     const login = useCallback(async (email: string, password: string) => {
-        setState(prev => ({ ...prev, isLoading: true }));
+        const response = await authService.login({ email, password });
 
-        try {
-            const response = await authService.login({ email, password });
-
-            if (!response.success || !response.data?.token) {
-                throw new Error(response.message || 'Credenciales inválidas.');
-            }
-
-            const { userId, firstName, lastName, organizationId } = response.data;
-            const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
-
-            // El login no devuelve rol — lo obtenemos de los permisos efectivos
-            let role = '';
-            try {
-                const permsResp = await rbacService.getUserEffectivePermissions(userId);
-                if (permsResp.success && permsResp.data?.roles?.length) {
-                    role = permsResp.data.roles[0].name;
-                }
-            } catch {
-                // Si falla, continuamos sin rol (el usuario podrá ver contenido básico)
-            }
-
-            // El login tampoco devuelve el nombre de la organización
-            let organizationName: string | undefined;
-            try {
-                const orgResp = await organizationsService.getCurrent();
-                if (orgResp.success && orgResp.data) organizationName = orgResp.data.name;
-            } catch {
-                // Sin nombre: las vistas muestran "Sin definir"
-            }
-
-            const user: User = {
-                id: userId,
-                name: fullName,
-                email,
-                role,
-                organizationId,
-                organizationName,
-            };
-
-            localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
-            setState({ user, token: response.data.token, isAuthenticated: true, isLoading: false });
-        } catch (error) {
-            setState(prev => ({ ...prev, isLoading: false }));
-            throw error;
+        if (!response.success || !response.data?.token) {
+            throw new Error(response.message || 'Credenciales inválidas.');
         }
-    }, []);
 
-    const register = useCallback(async (data: RegisterData) => {
-        setState(prev => ({ ...prev, isLoading: true }));
+        const { userId, firstName, lastName, organizationId } = response.data;
+        const fullName = `${firstName ?? ''} ${lastName ?? ''}`.trim();
 
+        // El login no devuelve rol — lo obtenemos de los permisos efectivos
+        let role = '';
         try {
-            const response = await authService.registerOrganization({
-                organizationName: data.organizationName || 'Mi Organización',
-                adminEmail: data.email,
-                adminPassword: data.password,
-                adminFullName: data.name,
-                entityType: data.entityType,
-            });
-
-            if (!response.success || !response.data) {
-                throw new Error(response.message || 'Error al registrar organización');
+            const permsResp = await rbacService.getUserEffectivePermissions(userId);
+            if (permsResp.success && permsResp.data?.roles?.length) {
+                role = permsResp.data.roles[0].name;
             }
-
-            const { token, adminUserId, adminEmail, organizationId, organizationName } = response.data;
-
-            const user: User = {
-                id: adminUserId,
-                name: data.name,
-                email: adminEmail,
-                role: 'Admin',
-                organizationId: organizationId,
-                organizationName: organizationName,
-            };
-
-            localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
-            setState({
-                user,
-                token,
-                isAuthenticated: true,
-                isLoading: false,
-            });
-        } catch (error) {
-            setState(prev => ({ ...prev, isLoading: false }));
-            throw error;
+        } catch {
+            // Si falla, continuamos sin rol (el usuario podrá ver contenido básico)
         }
+
+        // El login tampoco devuelve el nombre de la organización
+        let organizationName: string | undefined;
+        try {
+            const orgResp = await organizationsService.getCurrent();
+            if (orgResp.success && orgResp.data) organizationName = orgResp.data.name;
+        } catch {
+            // Sin nombre: las vistas muestran "Sin definir"
+        }
+
+        const user: User = {
+            id: userId,
+            name: fullName,
+            email,
+            role,
+            organizationId,
+            organizationName,
+        };
+
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+        setState({ user, token: response.data.token, isAuthenticated: true, isLoading: false });
     }, []);
 
     const logout = useCallback(() => {
@@ -249,7 +195,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const value: AuthContextValue = {
         ...state,
         login,
-        register,
         logout,
         updateUser,
         impersonation,

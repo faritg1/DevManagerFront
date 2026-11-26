@@ -1,6 +1,6 @@
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
-import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, OrganizationPlan, OrganizationPlanChange, PlatformOrganization, PlatformUser } from "../types";
+import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, OrganizationPlan, OrganizationPlanChange, PlatformOrganization, PlatformUser, RegisterOrganizationRequest, RegisterOrganizationResponse } from "../types";
 
 const E = API_ENDPOINTS.PLATFORM;
 
@@ -8,6 +8,15 @@ const E = API_ENDPOINTS.PLATFORM;
 export const platformService = {
   listOrganizations: (search?: string): Promise<ApiResponse<PlatformOrganization[]>> =>
     apiClient.get(E.ORGANIZATIONS, { search: search?.trim() || undefined }),
+
+  /** Created active, with its Admin; the public register leaves it pending instead. */
+  createOrganization: (body: RegisterOrganizationRequest): Promise<ApiResponse<RegisterOrganizationResponse>> =>
+    apiClient.post(E.ORGANIZATIONS, body),
+
+  approveOrganization: (organizationId: string): Promise<ApiResponse<unknown>> => apiClient.post(E.APPROVE(organizationId)),
+
+  /** Soft-deletes the pending organization and its users. */
+  rejectOrganization: (organizationId: string): Promise<ApiResponse<unknown>> => apiClient.post(E.REJECT(organizationId)),
 
   listUsers: (organizationId: string): Promise<ApiResponse<PlatformUser[]>> => apiClient.get(E.USERS(organizationId)),
 

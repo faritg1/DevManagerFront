@@ -11,11 +11,12 @@ import {
     Pencil,
     UserCheck,
     Users,
+    X,
     type LucideIcon,
 } from 'lucide-react';
 import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, Select, LoadingBlock } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
-import { DEFAULT_ACTIVITIES_SETTINGS, setActivitiesSettings, useIsAdmin } from '../../../shared/hooks';
+import { DEFAULT_ACTIVITIES_SETTINGS, setActivitiesSettings, useIsAdmin, usePermission } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
 import type { ActivitiesSettings, AssociateStatus, OrganizationDto, OrganizationEntityType } from '../../../shared/api/types';
 import { ROUTES } from '../../../shared/config/constants';
@@ -59,6 +60,57 @@ const StatLink: React.FC<StatLinkProps> = ({ to, title, value, hint, icon: Icon,
     </Link>
 );
 
+/** An editable list of catalog values: the text box adds one (Enter or the button) and each value has its remove button. */
+const CatalogEditor: React.FC<{ label: string; values: string[]; onChange: (values: string[]) => void }> = ({ label, values, onChange }) => {
+    const [draft, setDraft] = useState('');
+    const add = () => {
+        const value = draft.trim();
+        // Blanks and repeats (ignoring case) are dropped, as the API does.
+        if (value && !values.some((v) => v.toLowerCase() === value.toLowerCase())) onChange([...values, value]);
+        setDraft('');
+    };
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                    <Input
+                        label={label}
+                        value={draft}
+                        maxLength={100}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key !== 'Enter') return;
+                            // Enter adds the value instead of submitting the whole form.
+                            e.preventDefault();
+                            add();
+                        }}
+                    />
+                </div>
+                <Button variant="outline" onClick={add} aria-label={`Agregar a ${label}`}>Agregar</Button>
+            </div>
+            {values.length === 0 ? (
+                <p className="text-xs text-slate-600 dark:text-slate-400">Sin valores: el campo es de texto libre.</p>
+            ) : (
+                <ul className="flex flex-wrap gap-1.5">
+                    {values.map((v) => (
+                        <li key={v} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pl-2.5 pr-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            {v}
+                            <button
+                                type="button"
+                                aria-label={`Quitar ${v}`}
+                                className="rounded-full p-0.5 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-slate-700"
+                                onClick={() => onChange(values.filter((x) => x !== v))}
+                            >
+                                <X size={12} />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
+
 interface EditForm {
     name: string;
     legalName: string;
@@ -67,6 +119,10 @@ interface EditForm {
     dueSoonDays: string;
     overdueNotice: boolean;
     activities: ActivitiesSettings;
+    reviewNoticeDays: string;
+    retentionNoticeDays: string;
+    documentTypes: string[];
+    processes: string[];
 }
 
 const toForm = (o: OrganizationDto): EditForm => ({
@@ -77,12 +133,17 @@ const toForm = (o: OrganizationDto): EditForm => ({
     dueSoonDays: String(o.workItemDueSoonDays ?? 2),
     overdueNotice: o.workItemOverdueNotice ?? true,
     activities: { ...DEFAULT_ACTIVITIES_SETTINGS, ...o.activitiesSettings },
+    reviewNoticeDays: String(o.documentSettings?.reviewNoticeDays ?? 30),
+    retentionNoticeDays: String(o.documentSettings?.retentionNoticeDays ?? 30),
+    documentTypes: o.documentSettings?.documentTypes ?? [],
+    processes: o.documentSettings?.processes ?? [],
 });
 
 export const OrganizationsPage: React.FC = () => {
     const { updateUser } = useAuth();
     const { showNotification } = useNotification();
     const isAdmin = useIsAdmin();
+    const canDocuments = usePermission().has('menu.documents');
 
     const [org, setOrg] = useState<OrganizationDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +192,15 @@ export const OrganizationsPage: React.FC = () => {
                 workItemDueSoonDays: days,
                 workItemOverdueNotice: form.overdueNotice,
                 activitiesSettings: form.activities,
+                // Not sent = unchanged: without the section there is nothing to save. The API validates the ranges.
+                ...(canDocuments && {
+                    documentSettings: {
+                        reviewNoticeDays: Number(form.reviewNoticeDays),
+                        retentionNoticeDays: Number(form.retentionNoticeDays),
+                        documentTypes: form.documentTypes,
+                        processes: form.processes,
+                    },
+                }),
             });
             if (res.success && res.data) {
                 setOrg(res.data);
@@ -370,6 +440,33 @@ export const OrganizationsPage: React.FC = () => {
                                 </label>
                             ))}
                         </fieldset>
+                        {canDocuments && (
+                            <fieldset className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
+                                <legend className="mb-1 text-sm font-semibold text-slate-900 dark:text-white">Gestión documental</legend>
+                                <Input
+                                    label="Días de aviso de revisión de documentos"
+                                    type="number"
+                                    required
+                                    min={1}
+                                    max={365}
+                                    step={1}
+                                    value={form.reviewNoticeDays}
+                                    onChange={(e) => setForm({ ...form, reviewNoticeDays: e.target.value })}
+                                />
+                                <Input
+                                    label="Días de aviso de retención de expedientes"
+                                    type="number"
+                                    required
+                                    min={1}
+                                    max={365}
+                                    step={1}
+                                    value={form.retentionNoticeDays}
+                                    onChange={(e) => setForm({ ...form, retentionNoticeDays: e.target.value })}
+                                />
+                                <CatalogEditor label="Tipos de documento" values={form.documentTypes} onChange={(documentTypes) => setForm({ ...form, documentTypes })} />
+                                <CatalogEditor label="Procesos" values={form.processes} onChange={(processes) => setForm({ ...form, processes })} />
+                            </fieldset>
+                        )}
                     </div>
                 )}
             </Modal>

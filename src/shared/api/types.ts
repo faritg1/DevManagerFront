@@ -1501,6 +1501,18 @@ export interface OrganizationPlan extends OrganizationPlanChange {
   usedStorageBytes: number;
 }
 
+/** PUT /platform/organizations/{id}/providers: replaces both; null means the hosting default */
+export interface OrganizationProvidersChange {
+  storageProfile: string | null;
+  emailProfile: string | null;
+}
+
+/** GET /platform/organizations/{id}/providers: the stored names plus the profiles the hosting defines (names only) */
+export interface OrganizationProviders extends OrganizationProvidersChange {
+  storageProfiles: string[];
+  emailProfiles: string[];
+}
+
 /** GET /platform/impersonations: newest first */
 export interface ImpersonationLogEntry {
   id: string;

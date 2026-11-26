@@ -1,8 +1,9 @@
 import { apiClient } from "../client";
 import { API_ENDPOINTS } from "../endpoints";
-import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, OrganizationPlan, OrganizationPlanChange, PlatformOrganization, PlatformUser, RegisterOrganizationRequest, RegisterOrganizationResponse } from "../types";
+import type { ApiResponse, DemoAccess, DemoAccessChange, ImpersonationLogEntry, ImpersonationResponse, OrganizationPlan, OrganizationPlanChange, OrganizationProviders, OrganizationProvidersChange, PlatformOrganization, PlatformUser, RegisterOrganizationRequest, RegisterOrganizationResponse } from "../types";
 
 const E = API_ENDPOINTS.PLATFORM;
+const providersUrl = (organizationId: string) => `${E.ORGANIZATIONS}/${organizationId}/providers`;
 
 /** Platform super administration: every organization and its users (403 for anyone else). */
 export const platformService = {
@@ -38,4 +39,10 @@ export const platformService = {
   /** Replaces the disabled modules and both caps; answers the plan as the GET does. */
   setPlan: (organizationId: string, change: OrganizationPlanChange): Promise<ApiResponse<OrganizationPlan>> =>
     apiClient.put(E.PLAN(organizationId), change),
+
+  getProviders: (organizationId: string): Promise<ApiResponse<OrganizationProviders>> => apiClient.get(providersUrl(organizationId)),
+
+  /** Replaces the storage and email profiles; answers as the GET does. */
+  setProviders: (organizationId: string, change: OrganizationProvidersChange): Promise<ApiResponse<OrganizationProviders>> =>
+    apiClient.put(providersUrl(organizationId), change),
 };

@@ -9,6 +9,7 @@ import { AiQuotasCard } from './components/AiQuotasCard';
 import { CreateOrganizationDialog } from './components/CreateOrganizationDialog';
 import { DemoAccessCard } from './components/DemoAccessCard';
 import { OrganizationPlanDialog } from './components/OrganizationPlanDialog';
+import { OrganizationProvidersDialog } from './components/OrganizationProvidersDialog';
 
 /** Platform super administration: every organization, its users and the AI quotas (the API answers 403 to anyone else). */
 export const SuperAdminPage: React.FC = () => {
@@ -19,13 +20,14 @@ export const SuperAdminPage: React.FC = () => {
     const [history, setHistory] = useState<ImpersonationLogEntry[] | null>(null);
     const [entering, setEntering] = useState<string | null>(null);
     const [planOf, setPlanOf] = useState<PlatformOrganization | null>(null);
+    const [providersOf, setProvidersOf] = useState<PlatformOrganization | null>(null);
     const [creating, setCreating] = useState(false);
     const [deciding, setDeciding] = useState<string | null>(null);
     const { startImpersonation, impersonation } = useAuth();
     const { isSuperAdmin } = usePermission();
     const { confirm } = useConfirm();
     const { showNotification } = useNotification();
-    // The API refuses the plan, a new organization, approving and rejecting to anyone else and during an impersonation.
+    // The API refuses the plan, the providers, a new organization, approving and rejecting to anyone else and during an impersonation.
     const canManage = isSuperAdmin && !impersonation;
 
     const loadOrganizations = () =>
@@ -153,6 +155,9 @@ export const SuperAdminPage: React.FC = () => {
                                             <Button size="sm" variant="outline" aria-label={`Plan y módulos de ${o.name}`} onClick={() => setPlanOf(o)}>
                                                 Plan y módulos
                                             </Button>
+                                            <Button size="sm" variant="outline" aria-label={`Proveedores de ${o.name}`} onClick={() => setProvidersOf(o)}>
+                                                Proveedores
+                                            </Button>
                                         </div>
                                     )}
                                 </li>
@@ -217,6 +222,7 @@ export const SuperAdminPage: React.FC = () => {
             </div>
 
             <OrganizationPlanDialog organization={planOf} onClose={() => setPlanOf(null)} />
+            <OrganizationProvidersDialog organization={providersOf} onClose={() => setProvidersOf(null)} />
             {creating && <CreateOrganizationDialog onClose={() => setCreating(false)} onCreated={loadOrganizations} />}
 
             <DemoAccessCard />

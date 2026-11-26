@@ -17,7 +17,7 @@ export default defineConfig({
         url: `http://localhost:${PORT}`,
         reuseExistingServer: !process.env.CI,
         // Unroutable host: a call the mock misses fails fast instead of reaching the deployed API.
-        env: { VITE_API_URL: 'http://api.mock/api' },
+        env: { VITE_API_URL: 'http://api.mock/api', VITE_AGENT_URL: 'http://api.mock' },
         timeout: 120_000,
     },
 });

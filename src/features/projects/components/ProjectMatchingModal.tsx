@@ -101,17 +101,19 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleApply = async (candidateName: string) => {
+  /** Applies the candidate, not the caller: whoever opens this modal assigns people to the project. */
+  const handleApply = async (candidate: CandidateMatch) => {
     setIsApplying(true);
     try {
       const response = await projectsService.apply(projectId, {
-        message: `Postulación recomendada por IA — Candidato: ${candidateName}`,
+        userId: candidate.userId,
+        message: "Postulación recomendada por IA",
       });
       if (response.success) {
-        showNotification({ type: "success", message: "Postulación enviada correctamente." });
+        showNotification({ type: "success", message: `${candidate.fullName} fue postulado al proyecto` });
         onClose();
       } else {
-        showNotification({ type: "error", message: response.message || "Error al postularse" });
+        showNotification({ type: "error", message: response.message || "Error al postular al candidato" });
       }
     } catch {
       showNotification({ type: "error", message: "Error al conectar con el servidor" });
@@ -331,12 +333,12 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             {isBest && (
                               <Button
                                 variant="primary"
-                                onClick={() => handleApply(candidate.fullName)}
+                                onClick={() => handleApply(candidate)}
                                 isLoading={isApplying}
                                 className="w-full mt-1"
                                 icon={CheckCircle2}
                               >
-                                Postularme como candidato principal
+                                Postular a {candidate.fullName}
                               </Button>
                             )}
                           </div>

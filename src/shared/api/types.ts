@@ -373,6 +373,8 @@ export interface ApplicationResponse {
 
 export interface ApplyToProjectRequest {
   message?: string | null;
+  /** Candidate to apply instead of the caller; the API requires the permission to assign people. */
+  userId?: string | null;
 }
 
 export interface ReviewApplicationRequest {

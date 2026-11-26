@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { documentsService, usersService, type DocumentListItem, type UserResponse } from '../../../shared/api';
+import { documentsService, organizationsService, usersService, type DocumentListItem, type UserResponse } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import { usePermission } from '../../../shared/hooks';
 import { Button, Input, Modal, Select } from '../../../shared/ui';
@@ -26,6 +26,8 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
         classificationNodeId: document?.classificationNodeId ?? '',
     });
     const [users, setUsers] = useState<UserResponse[]>([]);
+    // The organization's catalogs; while empty (or not loaded) type and process stay free text.
+    const [catalogs, setCatalogs] = useState<{ documentTypes: string[]; processes: string[] }>({ documentTypes: [], processes: [] });
     const [saving, setSaving] = useState(false);
     // Without the chart permission there is no selector, and the form resends the series the document already had.
     const canClassify = usePermission().has(PERMISSIONS.CLASSIFICATION);
@@ -36,11 +38,28 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
 
     useEffect(() => {
         usersService.getAll().then((r) => setUsers((r.data ?? []).filter((u) => u.isActive)), () => setUsers([]));
+        organizationsService.getCurrent().then((r) => {
+            const s = r.data?.documentSettings;
+            if (s) setCatalogs({ documentTypes: s.documentTypes ?? [], processes: s.processes ?? [] });
+        }, () => undefined);
     }, []);
 
     const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value } = e.target;
         setForm((f) => ({ ...f, [key]: value }));
+    };
+
+    /** A list when the catalog has values, free text otherwise. The value the document already had stays an option. */
+    const catalogField = (key: 'type' | 'process', label: string, placeholder: string, options: string[]) => {
+        if (options.length === 0) return <Input label={label} value={form[key]} onChange={set(key)} maxLength={100} required />;
+        const own = document?.[key];
+        return (
+            <Select label={label} value={form[key]} onChange={set(key)} required>
+                <option value="">{placeholder}</option>
+                {own && !options.includes(own) && <option value={own}>{own}</option>}
+                {options.map((o) => <option key={o} value={o}>{o}</option>)}
+            </Select>
+        );
     };
 
     const save = async () => {
@@ -74,8 +93,8 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Input label="Código" value={form.code} onChange={set('code')} maxLength={50} required disabled={!!document} hint={document ? 'El código no cambia después de creado.' : undefined} />
                 <Input label="Título" value={form.title} onChange={set('title')} maxLength={200} required />
-                <Input label="Tipo" value={form.type} onChange={set('type')} maxLength={100} required />
-                <Input label="Proceso" value={form.process} onChange={set('process')} maxLength={100} required />
+                {catalogField('type', 'Tipo', 'Selecciona un tipo', catalogs.documentTypes)}
+                {catalogField('process', 'Proceso', 'Selecciona un proceso', catalogs.processes)}
                 <Select label="Responsable" value={form.ownerUserId} onChange={set('ownerUserId')} required>
                     <option value="">Selecciona un responsable</option>
                     {users.map((u) => <option key={u.id} value={u.id}>{u.fullName}</option>)}

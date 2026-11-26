@@ -76,7 +76,19 @@ export interface OrganizationDto {
   workItemOverdueNotice?: boolean;
   /** Activities module toggles; missing means every toggle at its default (on). */
   activitiesSettings?: ActivitiesSettings;
+  /** Document management settings, already resolved by the API (defaults: 30, 30 and empty catalogs). */
+  documentSettings?: DocumentSettings;
   stats: OrganizationStatsDto;
+}
+
+/** Per-organization document management settings. An empty catalog leaves that field as free text. */
+export interface DocumentSettings {
+  /** Days before a document's review date to notify (1-365) */
+  reviewNoticeDays: number;
+  /** Days before a dossier's retention date to notify (1-365) */
+  retentionNoticeDays: number;
+  documentTypes: string[];
+  processes: string[];
 }
 
 /** Per-organization activities module settings (replaced as a whole on update). */
@@ -101,6 +113,8 @@ export interface UpdateOrganizationRequest {
   workItemOverdueNotice?: boolean | null;
   /** null/undefined = unchanged */
   activitiesSettings?: ActivitiesSettings | null;
+  /** undefined = unchanged */
+  documentSettings?: DocumentSettings;
 }
 
 // ============ USERS ============
@@ -1485,6 +1499,18 @@ export interface OrganizationPlanChange {
 export interface OrganizationPlan extends OrganizationPlanChange {
   activeUsers: number;
   usedStorageBytes: number;
+}
+
+/** PUT /platform/organizations/{id}/providers: replaces both; null means the hosting default */
+export interface OrganizationProvidersChange {
+  storageProfile: string | null;
+  emailProfile: string | null;
+}
+
+/** GET /platform/organizations/{id}/providers: the stored names plus the profiles the hosting defines (names only) */
+export interface OrganizationProviders extends OrganizationProvidersChange {
+  storageProfiles: string[];
+  emailProfiles: string[];
 }
 
 /** GET /platform/impersonations: newest first */

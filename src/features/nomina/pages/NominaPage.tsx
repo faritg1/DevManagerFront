@@ -295,13 +295,13 @@ export const NominaPage: React.FC = () => {
                 icon={<Plus className="text-primary" size={20} />}
             >
                 <FormSection>
-                    <Select label="Asociado *" required value={createForm.userId} onChange={(e) => setCreateForm(f => ({ ...f, userId: e.target.value }))}>
+                    <Select label="Asociado *" name="userId" required value={createForm.userId} onChange={(e) => setCreateForm(f => ({ ...f, userId: e.target.value }))}>
                         <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </Select>
-                    <Input type="date" label="Período *" required value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
+                    <Input type="date" label="Período *" name="period" required value={createForm.period} onChange={(e) => setCreateForm(f => ({ ...f, period: e.target.value }))} />
                     <Select
-                        label="Modelo *"
+                        label="Modelo *" name="model"
                         required
                         value={createForm.model}
                         onChange={(e) => setCreateForm(f => ({ ...f, model: Number(e.target.value) as CompensationModel }))}
@@ -310,7 +310,7 @@ export const NominaPage: React.FC = () => {
                     </Select>
                     <Input
                         type="number"
-                        label={isDaysByRate ? 'Días trabajados *' : 'Valor *'}
+                        label={isDaysByRate ? 'Días trabajados *' : 'Valor *'} name="baseValue"
                         required
                         min={0.01}
                         step="any"
@@ -320,7 +320,7 @@ export const NominaPage: React.FC = () => {
                     {isDaysByRate && (
                         <Input
                             type="number"
-                            label="Tarifa diaria *"
+                            label="Tarifa diaria *" name="dailyRate"
                             required
                             min={0.01}
                             step="any"
@@ -328,7 +328,7 @@ export const NominaPage: React.FC = () => {
                             onChange={(e) => setCreateForm(f => ({ ...f, dailyRate: e.target.value ? Number(e.target.value) : undefined }))}
                         />
                     )}
-                    <Input label="Observaciones" value={createForm.notes ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, notes: e.target.value }))} />
+                    <Input label="Observaciones" name="notes" value={createForm.notes ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, notes: e.target.value }))} />
                 </FormSection>
             </FormPanel>
         </PageContainer>

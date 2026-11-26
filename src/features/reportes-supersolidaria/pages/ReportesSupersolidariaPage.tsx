@@ -183,6 +183,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                     <Input
                         type="date"
                         label="Inicio del período *"
+                        name="period"
                         required
                         hint="Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero."
                         value={genForm.period}
@@ -190,6 +191,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                     />
                     <Select
                         label="Tipo de reporte"
+                        name="reportType"
                         value={genForm.reportType}
                         onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
                     >
@@ -197,7 +199,7 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                         <option value={2}>Anual</option>
                     </Select>
                     <div className="sm:col-span-2">
-                        <Input label="Observaciones" value={genForm.notes ?? ''} onChange={(e) => setGenForm(f => ({ ...f, notes: e.target.value }))} />
+                        <Input label="Observaciones" name="notes" value={genForm.notes ?? ''} onChange={(e) => setGenForm(f => ({ ...f, notes: e.target.value }))} />
                     </div>
                 </FormSection>
             </FormPanel>

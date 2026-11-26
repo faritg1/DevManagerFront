@@ -500,19 +500,19 @@ export const OrganosPage: React.FC = () => {
                 icon={<Plus className="text-primary" size={20} />}
             >
                 <FormSection>
-                    <Input label="Nombre *" required value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
+                    <Input label="Nombre *" required name="name" value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
                     <Select
                         label="Tipo *"
                         required
-                        value={createForm.type}
+                        name="type" value={createForm.type}
                         onChange={(e) => setCreateForm(f => ({ ...f, type: Number(e.target.value) as GoverningBodyType }))}
                     >
                         {Object.entries(BODY_TYPE_LABEL).map(([k, v]) => (
                             <option key={k} value={k}>{v}</option>
                         ))}
                     </Select>
-                    <Input type="date" label="Fecha de constitución" value={createForm.constitutionDate} onChange={(e) => setCreateForm(f => ({ ...f, constitutionDate: e.target.value }))} />
-                    <Input label="Descripción" value={createForm.description ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, description: e.target.value || undefined }))} />
+                    <Input type="date" label="Fecha de constitución" name="constitutionDate" value={createForm.constitutionDate} onChange={(e) => setCreateForm(f => ({ ...f, constitutionDate: e.target.value }))} />
+                    <Input label="Descripción" name="description" value={createForm.description ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, description: e.target.value || undefined }))} />
                 </FormSection>
             </FormPanel>
 
@@ -528,14 +528,14 @@ export const OrganosPage: React.FC = () => {
                     <Select
                         label="Asociado *"
                         required
-                        value={memberForm.userId}
+                        name="userId" value={memberForm.userId}
                         onChange={(e) => setMemberForm(f => ({ ...f, userId: e.target.value }))}
                     >
                         <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </Select>
-                    <Input label="Cargo *" required value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
-                    <Input type="date" label="Fecha de inicio" value={memberForm.startDate} onChange={(e) => setMemberForm(f => ({ ...f, startDate: e.target.value }))} />
+                    <Input label="Cargo *" required name="position" value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
+                    <Input type="date" label="Fecha de inicio" name="startDate" value={memberForm.startDate} onChange={(e) => setMemberForm(f => ({ ...f, startDate: e.target.value }))} />
                 </FormSection>
             </FormPanel>
 
@@ -547,22 +547,22 @@ export const OrganosPage: React.FC = () => {
                 icon={<FileText className="text-primary" size={20} />}
             >
                 <FormSection>
-                    <Input type="date" label="Fecha de sesión *" required value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
-                    <Select label="Tipo de sesión *" required value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))}>
+                    <Input type="date" label="Fecha de sesión *" required name="sessionDate" value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
+                    <Select label="Tipo de sesión *" required name="sessionType" value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))}>
                         {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input type="number" min={0} required label="Quórum *" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
-                    <Select label="Asamblea relacionada" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))}>
+                    <Input type="number" min={0} required label="Quórum *" name="quorum" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
+                    <Select label="Asamblea relacionada" name="assemblyId" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))}>
                         <option value="">Ninguna</option>
                         {assemblies.map(as => <option key={as.id} value={as.id}>{SESSION_TYPE_LABEL[as.type]} · {formatDate(as.scheduledAt)}</option>)}
                     </Select>
                     <div className="sm:col-span-2">
-                        <Textarea label="Decisiones *" required value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} rows={4} />
+                        <Textarea label="Decisiones *" required name="decisions" value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} rows={4} />
                     </div>
-                    <Input label="URL de la convocatoria" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
-                    <Input label="URL del acta" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
+                    <Input label="URL de la convocatoria" name="noticeUrl" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
+                    <Input label="URL del acta" name="minutesUrl" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Notas" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+                        <Textarea label="Notas" name="notes" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                     </div>
                 </FormSection>
             </FormPanel>
@@ -609,13 +609,13 @@ export const OrganosPage: React.FC = () => {
                 submitText="Convocar"
             >
                 <FormSection>
-                    <Input type="datetime-local" label="Fecha y hora *" required value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
-                    <Select label="Tipo *" required value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))}>
+                    <Input type="datetime-local" label="Fecha y hora *" required name="scheduledAt" value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
+                    <Select label="Tipo *" required name="type" value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))}>
                         {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input type="number" min={1} required label="Quórum mínimo *" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
+                    <Input type="number" min={1} required label="Quórum mínimo *" name="minimumQuorum" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Convocatoria *" required value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} rows={4} />
+                        <Textarea label="Convocatoria *" required name="notice" value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} rows={4} />
                     </div>
                 </FormSection>
             </FormPanel>

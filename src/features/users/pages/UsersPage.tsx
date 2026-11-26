@@ -72,6 +72,7 @@ export const UsersPage: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
     const [createForm, setCreateForm] = useState<CreateUserRequest>(EMPTY_CREATE_FORM);
     const [createRoleId, setCreateRoleId] = useState('');
+    const [passwordTooShort, setPasswordTooShort] = useState(false);
     const [editForm, setEditForm] = useState<UpdateUserRequest>({ firstName: '', lastName: '' });
 
     const [roles, setRoles] = useState<RoleDto[]>([]);
@@ -127,15 +128,9 @@ export const UsersPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
-        if (!createForm.firstName.trim() || !createForm.lastName.trim() || !createForm.email.trim() || !createForm.password) {
-            showNotification({
-                type: 'error',
-                message: 'Completa nombres, apellidos, email y contraseña'
-            });
-            return;
-        }
+        // Empty names, email and password never get here: the fields are `required`.
         if (createForm.password.length < 8) {
-            showNotification({ type: 'error', message: 'La contraseña debe tener mínimo 8 caracteres' });
+            setPasswordTooShort(true);
             return;
         }
 
@@ -297,10 +292,7 @@ export const UsersPage: React.FC = () => {
 
     const handleSaveEdit = async () => {
         if (!selectedUser) return;
-        if (!editForm.firstName.trim() || !editForm.lastName.trim()) {
-            showNotification({ type: 'error', message: 'Nombres y apellidos son obligatorios' });
-            return;
-        }
+        // Empty names never get here: the fields are `required`.
 
         // No try/catch: an API error rejects and the panel shows it.
         await usersService.update(selectedUser.id, editForm);
@@ -565,6 +557,7 @@ export const UsersPage: React.FC = () => {
                         required
                         maxLength={80}
                         placeholder="Ej: Juan"
+                        name="firstName"
                         value={createForm.firstName}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
                     />
@@ -573,6 +566,7 @@ export const UsersPage: React.FC = () => {
                         required
                         maxLength={80}
                         placeholder="Ej: Pérez"
+                        name="lastName"
                         value={createForm.lastName}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
                     />
@@ -582,6 +576,7 @@ export const UsersPage: React.FC = () => {
                         required
                         autoComplete="off"
                         placeholder="juan@empresa.com"
+                        name="email"
                         value={createForm.email}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
                     />
@@ -591,23 +586,27 @@ export const UsersPage: React.FC = () => {
                         required
                         autoComplete="new-password"
                         placeholder="Mínimo 8 caracteres"
+                        name="password"
                         value={createForm.password}
-                        onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                        onChange={(e) => { setPasswordTooShort(false); setCreateForm(prev => ({ ...prev, password: e.target.value })); }}
+                        error={passwordTooShort ? 'La contraseña debe tener mínimo 8 caracteres' : undefined}
                     />
                     <Input
                         label="Teléfono"
                         placeholder="+57 300 123 4567"
+                        name="phone"
                         maxLength={30}
                         value={createForm.phone || ''}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, phone: e.target.value }))}
                     />
                     <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700 dark:text-slate-300">
-                        <input type="checkbox" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                        <input type="checkbox" name="isEmployee" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
                         Es empleado (vinculación laboral)
                     </label>
                     <div className="sm:col-span-2">
                         <Select
                             label="Rol"
+                            name="roleId"
                             value={createRoleId}
                             onChange={(e) => setCreateRoleId(e.target.value)}
                             hint="Si no eliges un rol, el usuario solo verá su perfil hasta que se le asigne uno."
@@ -643,6 +642,7 @@ export const UsersPage: React.FC = () => {
                             label="Nombres *"
                             required
                             maxLength={80}
+                            name="firstName"
                             value={editForm.firstName}
                             onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
                         />
@@ -650,17 +650,19 @@ export const UsersPage: React.FC = () => {
                             label="Apellidos *"
                             required
                             maxLength={80}
+                            name="lastName"
                             value={editForm.lastName}
                             onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
                         />
                         <Input
                             label="Teléfono"
                             maxLength={30}
+                            name="phone"
                             value={editForm.phone || ''}
                             onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                         />
                         <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700 dark:text-slate-300">
-                            <input type="checkbox" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                            <input type="checkbox" name="isEmployee" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
                             Es empleado (vinculación laboral)
                         </label>
 

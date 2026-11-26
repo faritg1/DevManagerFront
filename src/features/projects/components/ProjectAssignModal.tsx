@@ -165,7 +165,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
               >
                 <input
                   type="radio"
-                  name="assign-user"
+                  name="userId"
                   value={user.id}
                   checked={selectedUserId === user.id}
                   onChange={() => setSelectedUserId(user.id)}

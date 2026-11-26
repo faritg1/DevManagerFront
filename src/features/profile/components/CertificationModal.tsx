@@ -73,7 +73,7 @@ export const CertificationModal: React.FC<Props> = ({
                 <Input
                     label="Nombre de la certificación *"
                     required
-                    value={formData.name}
+                    name="name" value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Ej: AWS Certified Solutions Architect"
                 />
@@ -81,7 +81,7 @@ export const CertificationModal: React.FC<Props> = ({
                 <Input
                     label="Emisor *"
                     required
-                    value={formData.issuer}
+                    name="issuer" value={formData.issuer}
                     onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
                     placeholder="Ej: Amazon Web Services"
                 />
@@ -90,20 +90,20 @@ export const CertificationModal: React.FC<Props> = ({
                     label="Fecha de emisión *"
                     required
                     type="date"
-                    value={formData.issueDate}
+                    name="issueDate" value={formData.issueDate}
                     onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
                 />
                 <Input
                     label="Fecha de expiración"
                     type="date"
-                    value={formData.expirationDate ?? ''}
+                    name="expirationDate" value={formData.expirationDate ?? ''}
                     onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
                 />
 
                 <div className="sm:col-span-2">
                     <Input
                         label="URL de evidencia (opcional)"
-                        value={formData.evidenceUrl ?? ''}
+                        name="evidenceUrl" value={formData.evidenceUrl ?? ''}
                         onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
                         placeholder="https://..."
                         icon={ExternalLink}

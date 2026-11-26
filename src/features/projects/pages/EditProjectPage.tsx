@@ -439,7 +439,7 @@ export const EditProjectPage: React.FC = () => {
         submitText="Agregar Requisito"
       >
         <FormSection>
-          <Select label="Habilidad *" required value={newSkillId} onChange={(e) => setNewSkillId(e.target.value)}>
+          <Select label="Habilidad *" required name="skillId" value={newSkillId} onChange={(e) => setNewSkillId(e.target.value)}>
             <option value="">Seleccionar habilidad...</option>
             {filteredSkills.map((skill) => (
               <option key={skill.id} value={skill.id}>
@@ -448,7 +448,7 @@ export const EditProjectPage: React.FC = () => {
             ))}
           </Select>
 
-          <Select label="Nivel Requerido" value={newSkillLevel} onChange={(e) => setNewSkillLevel(e.target.value)}>
+          <Select label="Nivel Requerido" name="requiredLevel" value={newSkillLevel} onChange={(e) => setNewSkillLevel(e.target.value)}>
             {catalogs?.skillLevels.map((level) => (
               <option key={level.id} value={level.id}>
                 {level.id} - {level.name}
@@ -459,7 +459,7 @@ export const EditProjectPage: React.FC = () => {
           <label className="flex items-center gap-3 cursor-pointer sm:col-span-2">
             <input
               type="checkbox"
-              checked={newSkillMandatory}
+              name="isMandatory" checked={newSkillMandatory}
               onChange={(e) => setNewSkillMandatory(e.target.checked)}
               className="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary-600 dark:text-primary focus:ring-primary"
             />

@@ -111,6 +111,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
         <Input
           label="Nombre de la habilidad *"
           required
+          name="name"
           placeholder="Ej: React, Docker, SAP ERP..."
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -122,6 +123,8 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
         <div className="space-y-2">
           <Select
             label="Categoría"
+            // With a new category, the text field below is the one that feeds `category`.
+            name={category === "__custom__" ? undefined : "category"}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -137,6 +140,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
             <Input
               placeholder="Nombre de la nueva categoría"
               aria-label="Nombre de la nueva categoría"
+              name="category"
               value={customCategory}
               onChange={(e) => setCustomCategory(e.target.value)}
               error={errors.category}

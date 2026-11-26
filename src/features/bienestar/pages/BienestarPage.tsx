@@ -450,20 +450,20 @@ export const BienestarPage: React.FC = () => {
             >
                 <FormSection>
                     <div className="sm:col-span-2">
-                        <Input label="Nombre *" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
+                        <Input label="Nombre *" name="name" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
                     <div className="sm:col-span-2">
                         <Textarea
-                            label="Descripción"
+                            label="Descripción" name="description"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
                             rows={3}
                         />
                     </div>
-                    <Input type="number" label="Presupuesto *" required min={0.01} step="any" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha inicio *" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
-                    <Input type="date" label="Fecha fin" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
-                    <Input type="number" label="Máx. beneficiarios" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
+                    <Input type="number" label="Presupuesto *" name="budget" required min={0.01} step="any" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha inicio *" name="startDate" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
+                    <Input type="date" label="Fecha fin" name="endDate" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
+                    <Input type="number" label="Máx. beneficiarios" name="maxBeneficiaries" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
                 </FormSection>
             </FormPanel>
 
@@ -476,22 +476,22 @@ export const BienestarPage: React.FC = () => {
             >
                 <FormSection>
                     {isAdmin && (
-                        <Select label="Asociado" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
+                        <Select label="Asociado" name="userId" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </Select>
                     )}
-                    <Select label="Tipo de auxilio *" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
+                    <Select label="Tipo de auxilio *" name="aidType" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
                         {Object.entries(AID_TYPE_LABEL).filter(([k]) => k !== '3').map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Select label="Programa" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
+                    <Select label="Programa" name="programId" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
                         <option value="">Sin programa</option>
                         {programs.filter(p => p.isActive).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </Select>
-                    <Input type="number" label="Monto solicitado *" required min={0.01} step="any" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha requerida *" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
+                    <Input type="number" label="Monto solicitado *" name="requestedAmount" required min={0.01} step="any" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha requerida *" name="requiredDate" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Input label="Motivo *" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
+                        <Input label="Motivo *" name="reason" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
                     </div>
                 </FormSection>
             </FormPanel>

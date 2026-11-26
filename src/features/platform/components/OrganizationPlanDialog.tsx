@@ -113,9 +113,9 @@ export const OrganizationPlanDialog: React.FC<OrganizationPlanDialogProps> = ({ 
                             </p>
                         </div>
                         <Input label="Tope de usuarios" type="number" min={1} step={1} inputMode="numeric" hint="Vacío es sin tope"
-                            value={maxUsers} onChange={(e) => setMaxUsers(e.target.value)} />
+                            name="maxUsers" value={maxUsers} onChange={(e) => setMaxUsers(e.target.value)} />
                         <Input label="Tope de almacenamiento (GB)" type="number" min={0} step="any" inputMode="decimal" hint="Vacío es sin tope"
-                            value={maxGb} onChange={(e) => setMaxGb(e.target.value)} />
+                            name="maxStorageBytes" value={maxGb} onChange={(e) => setMaxGb(e.target.value)} />
                     </FormSection>
                     <FormSection title="Secciones y pantallas">
                         <ul className="divide-y divide-slate-100 dark:divide-border-dark sm:col-span-2">

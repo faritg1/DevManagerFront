@@ -91,7 +91,6 @@ export const HabeasDataPage: React.FC = () => {
     }, [isAdmin, loadRequests]);
 
     const handleCreate = async () => {
-        if (!arcoForm.description.trim()) return;
         const payload: CreateArcoRequest = { type: arcoForm.type, description: arcoForm.description.trim() };
         if (isAdmin && arcoForm.userId) payload.userId = arcoForm.userId;
         const res = await habeasDataService.createArco(payload);
@@ -203,16 +202,16 @@ export const HabeasDataPage: React.FC = () => {
             >
                 <FormSection>
                     {isAdmin && (
-                        <Select label="Asociado" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))}>
+                        <Select label="Asociado" name="userId" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </Select>
                     )}
-                    <Select label="Tipo *" required value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))}>
+                    <Select label="Tipo *" name="type" required value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))}>
                         {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
                     </Select>
                     <div className="sm:col-span-2">
-                        <Input label="Descripción *" required value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
+                        <Input label="Descripción *" name="description" required value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
                     </div>
                 </FormSection>
             </FormPanel>

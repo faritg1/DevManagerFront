@@ -194,7 +194,7 @@ export const SstPage: React.FC = () => {
         && accidentForm.accidentType.trim() && accidentForm.arl.trim() && accidentForm.description.trim();
 
     const associatePicker = (value: string, onChange: (v: string) => void) => (
-        <Select label="Asociado *" required value={value} onChange={(e) => onChange(e.target.value)}>
+        <Select label="Asociado *" name="userId" required value={value} onChange={(e) => onChange(e.target.value)}>
             <option value="">Seleccione un asociado</option>
             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
         </Select>
@@ -378,10 +378,10 @@ export const SstPage: React.FC = () => {
                     <div className="sm:col-span-2">
                         {associatePicker(scheduleForm.userId, v => setScheduleForm(f => ({ ...f, userId: v })))}
                     </div>
-                    <Select label="Tipo de examen *" required value={scheduleForm.examType} onChange={(e) => setScheduleForm(f => ({ ...f, examType: Number(e.target.value) as ExamType }))}>
+                    <Select label="Tipo de examen *" name="examType" required value={scheduleForm.examType} onChange={(e) => setScheduleForm(f => ({ ...f, examType: Number(e.target.value) as ExamType }))}>
                         {Object.entries(EXAM_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input type="date" label="Fecha programada *" required value={scheduleForm.scheduledDate} onChange={(e) => setScheduleForm(f => ({ ...f, scheduledDate: e.target.value }))} />
+                    <Input type="date" label="Fecha programada *" name="scheduledDate" required value={scheduleForm.scheduledDate} onChange={(e) => setScheduleForm(f => ({ ...f, scheduledDate: e.target.value }))} />
                 </FormSection>
             </FormPanel>
 
@@ -393,12 +393,12 @@ export const SstPage: React.FC = () => {
                 icon={<Stethoscope className="text-blue-500" size={20} />}
             >
                 <FormSection>
-                    <Select label="Resultado *" required value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)}>
+                    <Select label="Resultado *" name="result" required value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)}>
                         {Object.entries(EXAM_RESULT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input label="URL del soporte" value={examFileUrl} onChange={(e) => setExamFileUrl(e.target.value)} />
+                    <Input label="URL del soporte" name="fileUrl" value={examFileUrl} onChange={(e) => setExamFileUrl(e.target.value)} />
                     <div className="sm:col-span-2">
-                        <Input label="Observaciones" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
+                        <Input label="Observaciones" name="notes" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
                     </div>
                 </FormSection>
             </FormPanel>
@@ -418,20 +418,21 @@ export const SstPage: React.FC = () => {
                     <Input
                         type="datetime-local"
                         label="Fecha y hora *"
+                        name="occurredAt"
                         required
                         max={nowLocal()}
                         value={accidentForm.occurredAt}
                         onChange={(e) => setAccidentForm(f => ({ ...f, occurredAt: e.target.value }))}
                         error={accidentInFuture ? 'No puede ser una fecha futura' : undefined}
                     />
-                    <Select label="Gravedad *" required value={accidentForm.severity} onChange={(e) => setAccidentForm(f => ({ ...f, severity: Number(e.target.value) as AccidentSeverity }))}>
+                    <Select label="Gravedad *" name="severity" required value={accidentForm.severity} onChange={(e) => setAccidentForm(f => ({ ...f, severity: Number(e.target.value) as AccidentSeverity }))}>
                         {Object.entries(SEVERITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input label="Tipo de accidente *" required value={accidentForm.accidentType} onChange={(e) => setAccidentForm(f => ({ ...f, accidentType: e.target.value }))} />
-                    <Input label="ARL *" required value={accidentForm.arl} onChange={(e) => setAccidentForm(f => ({ ...f, arl: e.target.value }))} />
-                    <Input label="Número FURAT" value={accidentForm.furatNumber || ''} onChange={(e) => setAccidentForm(f => ({ ...f, furatNumber: e.target.value }))} />
+                    <Input label="Tipo de accidente *" name="accidentType" required value={accidentForm.accidentType} onChange={(e) => setAccidentForm(f => ({ ...f, accidentType: e.target.value }))} />
+                    <Input label="ARL *" name="arl" required value={accidentForm.arl} onChange={(e) => setAccidentForm(f => ({ ...f, arl: e.target.value }))} />
+                    <Input label="Número FURAT" name="furatNumber" value={accidentForm.furatNumber || ''} onChange={(e) => setAccidentForm(f => ({ ...f, furatNumber: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Descripción *" required value={accidentForm.description} onChange={(e) => setAccidentForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+                        <Textarea label="Descripción *" name="description" required value={accidentForm.description} onChange={(e) => setAccidentForm(f => ({ ...f, description: e.target.value }))} rows={3} />
                     </div>
                 </FormSection>
             </FormPanel>
@@ -444,15 +445,15 @@ export const SstPage: React.FC = () => {
                 icon={<ShieldAlert className="text-orange-500" size={20} />}
             >
                 <FormSection>
-                    <Select label="Nivel de riesgo *" required value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))}>
+                    <Select label="Nivel de riesgo *" name="level" required value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))}>
                         {Object.entries(RISK_LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input label="Factor *" required value={riskForm.factor} onChange={(e) => setRiskForm(f => ({ ...f, factor: e.target.value }))} />
+                    <Input label="Factor *" name="factor" required value={riskForm.factor} onChange={(e) => setRiskForm(f => ({ ...f, factor: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Descripción *" required value={riskForm.description} onChange={(e) => setRiskForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+                        <Textarea label="Descripción *" name="description" required value={riskForm.description} onChange={(e) => setRiskForm(f => ({ ...f, description: e.target.value }))} rows={3} />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Controles" value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} rows={3} />
+                        <Textarea label="Controles" name="controls" value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} rows={3} />
                     </div>
                 </FormSection>
             </FormPanel>
@@ -467,15 +468,15 @@ export const SstPage: React.FC = () => {
             >
                 <FormSection>
                     <p className="text-xs text-slate-500 dark:text-slate-400 sm:col-span-2">La investigación se registra una sola vez y no puede modificarse.</p>
-                    <Input type="date" label="Fecha de investigación *" required max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
+                    <Input type="date" label="Fecha de investigación *" name="investigationDate" required max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Conclusiones *" required value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} rows={2} />
+                        <Textarea label="Conclusiones *" name="conclusions" required value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} rows={2} />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Causas *" required value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} rows={2} />
+                        <Textarea label="Causas *" name="causes" required value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} rows={2} />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Medidas correctivas *" required value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} rows={2} />
+                        <Textarea label="Medidas correctivas *" name="correctiveMeasures" required value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} rows={2} />
                     </div>
                 </FormSection>
             </FormPanel>

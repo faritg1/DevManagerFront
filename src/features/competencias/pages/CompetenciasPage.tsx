@@ -73,7 +73,6 @@ export const CompetenciasPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
-        if (!form.userId || !form.name.trim()) return;
         // A 409 (withdrawn associate, or one who already has it) rejects and the panel shows it.
         await gestionHumanaService.create({
             userId: form.userId,
@@ -212,17 +211,17 @@ export const CompetenciasPage: React.FC = () => {
                 dirty={form.level !== 1}
             >
                 <FormSection>
-                    <Select label="Asociado *" required value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))}>
+                    <Select label="Asociado *" name="userId" required value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))}>
                         <option value="">Seleccione un asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </Select>
-                    <Input label="Competencia *" required value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
+                    <Input label="Competencia *" name="name" required value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
                     <div role="group" aria-labelledby="competencias-nivel" className="sm:col-span-2">
                         <p id="competencias-nivel" className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</p>
                         <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+                        <Textarea label="Notas" name="notes" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                     </div>
                 </FormSection>
             </FormPanel>

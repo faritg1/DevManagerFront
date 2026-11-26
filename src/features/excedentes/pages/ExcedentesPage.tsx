@@ -187,10 +187,10 @@ export const ExcedentesPage: React.FC = () => {
                 submitText="Calcular"
             >
                 <FormSection>
-                    <Input type="date" label="Período *" required value={calcForm.period} onChange={(e) => setCalcForm(f => ({ ...f, period: e.target.value }))} />
-                    <Input type="number" label="Total excedentes *" required min={0.01} step="any" value={calcForm.totalSurplus} onChange={(e) => setCalcForm(f => ({ ...f, totalSurplus: Number(e.target.value) }))} />
+                    <Input type="date" label="Período *" name="period" required value={calcForm.period} onChange={(e) => setCalcForm(f => ({ ...f, period: e.target.value }))} />
+                    <Input type="number" label="Total excedentes *" name="totalSurplus" required min={0.01} step="any" value={calcForm.totalSurplus} onChange={(e) => setCalcForm(f => ({ ...f, totalSurplus: Number(e.target.value) }))} />
                     <div className="sm:col-span-2">
-                        <Input label="Observaciones" value={calcForm.notes || ''} onChange={(e) => setCalcForm(f => ({ ...f, notes: e.target.value }))} />
+                        <Input label="Observaciones" name="notes" value={calcForm.notes || ''} onChange={(e) => setCalcForm(f => ({ ...f, notes: e.target.value }))} />
                     </div>
                 </FormSection>
             </FormPanel>

@@ -55,11 +55,11 @@ export const OrganizationProvidersDialog: React.FC<OrganizationProvidersDialogPr
             ) : (
                 <FormSection>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white sm:col-span-2">{organization?.name}</p>
-                    <Select label="Almacenamiento" value={storage} onChange={(e) => setStorage(e.target.value)}>
+                    <Select label="Almacenamiento" name="storageProfile" value={storage} onChange={(e) => setStorage(e.target.value)}>
                         <option value="">Por defecto del hosting</option>
                         {withStored(providers.storageProfiles, providers.storageProfile).map((p) => <option key={p} value={p}>{p}</option>)}
                     </Select>
-                    <Select label="Correo" value={email} onChange={(e) => setEmail(e.target.value)}>
+                    <Select label="Correo" name="emailProfile" value={email} onChange={(e) => setEmail(e.target.value)}>
                         <option value="">Por defecto del hosting</option>
                         {withStored(providers.emailProfiles, providers.emailProfile).map((p) => <option key={p} value={p}>{p}</option>)}
                     </Select>

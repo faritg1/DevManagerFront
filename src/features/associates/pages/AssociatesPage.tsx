@@ -142,7 +142,7 @@ export const AssociatesPage: React.FC = () => {
             >
                 <FormSection>
                     <Select
-                        label="Usuario existente *"
+                        label="Usuario existente *" name="userId"
                         required
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
@@ -153,7 +153,7 @@ export const AssociatesPage: React.FC = () => {
                         ))}
                     </Select>
                     <Input
-                        label="Fecha de solicitud (opcional, por defecto hoy)"
+                        label="Fecha de solicitud (opcional, por defecto hoy)" name="applicationDate"
                         type="date"
                         value={applicationDate}
                         onChange={(e) => setApplicationDate(e.target.value)}

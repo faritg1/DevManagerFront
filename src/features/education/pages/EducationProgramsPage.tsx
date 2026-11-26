@@ -64,7 +64,6 @@ export const EducationProgramsPage: React.FC = () => {
     };
 
     const save = async () => {
-        if (!valid) return;
         const body = { name: name.trim(), type, requiredHours: Number(hours), startDate: startDate || undefined, endDate: endDate || undefined };
         await (editing ? educationService.updateProgram(editing.id, body) : educationService.createProgram(body));
         showNotification({ type: 'success', message: editing ? 'Programa actualizado' : 'Programa creado' });
@@ -89,8 +88,6 @@ export const EducationProgramsPage: React.FC = () => {
             toast(e);
         }
     };
-
-    const valid = name.trim().length > 0 && Number(hours) > 0;
 
     return (
         <PageContainer>
@@ -158,13 +155,13 @@ export const EducationProgramsPage: React.FC = () => {
                 title={editing ? 'Editar programa' : 'Nuevo programa'}
             >
                 <FormSection>
-                    <Input label="Nombre *" required value={name} onChange={(e) => setName(e.target.value)} />
-                    <Select label="Tipo *" required value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)}>
+                    <Input label="Nombre *" name="name" required value={name} onChange={(e) => setName(e.target.value)} />
+                    <Select label="Tipo *" name="type" required value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)}>
                         {Object.entries(PROGRAM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input label="Horas requeridas *" required type="number" min={0.5} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
-                    <Input label="Fecha de inicio" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                    <Input label="Fecha de fin" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    <Input label="Horas requeridas *" name="requiredHours" required type="number" min={0.5} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
+                    <Input label="Fecha de inicio" name="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    <Input label="Fecha de fin" name="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </FormSection>
             </FormPanel>
         </PageContainer>

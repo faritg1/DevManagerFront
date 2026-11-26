@@ -32,7 +32,6 @@ export const DataPoliciesPage: React.FC = () => {
     useEffect(() => { load(); }, [load]);
 
     const publish = async () => {
-        if (!canPublish) return;
         await consentsService.createPolicy({
             version: form.version.trim(),
             purpose: form.purpose.trim(),
@@ -44,8 +43,6 @@ export const DataPoliciesPage: React.FC = () => {
         setForm(EMPTY);
         await load();
     };
-
-    const canPublish = form.version.trim() && form.purpose.trim() && form.text.trim();
 
     return (
         <PageContainer className="space-y-6">
@@ -83,12 +80,12 @@ export const DataPoliciesPage: React.FC = () => {
                 submitText="Publicar"
             >
                 <FormSection>
-                    <Input label="Versión *" required placeholder="2.0" value={form.version} onChange={(e) => setForm((f) => ({ ...f, version: e.target.value }))} />
-                    <Input label="Finalidad *" required value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
-                    <Input label="Vigente desde (opcional)" type="date" value={form.effectiveFrom} onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))} />
+                    <Input label="Versión *" name="version" required placeholder="2.0" value={form.version} onChange={(e) => setForm((f) => ({ ...f, version: e.target.value }))} />
+                    <Input label="Finalidad *" name="purpose" required value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
+                    <Input label="Vigente desde (opcional)" name="effectiveFrom" type="date" value={form.effectiveFrom} onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))} />
                     <div className="sm:col-span-2">
                         <Textarea
-                            label="Texto *"
+                            label="Texto *" name="text"
                             required
                             rows={6}
                             value={form.text}

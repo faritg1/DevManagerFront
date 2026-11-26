@@ -173,7 +173,7 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             <Select
               label="Habilidad *"
               required
-              value={requirementForm.skillId}
+              name="skillId" value={requirementForm.skillId}
               onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
               hint={availableSkills.length === 0 ? "No hay habilidades disponibles o todas ya están asignadas." : undefined}
             >

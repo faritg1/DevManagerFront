@@ -63,7 +63,7 @@ export const SkillModal: React.FC<Props> = ({
                     <Select
                         label="Habilidad *"
                         required
-                        value={form.skillId}
+                        name="skillId" value={form.skillId}
                         onChange={(e) => setForm(prev => ({ ...prev, skillId: e.target.value }))}
                     >
                         <option value="">Seleccionar habilidad...</option>
@@ -95,7 +95,7 @@ export const SkillModal: React.FC<Props> = ({
                 <Input
                     label={`Evidencia${requiresEvidence ? ' *' : ''}`}
                     required={requiresEvidence}
-                    value={form.evidenceUrl || ''}
+                    name="evidenceUrl" value={form.evidenceUrl || ''}
                     onChange={(e) => setForm(prev => ({ ...prev, evidenceUrl: e.target.value }))}
                     placeholder="https://github.com/tu-proyecto o certificación"
                     icon={LinkIcon}
@@ -107,7 +107,7 @@ export const SkillModal: React.FC<Props> = ({
                 <Textarea
                     label={`Descripción de Experiencia${requiresEvidence ? ' *' : ''}`}
                     required={requiresEvidence}
-                    value={form.experienceDescription || ''}
+                    name="experienceDescription" value={form.experienceDescription || ''}
                     onChange={(e) => setForm(prev => ({ ...prev, experienceDescription: e.target.value }))}
                     placeholder="Describe tu experiencia con esta habilidad, proyectos en los que has trabajado, tecnologías que dominas..."
                     rows={4}

@@ -73,6 +73,33 @@ test('filters the backlog by sprint and creates a sprint', async ({ page }) => {
     await expect(filter.locator('option', { hasText: 'Sprint 2' })).toHaveCount(1);
 });
 
+test('the new sprint form shows an API error under its field', async ({ page }) => {
+    await mockApi(page, USER, {
+        'GET /organizations/me': org(true),
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok(items),
+        'GET /projects/p1/sprints': ok([sprint]),
+        'POST /projects/p1/sprints': (route: Route) => route.fulfill({
+            status: 400,
+            json: { success: false, message: 'Revisa los campos marcados', errorCode: 'VALIDATION_ERROR', errors: { endDate: ['El sprint se cruza con Sprint 1'] } },
+        }),
+    });
+    await signIn(page);
+    await page.goto('/#/activities/p1');
+
+    await page.getByRole('button', { name: 'Nuevo sprint' }).click();
+    const panel = page.getByRole('dialog', { name: 'Nuevo sprint' });
+    await panel.getByLabel('Nombre').fill('Sprint 2');
+    await panel.getByLabel('Inicio').fill('2026-11-09');
+    await panel.getByLabel('Fin').fill('2026-11-20');
+    await panel.getByRole('button', { name: 'Crear sprint' }).click();
+
+    await expect(panel.getByLabel('Fin')).toHaveAccessibleDescription('El sprint se cruza con Sprint 1');
+    await expect(panel.getByLabel('Fin')).toBeFocused();
+    await expect(panel.getByRole('alert').getByRole('listitem')).toHaveCount(0);
+    await expect(panel).toBeVisible();
+});
+
 test('without the sprints permission the sprint bar is read-only', async ({ page }) => {
     await mockApi(page, { permissions: ['menu.platform', 'menu.platform.activities', 'menu.platform.activities.edit'] }, {
         'GET /organizations/me': org(true),

@@ -61,7 +61,7 @@ const StatLink: React.FC<StatLinkProps> = ({ to, title, value, hint, icon: Icon,
 );
 
 /** An editable list of catalog values: the text box adds one (Enter or the button) and each value has its remove button. */
-const CatalogEditor: React.FC<{ label: string; values: string[]; onChange: (values: string[]) => void }> = ({ label, values, onChange }) => {
+const CatalogEditor: React.FC<{ label: string; name: string; values: string[]; onChange: (values: string[]) => void }> = ({ label, name, values, onChange }) => {
     const [draft, setDraft] = useState('');
     const add = () => {
         const value = draft.trim();
@@ -75,6 +75,7 @@ const CatalogEditor: React.FC<{ label: string; values: string[]; onChange: (valu
                 <div className="min-w-0 flex-1">
                     <Input
                         label={label}
+                        name={name}
                         value={draft}
                         maxLength={100}
                         onChange={(e) => setDraft(e.target.value)}
@@ -356,7 +357,7 @@ export const OrganizationsPage: React.FC = () => {
                             <Input
                                 label="Nombre *"
                                 required
-                                value={form.name}
+                                name="name" value={form.name}
                                 maxLength={160}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                             />
@@ -364,21 +365,21 @@ export const OrganizationsPage: React.FC = () => {
                         <div className="sm:col-span-2">
                             <Input
                                 label="Razón social"
-                                value={form.legalName}
+                                name="legalName" value={form.legalName}
                                 maxLength={200}
                                 onChange={(e) => setForm({ ...form, legalName: e.target.value })}
                             />
                         </div>
                         <Input
                             label="NIT"
-                            value={form.nit}
+                            name="nit" value={form.nit}
                             maxLength={30}
                             placeholder="900123456-1"
                             onChange={(e) => setForm({ ...form, nit: e.target.value })}
                         />
                         <Select
                             label="Tipo de entidad"
-                            value={form.entityType}
+                            name="entityType" value={form.entityType}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
@@ -397,7 +398,7 @@ export const OrganizationsPage: React.FC = () => {
                             min={0}
                             max={10}
                             step={1}
-                            value={form.dueSoonDays}
+                            name="workItemDueSoonDays" value={form.dueSoonDays}
                             hint="0 = solo el día del vencimiento"
                             error={daysError}
                             onChange={(e) => setForm({ ...form, dueSoonDays: e.target.value })}
@@ -405,7 +406,7 @@ export const OrganizationsPage: React.FC = () => {
                         <label className="flex items-center gap-2 self-center text-sm text-slate-700 dark:text-slate-300">
                             <input
                                 type="checkbox"
-                                checked={form.overdueNotice}
+                                name="workItemOverdueNotice" checked={form.overdueNotice}
                                 onChange={(e) => setForm({ ...form, overdueNotice: e.target.checked })}
                             />
                             Avisar cuando una actividad se venza
@@ -423,6 +424,7 @@ export const OrganizationsPage: React.FC = () => {
                                 <label key={key} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                                     <input
                                         type="checkbox"
+                                        name={`activitiesSettings.${key}`}
                                         checked={form.activities[key]}
                                         onChange={(e) => setForm({ ...form, activities: { ...form.activities, [key]: e.target.checked } })}
                                     />
@@ -440,7 +442,7 @@ export const OrganizationsPage: React.FC = () => {
                                     min={1}
                                     max={365}
                                     step={1}
-                                    value={form.reviewNoticeDays}
+                                    name="documentSettings.reviewNoticeDays" value={form.reviewNoticeDays}
                                     onChange={(e) => setForm({ ...form, reviewNoticeDays: e.target.value })}
                                 />
                                 <Input
@@ -450,11 +452,11 @@ export const OrganizationsPage: React.FC = () => {
                                     min={1}
                                     max={365}
                                     step={1}
-                                    value={form.retentionNoticeDays}
+                                    name="documentSettings.retentionNoticeDays" value={form.retentionNoticeDays}
                                     onChange={(e) => setForm({ ...form, retentionNoticeDays: e.target.value })}
                                 />
-                                <CatalogEditor label="Tipos de documento" values={form.documentTypes} onChange={(documentTypes) => setForm({ ...form, documentTypes })} />
-                                <CatalogEditor label="Procesos" values={form.processes} onChange={(processes) => setForm({ ...form, processes })} />
+                                <CatalogEditor label="Tipos de documento" name="documentSettings.documentTypes" values={form.documentTypes} onChange={(documentTypes) => setForm({ ...form, documentTypes })} />
+                                <CatalogEditor label="Procesos" name="documentSettings.processes" values={form.processes} onChange={(processes) => setForm({ ...form, processes })} />
                             </FormSection>
                     )}
                 </>)}

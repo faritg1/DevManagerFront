@@ -134,13 +134,13 @@ const SprintFormModal: React.FC<{
         >
             <FormSection>
                 <div className="sm:col-span-2">
-                    <Input label="Nombre" required maxLength={100} value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input label="Nombre" name="name" required maxLength={100} value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                    <Textarea label="Objetivo" rows={2} maxLength={500} value={goal} onChange={(e) => setGoal(e.target.value)} />
+                    <Textarea label="Objetivo" name="goal" rows={2} maxLength={500} value={goal} onChange={(e) => setGoal(e.target.value)} />
                 </div>
-                <Input label="Inicio" type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
-                <Input label="Fin" type="date" required min={start || undefined} value={end} onChange={(e) => setEnd(e.target.value)} />
+                <Input label="Inicio" name="startDate" type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
+                <Input label="Fin" name="endDate" type="date" required min={start || undefined} value={end} onChange={(e) => setEnd(e.target.value)} />
             </FormSection>
         </FormPanel>
     );

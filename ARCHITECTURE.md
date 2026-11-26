@@ -183,9 +183,9 @@ export const ItemFormDialog = ({ item, onClose, onSaved }: Props) => {
     return (
         <FormPanel isOpen onClose={onClose} onSubmit={save} title={item ? 'Editar item' : 'Nuevo item'}>
             <FormSection>
-                <Input label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                <Input label="Nombre" name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                 <div className="sm:col-span-2">
-                    <Textarea label="Notas" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                    <Textarea label="Notas" name="notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
                 </div>
             </FormSection>
         </FormPanel>
@@ -193,11 +193,14 @@ export const ItemFormDialog = ({ item, onClose, onSaved }: Props) => {
 };
 ```
 
+**Regla: cada control lleva `name` = la propiedad del cuerpo de la solicitud que alimenta** (`name="ownerUserId"`, no el nombre del estado local ni la etiqueta), con puntos si la propiedad es anidada. Vale para `Input`, `Select`, `Textarea`, casillas, radios, archivos (`name` = el campo del `FormData`) y controles nativos. Un control que no se envía (solo lectura informativa) no lleva `name`. El error del API solo se pinta bajo `Input`, `Select` y `Textarea` habilitados; en un `<input>` o `<select>` nativo, una casilla, un control deshabilitado o un selector hecho con botones, el mensaje se queda en la lista del aviso.
+
 Lo que el panel resuelve y el formulario no debe repetir:
 
 - **Pie y guardado**: `Cancelar` y el botón principal (`submitText`, por defecto `Guardar`); mientras `onSubmit` está pendiente deshabilita el pie, no envía dos veces y no se deja cerrar. Botones adicionales van en `footerExtra`.
-- **Errores del API**: un `ApiError` se muestra en un aviso `No se pudo guardar` arriba del formulario, con el `message` y los `errors` por campo. Los 4xx no se repiten en el aviso flotante global mientras el panel envía; los 5xx y los fallos de red salen en ambos.
-- **Validación**: la nativa (`required`, `min`, `type="email"`…) con el mensaje en español bajo cada campo; `Input`, `Select` y `Textarea` marcan con `*` los obligatorios. Una regla propia se muestra con la propiedad `error` del campo.
+- **Errores del API**: un `ApiError` se muestra en un aviso `No se pudo guardar` arriba del formulario, con el `message` y los `errors` que no encontraron campo. Los 4xx no se repiten en el aviso flotante global mientras el panel envía; los 5xx y los fallos de red salen en ambos.
+- **Errores por campo**: el API responde `errors: { "<campo>": ["mensaje"] }` y el panel pone cada mensaje bajo el control cuyo `name` es ese campo (sin distinguir mayúsculas; para una llave anidada como `documentSettings.reviewNoticeDays` busca el nombre completo y después el último tramo). El primero recibe el foco, el mensaje se borra al editar el control y nunca impide volver a enviar. Si todos se ubicaron, el aviso dice solo `Revisa los campos marcados`.
+- **Validación**: la nativa (`required`, `min`, `type="email"`…) con el mensaje en español bajo cada campo; `Input`, `Select` y `Textarea` marcan con `*` los obligatorios. Un campo de texto o área de texto `required` que solo tiene espacios también muestra `Este campo es obligatorio` y no envía: el formulario no necesita su propia guarda. Una regla propia se muestra con la propiedad `error` del campo.
 - **Cambios sin guardar**: el panel escucha los eventos `input` y `change` de sus campos; con cambios, `Cancelar`, la X, Escape y el clic en el fondo piden confirmación. Si un control no emite esos eventos (una lista armada con botones, por ejemplo), pasa `dirty`.
 - **Distribución**: `FormSection` (con `title` opcional) da una columna en celular y dos desde `sm`; un campo ocupa las dos envuelto en `<div className="sm:col-span-2">`.
 

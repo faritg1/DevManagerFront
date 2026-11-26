@@ -37,11 +37,12 @@ export const VersionFormDialog: React.FC<Props> = ({ documentId, version, onClos
         >
             <FormSection>
                 <div className="sm:col-span-2">
-                    <Textarea label="Resumen del cambio" value={summary} onChange={(e) => setSummary(e.target.value)} maxLength={500} rows={3} required />
+                    <Textarea label="Resumen del cambio" name="changeSummary" value={summary} onChange={(e) => setSummary(e.target.value)} maxLength={500} rows={3} required />
                 </div>
                 <div className="sm:col-span-2">
                     <Input
                         label="Archivo"
+                        name="file"
                         type="file"
                         accept={ACCEPTED_FILES}
                         required={!version}

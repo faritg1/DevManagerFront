@@ -203,7 +203,7 @@ export const ClassificationPage: React.FC = () => {
                 <FormPanel isOpen onClose={() => setTypeFor(null)} onSubmit={addType} title={`Nuevo tipo documental en ${typeFor.code}`}>
                     <FormSection>
                         <div className="sm:col-span-2">
-                            <Input label="Nombre" value={typeName} onChange={(e) => setTypeName(e.target.value)} maxLength={100} required placeholder="Ej. Acta de asamblea" />
+                            <Input label="Nombre" name="name" value={typeName} onChange={(e) => setTypeName(e.target.value)} maxLength={100} required placeholder="Ej. Acta de asamblea" />
                         </div>
                     </FormSection>
                 </FormPanel>

@@ -30,6 +30,38 @@ export interface FormPanelProps {
 }
 
 const CONNECTION_ERROR = 'Error de conexión. Intenta de nuevo.';
+const REQUIRED = 'Este campo es obligatorio';
+
+type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+const controlsOf = (form: HTMLFormElement | null | undefined): Control[] =>
+    [...(form?.elements ?? [])].filter((el): el is Control => el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement);
+
+/**
+ * Puts each API field error on the control whose `name` is that field (any case; for a nested key, the full path
+ * first and then its last segment) and returns the messages that found no place.
+ * The message travels as the control's custom validity, so Input, Select and Textarea show it like a native one.
+ */
+const placeFieldErrors = (form: HTMLFormElement | null | undefined, errors: Record<string, string[]>): string[] => {
+    const fields = controlsOf(form);
+    const byName = (name: string) => fields.find((el) => el.name !== '' && el.name.toLowerCase() === name.toLowerCase());
+    const rest: string[] = [];
+    for (const [key, value] of Object.entries(errors)) {
+        const messages = [value].flat();
+        // ASP.NET's own model errors prefix body paths with "$.".
+        const path = key.replace(/^\$\./, '');
+        const el = byName(path) ?? byName(path.split('.').pop() ?? '');
+        // A disabled or read-only control takes no validity; a control that is not one of ours has nowhere to show it.
+        if (el?.willValidate && messages.length > 0) {
+            el.setCustomValidity(messages.join(' '));
+            // Our fields cancel `invalid` to show the message themselves.
+            if (!el.dispatchEvent(new Event('invalid', { cancelable: true }))) continue;
+            el.setCustomValidity('');
+        }
+        rest.push(...messages);
+    }
+    return rest;
+};
 
 /**
  * Side panel for every create and edit form: fixed header and footer, saving state, API errors in an alert
@@ -42,12 +74,13 @@ export const FormPanel: React.FC<FormPanelProps> = ({
     const { showNotification } = useNotification();
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState<{ message: string; details: string[] } | null>(null);
+    const [error, setError] = useState<{ message: string; details: string[]; inFields?: boolean } | null>(null);
     // Refs, not state: a second Enter or Escape can arrive before the next render.
     const busy = useRef(false);
     const asking = useRef(false);
     const touched = useRef(false);
     const alertRef = useRef<HTMLDivElement>(null);
+    const bodyRef = useRef<HTMLDivElement>(null);
 
     // A panel that stays mounted starts clean each time it opens.
     useEffect(() => {
@@ -57,7 +90,8 @@ export const FormPanel: React.FC<FormPanelProps> = ({
         setExpanded(defaultExpanded);
     }, [isOpen, defaultExpanded]);
 
-    useEffect(() => { if (error) alertRef.current?.focus(); }, [error]);
+    // With an error under a field, the first of those fields already has the focus.
+    useEffect(() => { if (error && !error.inFields) alertRef.current?.focus(); }, [error]);
 
     /** The only way out for Cancelar, the X, Escape and the backdrop. */
     const close = async () => {
@@ -85,7 +119,9 @@ export const FormPanel: React.FC<FormPanelProps> = ({
             await runPanelSubmit(onSubmit);
         } catch (e) {
             if (isApiError(e)) {
-                setError({ message: e.message, details: Object.values(e.errors ?? {}).flat() });
+                const total = Object.values(e.errors ?? {}).flat().length;
+                const details = placeFieldErrors(bodyRef.current?.closest('form'), e.errors ?? {});
+                setError({ message: total > 0 && details.length === 0 ? 'Revisa los campos marcados' : e.message, details, inFields: details.length < total });
             } else {
                 // Network failures and timeouts never reach the global toast on their own.
                 setError({ message: CONNECTION_ERROR, details: [] });
@@ -97,7 +133,26 @@ export const FormPanel: React.FC<FormPanelProps> = ({
         }
     };
 
-    const touch = () => { touched.current = true; };
+    const touch = (e: React.FormEvent<HTMLDivElement>) => {
+        // The `input` that `validate` dispatches is not an edit.
+        if (!e.nativeEvent.isTrusted) return;
+        touched.current = true;
+        // Editing a control drops the error it carried.
+        if ('setCustomValidity' in e.target) (e.target as Control).setCustomValidity('');
+    };
+
+    /** Runs on the click that submits (Enter clicks the button too), before the browser validates the form. */
+    const validate = () => {
+        for (const el of controlsOf(bodyRef.current?.closest('form'))) {
+            if (el.validity.customError) {
+                // An API error never blocks sending again; the `input` makes the field drop the message.
+                el.setCustomValidity('');
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            // `required` alone accepts a value made of spaces.
+            if ((el.type === 'text' || el.type === 'textarea') && el.required && el.value !== '' && el.value.trim() === '') el.setCustomValidity(REQUIRED);
+        }
+    };
 
     return (
         <Modal
@@ -115,12 +170,12 @@ export const FormPanel: React.FC<FormPanelProps> = ({
                 </span>
             }
             footer={<>
-                <Button type="submit" isLoading={submitting} disabled={submitDisabled}>{submitText}</Button>
+                <Button type="submit" isLoading={submitting} disabled={submitDisabled} onClick={validate}>{submitText}</Button>
                 <Button variant="ghost" onClick={close} disabled={submitting}>Cancelar</Button>
                 {footerExtra}
             </>}
         >
-            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6" onInput={touch} onChange={touch}>
+            <div ref={bodyRef} className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6" onInput={touch} onChange={touch}>
                 {error && (
                     <div
                         ref={alertRef}

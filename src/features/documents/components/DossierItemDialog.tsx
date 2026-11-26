@@ -52,16 +52,17 @@ export const DossierItemDialog: React.FC<Props> = ({ dossier, item, onClose, onS
             title={item ? `Corregir documento ${item.position}` : 'Incorporar documento'}
         >
             <FormSection>
-                <Input label="Título" value={form.title} onChange={set('title')} maxLength={200} required />
-                <Select label="Tipo documental" value={form.documentaryTypeId} onChange={set('documentaryTypeId')} hint="Tipos de la serie del expediente.">
+                <Input label="Título" name="title" value={form.title} onChange={set('title')} maxLength={200} required />
+                <Select label="Tipo documental" name="documentaryTypeId" value={form.documentaryTypeId} onChange={set('documentaryTypeId')} hint="Tipos de la serie del expediente.">
                     <option value="">Sin tipo</option>
                     {ownType && <option value={ownType.documentaryTypeId ?? ''}>{ownType.documentaryTypeName ?? '—'}</option>}
                     {types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </Select>
-                <Input label="Fecha del documento" type="date" value={form.documentDate} onChange={set('documentDate')} max={today()} required />
+                <Input label="Fecha del documento" type="date" name="documentDate" value={form.documentDate} onChange={set('documentDate')} max={today()} required />
                 {!item && (
                     <Input
                         label="Archivo"
+                        name="file"
                         type="file"
                         accept={ACCEPTED_FILES}
                         required

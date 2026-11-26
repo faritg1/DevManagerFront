@@ -68,14 +68,15 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
             title={node ? `Editar ${node.code}` : parent ? `${NEW_TITLE[level]} en ${parent.code}` : NEW_TITLE[level]}
         >
             <FormSection>
-                <Input label="Código" value={form.code} onChange={set('code')} maxLength={20} required />
-                <Input label="Nombre" value={form.name} onChange={set('name')} maxLength={200} required />
+                <Input label="Código" name="code" value={form.code} onChange={set('code')} maxLength={20} required />
+                <Input label="Nombre" name="name" value={form.name} onChange={set('name')} maxLength={200} required />
                 {level > 1 && <>
-                    <Input label="Tiempo en gestión (años)" type="number" inputMode="numeric" value={form.managementYears} onChange={set('managementYears')} />
-                    <Input label="Tiempo en central (años)" type="number" inputMode="numeric" value={form.centralYears} onChange={set('centralYears')} />
+                    <Input label="Tiempo en gestión (años)" type="number" inputMode="numeric" name="managementYears" value={form.managementYears} onChange={set('managementYears')} />
+                    <Input label="Tiempo en central (años)" type="number" inputMode="numeric" name="centralYears" value={form.centralYears} onChange={set('centralYears')} />
                     <div className="sm:col-span-2">
                         <Select
                             label="Disposición final"
+                            name="finalDisposition"
                             value={form.finalDisposition}
                             onChange={set('finalDisposition')}
                             hint={level === 3 ? 'Si no indicas retención, hereda la de su serie.' : 'Los dos tiempos y la disposición van juntos.'}
@@ -85,15 +86,15 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
                         </Select>
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Procedimiento" value={form.procedure} onChange={set('procedure')} maxLength={500} rows={2} />
+                        <Textarea label="Procedimiento" name="procedure" value={form.procedure} onChange={set('procedure')} maxLength={500} rows={2} />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Soporte legal" value={form.legalBasis} onChange={set('legalBasis')} maxLength={500} rows={2} hint="La norma o el acuerdo interno que cita la entidad." />
+                        <Textarea label="Soporte legal" name="legalBasis" value={form.legalBasis} onChange={set('legalBasis')} maxLength={500} rows={2} hint="La norma o el acuerdo interno que cita la entidad." />
                     </div>
                 </>}
                 {node && (
                     <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700 sm:col-span-2 dark:text-slate-200">
-                        <input type="checkbox" className="size-4 shrink-0 accent-primary" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
+                        <input type="checkbox" name="isActive" className="size-4 shrink-0 accent-primary" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
                         Activo
                     </label>
                 )}

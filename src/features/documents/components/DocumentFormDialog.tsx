@@ -49,10 +49,10 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
 
     /** A list when the catalog has values, free text otherwise. The value the document already had stays an option. */
     const catalogField = (key: 'type' | 'process', label: string, placeholder: string, options: string[]) => {
-        if (options.length === 0) return <Input label={label} value={form[key]} onChange={set(key)} maxLength={100} required />;
+        if (options.length === 0) return <Input label={label} name={key} value={form[key]} onChange={set(key)} maxLength={100} required />;
         const own = document?.[key];
         return (
-            <Select label={label} value={form[key]} onChange={set(key)} required>
+            <Select label={label} name={key} value={form[key]} onChange={set(key)} required>
                 <option value="">{placeholder}</option>
                 {own && !options.includes(own) && <option value={own}>{own}</option>}
                 {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -76,18 +76,18 @@ export const DocumentFormDialog: React.FC<Props> = ({ document, onClose, onSaved
             title={document ? `Editar ${document.code}` : 'Nuevo documento'}
         >
             <FormSection>
-                <Input label="Código" value={form.code} onChange={set('code')} maxLength={50} required disabled={!!document} hint={document ? 'El código no cambia después de creado.' : undefined} />
-                <Input label="Título" value={form.title} onChange={set('title')} maxLength={200} required />
+                <Input label="Código" name="code" value={form.code} onChange={set('code')} maxLength={50} required disabled={!!document} hint={document ? 'El código no cambia después de creado.' : undefined} />
+                <Input label="Título" name="title" value={form.title} onChange={set('title')} maxLength={200} required />
                 {catalogField('type', 'Tipo', 'Selecciona un tipo', catalogs.documentTypes)}
                 {catalogField('process', 'Proceso', 'Selecciona un proceso', catalogs.processes)}
-                <Select label="Responsable" value={form.ownerUserId} onChange={set('ownerUserId')} required>
+                <Select label="Responsable" name="ownerUserId" value={form.ownerUserId} onChange={set('ownerUserId')} required>
                     <option value="">Selecciona un responsable</option>
                     {users.map((u) => <option key={u.id} value={u.id}>{u.fullName}</option>)}
                 </Select>
-                <Input label="Fecha de revisión" type="date" value={form.reviewDate} onChange={set('reviewDate')} />
+                <Input label="Fecha de revisión" type="date" name="reviewDate" value={form.reviewDate} onChange={set('reviewDate')} />
                 {canClassify && (
                     <div className="sm:col-span-2">
-                        <Select label="Serie" value={form.classificationNodeId} onChange={set('classificationNodeId')} hint="Serie o subserie del cuadro de clasificación.">
+                        <Select label="Serie" name="classificationNodeId" value={form.classificationNodeId} onChange={set('classificationNodeId')} hint="Serie o subserie del cuadro de clasificación.">
                             <option value="">Sin clasificar</option>
                             {ownSeries && <option value={ownSeries.classificationNodeId ?? ''}>{seriesLabel(ownSeries)}{tree ? ' (inactiva)' : ''}</option>}
                             {series.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}

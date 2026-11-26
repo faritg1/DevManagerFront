@@ -59,7 +59,8 @@ test.describe('form panel', () => {
         let fail = true;
         const panel = await open(page, {
             'POST /documents': (route: Route) => fail
-                ? route.fulfill({ status: 400, json: { success: false, message: 'Ya existe un documento con ese código', errors: { Code: ['El código ya está en uso'] } } })
+                // No control is named `storage`, so the entry stays in the alert.
+                ? route.fulfill({ status: 400, json: { success: false, message: 'Ya existe un documento con ese código', errors: { storage: ['El código ya está en uso'] } } })
                 : route.fulfill({ json: ok({}) }),
         });
         await fillRequired(panel);
@@ -81,6 +82,112 @@ test.describe('form panel', () => {
         await panel.getByRole('button', { name: 'Guardar' }).click();
         await expect(panel).toHaveCount(0);
         await expect(page.getByText(DISCARD_MESSAGE)).toHaveCount(0);
+    });
+
+    const fieldError = (errors: Record<string, string[]>, message = 'Ya existe un documento con ese código') =>
+        (route: Route) => route.fulfill({ status: 400, json: { success: false, message, errorCode: 'VALIDATION_ERROR', errors } });
+
+    test('a field error from the API shows under its field, which takes the focus, and leaves the alert list', async ({ page }) => {
+        const panel = await open(page, { 'POST /documents': fieldError({ code: ['El código ya está en uso'] }) });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+
+        const code = panel.getByLabel('Código');
+        await expect(code).toHaveAccessibleDescription('El código ya está en uso');
+        await expect(code).toHaveAttribute('aria-invalid', 'true');
+        await expect(code).toBeFocused();
+        const alert = panel.getByRole('alert');
+        await expect(alert).toContainText('Revisa los campos marcados');
+        await expect(alert).not.toContainText('Ya existe un documento con ese código');
+        await expect(alert.getByRole('listitem')).toHaveCount(0);
+        await expect(panel.getByText('El código ya está en uso')).toHaveCount(1);
+    });
+
+    test('a field error matches the control name without case and by the last segment; one with no control stays in the alert', async ({ page }) => {
+        const panel = await open(page, {
+            'POST /documents': fieldError({ Title: ['El título ya existe'], 'document.reviewDate': ['La fecha ya pasó'], storage: ['No hay espacio'] }),
+        });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+
+        await expect(panel.getByLabel('Título')).toHaveAccessibleDescription('El título ya existe');
+        await expect(panel.getByLabel('Título')).toBeFocused();
+        await expect(panel.getByLabel('Fecha de revisión')).toHaveAccessibleDescription('La fecha ya pasó');
+        const alert = panel.getByRole('alert');
+        await expect(alert).toContainText('Ya existe un documento con ese código');
+        await expect(alert.getByRole('listitem')).toHaveText(['No hay espacio']);
+    });
+
+    test('editing the field clears its API error, and saving again sends the new value', async ({ page }) => {
+        const bodies: unknown[] = [];
+        const panel = await open(page, {
+            'POST /documents': (route: Route) => {
+                bodies.push(route.request().postDataJSON());
+                return bodies.length === 1 ? fieldError({ code: ['El código ya está en uso'] })(route) : route.fulfill({ json: ok({}) });
+            },
+        });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        const code = panel.getByLabel('Código');
+        await expect(code).toHaveAccessibleDescription('El código ya está en uso');
+
+        await code.fill('pro-003');
+        await expect(panel.getByText('El código ya está en uso')).toHaveCount(0);
+        await expect(code).not.toHaveAttribute('aria-invalid', 'true');
+
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        await expect(panel).toHaveCount(0);
+        expect(bodies).toHaveLength(2);
+        expect(bodies[1]).toMatchObject({ code: 'pro-003', title: 'Procedimiento' });
+    });
+
+    test('an API field error never blocks saving again, even without editing the field', async ({ page }) => {
+        let posts = 0;
+        const panel = await open(page, {
+            'POST /documents': (route: Route) => (++posts === 1 ? fieldError({ code: ['El código ya está en uso'] })(route) : route.fulfill({ json: ok({}) })),
+        });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        await expect(panel.getByLabel('Código')).toHaveAccessibleDescription('El código ya está en uso');
+        await panel.getByLabel('Título').press('Enter');
+        await expect(panel).toHaveCount(0);
+        expect(posts).toBe(2);
+    });
+
+    test('a required text field with only spaces shows its message and sends nothing', async ({ page }) => {
+        let posts = 0;
+        const panel = await open(page, { 'POST /documents': (route: Route) => { posts++; return route.fulfill({ json: ok({}) }); } });
+        await fillRequired(panel);
+        await panel.getByLabel('Título').fill('   ');
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        await expect(panel.getByLabel('Título')).toHaveAccessibleDescription('Este campo es obligatorio');
+        await expect(panel.getByLabel('Título')).toBeFocused();
+        await expect(panel).toBeVisible();
+        expect(posts).toBe(0);
+
+        // Real text clears it and the form saves.
+        await panel.getByLabel('Título').fill('Procedimiento');
+        await expect(panel.getByText('Este campo es obligatorio')).toHaveCount(0);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        await expect(panel).toHaveCount(0);
+        expect(posts).toBe(1);
+    });
+
+    test('a 400 in the ProblemDetails shape of ASP.NET still shows its messages', async ({ page }) => {
+        const panel = await open(page, {
+            'POST /documents': (route: Route) => route.fulfill({
+                status: 400,
+                json: { type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1', title: 'One or more validation errors occurred.', status: 400, errors: { Code: ['The Code field is required.'], '$.ownerUserId': ['The JSON value could not be converted.'], '$': ['The body is not valid.'] } },
+            }),
+        });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+        await expect(panel.getByLabel('Código')).toHaveAccessibleDescription('The Code field is required.');
+        await expect(panel.getByLabel('Responsable')).toHaveAccessibleDescription('The JSON value could not be converted.');
+        const alert = panel.getByRole('alert');
+        await expect(alert).toContainText('No se pudo guardar');
+        await expect(alert.getByRole('listitem')).toHaveText(['The body is not valid.']);
+        await expect(panel).toBeVisible();
     });
 
     test('a 500 shows in the panel alert and also in the global toast', async ({ page }) => {

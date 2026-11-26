@@ -1,4 +1,4 @@
-export { type ApiError } from "./client";
+export { type ApiError, isApiError } from "./client";
 export * from "./types";
 export * from "./impersonation";
 export { useDemoEnabled } from "./demoSwitch";

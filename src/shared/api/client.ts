@@ -10,6 +10,22 @@ export interface ApiError {
   traceId?: string;
 }
 
+export const isApiError = (e: unknown): e is ApiError =>
+  typeof e === "object" && e !== null && "status" in e;
+
+// ponytail: one global counter, so any other 4xx answered during a panel submit also skips the toast; tag requests if that ever hides a real one.
+let panelSubmits = 0;
+
+/** Runs the submit of a FormPanel. Meanwhile 4xx errors skip the global toast: the panel shows them itself. */
+export const runPanelSubmit = async (submit: () => Promise<void>): Promise<void> => {
+  panelSubmits++;
+  try {
+    await submit();
+  } finally {
+    panelSubmits--;
+  }
+};
+
 const TIMEOUT_MS = 30000;
 const UPLOAD_TIMEOUT_MS = 120000;
 
@@ -28,7 +44,7 @@ export const buildHeaders = (): Headers => {
   return headers;
 };
 
-/** Reads a non-2xx response into an ApiError. A 401 signs out; other errors (but 404) raise the global toast unless `notify` is false. */
+/** Reads a non-2xx response into an ApiError. A 401 signs out; other errors (but 404, and 4xx while a FormPanel submits) raise the global toast unless `notify` is false. */
 export const readApiError = async (response: Response, notify = true): Promise<ApiError> => {
   const error: ApiError = {
     status: response.status,
@@ -53,7 +69,7 @@ export const readApiError = async (response: Response, notify = true): Promise<A
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
     // Event instead of window.location: a redirect loops under HashRouter.
     window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-  } else if (notify && response.status !== 404) {
+  } else if (notify && response.status !== 404 && !(panelSubmits > 0 && response.status < 500)) {
     window.dispatchEvent(new CustomEvent("DevManagerApiError", { detail: error }));
   }
 

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { documentsService, type ClassificationNode, type FinalDisposition, type UpdateClassificationNodeRequest } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
-import { Button, Input, Modal, Select, Textarea } from '../../../shared/ui';
-import { errorText, needsLocalToast } from '../../associates/labels';
+import { FormPanel, FormSection, Input, Select, Textarea } from '../../../shared/ui';
 import { DISPOSITION } from '../labels';
 
 /** A node to edit, or the parent of a new one; neither creates a section. */
@@ -36,7 +35,6 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
         procedure: node?.procedure ?? '',
         legalBasis: node?.legalBasis ?? '',
     });
-    const [saving, setSaving] = useState(false);
 
     const set = (key: Exclude<keyof typeof form, 'isActive'>) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { value } = e.target;
@@ -44,8 +42,6 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
     };
 
     const save = async () => {
-        if (saving) return;
-        setSaving(true);
         // Always the whole node: the PUT clears whatever is left out. A section carries no retention.
         const data: UpdateClassificationNodeRequest = {
             code: form.code.trim(),
@@ -59,30 +55,19 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
                 legalBasis: text(form.legalBasis),
             }),
         };
-        try {
-            await (node ? documentsService.updateNode(node.id, data) : documentsService.createNode({ level, parentId: parent?.id ?? null, ...data }));
-            showNotification({ type: 'success', message: node ? 'Elemento actualizado' : 'Elemento creado' });
-            onSaved();
-        } catch (e) {
-            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
-        } finally {
-            setSaving(false);
-        }
+        await (node ? documentsService.updateNode(node.id, data) : documentsService.createNode({ level, parentId: parent?.id ?? null, ...data }));
+        showNotification({ type: 'success', message: node ? 'Elemento actualizado' : 'Elemento creado' });
+        onSaved();
     };
 
     return (
-        <Modal
+        <FormPanel
             isOpen
             onClose={onClose}
             onSubmit={save}
             title={node ? `Editar ${node.code}` : parent ? `${NEW_TITLE[level]} en ${parent.code}` : NEW_TITLE[level]}
-            size="lg"
-            footer={<>
-                <Button type="submit" isLoading={saving}>Guardar</Button>
-                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-            </>}
         >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormSection>
                 <Input label="Código" value={form.code} onChange={set('code')} maxLength={20} required />
                 <Input label="Nombre" value={form.name} onChange={set('name')} maxLength={200} required />
                 {level > 1 && <>
@@ -112,7 +97,7 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
                         Activo
                     </label>
                 )}
-            </div>
-        </Modal>
+            </FormSection>
+        </FormPanel>
     );
 };

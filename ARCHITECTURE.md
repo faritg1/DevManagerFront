@@ -155,6 +155,54 @@ const MyComponent = () => {
 };
 ```
 
+## 🧾 Formularios: `FormPanel` o `Modal`
+
+| Caso | Componente |
+|------|------------|
+| Crear o editar un registro (cualquier formulario con campos que se guardan) | `FormPanel` + `FormSection` |
+| Acción corta de uno a tres campos (aprobar, rechazar, transición, distribuir) | `Modal` con `onSubmit` |
+| Confirmación | `useConfirm` |
+| Visor de detalle, importación, IA y demás contenido que no es un formulario | `Modal` (`variant="drawer"` si necesita toda la altura) |
+
+`FormPanel` (`src/shared/ui/FormPanel/`) es un panel lateral de toda la altura construido sobre `Modal variant="drawer"`: en celular ocupa la pantalla y el botón `Ampliar` lo lleva a pantalla completa (`defaultExpanded` para los formularios que no caben).
+
+```tsx
+import { FormPanel, FormSection, Input, Textarea } from '../../../shared/ui';
+
+export const ItemFormDialog = ({ item, onClose, onSaved }: Props) => {
+    const { showNotification } = useNotification();
+    const [form, setForm] = useState({ name: item?.name ?? '', notes: item?.notes ?? '' });
+
+    // Sin try/catch ni estado `saving`: si el API falla, la promesa se rechaza y el panel muestra el error.
+    const save = async () => {
+        await (item ? itemsService.update(item.id, form) : itemsService.create(form));
+        showNotification({ type: 'success', message: 'Guardado' });
+        onSaved(); // cierra el panel desde la página, sin pasar por la confirmación
+    };
+
+    return (
+        <FormPanel isOpen onClose={onClose} onSubmit={save} title={item ? 'Editar item' : 'Nuevo item'}>
+            <FormSection>
+                <Input label="Nombre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                <div className="sm:col-span-2">
+                    <Textarea label="Notas" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                </div>
+            </FormSection>
+        </FormPanel>
+    );
+};
+```
+
+Lo que el panel resuelve y el formulario no debe repetir:
+
+- **Pie y guardado**: `Cancelar` y el botón principal (`submitText`, por defecto `Guardar`); mientras `onSubmit` está pendiente deshabilita el pie, no envía dos veces y no se deja cerrar. Botones adicionales van en `footerExtra`.
+- **Errores del API**: un `ApiError` se muestra en un aviso `No se pudo guardar` arriba del formulario, con el `message` y los `errors` por campo. Los 4xx no se repiten en el aviso flotante global mientras el panel envía; los 5xx y los fallos de red salen en ambos.
+- **Validación**: la nativa (`required`, `min`, `type="email"`…) con el mensaje en español bajo cada campo; `Input`, `Select` y `Textarea` marcan con `*` los obligatorios. Una regla propia se muestra con la propiedad `error` del campo.
+- **Cambios sin guardar**: el panel escucha los eventos `input` y `change` de sus campos; con cambios, `Cancelar`, la X, Escape y el clic en el fondo piden confirmación. Si un control no emite esos eventos (una lista armada con botones, por ejemplo), pasa `dirty`.
+- **Distribución**: `FormSection` (con `title` opcional) da una columna en celular y dos desde `sm`; un campo ocupa las dos envuelto en `<div className="sm:col-span-2">`.
+
+Referencia: los formularios de `src/features/documents` y `e2e/form-panel.spec.ts`.
+
 ## 🚀 Scripts Disponibles
 
 ```bash

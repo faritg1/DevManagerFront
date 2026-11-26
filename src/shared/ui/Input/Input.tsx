@@ -63,11 +63,17 @@ const useField = (id: string | undefined, { error, hint }: FieldProps, described
 };
 
 /** Label + control + error/hint layout shared by Input, Select and Textarea. */
-const Field: React.FC<FieldProps & { controlId: string; messageId: string; children: React.ReactNode }> = ({
-    label, error, hint, controlId, messageId, children,
+const Field: React.FC<FieldProps & { controlId: string; messageId: string; required?: boolean; children: React.ReactNode }> = ({
+    label, error, hint, controlId, messageId, required, children,
 }) => (
     <div className="flex flex-col gap-1.5 w-full">
-        {label && <label htmlFor={controlId} className={LABEL_CLASS}>{label}</label>}
+        {label && (
+            // The mark sits beside the label, not inside: the label text stays exactly `label`.
+            <div className="flex gap-0.5">
+                <label htmlFor={controlId} className={LABEL_CLASS}>{label}</label>
+                {required && <span aria-hidden="true" className="text-sm font-semibold text-rose-600 dark:text-rose-400">*</span>}
+            </div>
+        )}
         {children}
         {error && (
             <span id={messageId} className="flex items-start gap-1 text-rose-600 dark:text-rose-400 text-xs font-medium">
@@ -111,7 +117,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     const paddingRight = (Icon && iconPosition === 'right') || isPassword ? 'pr-11' : 'pr-4';
 
     return (
-        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId} required={props.required}>
             <div className="relative group">
                 <input
                     ref={ref}
@@ -170,7 +176,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
 }, ref) => {
     const { controlId, messageId, shownError, aria } = useField(id, { error, hint }, describedBy);
     return (
-        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId} required={props.required}>
             <select ref={ref} id={controlId} {...aria} className={`${SELECT_CLASS} w-full ${shownError ? ERROR_BORDER : ''} ${className}`} {...props}>
                 {children}
             </select>
@@ -188,7 +194,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 }, ref) => {
     const { controlId, messageId, shownError, aria } = useField(id, { error, hint }, describedBy);
     return (
-        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId}>
+        <Field label={label} error={shownError} hint={hint} controlId={controlId} messageId={messageId} required={props.required}>
             <textarea ref={ref} id={controlId} {...aria} className={`${TEXTAREA_CLASS} ${shownError ? ERROR_BORDER : ''} ${className}`} {...props} />
         </Field>
     );

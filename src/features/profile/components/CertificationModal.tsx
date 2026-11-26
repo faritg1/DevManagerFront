@@ -1,20 +1,19 @@
 import React from 'react';
-import { Modal, Button, Input } from '../../../shared/ui';
-import { Award, ExternalLink, Save, Plus } from 'lucide-react';
+import { FormPanel, FormSection, Input } from '../../../shared/ui';
+import { Award, ExternalLink } from 'lucide-react';
 import type { CertificationResponse, CreateCertificationRequest } from '../../../shared/api/types';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    saving: boolean;
     editing?: CertificationResponse | null;
-    onSave: (payload: CreateCertificationRequest, id?: string) => Promise<boolean>;
+    /** Rejects when the API refuses: the panel shows the error and stays open. */
+    onSave: (payload: CreateCertificationRequest, id?: string) => Promise<void>;
 }
 
 export const CertificationModal: React.FC<Props> = ({
     isOpen,
     onClose,
-    saving,
     editing,
     onSave,
 }) => {
@@ -25,7 +24,6 @@ export const CertificationModal: React.FC<Props> = ({
         expirationDate: '',
         evidenceUrl: '',
     });
-    const [savingLocal, setSavingLocal] = React.useState(false);
 
     React.useEffect(() => {
         if (isOpen) {
@@ -50,52 +48,28 @@ export const CertificationModal: React.FC<Props> = ({
     }, [isOpen, editing]);
 
     const handleSave = async () => {
-        if (savingLocal || saving || !formData.name || !formData.issuer || !formData.issueDate) return;
-        
-        setSavingLocal(true);
-        const payload: CreateCertificationRequest = {
+        if (!formData.name || !formData.issuer || !formData.issueDate) return;
+
+        await onSave({
             name: formData.name,
             issuer: formData.issuer,
             issueDate: formData.issueDate,
             expirationDate: formData.expirationDate || null,
             evidenceUrl: formData.evidenceUrl || null,
-        };
-
-        await onSave(payload, editing?.id);
-        setSavingLocal(false);
-    };
-
-    const handleClose = () => {
-        setFormData({
-            name: '',
-            issuer: '',
-            issueDate: '',
-            expirationDate: '',
-            evidenceUrl: '',
-        });
+        }, editing?.id);
         onClose();
     };
 
     return (
-        <Modal
+        <FormPanel
             isOpen={isOpen}
-            onClose={handleClose}
+            onClose={onClose}
             onSubmit={handleSave}
             title={editing ? 'Editar Certificación' : 'Nueva Certificación'}
             icon={<Award className="text-primary" size={20} />}
-            size="md"
-            footer={
-                <>
-                    <Button type="submit" isLoading={savingLocal || saving} icon={editing ? Save : Plus}>
-                        {editing ? 'Guardar cambios' : 'Crear Certificación'}
-                    </Button>
-                    <Button variant="outline" onClick={handleClose}>
-                        Cancelar
-                    </Button>
-                </>
-            }
+            submitText={editing ? 'Guardar cambios' : 'Crear Certificación'}
         >
-            <div className="space-y-5">
+            <FormSection>
                 <Input
                     label="Nombre de la certificación *"
                     required
@@ -112,31 +86,31 @@ export const CertificationModal: React.FC<Props> = ({
                     placeholder="Ej: Amazon Web Services"
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                    label="Fecha de emisión *"
+                    required
+                    type="date"
+                    value={formData.issueDate}
+                    onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
+                />
+                <Input
+                    label="Fecha de expiración"
+                    type="date"
+                    value={formData.expirationDate ?? ''}
+                    onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
+                />
+
+                <div className="sm:col-span-2">
                     <Input
-                        label="Fecha de emisión *"
-                        required
-                        type="date"
-                        value={formData.issueDate}
-                        onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
-                    />
-                    <Input
-                        label="Fecha de expiración"
-                        type="date"
-                        value={formData.expirationDate ?? ''}
-                        onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
+                        label="URL de evidencia (opcional)"
+                        value={formData.evidenceUrl ?? ''}
+                        onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
+                        placeholder="https://..."
+                        icon={ExternalLink}
+                        hint="Agrega un link a tu certificación o credencial."
                     />
                 </div>
-
-                <Input
-                    label="URL de evidencia (opcional)"
-                    value={formData.evidenceUrl ?? ''}
-                    onChange={(e) => setFormData({ ...formData, evidenceUrl: e.target.value })}
-                    placeholder="https://..."
-                    icon={ExternalLink}
-                    hint="Agrega un link a tu certificación o credencial."
-                />
-            </div>
-        </Modal>
+            </FormSection>
+        </FormPanel>
     );
 };

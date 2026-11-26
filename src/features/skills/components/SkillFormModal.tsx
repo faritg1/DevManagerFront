@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Code2, Save, Globe, Building2 } from "lucide-react";
+import { Code2, Globe, Building2 } from "lucide-react";
 import { skillsService } from "../../../shared/api";
 import type {
   SkillDto,
@@ -8,7 +8,7 @@ import type {
   SkillCategoryDto,
 } from "../../../shared/api/types";
 import { useToast } from "../../../shared/context";
-import { Modal, Button, Input, Select } from "../../../shared/ui";
+import { FormPanel, FormSection, Input, Select } from "../../../shared/ui";
 
 interface SkillFormModalProps {
   isOpen: boolean;
@@ -34,7 +34,6 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [skillType, setSkillType] = useState<SkillType>(1 as SkillType); // Default: Organizational
-  const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -79,70 +78,36 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (isSaving) return;
     if (!validate()) return;
 
     const resolvedCategory = category === "__custom__" ? customCategory.trim() : category;
+    const fields = { name: name.trim(), category: resolvedCategory || null, skillType };
 
-    setIsSaving(true);
-    try {
-      if (isEditing && skill) {
-        const payload: SkillDto = {
-          id: skill.id,
-          name: name.trim(),
-          category: resolvedCategory || null,
-          skillType,
-          organizationId: skill.organizationId,
-        };
-        const response = await skillsService.update(skill.id, payload);
-        if (response.success) {
-          toast.success("Habilidad actualizada correctamente");
-          onSuccess();
-        } else {
-          toast.error("Error al actualizar", response.message || undefined);
-        }
-      } else {
-        const payload: CreateSkillRequest = {
-          name: name.trim(),
-          category: resolvedCategory || null,
-          skillType,
-        };
-        const response = await skillsService.create(payload);
-        if (response.success) {
-          toast.success("Habilidad creada correctamente");
-          onSuccess();
-        } else {
-          toast.error("Error al crear", response.message || undefined);
-        }
-      }
-    } catch (error) {
-      console.error("Save skill error:", error);
-      toast.error("Error", "Ocurrió un error inesperado");
-    } finally {
-      setIsSaving(false);
+    // No try/catch: an API error rejects and the panel shows it.
+    if (skill) {
+      const payload: SkillDto = { ...fields, id: skill.id, organizationId: skill.organizationId };
+      await skillsService.update(skill.id, payload);
+      toast.success("Habilidad actualizada correctamente");
+    } else {
+      const payload: CreateSkillRequest = fields;
+      await skillsService.create(payload);
+      toast.success("Habilidad creada correctamente");
     }
+    onSuccess();
   };
 
   return (
-    <Modal
+    <FormPanel
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}
       title={isEditing ? "Editar Habilidad" : "Nueva Habilidad"}
       icon={<Code2 size={20} className="text-primary-600 dark:text-primary" />}
-      size="md"
-      footer={
-        <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} disabled={isSaving}>
-            Cancelar
-          </Button>
-          <Button type="submit" icon={Save} isLoading={isSaving}>
-            {isEditing ? "Guardar cambios" : "Crear habilidad"}
-          </Button>
-        </div>
-      }
+      submitText={isEditing ? "Guardar cambios" : "Crear habilidad"}
+      // The type buttons emit no input or change event.
+      dirty={skillType !== (skill?.skillType ?? 1)}
     >
-      <div className="space-y-5">
+      <FormSection>
         <Input
           label="Nombre de la habilidad *"
           required
@@ -179,7 +144,7 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
           )}
         </div>
 
-        <div className="space-y-2" role="group" aria-labelledby="skill-form-tipo">
+        <div className="space-y-2 sm:col-span-2" role="group" aria-labelledby="skill-form-tipo">
           <p id="skill-form-tipo" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Tipo de habilidad
           </p>
@@ -248,8 +213,8 @@ export const SkillFormModal: React.FC<SkillFormModalProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </Modal>
+      </FormSection>
+    </FormPanel>
   );
 };
 

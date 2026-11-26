@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { platformService } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
-import { Button, Modal } from '../../../shared/ui';
+import { FormPanel, FormSection } from '../../../shared/ui';
 import { EMPTY_ORGANIZATION, OrganizationFields, toOrganizationRequest } from '../../auth/components/OrganizationFields';
 
 interface CreateOrganizationDialogProps {
@@ -17,39 +17,22 @@ interface CreateOrganizationDialogProps {
 export const CreateOrganizationDialog: React.FC<CreateOrganizationDialogProps> = ({ onClose, onCreated }) => {
     const { showNotification } = useNotification();
     const [form, setForm] = useState(EMPTY_ORGANIZATION);
-    const [saving, setSaving] = useState(false);
 
     const save = async () => {
-        setSaving(true);
-        try {
-            const response = await platformService.createOrganization(toOrganizationRequest(form));
-            showNotification({ type: 'success', message: response.message || 'Entidad creada' });
-            onCreated();
-            onClose();
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setSaving(false);
-        }
+        const response = await platformService.createOrganization(toOrganizationRequest(form));
+        showNotification({ type: 'success', message: response.message || 'Entidad creada' });
+        onCreated();
+        onClose();
     };
 
     return (
-        <Modal
-            isOpen
-            onClose={onClose}
-            title="Crear entidad"
-            size="lg"
-            onSubmit={save}
-            footer={
-                <>
-                    <Button type="submit" isLoading={saving}>Guardar</Button>
-                    <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-                </>
-            }
-        >
-            <div className="flex flex-col gap-4">
-                <OrganizationFields value={form} onChange={setForm} />
-            </div>
-        </Modal>
+        <FormPanel isOpen onClose={onClose} onSubmit={save} title="Crear entidad">
+            <FormSection>
+                {/* The fields bring their own rows: they are shared with the public register. */}
+                <div className="flex flex-col gap-4 sm:col-span-2">
+                    <OrganizationFields value={form} onChange={setForm} />
+                </div>
+            </FormSection>
+        </FormPanel>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, Calculator, CheckCircle2, PiggyBank } from 'lucide-react';
-import { Card, Badge, Button, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { excedentesService } from '../../../shared/api';
@@ -65,23 +65,17 @@ export const ExcedentesPage: React.FC = () => {
         loadData();
     }, []);
 
-    const handleCalculate = submitting(async () => {
-        try {
-            const res = await excedentesService.calculate({
-                period: calcForm.period,
-                totalSurplus: calcForm.totalSurplus,
-                ...(calcForm.notes?.trim() ? { notes: calcForm.notes.trim() } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Distribución de excedentes calculada' });
-                setCalcOpen(false);
-                setCalcForm(emptyCalc());
-                loadData();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+    const handleCalculate = async () => {
+        await excedentesService.calculate({
+            period: calcForm.period,
+            totalSurplus: calcForm.totalSurplus,
+            ...(calcForm.notes?.trim() ? { notes: calcForm.notes.trim() } : {}),
+        });
+        showNotification({ type: 'success', message: 'Distribución de excedentes calculada' });
+        setCalcOpen(false);
+        setCalcForm(emptyCalc());
+        loadData();
+    };
 
 
     const handleApprove = submitting(async () => {
@@ -184,26 +178,22 @@ export const ExcedentesPage: React.FC = () => {
                 <Pager pager={pager} />
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={calcOpen}
                 onClose={() => setCalcOpen(false)}
                 onSubmit={handleCalculate}
                 title="Calcular Distribución de Excedentes"
                 icon={<Calculator className="text-primary" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Calcular</Button>
-                        <Button variant="outline" onClick={() => setCalcOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Calcular"
             >
-                <div className="grid grid-cols-1 gap-4">
+                <FormSection>
                     <Input type="date" label="Período *" required value={calcForm.period} onChange={(e) => setCalcForm(f => ({ ...f, period: e.target.value }))} />
                     <Input type="number" label="Total excedentes *" required min={0.01} step="any" value={calcForm.totalSurplus} onChange={(e) => setCalcForm(f => ({ ...f, totalSurplus: Number(e.target.value) }))} />
-                    <Input label="Observaciones" value={calcForm.notes || ''} onChange={(e) => setCalcForm(f => ({ ...f, notes: e.target.value }))} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Input label="Observaciones" value={calcForm.notes || ''} onChange={(e) => setCalcForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!approving}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { UserPlus, Users, CheckCircle2 } from "lucide-react";
-import { Button, Avatar, Badge, Modal, Input, LoadingBlock } from "../../../shared/ui";
+import { Avatar, Badge, FormPanel, FormSection, Input, LoadingBlock } from "../../../shared/ui";
 import { usersService, assignmentsService } from "../../../shared/api";
 import {
   ApplicationStatus,
@@ -39,7 +39,6 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   const [orgUsers, setOrgUsers] = useState<UserResponse[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [isAssigning, setIsAssigning] = useState(false);
   const [userSearch, setUserSearch] = useState("");
 
   React.useEffect(() => {
@@ -75,8 +74,9 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  // An API error rejects: the panel shows it and stays open. The confirmation stacks over the panel.
   const handleAssign = async () => {
-    if (!selectedUserId || isAssigning) return;
+    if (!selectedUserId) return;
     const selectedUser = orgUsers.find((u) => u.id === selectedUserId);
     const ok = await confirm({
       message: assignment
@@ -85,37 +85,30 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
     });
     if (!ok) return;
 
-    setIsAssigning(true);
-    try {
-      const data: CreateAssignmentRequest = {
-        projectId,
-        userId: selectedUserId,
-      };
-      // Backend PUT only updates projectRoleId, so reassigning a user is create-new + remove-old.
-      // Create first so a failure leaves the original assignment intact.
-      const response = await assignmentsService.create(data);
-      if (response.success && assignment) {
-        await assignmentsService.delete(assignment.id);
-      }
-      if (response.success) {
-        showNotification({
-          type: "success",
-          message: `${selectedUser?.fullName} asignado exitosamente`,
-        });
-        onSaved?.();
-        onClose();
-        setOrgUsers((prev) => prev.filter((u) => u.id !== selectedUserId));
-        setSelectedUserId("");
-      } else {
-        showNotification({
-          type: "error",
-          message: response.message || "Error al asignar usuario",
-        });
-      }
-    } catch {
-      showNotification({ type: "error", message: "Error de conexión al asignar usuario" });
-    } finally {
-      setIsAssigning(false);
+    const data: CreateAssignmentRequest = {
+      projectId,
+      userId: selectedUserId,
+    };
+    // Backend PUT only updates projectRoleId, so reassigning a user is create-new + remove-old.
+    // Create first so a failure leaves the original assignment intact.
+    const response = await assignmentsService.create(data);
+    if (response.success && assignment) {
+      await assignmentsService.delete(assignment.id);
+    }
+    if (response.success) {
+      showNotification({
+        type: "success",
+        message: `${selectedUser?.fullName} asignado exitosamente`,
+      });
+      onSaved?.();
+      onClose();
+      setOrgUsers((prev) => prev.filter((u) => u.id !== selectedUserId));
+      setSelectedUserId("");
+    } else {
+      showNotification({
+        type: "error",
+        message: response.message || "Error al asignar usuario",
+      });
     }
   };
 
@@ -127,25 +120,17 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
   );
 
   return (
-    <Modal
+    <FormPanel
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleAssign}
       title={assignment ? `Reasignar puesto de ${assignment.userName}` : "Asignar Miembro al Proyecto"}
       icon={<UserPlus className="text-emerald-700 dark:text-emerald-400" size={20} />}
-      size="lg"
-      footer={
-        <>
-          <Button type="submit" disabled={!selectedUserId} isLoading={isAssigning} icon={UserPlus}>
-            {assignment ? "Reasignar" : "Asignar al Proyecto"}
-          </Button>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-        </>
-      }
+      submitText={assignment ? "Reasignar" : "Asignar al Proyecto"}
+      submitDisabled={!selectedUserId}
     >
-      <div className="space-y-5">
+      <FormSection>
+      <div className="space-y-5 sm:col-span-2">
         <Input
           placeholder="Buscar por nombre, email o rol..." aria-label="Buscar usuarios"
           value={userSearch}
@@ -206,6 +191,7 @@ export const ProjectAssignModal: React.FC<ProjectAssignModalProps> = ({
           </div>
         )}
       </div>
-    </Modal>
+      </FormSection>
+    </FormPanel>
   );
 };

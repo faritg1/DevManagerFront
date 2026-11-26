@@ -6,9 +6,8 @@ import {
   UpdateRoleRequest,
 } from "../../../shared/api/types";
 import { rbacService } from "../../../shared/api";
-import { Modal } from "../../../shared/ui/Modal";
+import { FormPanel, FormSection } from "../../../shared/ui";
 import { Input } from "../../../shared/ui/Input";
-import { Button } from "../../../shared/ui/Button";
 
 interface RoleFormModalProps {
   isOpen: boolean;
@@ -28,12 +27,10 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   onSuccess,
   roleToEdit,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<RoleFormData>({
     name: "",
     description: "",
   });
-  const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,7 +43,6 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
       } else {
         setFormData({ name: "", description: "" });
       }
-      setError(null);
       setNameError(null);
     }
   }, [isOpen, roleToEdit]);
@@ -57,72 +53,32 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
     if (!formData.name.trim()) {
       setNameError("El nombre es obligatorio");
       return;
     }
     setNameError(null);
 
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      if (roleToEdit) {
-        const updateRequest: UpdateRoleRequest = {
-          name: formData.name,
-          description: formData.description,
-        };
-        const response = await rbacService.updateRole(
-          roleToEdit.id,
-          updateRequest,
-        );
-        if (response.success) {
-          onSuccess();
-          onClose();
-        } else {
-          setError(response.message || "Error al actualizar el rol");
-        }
-      } else {
-        const createRequest: CreateRoleRequest = {
-          name: formData.name,
-          description: formData.description,
-        };
-        const response = await rbacService.createRole(createRequest);
-        if (response.success) {
-          onSuccess();
-          onClose();
-        } else {
-          setError(response.message || "Error al crear el rol");
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Ocurrió un error inesperado");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // No try/catch: an API error rejects and the panel shows it.
+    const request: CreateRoleRequest & UpdateRoleRequest = {
+      name: formData.name,
+      description: formData.description,
+    };
+    await (roleToEdit
+      ? rbacService.updateRole(roleToEdit.id, request)
+      : rbacService.createRole(request));
+    onSuccess();
+    onClose();
   };
 
   return (
-    <Modal
+    <FormPanel
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}
       title={roleToEdit ? "Editar Rol" : "Nuevo Rol"}
-      size="md"
-      footer={
-        <div className="flex justify-end gap-2 w-full">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
-          </Button>
-          <Button type="submit" isLoading={isSubmitting}>
-            Guardar
-          </Button>
-        </div>
-      }
     >
-      <div className="space-y-4">
+      <FormSection>
         <Input
           label="Nombre del Rol *"
           required
@@ -141,13 +97,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
           onChange={handleChange}
           placeholder="Descripción breve de las responsabilidades"
         />
-
-        {error && (
-          <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm">
-            {error}
-          </div>
-        )}
-      </div>
-    </Modal>
+      </FormSection>
+    </FormPanel>
   );
 };

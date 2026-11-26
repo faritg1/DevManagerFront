@@ -14,7 +14,7 @@ import {
     X,
     type LucideIcon,
 } from 'lucide-react';
-import { Badge, Button, Card, Input, Modal, PageContainer, PageHeader, Select, LoadingBlock } from '../../../shared/ui';
+import { Badge, Button, Card, FormPanel, FormSection, Input, PageContainer, PageHeader, Select, LoadingBlock } from '../../../shared/ui';
 import { useAuth, useNotification } from '../../../shared/context';
 import { DEFAULT_ACTIVITIES_SETTINGS, setActivitiesSettings, useIsAdmin, usePermission } from '../../../shared/hooks';
 import { organizationsService } from '../../../shared/api';
@@ -150,7 +150,6 @@ export const OrganizationsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [form, setForm] = useState<EditForm | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
 
     const load = async () => {
         setIsLoading(true);
@@ -175,44 +174,38 @@ export const OrganizationsPage: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const days = Number(form?.dueSoonDays);
+    const daysError = form && (form.dueSoonDays.trim() === '' || !Number.isInteger(days) || days < 0 || days > 10)
+        ? 'Los días de aviso deben ser un entero entre 0 y 10'
+        : undefined;
+
+    // An API error (400 validation, 409 duplicate NIT) rejects: the panel shows it and stays open.
     const save = async () => {
-        if (!form || isSaving || !form.name.trim()) return;
-        const days = Number(form.dueSoonDays);
-        if (form.dueSoonDays.trim() === '' || !Number.isInteger(days) || days < 0 || days > 10) {
-            showNotification({ type: 'error', message: 'Los días de aviso deben ser un entero entre 0 y 10' });
-            return;
-        }
-        setIsSaving(true);
-        try {
-            const res = await organizationsService.updateCurrent({
-                name: form.name.trim(),
-                legalName: form.legalName.trim() || null,
-                nit: form.nit.trim() || null,
-                entityType: form.entityType === '' ? null : form.entityType,
-                workItemDueSoonDays: days,
-                workItemOverdueNotice: form.overdueNotice,
-                activitiesSettings: form.activities,
-                // Not sent = unchanged: without the section there is nothing to save. The API validates the ranges.
-                ...(canDocuments && {
-                    documentSettings: {
-                        reviewNoticeDays: Number(form.reviewNoticeDays),
-                        retentionNoticeDays: Number(form.retentionNoticeDays),
-                        documentTypes: form.documentTypes,
-                        processes: form.processes,
-                    },
-                }),
-            });
-            if (res.success && res.data) {
-                setOrg(res.data);
-                setActivitiesSettings(res.data.activitiesSettings ?? form.activities);
-                updateUser({ organizationName: res.data.name });
-                setForm(null);
-                showNotification({ type: 'success', message: 'Organización actualizada' });
-            }
-        } catch {
-            // el listener global muestra el error (400 validación / 409 NIT duplicado)
-        } finally {
-            setIsSaving(false);
+        if (!form || !form.name.trim() || daysError) return;
+        const res = await organizationsService.updateCurrent({
+            name: form.name.trim(),
+            legalName: form.legalName.trim() || null,
+            nit: form.nit.trim() || null,
+            entityType: form.entityType === '' ? null : form.entityType,
+            workItemDueSoonDays: days,
+            workItemOverdueNotice: form.overdueNotice,
+            activitiesSettings: form.activities,
+            // Not sent = unchanged: without the section there is nothing to save. The API validates the ranges.
+            ...(canDocuments && {
+                documentSettings: {
+                    reviewNoticeDays: Number(form.reviewNoticeDays),
+                    retentionNoticeDays: Number(form.retentionNoticeDays),
+                    documentTypes: form.documentTypes,
+                    processes: form.processes,
+                },
+            }),
+        });
+        if (res.success && res.data) {
+            setOrg(res.data);
+            setActivitiesSettings(res.data.activitiesSettings ?? form.activities);
+            updateUser({ organizationName: res.data.name });
+            setForm(null);
+            showNotification({ type: 'success', message: 'Organización actualizada' });
         }
     };
 
@@ -348,22 +341,17 @@ export const OrganizationsPage: React.FC = () => {
                 />
             </div>
 
-            <Modal
+            <FormPanel
                 isOpen={!!form}
                 onClose={() => setForm(null)}
                 onSubmit={save}
                 title="Editar organización"
                 icon={<Pencil className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={isSaving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setForm(null)}>Cancelar</Button>
-                    </>
-                }
+                // Removing a catalog value is a button: it emits no input event.
+                dirty={!!form && JSON.stringify(form) !== JSON.stringify(toForm(org))}
             >
-                {form && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {form && (<>
+                    <FormSection>
                         <div className="sm:col-span-2">
                             <Input
                                 label="Nombre *"
@@ -411,6 +399,7 @@ export const OrganizationsPage: React.FC = () => {
                             step={1}
                             value={form.dueSoonDays}
                             hint="0 = solo el día del vencimiento"
+                            error={daysError}
                             onChange={(e) => setForm({ ...form, dueSoonDays: e.target.value })}
                         />
                         <label className="flex items-center gap-2 self-center text-sm text-slate-700 dark:text-slate-300">
@@ -421,8 +410,9 @@ export const OrganizationsPage: React.FC = () => {
                             />
                             Avisar cuando una actividad se venza
                         </label>
-                        <fieldset className="flex flex-col gap-2 sm:col-span-2">
-                            <legend className="mb-1 text-sm font-semibold text-slate-900 dark:text-white">Módulo de actividades</legend>
+                    </FormSection>
+                    <FormSection title="Módulo de actividades">
+                        <div className="flex flex-col gap-2 sm:col-span-2">
                             {([
                                 ['showOnProjectDetail', 'Mostrar actividades en el detalle del proyecto'],
                                 ['showMyWorkOnDashboard', 'Mostrar «Mis actividades» en el dashboard'],
@@ -439,10 +429,10 @@ export const OrganizationsPage: React.FC = () => {
                                     {label}
                                 </label>
                             ))}
-                        </fieldset>
-                        {canDocuments && (
-                            <fieldset className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
-                                <legend className="mb-1 text-sm font-semibold text-slate-900 dark:text-white">Gestión documental</legend>
+                        </div>
+                    </FormSection>
+                    {canDocuments && (
+                            <FormSection title="Gestión documental">
                                 <Input
                                     label="Días de aviso de revisión de documentos"
                                     type="number"
@@ -465,11 +455,10 @@ export const OrganizationsPage: React.FC = () => {
                                 />
                                 <CatalogEditor label="Tipos de documento" values={form.documentTypes} onChange={(documentTypes) => setForm({ ...form, documentTypes })} />
                                 <CatalogEditor label="Procesos" values={form.processes} onChange={(processes) => setForm({ ...form, processes })} />
-                            </fieldset>
-                        )}
-                    </div>
-                )}
-            </Modal>
+                            </FormSection>
+                    )}
+                </>)}
+            </FormPanel>
         </PageContainer>
     );
 };

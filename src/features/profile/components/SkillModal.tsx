@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, Button, Input, Select, Textarea, LevelSelector, LoadingBlock } from '../../../shared/ui';
-import { Award, Link as LinkIcon, Save, Plus } from 'lucide-react';
+import { FormPanel, FormSection, Input, Select, Textarea, LevelSelector, LoadingBlock } from '../../../shared/ui';
+import { Award, Link as LinkIcon } from 'lucide-react';
 import type { SkillDto, UpsertEmployeeSkillRequest, EmployeeSkillResponse, AllConfigCatalogsDto } from '../../../shared/api/types';
 
 interface Props {
@@ -10,9 +10,9 @@ interface Props {
     availableSkills: SkillDto[];
     form: UpsertEmployeeSkillRequest;
     setForm: React.Dispatch<React.SetStateAction<UpsertEmployeeSkillRequest>>;
-    saving: boolean;
     editing?: EmployeeSkillResponse | null;
-    onSave: () => void;
+    /** Rejects when the API refuses: the panel shows the error and stays open. */
+    onSave: () => Promise<void>;
     catalogs: AllConfigCatalogsDto | null;
 }
 
@@ -23,11 +23,14 @@ export const SkillModal: React.FC<Props> = ({
     availableSkills,
     form,
     setForm,
-    saving,
     editing,
     onSave,
     catalogs,
 }) => {
+    // The level buttons emit no input event, so the panel cannot see them change.
+    const [levelChanged, setLevelChanged] = React.useState(false);
+    React.useEffect(() => { if (isOpen) setLevelChanged(false); }, [isOpen]);
+
     const getLevelLabel = (levelId: number) => {
         return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
     };
@@ -41,25 +44,17 @@ export const SkillModal: React.FC<Props> = ({
     const isFormValid = form.skillId && hasValidEvidence;
 
     return (
-        <Modal
+        <FormPanel
             isOpen={isOpen}
             onClose={onClose}
-            onSubmit={() => { if (!saving && isFormValid) onSave(); }}
+            onSubmit={async () => { if (isFormValid) await onSave(); }}
             title={editing ? 'Editar Habilidad' : 'Agregar Habilidad'}
             icon={<Award className="text-primary" size={20} />}
-            size="md"
-            footer={
-                <>
-                    <Button type="submit" isLoading={saving} icon={editing ? Save : Plus}>
-                        {editing ? 'Guardar cambios' : 'Agregar Habilidad'}
-                    </Button>
-                    <Button variant="outline" onClick={onClose}>
-                        Cancelar
-                    </Button>
-                </>
-            }
+            submitText={editing ? 'Guardar cambios' : 'Agregar Habilidad'}
+            dirty={levelChanged}
         >
-            <div className="space-y-5">
+            <FormSection>
+              <div className="space-y-5 sm:col-span-2">
                 {editing ? (
                     <Input label="Habilidad *" value={editing.skillName} disabled />
                 ) : loadingSkills ? (
@@ -87,7 +82,7 @@ export const SkillModal: React.FC<Props> = ({
                     <LevelSelector
                         levels={catalogs?.skillLevels || []}
                         selectedId={form.level}
-                        onSelect={(id) => setForm(prev => ({ ...prev, level: id }))}
+                        onSelect={(id) => { setLevelChanged(true); setForm(prev => ({ ...prev, level: id })); }}
                     />
                     {requiresEvidence && (
                         <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1">
@@ -122,7 +117,8 @@ export const SkillModal: React.FC<Props> = ({
                         ? 'Obligatorio para niveles avanzados (4+). Describe tu experiencia (máx 1000 caracteres).'
                         : 'Describe tu experiencia (máx 1000 caracteres). Útil si no tienes URL de evidencia.'}
                 />
-            </div>
-        </Modal>
+              </div>
+            </FormSection>
+        </FormPanel>
     );
 };

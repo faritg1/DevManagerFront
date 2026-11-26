@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FilePlus } from 'lucide-react';
-import { Button, Card, Modal, Input, Textarea, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
+import { Button, Card, FormPanel, FormSection, Input, Textarea, PageContainer, PageHeader, LoadingBlock, EmptyState } from '../../../shared/ui';
 import { useModal, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { consentsService } from '../../../shared/api';
@@ -17,7 +17,6 @@ export const DataPoliciesPage: React.FC = () => {
     const [items, setItems] = useState<DataPolicyDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState(EMPTY);
-    const [isSaving, setIsSaving] = useState(false);
 
     const load = useCallback(async () => {
         try {
@@ -33,26 +32,17 @@ export const DataPoliciesPage: React.FC = () => {
     useEffect(() => { load(); }, [load]);
 
     const publish = async () => {
-        if (isSaving || !canPublish) return;
-        setIsSaving(true);
-        try {
-            const res = await consentsService.createPolicy({
-                version: form.version.trim(),
-                purpose: form.purpose.trim(),
-                text: form.text.trim(),
-                effectiveFrom: form.effectiveFrom || undefined,
-            });
-            if (res.success) {
-                showNotification({ type: 'success', message: 'Política publicada' });
-                modal.close();
-                setForm(EMPTY);
-                await load();
-            }
-        } catch (e) {
-            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
-        } finally {
-            setIsSaving(false);
-        }
+        if (!canPublish) return;
+        await consentsService.createPolicy({
+            version: form.version.trim(),
+            purpose: form.purpose.trim(),
+            text: form.text.trim(),
+            effectiveFrom: form.effectiveFrom || undefined,
+        });
+        showNotification({ type: 'success', message: 'Política publicada' });
+        modal.close();
+        setForm(EMPTY);
+        await load();
     };
 
     const canPublish = form.version.trim() && form.purpose.trim() && form.text.trim();
@@ -84,33 +74,29 @@ export const DataPoliciesPage: React.FC = () => {
                 ))
             )}
 
-            <Modal
+            <FormPanel
                 isOpen={modal.isOpen}
                 onClose={modal.close}
                 onSubmit={publish}
                 title="Publicar política"
                 icon={<FilePlus className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={isSaving}>Publicar</Button>
-                        <Button variant="outline" onClick={modal.close}>Cancelar</Button>
-                    </>
-                }
+                submitText="Publicar"
             >
-                <div className="space-y-4">
+                <FormSection>
                     <Input label="Versión *" required placeholder="2.0" value={form.version} onChange={(e) => setForm((f) => ({ ...f, version: e.target.value }))} />
                     <Input label="Finalidad *" required value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} />
                     <Input label="Vigente desde (opcional)" type="date" value={form.effectiveFrom} onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))} />
-                    <Textarea
-                        label="Texto *"
-                        required
-                        rows={6}
-                        value={form.text}
-                        onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
-                    />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Textarea
+                            label="Texto *"
+                            required
+                            rows={6}
+                            value={form.text}
+                            onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
+                        />
+                    </div>
+                </FormSection>
+            </FormPanel>
         </PageContainer>
     );
 };

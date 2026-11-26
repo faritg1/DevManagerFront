@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Pencil, Trash2 } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState, ExportButton } from '../../../shared/ui';
+import { Button, Card, Badge, FormPanel, FormSection, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TH_ACTIONS_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, IconButton, TableActions, EmptyState, ExportButton } from '../../../shared/ui';
 import { useModal, useConfirm, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { educationService } from '../../../shared/api';
@@ -34,7 +34,6 @@ export const EducationProgramsPage: React.FC = () => {
     const [hours, setHours] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
     const pager = usePagedFilter(items, { searchFields: p => [p.name, PROGRAM_TYPE_LABELS[p.type]] });
 
     const toast = useCallback((e: unknown) => {
@@ -65,21 +64,12 @@ export const EducationProgramsPage: React.FC = () => {
     };
 
     const save = async () => {
-        if (isSaving || !valid) return;
-        setIsSaving(true);
+        if (!valid) return;
         const body = { name: name.trim(), type, requiredHours: Number(hours), startDate: startDate || undefined, endDate: endDate || undefined };
-        try {
-            const res = editing ? await educationService.updateProgram(editing.id, body) : await educationService.createProgram(body);
-            if (res.success) {
-                showNotification({ type: 'success', message: editing ? 'Programa actualizado' : 'Programa creado' });
-                modal.close();
-                await load();
-            }
-        } catch (e) {
-            toast(e);
-        } finally {
-            setIsSaving(false);
-        }
+        await (editing ? educationService.updateProgram(editing.id, body) : educationService.createProgram(body));
+        showNotification({ type: 'success', message: editing ? 'Programa actualizado' : 'Programa creado' });
+        modal.close();
+        await load();
     };
 
     const remove = async (p: EducationProgramDto) => {
@@ -161,19 +151,13 @@ export const EducationProgramsPage: React.FC = () => {
                 </>)}
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={modal.isOpen}
                 onClose={modal.close}
                 onSubmit={save}
                 title={editing ? 'Editar programa' : 'Nuevo programa'}
-                footer={
-                    <>
-                        <Button type="submit" isLoading={isSaving}>Guardar</Button>
-                        <Button variant="outline" onClick={modal.close}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="space-y-4">
+                <FormSection>
                     <Input label="Nombre *" required value={name} onChange={(e) => setName(e.target.value)} />
                     <Select label="Tipo *" required value={type} onChange={(e) => setType(Number(e.target.value) as ProgramType)}>
                         {Object.entries(PROGRAM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -181,8 +165,8 @@ export const EducationProgramsPage: React.FC = () => {
                     <Input label="Horas requeridas *" required type="number" min={0.5} step="0.5" value={hours} onChange={(e) => setHours(e.target.value)} />
                     <Input label="Fecha de inicio" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     <Input label="Fecha de fin" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
         </PageContainer>
     );
 };

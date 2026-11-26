@@ -110,27 +110,18 @@ export const ProfilePage: React.FC = () => {
       showNotification({ type: "success", message: "Habilidad eliminada" });
   };
 
+  // An API error rejects: the panel shows it and stays open. The required select reports a missing skill.
   const saveSkillHandler = async () => {
-    if (!skillForm.skillId) {
-      showNotification({ type: "error", message: "Selecciona una habilidad" });
-      return;
-    }
-    const ok = await saveSkill(skillForm);
-    if (ok) {
-      showNotification({
-        type: "success",
-        message: editingSkill
-          ? "Habilidad actualizada exitosamente"
-          : "Habilidad agregada exitosamente",
-      });
-      skillModal.close();
-      setEditingSkill(null);
-    } else {
-      showNotification({
-        type: "error",
-        message: "Error al guardar habilidad",
-      });
-    }
+    if (!skillForm.skillId) return;
+    await saveSkill(skillForm);
+    showNotification({
+      type: "success",
+      message: editingSkill
+        ? "Habilidad actualizada exitosamente"
+        : "Habilidad agregada exitosamente",
+    });
+    skillModal.close();
+    setEditingSkill(null);
   };
 
   if (isLoadingProfile) {
@@ -293,21 +284,13 @@ export const ProfilePage: React.FC = () => {
                 }
               }}
               onSave={async (payload, id) => {
-                const ok = await saveCertification(payload, id);
-                if (ok) {
-                  showNotification({
-                    type: "success",
-                    message: id
-                      ? "Certificación actualizada"
-                      : "Certificación creada",
-                  });
-                } else {
-                  showNotification({
-                    type: "error",
-                    message: "Error al guardar certificación",
-                  });
-                }
-                return ok;
+                await saveCertification(payload, id);
+                showNotification({
+                  type: "success",
+                  message: id
+                    ? "Certificación actualizada"
+                    : "Certificación creada",
+                });
               }}
             />
           </div>
@@ -324,7 +307,6 @@ export const ProfilePage: React.FC = () => {
         availableSkills={availableSkills}
         form={skillForm}
         setForm={setSkillForm}
-        saving={skillOpLoading}
         editing={editingSkill}
         onSave={saveSkillHandler}
         catalogs={catalogs}

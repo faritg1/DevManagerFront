@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, Input, Select, Textarea, FormPanel, FormSection, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
@@ -74,15 +74,6 @@ export const SstPage: React.FC = () => {
 
     const [investigating, setInvestigating] = useState<WorkAccidentDto | null>(null);
     const [invForm, setInvForm] = useState<InvestigateAccidentRequest>(emptyInvestigation);
-    const [saving, setSaving] = useState(false);
-
-    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
-    const submitting = (fn: () => Promise<void>) => async () => {
-        if (saving) return;
-        setSaving(true);
-        try { await fn(); } finally { setSaving(false); }
-    };
-
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
     const accidentColumns: CsvColumn<WorkAccidentDto>[] = [
         { header: 'Fecha', value: (a) => formatDate(a.occurredAt, undefined, '') },
@@ -130,101 +121,71 @@ export const SstPage: React.FC = () => {
         }
     }, [isAdmin, canExams, canAccidents]);
 
-    const handleRecordExam = submitting(async () => {
+    // The five saves below swallow nothing: an API error rejects and the panel shows it.
+    const handleRecordExam = async () => {
         if (!recording) return;
         try {
-            const res = await sstService.recordExam(recording.id, examResult, examNotes.trim() || undefined, examFileUrl.trim() || undefined);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Resultado de examen registrado' });
-                setRecording(null);
-                loadAll();
-            }
+            await sstService.recordExam(recording.id, examResult, examNotes.trim() || undefined, examFileUrl.trim() || undefined);
         } catch (err) {
-            // el listener global muestra el mensaje del 409 (resultado ya registrado)
-            if (isConflict(err)) {
-                setRecording(null);
-                loadAll();
-            }
+            // 409: someone already recorded the result; refresh the list behind the panel.
+            if (isConflict(err)) loadAll();
+            throw err;
         }
-    });
+        showNotification({ type: 'success', message: 'Resultado de examen registrado' });
+        setRecording(null);
+        loadAll();
+    };
 
+    const handleSchedule = async () => {
+        await sstService.scheduleExam(scheduleForm.userId, scheduleForm.examType, scheduleForm.scheduledDate);
+        showNotification({ type: 'success', message: 'Examen médico programado' });
+        setScheduleOpen(false);
+        loadAll();
+    };
 
-    const handleSchedule = submitting(async () => {
-        try {
-            const res = await sstService.scheduleExam(scheduleForm.userId, scheduleForm.examType, scheduleForm.scheduledDate);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Examen médico programado' });
-                setScheduleOpen(false);
-                loadAll();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
-
-
-    const handleReportAccident = submitting(async () => {
+    const handleReportAccident = async () => {
         if (!accidentValid) return;
-        try {
-            const res = await sstService.reportAccident({
-                userId: accidentForm.userId,
-                occurredAt: new Date(accidentForm.occurredAt).toISOString(),
-                accidentType: accidentForm.accidentType.trim(),
-                severity: accidentForm.severity,
-                arl: accidentForm.arl.trim(),
-                description: accidentForm.description.trim(),
-                ...(accidentForm.furatNumber?.trim() ? { furatNumber: accidentForm.furatNumber.trim() } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Accidente de trabajo reportado' });
-                setAccidentOpen(false);
-                loadAll();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await sstService.reportAccident({
+            userId: accidentForm.userId,
+            occurredAt: new Date(accidentForm.occurredAt).toISOString(),
+            accidentType: accidentForm.accidentType.trim(),
+            severity: accidentForm.severity,
+            arl: accidentForm.arl.trim(),
+            description: accidentForm.description.trim(),
+            ...(accidentForm.furatNumber?.trim() ? { furatNumber: accidentForm.furatNumber.trim() } : {}),
+        });
+        showNotification({ type: 'success', message: 'Accidente de trabajo reportado' });
+        setAccidentOpen(false);
+        loadAll();
+    };
 
-
-    const handleCreateRisk = submitting(async () => {
+    const handleCreateRisk = async () => {
         if (!riskForm.factor.trim() || !riskForm.description.trim()) return;
-        try {
-            const res = await sstService.createRisk({
-                level: riskForm.level,
-                factor: riskForm.factor.trim(),
-                description: riskForm.description.trim(),
-                ...(riskForm.controls?.trim() ? { controls: riskForm.controls.trim() } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Riesgo agregado a la matriz' });
-                setRiskOpen(false);
-                setRiskForm(emptyRisk());
-                loadAll();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await sstService.createRisk({
+            level: riskForm.level,
+            factor: riskForm.factor.trim(),
+            description: riskForm.description.trim(),
+            ...(riskForm.controls?.trim() ? { controls: riskForm.controls.trim() } : {}),
+        });
+        showNotification({ type: 'success', message: 'Riesgo agregado a la matriz' });
+        setRiskOpen(false);
+        setRiskForm(emptyRisk());
+        loadAll();
+    };
 
-
-    const handleInvestigate = submitting(async () => {
+    const handleInvestigate = async () => {
         if (!investigating || !invValid) return;
         try {
-            const res = await sstService.investigateAccident(investigating.id, invForm);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Investigación registrada' });
-                setInvestigating(null);
-                loadAll();
-            }
+            await sstService.investigateAccident(investigating.id, invForm);
         } catch (err) {
-            // el listener global muestra el mensaje del 409 (investigación única)
-            if (isConflict(err)) {
-                setInvestigating(null);
-                loadAll();
-            }
+            // 409: the single investigation already exists; refresh the list behind the panel.
+            if (isConflict(err)) loadAll();
+            throw err;
         }
-    });
-
+        showNotification({ type: 'success', message: 'Investigación registrada' });
+        setInvestigating(null);
+        loadAll();
+    };
 
     const pendingInvestigation = accidents.filter(a => !a.investigationCompleted);
     const invValid = invForm.conclusions.trim() && invForm.causes.trim() && invForm.correctiveMeasures.trim();
@@ -405,67 +366,52 @@ export const SstPage: React.FC = () => {
                 </Card>
             )}
 
-            <Modal
+            <FormPanel
                 isOpen={scheduleOpen}
                 onClose={() => setScheduleOpen(false)}
                 onSubmit={handleSchedule}
                 title="Programar Examen Médico"
                 icon={<CalendarPlus className="text-blue-500" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Programar</Button>
-                        <Button variant="outline" onClick={() => setScheduleOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Programar"
             >
-                <div className="grid grid-cols-1 gap-4">
-                    {associatePicker(scheduleForm.userId, v => setScheduleForm(f => ({ ...f, userId: v })))}
+                <FormSection>
+                    <div className="sm:col-span-2">
+                        {associatePicker(scheduleForm.userId, v => setScheduleForm(f => ({ ...f, userId: v })))}
+                    </div>
                     <Select label="Tipo de examen *" required value={scheduleForm.examType} onChange={(e) => setScheduleForm(f => ({ ...f, examType: Number(e.target.value) as ExamType }))}>
                         {Object.entries(EXAM_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
                     <Input type="date" label="Fecha programada *" required value={scheduleForm.scheduledDate} onChange={(e) => setScheduleForm(f => ({ ...f, scheduledDate: e.target.value }))} />
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={!!recording}
                 onClose={() => setRecording(null)}
                 onSubmit={handleRecordExam}
                 title="Registrar Resultado de Examen"
                 icon={<Stethoscope className="text-blue-500" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRecording(null)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 gap-4">
+                <FormSection>
                     <Select label="Resultado *" required value={examResult} onChange={(e) => setExamResult(Number(e.target.value) as ExamResult)}>
                         {Object.entries(EXAM_RESULT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
                     <Input label="URL del soporte" value={examFileUrl} onChange={(e) => setExamFileUrl(e.target.value)} />
-                    <Input label="Observaciones" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Input label="Observaciones" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} />
+                    </div>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={accidentOpen}
                 onClose={() => setAccidentOpen(false)}
                 onSubmit={handleReportAccident}
                 title="Reportar Accidente de Trabajo"
                 icon={<Siren className="text-rose-600 dark:text-rose-400" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Reportar</Button>
-                        <Button variant="outline" onClick={() => setAccidentOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Reportar"
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     <div className="sm:col-span-2">
                         {associatePicker(accidentForm.userId, v => setAccidentForm(f => ({ ...f, userId: v })))}
                     </div>
@@ -487,24 +433,17 @@ export const SstPage: React.FC = () => {
                     <div className="sm:col-span-2">
                         <Textarea label="Descripción *" required value={accidentForm.description} onChange={(e) => setAccidentForm(f => ({ ...f, description: e.target.value }))} rows={3} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={riskOpen}
                 onClose={() => setRiskOpen(false)}
                 onSubmit={handleCreateRisk}
                 title="Agregar Riesgo"
                 icon={<ShieldAlert className="text-orange-500" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRiskOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     <Select label="Nivel de riesgo *" required value={riskForm.level} onChange={(e) => setRiskForm(f => ({ ...f, level: Number(e.target.value) }))}>
                         {Object.entries(RISK_LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
@@ -515,31 +454,31 @@ export const SstPage: React.FC = () => {
                     <div className="sm:col-span-2">
                         <Textarea label="Controles" value={riskForm.controls || ''} onChange={(e) => setRiskForm(f => ({ ...f, controls: e.target.value }))} rows={3} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={!!investigating}
                 onClose={() => setInvestigating(null)}
                 onSubmit={handleInvestigate}
                 title="Investigar Accidente"
                 icon={<ClipboardCheck className="text-rose-600 dark:text-rose-400" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar Investigación</Button>
-                        <Button variant="outline" onClick={() => setInvestigating(null)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Guardar Investigación"
             >
-                <div className="grid grid-cols-1 gap-4">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">La investigación se registra una sola vez y no puede modificarse.</p>
+                <FormSection>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 sm:col-span-2">La investigación se registra una sola vez y no puede modificarse.</p>
                     <Input type="date" label="Fecha de investigación *" required max={today()} value={invForm.investigationDate} onChange={(e) => setInvForm(f => ({ ...f, investigationDate: e.target.value }))} />
-                    <Textarea label="Conclusiones *" required value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} rows={2} />
-                    <Textarea label="Causas *" required value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} rows={2} />
-                    <Textarea label="Medidas correctivas *" required value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} rows={2} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Textarea label="Conclusiones *" required value={invForm.conclusions} onChange={(e) => setInvForm(f => ({ ...f, conclusions: e.target.value }))} rows={2} />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <Textarea label="Causas *" required value={invForm.causes} onChange={(e) => setInvForm(f => ({ ...f, causes: e.target.value }))} rows={2} />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <Textarea label="Medidas correctivas *" required value={invForm.correctiveMeasures} onChange={(e) => setInvForm(f => ({ ...f, correctiveMeasures: e.target.value }))} rows={2} />
+                    </div>
+                </FormSection>
+            </FormPanel>
         </PageContainer>
     );
 };

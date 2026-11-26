@@ -35,7 +35,7 @@ interface Props {
       evidenceUrl?: string | null;
     },
     id?: string,
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 }
 
 export const CertificationsSection: React.FC<Props> = ({
@@ -201,7 +201,6 @@ export const CertificationsSection: React.FC<Props> = ({
       <CertificationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        saving={opLoading}
         editing={editingCert}
         onSave={onSave}
       />

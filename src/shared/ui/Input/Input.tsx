@@ -71,7 +71,8 @@ const Field: React.FC<FieldProps & { controlId: string; messageId: string; requi
             // The mark sits beside the label, not inside: the label text stays exactly `label`.
             <div className="flex gap-0.5">
                 <label htmlFor={controlId} className={LABEL_CLASS}>{label}</label>
-                {required && <span aria-hidden="true" className="text-sm font-semibold text-rose-600 dark:text-rose-400">*</span>}
+                {/* Labels written before this mark existed already end in " *" */}
+                {required && !label.trimEnd().endsWith('*') && <span aria-hidden="true" className="text-sm font-semibold text-rose-600 dark:text-rose-400">*</span>}
             </div>
         )}
         {children}

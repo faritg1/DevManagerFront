@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Textarea, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePermission } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
@@ -33,7 +33,6 @@ export const CompetenciasPage: React.FC = () => {
 
     const [createOpen, setCreateOpen] = useState(false);
     const [form, setForm] = useState<CreateCompetencyRequest>(emptyForm);
-    const [saving, setSaving] = useState(false);
 
     const targetUserId = isAdmin ? ownerId : user?.id ?? '';
 
@@ -74,26 +73,18 @@ export const CompetenciasPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
-        if (saving || !form.userId || !form.name.trim()) return;
-        setSaving(true);
-        try {
-            const res = await gestionHumanaService.create({
-                userId: form.userId,
-                name: form.name.trim(),
-                level: form.level,
-                ...(form.notes?.trim() ? { notes: form.notes.trim() } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Competencia registrada' });
-                setCreateOpen(false);
-                if (form.userId === targetUserId) loadOwned(targetUserId);
-                else setOwnerId(form.userId);
-            }
-        } catch {
-            // el listener global muestra el error (409 si el asociado está retirado o ya la tiene)
-        } finally {
-            setSaving(false);
-        }
+        if (!form.userId || !form.name.trim()) return;
+        // A 409 (withdrawn associate, or one who already has it) rejects and the panel shows it.
+        await gestionHumanaService.create({
+            userId: form.userId,
+            name: form.name.trim(),
+            level: form.level,
+            ...(form.notes?.trim() ? { notes: form.notes.trim() } : {}),
+        });
+        showNotification({ type: 'success', message: 'Competencia registrada' });
+        setCreateOpen(false);
+        if (form.userId === targetUserId) loadOwned(targetUserId);
+        else setOwnerId(form.userId);
     };
 
     const handleToggle = async (c: CompetencyDto) => {
@@ -211,33 +202,30 @@ export const CompetenciasPage: React.FC = () => {
                 ) : table(owned, false)}
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
                 onSubmit={handleCreate}
                 title="Registrar Competencia"
                 icon={<Award className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                // LevelSelector is a button list: it emits no input or change event.
+                dirty={form.level !== 1}
             >
-                <div className="grid grid-cols-1 gap-4">
+                <FormSection>
                     <Select label="Asociado *" required value={form.userId} onChange={(e) => setForm(f => ({ ...f, userId: e.target.value }))}>
                         <option value="">Seleccione un asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </Select>
                     <Input label="Competencia *" required value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
-                    <div role="group" aria-labelledby="competencias-nivel">
+                    <div role="group" aria-labelledby="competencias-nivel" className="sm:col-span-2">
                         <p id="competencias-nivel" className="text-slate-700 dark:text-white text-sm font-bold">Nivel *</p>
                         <LevelSelector levels={SKILL_LEVELS} selectedId={form.level} onSelect={(id) => setForm(f => ({ ...f, level: id }))} className="mt-2" />
                     </div>
-                    <Textarea label="Notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Textarea label="Notas" value={form.notes || ''} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+                    </div>
+                </FormSection>
+            </FormPanel>
         </PageContainer>
     );
 };

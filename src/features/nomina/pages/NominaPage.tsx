@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
-import { Card, Button, Input, Select, Modal, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, ExportButton } from '../../../shared/ui';
+import { Card, Button, FormPanel, FormSection, Input, Select, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
@@ -39,7 +39,6 @@ export const NominaPage: React.FC = () => {
     const [compLoading, setCompLoading] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
     const [createForm, setCreateForm] = useState<CreateCompensationRequest>(emptyForm());
-    const [saving, setSaving] = useState(false);
 
     const [pilaYear, setPilaYear] = useState(new Date().getFullYear());
     const [pilaMonth, setPilaMonth] = useState(new Date().getMonth() + 1);
@@ -108,8 +107,6 @@ export const NominaPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
-        if (saving) return;
-        setSaving(true);
         const payload: CreateCompensationRequest = {
             userId: createForm.userId,
             period: createForm.period,
@@ -118,20 +115,12 @@ export const NominaPage: React.FC = () => {
             ...(createForm.model === 1 ? { dailyRate: createForm.dailyRate } : {}),
             ...(createForm.notes?.trim() ? { notes: createForm.notes.trim() } : {}),
         };
-        try {
-            const res = await nominaService.createCompensation(payload);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Compensación creada' });
-                setCreateOpen(false);
-                setCompUserId(payload.userId);
-                setCompYear(new Date(payload.period).getFullYear());
-                loadCompensations();
-            }
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setSaving(false);
-        }
+        await nominaService.createCompensation(payload);
+        showNotification({ type: 'success', message: 'Compensación creada' });
+        setCreateOpen(false);
+        setCompUserId(payload.userId);
+        setCompYear(new Date(payload.period).getFullYear());
+        loadCompensations();
     };
 
     const handleCalculatePila = async () => {
@@ -298,21 +287,14 @@ export const NominaPage: React.FC = () => {
                 </Card>
             )}
 
-            <Modal
+            <FormPanel
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
                 onSubmit={handleCreate}
                 title="Nueva Compensación"
                 icon={<Plus className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     <Select label="Asociado *" required value={createForm.userId} onChange={(e) => setCreateForm(f => ({ ...f, userId: e.target.value }))}>
                         <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
@@ -347,8 +329,8 @@ export const NominaPage: React.FC = () => {
                         />
                     )}
                     <Input label="Observaciones" value={createForm.notes ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, notes: e.target.value }))} />
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
         </PageContainer>
     );
 };

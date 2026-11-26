@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -161,50 +161,38 @@ export const BienestarPage: React.FC = () => {
         if (lookupUserId) loadUser(lookupUserId);
     };
 
-    const handleCreateProgram = submitting(async () => {
+    const handleCreateProgram = async () => {
         const f = programForm;
-        try {
-            const res = await bienestarService.createProgram({
-                name: f.name.trim(),
-                budget: f.budget,
-                startDate: f.startDate,
-                ...(f.description?.trim() ? { description: f.description.trim() } : {}),
-                ...(f.endDate ? { endDate: f.endDate } : {}),
-                ...(f.maxBeneficiaries ? { maxBeneficiaries: f.maxBeneficiaries } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Programa de bienestar creado' });
-                setProgramOpen(false);
-                setProgramForm(emptyProgram());
-                loadPrograms();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await bienestarService.createProgram({
+            name: f.name.trim(),
+            budget: f.budget,
+            startDate: f.startDate,
+            ...(f.description?.trim() ? { description: f.description.trim() } : {}),
+            ...(f.endDate ? { endDate: f.endDate } : {}),
+            ...(f.maxBeneficiaries ? { maxBeneficiaries: f.maxBeneficiaries } : {}),
+        });
+        showNotification({ type: 'success', message: 'Programa de bienestar creado' });
+        setProgramOpen(false);
+        setProgramForm(emptyProgram());
+        loadPrograms();
+    };
 
 
-    const handleCreateRequest = submitting(async () => {
+    const handleCreateRequest = async () => {
         const f = requestForm;
-        try {
-            const res = await bienestarService.createRequest({
-                aidType: f.aidType,
-                requestedAmount: f.requestedAmount,
-                reason: f.reason.trim(),
-                requiredDate: f.requiredDate,
-                ...(f.programId ? { programId: f.programId } : {}),
-                ...(isAdmin && f.userId ? { userId: f.userId } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Solicitud de bienestar registrada' });
-                setRequestOpen(false);
-                setRequestForm(emptyRequest());
-                refreshAfterChange();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await bienestarService.createRequest({
+            aidType: f.aidType,
+            requestedAmount: f.requestedAmount,
+            reason: f.reason.trim(),
+            requiredDate: f.requiredDate,
+            ...(f.programId ? { programId: f.programId } : {}),
+            ...(isAdmin && f.userId ? { userId: f.userId } : {}),
+        });
+        showNotification({ type: 'success', message: 'Solicitud de bienestar registrada' });
+        setRequestOpen(false);
+        setRequestForm(emptyRequest());
+        refreshAfterChange();
+    };
 
 
     const openResolve = (request: WelfareRequestDto, action: Resolve['action']) => {
@@ -453,21 +441,14 @@ export const BienestarPage: React.FC = () => {
                 </Card>
             </div>
 
-            <Modal
+            <FormPanel
                 isOpen={programOpen}
                 onClose={() => setProgramOpen(false)}
                 onSubmit={handleCreateProgram}
                 title="Nuevo Programa de Bienestar"
                 icon={<Heart className="text-rose-600 dark:text-rose-400" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setProgramOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     <div className="sm:col-span-2">
                         <Input label="Nombre *" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
@@ -483,24 +464,17 @@ export const BienestarPage: React.FC = () => {
                     <Input type="date" label="Fecha inicio *" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
                     <Input type="date" label="Fecha fin" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
                     <Input type="number" label="Máx. beneficiarios" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={requestOpen}
                 onClose={() => setRequestOpen(false)}
                 onSubmit={handleCreateRequest}
                 title="Nueva Solicitud de Bienestar"
                 icon={<HandCoins className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRequestOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     {isAdmin && (
                         <Select label="Asociado" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
@@ -519,8 +493,8 @@ export const BienestarPage: React.FC = () => {
                     <div className="sm:col-span-2">
                         <Input label="Motivo *" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!resolving}

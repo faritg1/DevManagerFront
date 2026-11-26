@@ -99,6 +99,7 @@ export function useProfile(): UseProfileResult {
 
   useEffect(() => {
     fetchProfile();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only when the user changes
   }, [user?.id]);
 
   const startEditing = () => setIsEditing(true);

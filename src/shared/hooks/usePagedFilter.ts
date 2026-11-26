@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 /** Accent- and case-insensitive form of a value, for search matching. */
 export const normalizeSearch = (v: unknown): string =>
@@ -30,12 +30,9 @@ export function usePagedFilter<T>(items: T[], { pageSize = 10, searchFields }: O
     const [query, setQueryState] = useState('');
     const [page, setPage] = useState(1);
 
-    const filtered = useMemo(() => {
-        const q = normalizeSearch(query.trim());
-        if (!q || !searchFields) return items;
-        return items.filter(item => searchFields(item).some(v => normalizeSearch(v).includes(q)));
-        // searchFields is usually an inline lambda, so it is left out of the deps on purpose.
-    }, [items, query]);
+    // Not memoized: `searchFields` is an inline lambda that may close over data loaded later.
+    const q = normalizeSearch(query.trim());
+    const filtered = !q || !searchFields ? items : items.filter(item => searchFields(item).some(v => normalizeSearch(v).includes(q)));
 
     const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
     const current = Math.min(page, pageCount);

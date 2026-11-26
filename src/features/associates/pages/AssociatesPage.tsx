@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, UserPlus } from 'lucide-react';
 import { Button, Card, Badge, FormPanel, FormSection, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState, ExportButton } from '../../../shared/ui';
-import { useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
+import { useLatest, useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
 import type { AssociateDto, AssociateStatus, UserResponse } from '../../../shared/api/types';
@@ -31,6 +31,7 @@ export const AssociatesPage: React.FC = () => {
     const [items, setItems] = useState<AssociateDto[]>([]);
     const [status, setStatus] = useState<AssociateStatus | ''>('');
     const [isLoading, setIsLoading] = useState(true);
+    const latest = useLatest();
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [userId, setUserId] = useState('');
     const [applicationDate, setApplicationDate] = useState('');
@@ -39,14 +40,14 @@ export const AssociatesPage: React.FC = () => {
     const load = useCallback(async () => {
         setIsLoading(true);
         try {
-            const res = await associatesService.getAll(status || undefined);
+            const res = await latest(associatesService.getAll(status || undefined));
             setItems(res.data ?? []);
         } catch (e) {
             if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
         } finally {
             setIsLoading(false);
         }
-    }, [status, showNotification]);
+    }, [status, showNotification, latest]);
 
     useEffect(() => { load(); }, [load]);
 

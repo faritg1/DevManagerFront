@@ -7,7 +7,7 @@ import { projectsService } from '../../../shared/api';
 import { ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_COMPLEXITY_LABELS, type ProjectResponse } from '../../../shared/api/types';
 import type { CsvColumn } from '../../../shared/export';
 import { formatDate } from '../../../shared/format';
-import { usePermission } from '../../../shared/hooks';
+import { useLatest, usePermission } from '../../../shared/hooks';
 import { ProjectCard, NewProjectTile } from '../components/ProjectCard';
 import { AskAiButton } from '../../ai/AskAiButton';
 
@@ -34,6 +34,7 @@ export const ProjectsPage: React.FC = () => {
     const canCreate = usePermission().has('menu.platform.projects.create');
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const latest = useLatest();
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<ProjectStatus | undefined>(undefined);
@@ -50,7 +51,7 @@ export const ProjectsPage: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await projectsService.getAll(activeTab);
+                const response = await latest(projectsService.getAll(activeTab));
                 if (response.success && response.data) {
                     setProjects(response.data);
                 } else {
@@ -65,7 +66,7 @@ export const ProjectsPage: React.FC = () => {
         };
 
         fetchProjects();
-    }, [activeTab]);
+    }, [activeTab, latest]);
 
     return (
         <PageContainer>

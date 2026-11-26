@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Clock, Download } from 'lucide-react';
 import { projectsService, workItemsService, type ProjectResponse, type TimeReportResponse, type TimeReportTotal } from '../../shared/api';
 import { formatDate, formatNumber, today } from '../../shared/format';
-import { usePermission } from '../../shared/hooks';
+import { useLatest, usePermission } from '../../shared/hooks';
 import {
     Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, Select,
     TABLE_CLASS, TBODY_CLASS, TD_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS,
@@ -40,6 +40,7 @@ export const TimeReportPage: React.FC = () => {
     /** undefined = loading, null = failed. */
     const [report, setReport] = useState<TimeReportResponse | null | undefined>(undefined);
     const [exporting, setExporting] = useState(false);
+    const latest = useLatest();
 
     const query = { from, to, projectId: projectId || undefined, userId: userId || undefined };
 
@@ -50,7 +51,7 @@ export const TimeReportPage: React.FC = () => {
     const load = () => {
         if (!from || !to) return;
         setReport(undefined);
-        workItemsService.timeReport(query).then((r) => {
+        latest(workItemsService.timeReport(query)).then((r) => {
             setReport(r.data);
             if (!userId) setPeople(r.data.byUser);
         }, () => setReport(null));

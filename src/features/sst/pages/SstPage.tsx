@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, FileText, Plus, Stethoscope, ClipboardCheck, CalendarPlus, Siren } from 'lucide-react';
 import { Card, Badge, Button, Input, Select, Textarea, FormPanel, FormSection, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, Pager, SearchInput, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, TableActions, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
+import { useIsAdmin, useLatest, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { sstService, associatesService } from '../../../shared/api';
 import type {
     AccidentSeverity,
@@ -74,6 +74,7 @@ export const SstPage: React.FC = () => {
 
     const [investigating, setInvestigating] = useState<WorkAccidentDto | null>(null);
     const [invForm, setInvForm] = useState<InvestigateAccidentRequest>(emptyInvestigation);
+    const latest = useLatest();
     const nameOf = (userId: string) => associates.find(a => a.userId === userId)?.fullName || (userId === user?.id ? user?.name : 'Asociado no disponible');
     const accidentColumns: CsvColumn<WorkAccidentDto>[] = [
         { header: 'Fecha', value: (a) => formatDate(a.occurredAt, undefined, '') },
@@ -91,7 +92,7 @@ export const SstPage: React.FC = () => {
         if (!user?.id) return;
         setIsLoading(true);
         try {
-            const [exRes, riRes, acRes] = await Promise.all([
+            const [exRes, riRes, acRes] = await latest(Promise.all([
                 canExams
                     ? (examScope ? sstService.getExamsByUser(examScope) : sstService.getPendingExams())
                     : sstService.getExamsByUser(user.id),
@@ -99,7 +100,7 @@ export const SstPage: React.FC = () => {
                 canAccidents
                     ? (onlyPendingAccidents ? sstService.getAccidentsPendingInvestigation() : sstService.getAccidents())
                     : Promise.resolve(null),
-            ]);
+            ]));
             setExams(exRes.success && exRes.data ? exRes.data : []);
             setRisks(riRes.success && riRes.data ? riRes.data : []);
             setAccidents(acRes?.success && acRes.data ? acRes.data : []);

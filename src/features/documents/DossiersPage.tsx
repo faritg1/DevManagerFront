@@ -79,6 +79,7 @@ export const DossiersPage: React.FC = () => {
             );
         }, 300);
         return () => { live = false; clearTimeout(id); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- `due` filters on the client: only the API filters reload
     }, [filters.q, filters.series, filters.status, reload]);
 
     const filtered = Object.values(filters).some(Boolean);

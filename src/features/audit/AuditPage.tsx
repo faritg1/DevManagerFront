@@ -6,7 +6,7 @@ import {
 } from '../../shared/api';
 import { exportToCsv, type CsvColumn } from '../../shared/export';
 import { asUtc, formatDateTime, today } from '../../shared/format';
-import { usePermission, type PagedFilter } from '../../shared/hooks';
+import { useLatest, usePermission, type PagedFilter } from '../../shared/hooks';
 import {
     Badge, Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, Pager, Select,
     TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS, type BadgeVariant,
@@ -83,6 +83,8 @@ export const AuditPage: React.FC = () => {
     const [organizations, setOrganizations] = useState<PlatformOrganization[]>([]);
     const [actors, setActors] = useState<{ id: string; fullName: string }[]>([]);
     const [exporting, setExporting] = useState(false);
+    const latestActors = useLatest();
+    const latestChanges = useLatest();
 
     const set = (key: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const value = e.target.value;
@@ -97,18 +99,18 @@ export const AuditPage: React.FC = () => {
 
     useEffect(() => {
         const load = filters.organizationId ? platformService.listUsers(filters.organizationId) : usersService.getAll();
-        load.then((r) => setActors(r.data ?? []), () => setActors([]));
-    }, [filters.organizationId]);
+        latestActors<{ data?: { id: string; fullName: string }[] | null }>(load).then((r) => setActors(r.data ?? []), () => setActors([]));
+    }, [filters.organizationId, latestActors]);
 
     useEffect(() => {
         setFailed(false);
         // Debounced: the entity id is typed
         const id = setTimeout(() => {
             setData(null);
-            auditService.getChanges(toQuery(filters, page)).then((r) => setData(r.data), () => setFailed(true));
+            latestChanges(auditService.getChanges(toQuery(filters, page))).then((r) => setData(r.data), () => setFailed(true));
         }, 300);
         return () => clearTimeout(id);
-    }, [filters, page]);
+    }, [filters, page, latestChanges]);
 
     const toggle = (id: string) => setExpanded((s) => {
         const next = new Set(s);

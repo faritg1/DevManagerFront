@@ -57,3 +57,25 @@ test('without the reports permission the person filter and totals are hidden', a
     await expect(page.getByRole('combobox', { name: 'Persona' })).toHaveCount(0);
     await expect(page.getByRole('table', { name: 'Por persona' })).toHaveCount(0);
 });
+
+test('a slow answer to an earlier filter never replaces the answer to the latest one', async ({ page }) => {
+    const only = (userId: string, hours: number) => ok({ ...report.data, totalHours: hours, entries: report.data.entries.filter((e) => e.userId === userId) });
+    await mockApi(page, { permissions: [...BASE, 'menu.platform.activities.reports'] }, {
+        'GET /work-items/time-report': async (route: Route, url: URL) => {
+            const userId = url.searchParams.get('userId');
+            if (userId === 'u2') await new Promise((r) => setTimeout(r, 600)); // Beto's answer arrives after Ana's
+            return route.fulfill({ json: userId === 'u2' ? only('u2', 3) : userId === 'u1' ? only('u1', 3.5) : report });
+        },
+    });
+    await signIn(page);
+    await page.goto('/#/activities/time-report');
+    const total = page.getByTestId('time-report-total');
+    await expect(total).toHaveText('6,5 h');
+
+    const person = page.getByRole('combobox', { name: 'Persona' });
+    await person.selectOption({ label: 'Beto Ruiz' });
+    await person.selectOption({ label: 'Ana López' });
+    await expect(total).toHaveText('3,5 h');
+    await page.waitForTimeout(900); // past Beto's late answer
+    await expect(total).toHaveText('3,5 h');
+});

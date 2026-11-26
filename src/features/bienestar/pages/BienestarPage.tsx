@@ -153,7 +153,6 @@ export const BienestarPage: React.FC = () => {
             setLookupUserId(user.id);
             loadUser(user.id);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAdmin, canApprove, user?.id]);
 
     const refreshAfterChange = () => {

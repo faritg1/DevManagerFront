@@ -9,7 +9,7 @@ import { ROUTES } from '../../shared/config/constants';
 import { useAuth, useToast } from '../../shared/context';
 import type { CsvColumn } from '../../shared/export';
 import { formatDate } from '../../shared/format';
-import { useActivitiesSettings, useConfirm, usePermission } from '../../shared/hooks';
+import { useActivitiesSettings, useConfirm, useLatest, usePermission } from '../../shared/hooks';
 import {
     Button, Card, EmptyState, ExportButton, Input, LoadingBlock, PageContainer, PageHeader, Select, type ActionMenuItem,
 } from '../../shared/ui';
@@ -60,6 +60,10 @@ export const ActivitiesPage: React.FC = () => {
     const [sprints, setSprints] = useState<SprintResponse[]>([]);
     /** '' every item, 'none' items without sprint, otherwise a sprint id */
     const [sprint, setSprint] = useState('');
+    const latestItems = useLatest();
+    const latestMembers = useLatest();
+    const latestProposals = useLatest();
+    const latestSprints = useLatest();
 
     const project = projects?.find((p) => p.id === projectId);
     const readOnly = isProjectReadOnly(project);
@@ -72,25 +76,25 @@ export const ActivitiesPage: React.FC = () => {
         if (!projectId) return;
         setItems(null);
         setFailed(false);
-        workItemsService.list(projectId).then((r) => setItems(r.data ?? []), () => setFailed(true));
-        assignmentsService.getAll({ projectId }).then((r) => {
+        latestItems(workItemsService.list(projectId)).then((r) => setItems(r.data ?? []), () => setFailed(true));
+        latestMembers(assignmentsService.getAll({ projectId })).then((r) => {
             const byUser = new Map<string, Member>();
             for (const a of r.data ?? []) {
                 if (a.status === ACTIVE_ASSIGNMENT && !a.endedAt) byUser.set(a.userId, { id: a.userId, name: a.userName });
             }
             setMembers([...byUser.values()].sort((a, b) => a.name.localeCompare(b.name, 'es')));
         }, () => setMembers([]));
-    }, [projectId]);
+    }, [projectId, latestItems, latestMembers]);
 
     /** Silent reload (no loading state, drawer stays open) after links change the open-blocker counts. */
     const refreshItems = () => {
-        if (projectId) workItemsService.list(projectId).then((r) => setItems(r.data ?? []), () => undefined);
+        if (projectId) latestItems(workItemsService.list(projectId)).then((r) => setItems(r.data ?? []), () => undefined);
     };
 
     const loadProposals = useCallback(() => {
         if (!projectId) return;
-        workItemsService.proposals(projectId).then((r) => setProposals(r.data ?? []), () => setProposals([]));
-    }, [projectId]);
+        latestProposals(workItemsService.proposals(projectId)).then((r) => setProposals(r.data ?? []), () => setProposals([]));
+    }, [projectId, latestProposals]);
 
     useEffect(() => {
         setQuery(''); setStatus(''); setType(''); setAssignee(''); setSprint('');
@@ -102,8 +106,8 @@ export const ActivitiesPage: React.FC = () => {
     useEffect(() => {
         setSprints([]);
         if (!projectId || !sprintsEnabled) return;
-        workItemsService.sprints(projectId).then((r) => setSprints(r.data ?? []), () => setSprints([]));
-    }, [projectId, sprintsEnabled]);
+        latestSprints(workItemsService.sprints(projectId)).then((r) => setSprints(r.data ?? []), () => setSprints([]));
+    }, [projectId, sprintsEnabled, latestSprints]);
 
     const sprintChanged = (s: SprintResponse) => {
         setSprints((list) => (list.some((x) => x.id === s.id) ? list.map((x) => (x.id === s.id ? s : x)) : [...list, s]));

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Plus, Search, UserRound } from 'lucide-react';
 import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Textarea, LevelSelector, PageContainer, PageHeader, LoadingBlock, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TD_CLASS, TH_CLASS, TR_CLASS } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePermission } from '../../../shared/hooks';
+import { useIsAdmin, useLatest, usePermission } from '../../../shared/hooks';
 import { gestionHumanaService, associatesService } from '../../../shared/api';
 import type { AssociateDto, CompetencyDto, CreateCompetencyRequest } from '../../../shared/api/types';
 import { formatDate, SKILL_LEVELS, skillLevelLabel } from '../../../shared/format';
@@ -30,6 +30,7 @@ export const CompetenciasPage: React.FC = () => {
     const [ownerId, setOwnerId] = useState('');
     const [owned, setOwned] = useState<CompetencyDto[]>([]);
     const [ownedLoading, setOwnedLoading] = useState(false);
+    const latest = useLatest();
 
     const [createOpen, setCreateOpen] = useState(false);
     const [form, setForm] = useState<CreateCompetencyRequest>(emptyForm);
@@ -40,7 +41,7 @@ export const CompetenciasPage: React.FC = () => {
         if (!userId) { setOwned([]); return; }
         setOwnedLoading(true);
         try {
-            const res = await gestionHumanaService.getByUser(userId);
+            const res = await latest(gestionHumanaService.getByUser(userId));
             setOwned(res.success && res.data ? res.data : []);
         } catch {
             setOwned([]);
@@ -57,6 +58,7 @@ export const CompetenciasPage: React.FC = () => {
 
     useEffect(() => {
         loadOwned(targetUserId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only when the person changes
     }, [targetUserId]);
 
     const handleSearch = async () => {

@@ -3,7 +3,7 @@ import { Building2, Crown, History, LogIn, Plus, Search, Users } from 'lucide-re
 import { platformService, type ImpersonationLogEntry, type PlatformOrganization, type PlatformUser } from '../../shared/api';
 import { useAuth, useNotification } from '../../shared/context';
 import { asUtc, formatDateTime } from '../../shared/format';
-import { useConfirm, usePermission } from '../../shared/hooks';
+import { useConfirm, useLatest, usePermission } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, Input, LoadingBlock, PageContainer, PageHeader, TABLE_CLASS, TBODY_CLASS, TD_CLASS, THEAD_CLASS, TH_CLASS, TR_CLASS } from '../../shared/ui';
 import { AiQuotasCard } from './components/AiQuotasCard';
 import { CreateOrganizationDialog } from './components/CreateOrganizationDialog';
@@ -23,6 +23,7 @@ export const SuperAdminPage: React.FC = () => {
     const [providersOf, setProvidersOf] = useState<PlatformOrganization | null>(null);
     const [creating, setCreating] = useState(false);
     const [deciding, setDeciding] = useState<string | null>(null);
+    const latestUsers = useLatest();
     const { startImpersonation, impersonation } = useAuth();
     const { isSuperAdmin } = usePermission();
     const { confirm } = useConfirm();
@@ -88,8 +89,8 @@ export const SuperAdminPage: React.FC = () => {
     useEffect(() => {
         if (!selected) return;
         setUsers(null);
-        platformService.listUsers(selected.id).then(r => setUsers(r.data ?? []), () => setUsers([]));
-    }, [selected]);
+        latestUsers(platformService.listUsers(selected.id)).then(r => setUsers(r.data ?? []), () => setUsers([]));
+    }, [selected, latestUsers]);
 
     return (
         <PageContainer>

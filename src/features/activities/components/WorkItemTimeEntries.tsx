@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { workItemsService, type TimeEntryResponse } from '../../../shared/api';
 import { useToast } from '../../../shared/context';
 import { formatDate } from '../../../shared/format';
-import { useConfirm } from '../../../shared/hooks';
+import { useConfirm, useLatest } from '../../../shared/hooks';
 import { Button, Input, LoadingBlock } from '../../../shared/ui';
 import { dayOf } from '../workItemMeta';
 
@@ -26,11 +26,12 @@ export const WorkItemTimeEntries: React.FC<Props> = ({ itemId, canLog, userId, i
     const [entries, setEntries] = useState<TimeEntryResponse[] | null>(null);
     const [form, setForm] = useState({ workDate: today(), hours: '', note: '' });
     const [busy, setBusy] = useState(false);
+    const latest = useLatest();
 
     useEffect(() => {
         setEntries(null);
-        workItemsService.timeEntries(itemId).then((r) => setEntries(r.data ?? []), () => setEntries([]));
-    }, [itemId]);
+        latest(workItemsService.timeEntries(itemId)).then((r) => setEntries(r.data ?? []), () => setEntries([]));
+    }, [itemId, latest]);
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -22,7 +22,7 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { Button, Card, Badge, Avatar, Modal, FormPanel, FormSection, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, ExportButton, type ActionMenuItem } from '../../../shared/ui';
-import { useModal, useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
+import { useModal, useIsAdmin, useLatest, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useAuth, useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, RoleDto, EffectivePermissionsResponse, PermissionGroupDto, EmployeeSkillResponse, ValidateSkillRequest } from '../../../shared/api/types';
@@ -90,6 +90,9 @@ export const UsersPage: React.FC = () => {
     const skillsModal = useModal();
     const [userSkills, setUserSkills] = useState<EmployeeSkillResponse[]>([]);
     const [skillsLoading, setSkillsLoading] = useState(false);
+    const latestRoles = useLatest();
+    const latestPerms = useLatest();
+    const latestSkills = useLatest();
     const [validatingSkillId, setValidatingSkillId] = useState<string | null>(null);
     const [adjustingSkillId, setAdjustingSkillId] = useState<string | null>(null);
     const [adjustLevel, setAdjustLevel] = useState<number>(3);
@@ -166,10 +169,10 @@ export const UsersPage: React.FC = () => {
 
             setRolesLoading(true);
             try {
-                const [rolesResp, effResp] = await Promise.all([
+                const [rolesResp, effResp] = await latestRoles(Promise.all([
                     rbacService.getRoles(),
                     rbacService.getUserEffectivePermissions(selectedUser.id),
-                ]);
+                ]));
 
                 if (rolesResp.success && rolesResp.data) setRoles(rolesResp.data);
                 if (effResp.success && effResp.data) {
@@ -185,13 +188,13 @@ export const UsersPage: React.FC = () => {
         };
 
         loadRolesForUser();
-    }, [rolesModal.isOpen, selectedUser]);
+    }, [rolesModal.isOpen, selectedUser, latestRoles, showNotification]);
 
     // Roles for the optional role picker of the create modal.
     useEffect(() => {
         if (!createModal.isOpen || roles.length > 0) return;
         rbacService.getRoles().then(r => { if (r.success && r.data) setRoles(r.data); }, () => {});
-    }, [createModal.isOpen]);
+    }, [createModal.isOpen, roles.length]);
 
     // Load effective permissions when permissions modal opens
     useEffect(() => {
@@ -199,10 +202,10 @@ export const UsersPage: React.FC = () => {
             if (!permissionsModal.isOpen || !selectedUser) return;
             setPermsLoading(true);
             try {
-                const [resp, groupedResp] = await Promise.all([
+                const [resp, groupedResp] = await latestPerms(Promise.all([
                     rbacService.getUserEffectivePermissions(selectedUser.id),
                     rbacService.getGroupedPermissions(),
-                ]);
+                ]));
                 if (resp.success && resp.data) setEffectivePerms(resp.data);
                 if (groupedResp.success && groupedResp.data) setGroupedPerms(groupedResp.data);
             } catch {
@@ -213,7 +216,7 @@ export const UsersPage: React.FC = () => {
         };
 
         loadEffective();
-    }, [permissionsModal.isOpen, selectedUser]);
+    }, [permissionsModal.isOpen, selectedUser, latestPerms, showNotification]);
 
     const handleAddOverride = async () => {
         if (!selectedUser || !overridePermId || overrideSaving) return;
@@ -245,7 +248,7 @@ export const UsersPage: React.FC = () => {
             if (!skillsModal.isOpen || !selectedUser) return;
             setSkillsLoading(true);
             try {
-                const resp = await skillsService.getEmployeeSkills(selectedUser.id);
+                const resp = await latestSkills(skillsService.getEmployeeSkills(selectedUser.id));
                 if (resp.success && resp.data) {
                     setUserSkills(resp.data);
                 } else {
@@ -258,7 +261,7 @@ export const UsersPage: React.FC = () => {
             }
         };
         loadUserSkills();
-    }, [skillsModal.isOpen, selectedUser]);
+    }, [skillsModal.isOpen, selectedUser, latestSkills]);
 
     const handleValidateSkill = async (skill: EmployeeSkillResponse, newLevel: number | null) => {
         setValidatingSkillId(skill.id);

@@ -11,7 +11,7 @@ import {
   ChevronDown,
   Medal,
 } from "lucide-react";
-import { Badge, Button, Avatar, Modal, LoadingBlock } from "../../../shared/ui";
+import { Button, Avatar, Modal, LoadingBlock } from "../../../shared/ui";
 import { agentService, projectsService } from "../../../shared/api";
 import type { MatchCandidatesResponse, CandidateMatch } from "../../../shared/api/types";
 import { useNotification } from "../../../shared/context";
@@ -101,7 +101,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleApply = async (candidateUserId: string, candidateName: string) => {
+  const handleApply = async (candidateName: string) => {
     setIsApplying(true);
     try {
       const response = await projectsService.apply(projectId, {
@@ -331,7 +331,7 @@ export const ProjectMatchingModal: React.FC<ProjectMatchingModalProps> = ({
                             {isBest && (
                               <Button
                                 variant="primary"
-                                onClick={() => handleApply(candidate.userId, candidate.fullName)}
+                                onClick={() => handleApply(candidate.fullName)}
                                 isLoading={isApplying}
                                 className="w-full mt-1"
                                 icon={CheckCircle2}

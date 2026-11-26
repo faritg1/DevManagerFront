@@ -31,10 +31,6 @@ export const SkillModal: React.FC<Props> = ({
     const [levelChanged, setLevelChanged] = React.useState(false);
     React.useEffect(() => { if (isOpen) setLevelChanged(false); }, [isOpen]);
 
-    const getLevelLabel = (levelId: number) => {
-        return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;
-    };
-
     // Validación: Nivel >= 4 requiere evidencias
     const requiresEvidence = form.level >= 4;
     const hasValidEvidence = requiresEvidence 

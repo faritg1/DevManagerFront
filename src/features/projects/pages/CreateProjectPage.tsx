@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Info, Users, Save, X, Calendar } from 'lucide-react';
+import { Info, Save, X, Calendar } from 'lucide-react';
 import { Button, Input, Select, Textarea, Card, CardHeader, CardTitle, PageContainer, PageHeader, useGoBack } from '../../../shared/ui';
 import { useNotification, useConfig } from '../../../shared/context';
 import { ROUTES } from '../../../shared/config/constants';

@@ -5,7 +5,7 @@ import { documentsService } from '../../shared/api';
 import { ROUTES } from '../../shared/config/constants';
 import { usePermission } from '../../shared/hooks';
 import { PageContainer, PageHeader, StatCard } from '../../shared/ui';
-import { PERMISSIONS, REVIEW_WINDOW_DAYS, UNCLASSIFIED, retentionDue, reviewLimit } from './labels';
+import { PERMISSIONS, UNCLASSIFIED, retentionDue, reviewLimit } from './labels';
 import { useRows } from './useRows';
 
 const loadPending = () => documentsService.pendingReads();

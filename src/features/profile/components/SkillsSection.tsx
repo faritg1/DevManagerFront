@@ -15,14 +15,6 @@ interface Props {
     catalogs: AllConfigCatalogsDto | null;
 }
 
-const getLevelColor = (level: number): string => {
-    if (level >= 5) return 'text-purple-500';
-    if (level >= 4) return 'text-blue-500';
-    if (level >= 3) return 'text-emerald-700 dark:text-emerald-400';
-    if (level >= 2) return 'text-yellow-500';
-    return 'text-slate-400';
-};
-
 const getLevelBg = (level: number): string => {
     if (level >= 5) return 'bg-purple-50 dark:bg-purple-500/10';
     if (level >= 4) return 'bg-blue-50 dark:bg-blue-500/10';

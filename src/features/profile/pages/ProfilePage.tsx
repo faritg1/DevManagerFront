@@ -23,8 +23,6 @@ import {
 import type {
   EmployeeSkillResponse,
   UpsertEmployeeSkillRequest,
-  CertificationResponse,
-  CreateCertificationRequest,
 } from "../../../shared/api/types";
 
 export const ProfilePage: React.FC = () => {

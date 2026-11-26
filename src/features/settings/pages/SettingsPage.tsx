@@ -6,9 +6,7 @@ import {
   Monitor,
   User,
   Shield,
-  Bell,
   LogOut,
-  Save,
   Check,
   Globe,
   HardDrive,
@@ -28,7 +26,6 @@ export const SettingsPage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true"
   );
-  const [saved, setSaved] = useState(false);
 
   const handleThemeChange = (mode: Theme) => {
     setTheme(mode);

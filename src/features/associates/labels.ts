@@ -1,5 +1,5 @@
 import { formatDate as formatSharedDate } from '../../shared/format';
-import type { ApiError } from '../../shared/api';
+import { isApiError } from '../../shared/api';
 import type { AssociateRole, AssociateStatus } from '../../shared/api/types';
 import type { BadgeVariant } from '../../shared/ui';
 
@@ -51,8 +51,7 @@ export const formatDate = (d?: string | null): string => formatSharedDate(d?.sli
 export { formatDateTime } from '../../shared/format';
 
 /** Errores del API ya se notifican globalmente (excepto 404); esto cubre el resto. */
-export const isApiError = (e: unknown): e is ApiError =>
-    typeof e === 'object' && e !== null && 'status' in e;
+export { isApiError };
 export const needsLocalToast = (e: unknown): boolean => !isApiError(e) || e.status === 404;
 export const errorText = (e: unknown, fallback = 'Error de conexión'): string =>
     isApiError(e) && e.message ? e.message : fallback;

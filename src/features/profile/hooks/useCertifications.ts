@@ -15,7 +15,7 @@ interface UseCertificationsResult {
   saveCertification: (
     payload: CreateCertificationRequest,
     id?: string,
-  ) => Promise<boolean>;
+  ) => Promise<void>;
   deleteCertification: (cert: CertificationResponse) => Promise<boolean>;
 }
 
@@ -46,29 +46,13 @@ export function useCertifications(): UseCertificationsResult {
   const saveCertification = async (
     payload: CreateCertificationRequest,
     id?: string,
-  ): Promise<boolean> => {
-    setOpLoading(true);
-    try {
-      let resp;
-      if (id) {
-        resp = await certificationService.updateMyCertification(
-          id,
-          payload as UpdateCertificationRequest,
-        );
-      } else {
-        resp = await certificationService.createMyCertification(payload);
-      }
-
-      if (resp.success) {
-        await loadCertifications();
-        return true;
-      }
-    } catch (err) {
-      console.error('[Certifications] Error guardando:', err);
-    } finally {
-      setOpLoading(false);
-    }
-    return false;
+  ): Promise<void> => {
+    // Called from the form panel: an API error rejects, and the panel shows it.
+    await (id
+      ? certificationService.updateMyCertification(id, payload as UpdateCertificationRequest)
+      : certificationService.createMyCertification(payload));
+    // Not awaited: the list shows its own loading state, and a failed reload is not a failed save.
+    void loadCertifications();
   };
 
   const deleteCertification = async (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileBarChart2, Plus, Send, CheckCircle2, Eye } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TH_ACTIONS_CLASS, TR_CLASS, IconButton, TableActions, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification } from '../../../shared/context';
 import { usePagedFilter, usePermission } from '../../../shared/hooks';
 import { reportesSupersolidariaService } from '../../../shared/api';
@@ -53,7 +53,6 @@ export const ReportesSupersolidariaPage: React.FC = () => {
 
     const [genOpen, setGenOpen] = useState(false);
     const [genForm, setGenForm] = useState<GenerateSupersolidariaReportRequest>(emptyForm);
-    const [genLoading, setGenLoading] = useState(false);
 
     const [viewing, setViewing] = useState<SupersolidariaReportDto | null>(null);
 
@@ -78,25 +77,16 @@ export const ReportesSupersolidariaPage: React.FC = () => {
     }, []);
 
     const handleGenerate = async () => {
-        if (genLoading) return;
-        setGenLoading(true);
-        try {
-            const res = await reportesSupersolidariaService.generate({
-                period: genForm.period,
-                reportType: genForm.reportType,
-                ...(genForm.notes?.trim() ? { notes: genForm.notes.trim() } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Reporte generado' });
-                setGenOpen(false);
-                setGenForm(emptyForm());
-                loadData();
-            }
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setGenLoading(false);
-        }
+        // No try/catch: an API error rejects and the panel shows it.
+        await reportesSupersolidariaService.generate({
+            period: genForm.period,
+            reportType: genForm.reportType,
+            ...(genForm.notes?.trim() ? { notes: genForm.notes.trim() } : {}),
+        });
+        showNotification({ type: 'success', message: 'Reporte generado' });
+        setGenOpen(false);
+        setGenForm(emptyForm());
+        loadData();
     };
 
     const handleSend = async (id: string) => {
@@ -181,24 +171,19 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                 <Pager pager={pager} />
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={genOpen}
                 onClose={() => setGenOpen(false)}
                 onSubmit={handleGenerate}
                 title="Generar Reporte Supersolidaria"
                 icon={<FileBarChart2 className="text-blue-500" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={genLoading}>Generar</Button>
-                        <Button variant="outline" onClick={() => setGenOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Generar"
             >
-                <div className="grid grid-cols-1 gap-4">
+                <FormSection>
                     <Input
                         type="date"
                         label="Inicio del período *"
+                        name="period"
                         required
                         hint="Trimestral: 1 de enero, abril, julio u octubre. Anual: 1 de enero."
                         value={genForm.period}
@@ -206,15 +191,18 @@ export const ReportesSupersolidariaPage: React.FC = () => {
                     />
                     <Select
                         label="Tipo de reporte"
+                        name="reportType"
                         value={genForm.reportType}
                         onChange={(e) => setGenForm(f => ({ ...f, reportType: Number(e.target.value) as SupersolidariaReportType }))}
                     >
                         <option value={1}>Trimestral</option>
                         <option value={2}>Anual</option>
                     </Select>
-                    <Input label="Observaciones" value={genForm.notes ?? ''} onChange={(e) => setGenForm(f => ({ ...f, notes: e.target.value }))} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Input label="Observaciones" name="notes" value={genForm.notes ?? ''} onChange={(e) => setGenForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!viewing}

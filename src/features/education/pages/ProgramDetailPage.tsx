@@ -21,7 +21,6 @@ export const ProgramDetailPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<EnrollmentDto | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
     const pager = usePagedFilter(enrollments, { searchFields: en => [en.fullName, ENROLLMENT_STATUS_LABELS[en.status]] });
 
     const toast = useCallback((e: unknown) => {
@@ -57,21 +56,12 @@ export const ProgramDetailPage: React.FC = () => {
     };
 
     const submit = async (v: EnrollmentFormValue) => {
-        setIsSaving(true);
-        try {
-            const res = editing
-                ? await educationService.updateEnrollment(editing.id, { status: v.status, hoursCompleted: v.hoursCompleted, completionDate: v.completionDate })
-                : await educationService.enroll(programId, v);
-            if (res.success) {
-                showNotification({ type: 'success', message: editing ? 'Inscripción actualizada' : 'Asociado inscrito' });
-                setFormOpen(false);
-                await load();
-            }
-        } catch (e) {
-            toast(e);
-        } finally {
-            setIsSaving(false);
-        }
+        await (editing
+            ? educationService.updateEnrollment(editing.id, { status: v.status, hoursCompleted: v.hoursCompleted, completionDate: v.completionDate })
+            : educationService.enroll(programId, v));
+        showNotification({ type: 'success', message: editing ? 'Inscripción actualizada' : 'Asociado inscrito' });
+        setFormOpen(false);
+        await load();
     };
 
     if (isLoading) {
@@ -147,7 +137,6 @@ export const ProgramDetailPage: React.FC = () => {
                 <EnrollmentHoursForm
                     enrollment={editing}
                     associates={associates}
-                    isSaving={isSaving}
                     onClose={() => setFormOpen(false)}
                     onSubmit={submit}
                 />

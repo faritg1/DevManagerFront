@@ -2,7 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { platformService, rbacService, type OrganizationPlan, type PermissionTreeNode, type PlatformOrganization } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
 import { formatNumber } from '../../../shared/format';
-import { Button, Input, LoadingBlock, Modal } from '../../../shared/ui';
+import { FormPanel, FormSection, Input, LoadingBlock } from '../../../shared/ui';
 
 const GB = 1024 ** 3;
 /** The API refuses to turn this section off: nobody could administer the organization. */
@@ -57,7 +57,6 @@ export const OrganizationPlanDialog: React.FC<OrganizationPlanDialogProps> = ({ 
     const [off, setOff] = useState<ReadonlySet<string>>(new Set());
     const [maxUsers, setMaxUsers] = useState('');
     const [maxGb, setMaxGb] = useState('');
-    const [saving, setSaving] = useState(false);
     const organizationId = organization?.id;
 
     useEffect(() => {
@@ -88,55 +87,38 @@ export const OrganizationPlanDialog: React.FC<OrganizationPlanDialogProps> = ({ 
 
     const save = async () => {
         if (!organizationId || !plan) return;
-        setSaving(true);
-        try {
-            await platformService.setPlan(organizationId, {
-                disabledModules: [...off].sort(),
-                maxUsers: maxUsers === '' ? null : Number(maxUsers),
-                maxStorageBytes: maxGb === '' ? null : Math.round(Number(maxGb) * GB),
-            });
-            showNotification({ type: 'success', message: 'Plan actualizado' });
-            onClose();
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setSaving(false);
-        }
+        await platformService.setPlan(organizationId, {
+            disabledModules: [...off].sort(),
+            maxUsers: maxUsers === '' ? null : Number(maxUsers),
+            maxStorageBytes: maxGb === '' ? null : Math.round(Number(maxGb) * GB),
+        });
+        showNotification({ type: 'success', message: 'Plan actualizado' });
+        onClose();
     };
 
+    // The switches are buttons: they emit no input event, so the panel cannot see them change.
+    const switchesChanged = !!plan && [...off].sort().join() !== [...plan.disabledModules].sort().join();
+
     return (
-        <Modal
-            isOpen={!!organization}
-            onClose={onClose}
-            title="Plan y módulos"
-            size="lg"
-            onSubmit={save}
-            footer={
-                <>
-                    <Button type="submit" isLoading={saving} disabled={!plan}>Guardar</Button>
-                    <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-                </>
-            }
-        >
+        <FormPanel isOpen={!!organization} onClose={onClose} onSubmit={save} title="Plan y módulos" submitDisabled={!plan} dirty={switchesChanged}>
             {!plan ? (
                 <LoadingBlock label="Cargando plan…" />
             ) : (
-                <div className="flex flex-col gap-5">
-                    <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{organization?.name}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {plan.activeUsers} usuarios activos · {formatNumber(plan.usedStorageBytes / GB, 2)} GB usados
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <>
+                    <FormSection>
+                        <div className="sm:col-span-2">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{organization?.name}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                {plan.activeUsers} usuarios activos · {formatNumber(plan.usedStorageBytes / GB, 2)} GB usados
+                            </p>
+                        </div>
                         <Input label="Tope de usuarios" type="number" min={1} step={1} inputMode="numeric" hint="Vacío es sin tope"
-                            value={maxUsers} onChange={(e) => setMaxUsers(e.target.value)} />
+                            name="maxUsers" value={maxUsers} onChange={(e) => setMaxUsers(e.target.value)} />
                         <Input label="Tope de almacenamiento (GB)" type="number" min={0} step="any" inputMode="decimal" hint="Vacío es sin tope"
-                            value={maxGb} onChange={(e) => setMaxGb(e.target.value)} />
-                    </div>
-                    <fieldset>
-                        <legend className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">Secciones y pantallas</legend>
-                        <ul className="divide-y divide-slate-100 dark:divide-border-dark">
+                            name="maxStorageBytes" value={maxGb} onChange={(e) => setMaxGb(e.target.value)} />
+                    </FormSection>
+                    <FormSection title="Secciones y pantallas">
+                        <ul className="divide-y divide-slate-100 dark:divide-border-dark sm:col-span-2">
                             {tree.map((section) => {
                                 const locked = section.code === LOCKED;
                                 const sectionOn = locked || !off.has(section.code);
@@ -154,9 +136,9 @@ export const OrganizationPlanDialog: React.FC<OrganizationPlanDialogProps> = ({ 
                                 );
                             })}
                         </ul>
-                    </fieldset>
-                </div>
+                    </FormSection>
+                </>
             )}
-        </Modal>
+        </FormPanel>
     );
 };

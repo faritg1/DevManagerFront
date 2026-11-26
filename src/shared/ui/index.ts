@@ -7,6 +7,7 @@ export * from './Avatar';
 export * from './ProgressBar';
 export * from './StatCard';
 export * from './Modal';
+export * from './FormPanel';
 export * from './ConfirmDialog/ConfirmDialog';
 export * from './LevelSelector/LevelSelector';
 export * from './Page';

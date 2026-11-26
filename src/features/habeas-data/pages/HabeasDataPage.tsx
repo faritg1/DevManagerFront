@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FileLock2, FileText, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Modal, StatCard, PageContainer, PageHeader, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePermission } from '../../../shared/hooks';
 import { habeasDataService, associatesService } from '../../../shared/api';
@@ -90,22 +90,15 @@ export const HabeasDataPage: React.FC = () => {
         loadRequests();
     }, [isAdmin, loadRequests]);
 
-    const handleCreate = submitting(async () => {
-        if (!arcoForm.description.trim()) return;
-        try {
-            const payload: CreateArcoRequest = { type: arcoForm.type, description: arcoForm.description.trim() };
-            if (isAdmin && arcoForm.userId) payload.userId = arcoForm.userId;
-            const res = await habeasDataService.createArco(payload);
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: `Solicitud ARCO radicada: ${res.data.filingNumber}` });
-                setArcoOpen(false);
-                setArcoForm({ type: 1, description: '' });
-                loadRequests();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+    const handleCreate = async () => {
+        const payload: CreateArcoRequest = { type: arcoForm.type, description: arcoForm.description.trim() };
+        if (isAdmin && arcoForm.userId) payload.userId = arcoForm.userId;
+        const res = await habeasDataService.createArco(payload);
+        showNotification({ type: 'success', message: `Solicitud ARCO radicada: ${res.data.filingNumber}` });
+        setArcoOpen(false);
+        setArcoForm({ type: 1, description: '' });
+        loadRequests();
+    };
 
 
     const handleAnswer = submitting(async () => {
@@ -200,33 +193,28 @@ export const HabeasDataPage: React.FC = () => {
                 )}
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={arcoOpen}
                 onClose={() => setArcoOpen(false)}
                 onSubmit={handleCreate}
                 title="Crear Solicitud ARCO"
                 icon={<FileLock2 className="text-orange-500" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setArcoOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 gap-4">
+                <FormSection>
                     {isAdmin && (
-                        <Select label="Asociado" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))}>
+                        <Select label="Asociado" name="userId" value={arcoForm.userId ?? ''} onChange={(e) => setArcoForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </Select>
                     )}
-                    <Select label="Tipo *" required value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))}>
+                    <Select label="Tipo *" name="type" required value={arcoForm.type} onChange={(e) => setArcoForm(f => ({ ...f, type: Number(e.target.value) as ArcoType }))}>
                         {([1, 2, 3, 4] as ArcoType[]).map(t => <option key={t} value={t}>{ARCO_TYPE_LABEL[t]}</option>)}
                     </Select>
-                    <Input label="Descripción *" required value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Input label="Descripción *" name="description" required value={arcoForm.description} onChange={(e) => setArcoForm(f => ({ ...f, description: e.target.value }))} />
+                    </div>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!answering}

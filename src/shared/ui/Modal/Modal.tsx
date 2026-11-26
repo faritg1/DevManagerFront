@@ -10,7 +10,10 @@ interface ModalProps {
     footer?: React.ReactNode;
     /** Wraps body and footer in a <form>: Enter submits and native `required` checks run. Give the primary button type="submit". */
     onSubmit?: () => void;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full';
+    /** Buttons shown in the header, before the close button. */
+    headerActions?: React.ReactNode;
+    /** "screen" spans the whole viewport; meant for the drawer variant. */
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full' | 'screen';
     /** "drawer" docks a full-height panel to the right; its body has no padding and fills the height. */
     variant?: 'dialog' | 'drawer';
 }
@@ -24,6 +27,7 @@ const sizeStyles = {
     '3xl': 'max-w-4xl',
     '4xl': 'max-w-6xl',
     full: 'w-[90%] max-w-7xl',
+    screen: 'max-w-none',
 };
 
 // Pila de modales abiertos (orden de apertura), compartida por todas las instancias.
@@ -39,6 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
     children,
     footer,
     onSubmit,
+    headerActions,
     size = 'md',
     variant = 'dialog',
 }) => {
@@ -111,6 +116,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {icon}
                 {title}
             </h3>
+            {headerActions && <div className="ml-auto flex shrink-0 items-center">{headerActions}</div>}
             <button type="button" aria-label="Cerrar"
                 onClick={onClose}
                 className="shrink-0 -mr-2 inline-flex size-9 [@media(pointer:coarse)]:size-11 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -146,7 +152,7 @@ export const Modal: React.FC<ModalProps> = ({
                     className={`fixed inset-y-0 right-0 z-20 flex w-full ${sizeStyles[size]} flex-col bg-white dark:bg-surface-dark border-l border-slate-200 dark:border-border-dark shadow-2xl shadow-slate-900/10 dark:shadow-black/50 animate-slide-in-right focus:outline-none`}
                 >
                     {header}
-                    {content}
+                    {onSubmit ? <form className="flex min-h-0 flex-1 flex-col" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>{content}</form> : content}
                 </div>
             </div>
         );

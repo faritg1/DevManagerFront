@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Target, Plus } from "lucide-react";
-import { Card, CardHeader, CardTitle, Badge, Button, Modal, LevelSelector, Select, LoadingBlock } from "../../../shared/ui";
+import { Card, CardHeader, CardTitle, Badge, Button, FormPanel, FormSection, LevelSelector, Select, LoadingBlock } from "../../../shared/ui";
 import { projectsService, skillsService } from "../../../shared/api";
 import type {
   SkillRequirementResponse,
@@ -9,6 +9,8 @@ import type {
 } from "../../../shared/api/types";
 import { useModal, usePermission } from "../../../shared/hooks";
 import { useNotification, useConfig } from "../../../shared/context";
+
+const EMPTY_REQUIREMENT: AddSkillRequirementRequest = { skillId: "", requiredLevel: 3, isMandatory: true };
 
 interface ProjectRequirementsSectionProps {
   projectId: string;
@@ -29,19 +31,14 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
 
   const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
-  const [savingRequirement, setSavingRequirement] = useState(false);
-  const [requirementForm, setRequirementForm] = useState<AddSkillRequirementRequest>({
-    skillId: "",
-    requiredLevel: 3,
-    isMandatory: true,
-  });
+  const [requirementForm, setRequirementForm] = useState(EMPTY_REQUIREMENT);
 
   const getLevelLabel = (level: number) =>
     catalogs?.skillLevels.find((l) => l.id === level)?.name || `Nivel ${level}`;
 
   const handleOpenModal = async () => {
     requirementModal.open();
-    setRequirementForm({ skillId: "", requiredLevel: 3, isMandatory: true });
+    setRequirementForm(EMPTY_REQUIREMENT);
 
     if (availableSkills.length === 0) {
       setLoadingSkills(true);
@@ -59,31 +56,18 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
     }
   };
 
+  // An API error rejects: the panel shows it and stays open. The required select reports a missing skill.
   const handleSave = async () => {
-    if (savingRequirement) return;
-    if (!requirementForm.skillId) {
-      showNotification({ type: "error", message: "Selecciona una habilidad" });
-      return;
-    }
+    if (!requirementForm.skillId) return;
 
-    setSavingRequirement(true);
-    try {
-      const response = await projectsService.addRequirement(projectId, requirementForm);
-      if (response.success) {
-        showNotification({ type: "success", message: "Requisito agregado exitosamente" });
-        requirementModal.close();
-        const reqsRes = await projectsService.getRequirements(projectId);
-        if (reqsRes.success && reqsRes.data) {
-          onRequirementsChange(reqsRes.data);
-          setAvailableSkills((prev) => prev.filter((s) => s.id !== requirementForm.skillId));
-        }
-      } else {
-        showNotification({ type: "error", message: response.message || "Error al agregar requisito" });
-      }
-    } catch {
-      showNotification({ type: "error", message: "Error de conexión" });
-    } finally {
-      setSavingRequirement(false);
+    await projectsService.addRequirement(projectId, requirementForm);
+    showNotification({ type: "success", message: "Requisito agregado exitosamente" });
+    requirementModal.close();
+    // Saved already: a failed reload is not a failed save.
+    const reqsRes = await projectsService.getRequirements(projectId).catch(() => null);
+    if (reqsRes?.success && reqsRes.data) {
+      onRequirementsChange(reqsRes.data);
+      setAvailableSkills((prev) => prev.filter((s) => s.id !== requirementForm.skillId));
     }
   };
 
@@ -170,32 +154,26 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
         )}
       </Card>
 
-      <Modal
+      <FormPanel
         isOpen={requirementModal.isOpen}
         onClose={requirementModal.close}
         onSubmit={handleSave}
         title="Agregar Requisito de Habilidad"
         icon={<Target className="text-primary shrink-0" size={20} />}
-        size="md"
-        footer={
-          <>
-            <Button type="submit" isLoading={savingRequirement} icon={Plus}>
-              Agregar Requisito
-            </Button>
-            <Button variant="outline" onClick={requirementModal.close}>
-              Cancelar
-            </Button>
-          </>
-        }
+        submitText="Agregar Requisito"
+        submitDisabled={loadingSkills}
+        // The level and type buttons emit no input event.
+        dirty={requirementForm.requiredLevel !== EMPTY_REQUIREMENT.requiredLevel || requirementForm.isMandatory !== EMPTY_REQUIREMENT.isMandatory}
       >
-        <div className="space-y-5">
+        <FormSection>
+        <div className="space-y-5 sm:col-span-2">
           {loadingSkills ? (
             <LoadingBlock label="Cargando habilidades..." className="py-4" />
           ) : (
             <Select
               label="Habilidad *"
               required
-              value={requirementForm.skillId}
+              name="skillId" value={requirementForm.skillId}
               onChange={(e) => setRequirementForm((prev) => ({ ...prev, skillId: e.target.value }))}
               hint={availableSkills.length === 0 ? "No hay habilidades disponibles o todas ya están asignadas." : undefined}
             >
@@ -259,7 +237,8 @@ export const ProjectRequirementsSection: React.FC<ProjectRequirementsSectionProp
             </div>
           </div>
         </div>
-      </Modal>
+        </FormSection>
+      </FormPanel>
     </>
   );
 };

@@ -6,7 +6,7 @@ import {
 import { useToast } from '../../../shared/context';
 import { formatDate } from '../../../shared/format';
 import { useConfirm } from '../../../shared/hooks';
-import { Badge, Button, Input, Modal, ProgressBar, Textarea } from '../../../shared/ui';
+import { Badge, Button, FormPanel, FormSection, Input, Modal, ProgressBar, Textarea } from '../../../shared/ui';
 import { dayOf, SPRINT_STATUS_LABELS } from '../workItemMeta';
 import { SprintBurndown } from './SprintBurndown';
 
@@ -109,7 +109,6 @@ const SprintFormModal: React.FC<{
     const [goal, setGoal] = useState('');
     const [start, setStart] = useState('');
     const [end, setEnd] = useState('');
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         setName(editing?.name ?? '');
@@ -120,39 +119,29 @@ const SprintFormModal: React.FC<{
 
     const submit = async () => {
         const body = { name: name.trim(), goal: goal.trim() || null, startDate: start, endDate: end };
-        setSaving(true);
-        try {
-            const { data } = editing ? await workItemsService.updateSprint(editing.id, body) : await workItemsService.createSprint(projectId, body);
-            onSaved(data);
-            onClose();
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setSaving(false);
-        }
+        const { data } = editing ? await workItemsService.updateSprint(editing.id, body) : await workItemsService.createSprint(projectId, body);
+        onSaved(data);
+        onClose();
     };
 
     return (
-        <Modal
+        <FormPanel
             isOpen={sprint !== null}
             onClose={onClose}
             title={editing ? `Editar ${editing.name}` : 'Nuevo sprint'}
             onSubmit={submit}
-            footer={<>
-                <Button type="submit" isLoading={saving}>{editing ? 'Guardar cambios' : 'Crear sprint'}</Button>
-                <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-            </>}
+            submitText={editing ? 'Guardar cambios' : 'Crear sprint'}
         >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormSection>
                 <div className="sm:col-span-2">
-                    <Input label="Nombre" required maxLength={100} value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input label="Nombre" name="name" required maxLength={100} value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                    <Textarea label="Objetivo" rows={2} maxLength={500} value={goal} onChange={(e) => setGoal(e.target.value)} />
+                    <Textarea label="Objetivo" name="goal" rows={2} maxLength={500} value={goal} onChange={(e) => setGoal(e.target.value)} />
                 </div>
-                <Input label="Inicio" type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
-                <Input label="Fin" type="date" required min={start || undefined} value={end} onChange={(e) => setEnd(e.target.value)} />
-            </div>
-        </Modal>
+                <Input label="Inicio" name="startDate" type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
+                <Input label="Fin" name="endDate" type="date" required min={start || undefined} value={end} onChange={(e) => setEnd(e.target.value)} />
+            </FormSection>
+        </FormPanel>
     );
 };

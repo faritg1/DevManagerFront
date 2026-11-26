@@ -21,7 +21,7 @@ import {
     Plus,
     ShieldOff,
 } from 'lucide-react';
-import { Button, Card, Badge, Avatar, Modal, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, ExportButton, type ActionMenuItem } from '../../../shared/ui';
+import { Button, Card, Badge, Avatar, Modal, FormPanel, FormSection, Input, Select, PageContainer, PageHeader, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, EmptyState, LoadingBlock, Pager, ActionMenu, ExportButton, type ActionMenuItem } from '../../../shared/ui';
 import { useModal, useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useAuth, useNotification } from '../../../shared/context';
 import { usersService, rbacService, skillsService } from '../../../shared/api';
@@ -72,6 +72,7 @@ export const UsersPage: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
     const [createForm, setCreateForm] = useState<CreateUserRequest>(EMPTY_CREATE_FORM);
     const [createRoleId, setCreateRoleId] = useState('');
+    const [passwordTooShort, setPasswordTooShort] = useState(false);
     const [editForm, setEditForm] = useState<UpdateUserRequest>({ firstName: '', lastName: '' });
 
     const [roles, setRoles] = useState<RoleDto[]>([]);
@@ -127,47 +128,24 @@ export const UsersPage: React.FC = () => {
     };
 
     const handleCreate = async () => {
-        if (isSaving) return;
-        if (!createForm.firstName.trim() || !createForm.lastName.trim() || !createForm.email.trim() || !createForm.password) {
-            showNotification({
-                type: 'error',
-                message: 'Completa nombres, apellidos, email y contraseña'
-            });
-            return;
-        }
+        // Empty names, email and password never get here: the fields are `required`.
         if (createForm.password.length < 8) {
-            showNotification({ type: 'error', message: 'La contraseña debe tener mínimo 8 caracteres' });
+            setPasswordTooShort(true);
             return;
         }
 
-        setIsSaving(true);
-        try {
-            const response = await usersService.create(createForm);
-            if (response.success) {
-                const userId = response.data?.id;
-                const roleAssigned = !createRoleId || !userId
-                    || await rbacService.assignRoleToUser({ userId, roleId: createRoleId }).then(r => r.success, () => false);
-                showNotification(roleAssigned
-                    ? { type: 'success', message: 'Usuario creado exitosamente' }
-                    : { type: 'warning', message: 'Usuario creado, pero no se pudo asignar el rol. Asígnalo desde "Gestionar roles".' });
-                createModal.close();
-                setCreateForm(EMPTY_CREATE_FORM);
-                setCreateRoleId('');
-                fetchUsers();
-            } else {
-                showNotification({
-                    type: 'error',
-                    message: response.message || 'Error al crear usuario'
-                });
-            }
-        } catch (err) {
-            showNotification({
-                type: 'error',
-                message: 'Error de conexión'
-            });
-        } finally {
-            setIsSaving(false);
-        }
+        // No try/catch: an API error rejects and the panel shows it.
+        const response = await usersService.create(createForm);
+        const userId = response.data?.id;
+        const roleAssigned = !createRoleId || !userId
+            || await rbacService.assignRoleToUser({ userId, roleId: createRoleId }).then(r => r.success, () => false);
+        showNotification(roleAssigned
+            ? { type: 'success', message: 'Usuario creado exitosamente' }
+            : { type: 'warning', message: 'Usuario creado, pero no se pudo asignar el rol. Asígnalo desde "Gestionar roles".' });
+        createModal.close();
+        setCreateForm(EMPTY_CREATE_FORM);
+        setCreateRoleId('');
+        fetchUsers();
     };
 
     const handleOpenEdit = (user: UserResponse) => {
@@ -313,36 +291,17 @@ export const UsersPage: React.FC = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!selectedUser || isSaving) return;
-        if (!editForm.firstName.trim() || !editForm.lastName.trim()) {
-            showNotification({ type: 'error', message: 'Nombres y apellidos son obligatorios' });
-            return;
-        }
+        if (!selectedUser) return;
+        // Empty names never get here: the fields are `required`.
 
-        setIsSaving(true);
-        try {
-            const response = await usersService.update(selectedUser.id, editForm);
-            if (response.success) {
-                showNotification({
-                    type: 'success',
-                    message: 'Usuario actualizado exitosamente'
-                });
-                editModal.close();
-                fetchUsers();
-            } else {
-                showNotification({
-                    type: 'error',
-                    message: response.message || 'Error al actualizar usuario'
-                });
-            }
-        } catch (err) {
-            showNotification({
-                type: 'error',
-                message: 'Error de conexión'
-            });
-        } finally {
-            setIsSaving(false);
-        }
+        // No try/catch: an API error rejects and the panel shows it.
+        await usersService.update(selectedUser.id, editForm);
+        showNotification({
+            type: 'success',
+            message: 'Usuario actualizado exitosamente'
+        });
+        editModal.close();
+        fetchUsers();
     };
 
     const handleToggleStatus = async (user: UserResponse) => {
@@ -584,49 +543,40 @@ export const UsersPage: React.FC = () => {
                 <Pager pager={pager} />
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={createModal.isOpen}
                 onClose={createModal.close}
                 onSubmit={handleCreate}
                 title="Invitar Usuario"
                 icon={<UserPlus className="text-primary" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" icon={UserPlus} isLoading={isSaving}>
-                            Crear Usuario
-                        </Button>
-                        <Button variant="outline" onClick={createModal.close}>
-                            Cancelar
-                        </Button>
-                    </>
-                }
+                submitText="Crear Usuario"
             >
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input
-                            label="Nombres *"
-                            required
-                            maxLength={80}
-                            placeholder="Ej: Juan"
-                            value={createForm.firstName}
-                            onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                        <Input
-                            label="Apellidos *"
-                            required
-                            maxLength={80}
-                            placeholder="Ej: Pérez"
-                            value={createForm.lastName}
-                            onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                    </div>
+                <FormSection>
+                    <Input
+                        label="Nombres *"
+                        required
+                        maxLength={80}
+                        placeholder="Ej: Juan"
+                        name="firstName"
+                        value={createForm.firstName}
+                        onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
+                    />
+                    <Input
+                        label="Apellidos *"
+                        required
+                        maxLength={80}
+                        placeholder="Ej: Pérez"
+                        name="lastName"
+                        value={createForm.lastName}
+                        onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
+                    />
                     <Input
                         label="Email *"
                         type="email"
                         required
                         autoComplete="off"
                         placeholder="juan@empresa.com"
+                        name="email"
                         value={createForm.email}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
                     />
@@ -636,88 +586,87 @@ export const UsersPage: React.FC = () => {
                         required
                         autoComplete="new-password"
                         placeholder="Mínimo 8 caracteres"
+                        name="password"
                         value={createForm.password}
-                        onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                        onChange={(e) => { setPasswordTooShort(false); setCreateForm(prev => ({ ...prev, password: e.target.value })); }}
+                        error={passwordTooShort ? 'La contraseña debe tener mínimo 8 caracteres' : undefined}
                     />
                     <Input
                         label="Teléfono"
                         placeholder="+57 300 123 4567"
+                        name="phone"
                         maxLength={30}
                         value={createForm.phone || ''}
                         onChange={(e) => setCreateForm(prev => ({ ...prev, phone: e.target.value }))}
                     />
-                    <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                        <input type="checkbox" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                    <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700 dark:text-slate-300">
+                        <input type="checkbox" name="isEmployee" checked={createForm.isEmployee ?? true} onChange={(e) => setCreateForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
                         Es empleado (vinculación laboral)
                     </label>
-                    <Select
-                        label="Rol"
-                        value={createRoleId}
-                        onChange={(e) => setCreateRoleId(e.target.value)}
-                        hint="Si no eliges un rol, el usuario solo verá su perfil hasta que se le asigne uno."
-                    >
-                        <option value="">Sin asignar</option>
-                        {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                    </Select>
-                </div>
-            </Modal>
+                    <div className="sm:col-span-2">
+                        <Select
+                            label="Rol"
+                            name="roleId"
+                            value={createRoleId}
+                            onChange={(e) => setCreateRoleId(e.target.value)}
+                            hint="Si no eliges un rol, el usuario solo verá su perfil hasta que se le asigne uno."
+                        >
+                            <option value="">Sin asignar</option>
+                            {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </Select>
+                    </div>
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={editModal.isOpen}
                 onClose={editModal.close}
                 onSubmit={handleSaveEdit}
                 title="Editar Usuario"
                 icon={<Edit className="text-primary" size={20} />}
-                size="md"
-                footer={
-                    <>
-                        <Button type="submit" icon={Edit} isLoading={isSaving}>
-                            Guardar Cambios
-                        </Button>
-                        <Button variant="outline" onClick={editModal.close}>
-                            Cancelar
-                        </Button>
-                    </>
-                }
+                submitText="Guardar Cambios"
+                // The status switch is a button: it emits no input or change event.
+                dirty={!!selectedUser && !!editForm.isActive !== selectedUser.isActive}
             >
                 {selectedUser && (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-background-dark rounded-xl mb-4">
+                    <FormSection>
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-background-dark rounded-xl sm:col-span-2">
                             <Avatar name={selectedUser.fullName} size="md" />
                             <div>
                                 <p className="font-bold text-slate-900 dark:text-white">{selectedUser.fullName}</p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">{selectedUser.email}</p>
                             </div>
                         </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Nombres *"
-                                required
-                                maxLength={80}
-                                value={editForm.firstName}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                            />
-                            <Input
-                                label="Apellidos *"
-                                required
-                                maxLength={80}
-                                value={editForm.lastName}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                            />
-                        </div>
+
+                        <Input
+                            label="Nombres *"
+                            required
+                            maxLength={80}
+                            name="firstName"
+                            value={editForm.firstName}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                        />
+                        <Input
+                            label="Apellidos *"
+                            required
+                            maxLength={80}
+                            name="lastName"
+                            value={editForm.lastName}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                        />
                         <Input
                             label="Teléfono"
                             maxLength={30}
+                            name="phone"
                             value={editForm.phone || ''}
                             onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                         />
-                        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                            <input type="checkbox" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
+                        <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700 dark:text-slate-300">
+                            <input type="checkbox" name="isEmployee" checked={editForm.isEmployee ?? true} onChange={(e) => setEditForm(prev => ({ ...prev, isEmployee: e.target.checked }))} />
                             Es empleado (vinculación laboral)
                         </label>
-                        
-                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark rounded-xl">
+
+                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-background-dark rounded-xl sm:col-span-2">
                             <div>
                                 <p id="user-status-label" className="font-semibold text-slate-900 dark:text-white">Estado del Usuario</p>
                                 <p id="user-status-desc" className="text-sm text-slate-500 dark:text-slate-400">
@@ -740,9 +689,9 @@ export const UsersPage: React.FC = () => {
                                 }`} />
                             </button>
                         </div>
-                    </div>
+                    </FormSection>
                 )}
-            </Modal>
+            </FormPanel>
 
             <Modal
                 isOpen={deleteModal.isOpen}

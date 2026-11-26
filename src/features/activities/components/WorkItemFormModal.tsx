@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SprintStatus, workItemsService, WorkItemPriority, WorkItemType, type SprintResponse, type WorkItemResponse } from '../../../shared/api';
-import { Button, Input, Modal, Select, Textarea } from '../../../shared/ui';
+import { FormPanel, FormSection, Input, Select, Textarea } from '../../../shared/ui';
 import { dayOf, PRIORITY_LABELS, TYPE_LABELS } from '../workItemMeta';
 
 export interface Member { id: string; name: string }
@@ -41,7 +41,6 @@ const numbers = <E extends number>(e: Record<string, string | E>): E[] => Object
 
 export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId, item, members, parents, sprints, defaultSprintId = '', onSaved }) => {
     const [form, setForm] = useState<Form>(blank);
-    const [saving, setSaving] = useState(false);
     const isSubtask = form.type === WorkItemType.Subtask;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the default only matters when the form opens
@@ -59,68 +58,57 @@ export const WorkItemFormModal: React.FC<Props> = ({ isOpen, onClose, projectId,
             estimateHours: form.estimate === '' ? null : Number(form.estimate),
             sprintId: form.sprint || null,
         };
-        setSaving(true);
-        try {
-            const { data } = item
-                ? await workItemsService.update(item.id, body)
-                : await workItemsService.create(projectId, { ...body, type: form.type, parentId: isSubtask ? form.parentId : null });
-            onSaved(data);
-            onClose();
-        } catch {
-            // el listener global muestra el error
-        } finally {
-            setSaving(false);
-        }
+        const { data } = item
+            ? await workItemsService.update(item.id, body)
+            : await workItemsService.create(projectId, { ...body, type: form.type, parentId: isSubtask ? form.parentId : null });
+        onSaved(data);
+        onClose();
     };
 
     return (
-        <Modal
+        <FormPanel
             isOpen={isOpen}
             onClose={onClose}
             title={item ? `Editar ${item.key}` : 'Nueva actividad'}
-            size="lg"
             onSubmit={submit}
-            footer={<>
-                <Button type="submit" isLoading={saving}>{item ? 'Guardar cambios' : 'Crear actividad'}</Button>
-                <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-            </>}
+            submitText={item ? 'Guardar cambios' : 'Crear actividad'}
         >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormSection>
                 {!item && (
-                    <Select label="Tipo" value={form.type} onChange={(e) => set('type', Number(e.target.value))}>
+                    <Select label="Tipo" name="type" value={form.type} onChange={(e) => set('type', Number(e.target.value))}>
                         {numbers<WorkItemType>(WorkItemType).map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
                     </Select>
                 )}
                 {!item && isSubtask && (
-                    <Select label="Actividad padre" required value={form.parentId} onChange={(e) => set('parentId', e.target.value)}>
+                    <Select label="Actividad padre" name="parentId" required value={form.parentId} onChange={(e) => set('parentId', e.target.value)}>
                         <option value="">Selecciona…</option>
                         {parents.map((p) => <option key={p.id} value={p.id}>{p.key} · {p.title}</option>)}
                     </Select>
                 )}
                 <div className="sm:col-span-2">
-                    <Input label="Título" required maxLength={200} value={form.title} onChange={(e) => set('title', e.target.value)} />
+                    <Input label="Título" name="title" required maxLength={200} value={form.title} onChange={(e) => set('title', e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                    <Textarea label="Descripción" rows={4} value={form.description} onChange={(e) => set('description', e.target.value)} />
+                    <Textarea label="Descripción" name="description" rows={4} value={form.description} onChange={(e) => set('description', e.target.value)} />
                 </div>
-                <Select label="Responsable" value={form.assignee} onChange={(e) => set('assignee', e.target.value)}>
+                <Select label="Responsable" name="assigneeUserId" value={form.assignee} onChange={(e) => set('assignee', e.target.value)}>
                     <option value="">Sin asignar</option>
                     {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
                 </Select>
-                <Select label="Prioridad" value={form.priority} onChange={(e) => set('priority', Number(e.target.value))}>
+                <Select label="Prioridad" name="priority" value={form.priority} onChange={(e) => set('priority', Number(e.target.value))}>
                     {numbers<WorkItemPriority>(WorkItemPriority).map((p) => <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>)}
                 </Select>
-                <Input label="Fecha límite" type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
-                <Input label="Estimación (horas)" type="number" min={0} max={9999.99} step={0.25} value={form.estimate} onChange={(e) => set('estimate', e.target.value)} />
+                <Input label="Fecha límite" name="dueDate" type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
+                <Input label="Estimación (horas)" name="estimateHours" type="number" min={0} max={9999.99} step={0.25} value={form.estimate} onChange={(e) => set('estimate', e.target.value)} />
                 {sprints && (
-                    <Select label="Sprint" value={form.sprint} onChange={(e) => set('sprint', e.target.value)}>
+                    <Select label="Sprint" name="sprintId" value={form.sprint} onChange={(e) => set('sprint', e.target.value)}>
                         <option value="">Sin sprint</option>
                         {/* A closed sprint takes no new items; the item's own one still shows */}
                         {sprints.filter((s) => s.status !== SprintStatus.Closed || s.id === item?.sprintId)
                             .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </Select>
                 )}
-            </div>
-        </Modal>
+            </FormSection>
+        </FormPanel>
     );
 };

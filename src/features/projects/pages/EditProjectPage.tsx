@@ -8,7 +8,6 @@ import {
   Target,
   Plus,
   Trash2,
-  CheckCircle2,
 } from "lucide-react";
 import {
   Button,
@@ -20,7 +19,8 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  Modal,
+  FormPanel,
+  FormSection,
   PageContainer,
   PageHeader,
   useGoBack,
@@ -66,7 +66,6 @@ export const EditProjectPage: React.FC = () => {
   const [availableSkills, setAvailableSkills] = useState<SkillDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAddingSkill, setIsAddingSkill] = useState(false);
 
   const [newSkillId, setNewSkillId] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("3");
@@ -202,45 +201,27 @@ export const EditProjectPage: React.FC = () => {
     }
   };
 
+  // An API error rejects: the panel shows it and stays open. The required select reports a missing skill.
   const handleAddSkill = async () => {
-    if (isAddingSkill) return;
-    if (!id || !newSkillId) {
-      showNotification({ type: "error", message: "Selecciona una habilidad" });
-      return;
-    }
+    if (!id || !newSkillId) return;
 
-    setIsAddingSkill(true);
-
-    try {
-      const response = await projectsService.addRequirement(id, {
-        skillId: newSkillId,
-        requiredLevel: parseInt(newSkillLevel),
-        isMandatory: newSkillMandatory,
-      });
-
-      if (response.success) {
-        showNotification({
-          type: "success",
-          message: "Requisito agregado exitosamente",
-        });
-        const reqsRes = await projectsService.getRequirements(id);
-        if (reqsRes.success && reqsRes.data) {
-          setRequirements(reqsRes.data);
-        }
-        addSkillModal.close();
-        setNewSkillId("");
-        setNewSkillLevel("3");
-        setNewSkillMandatory(true);
-      } else {
-        showNotification({
-          type: "error",
-          message: response.message || "Error al agregar requisito",
-        });
-      }
-    } catch (error) {
-      showNotification({ type: "error", message: "Error de conexión" });
-    } finally {
-      setIsAddingSkill(false);
+    await projectsService.addRequirement(id, {
+      skillId: newSkillId,
+      requiredLevel: parseInt(newSkillLevel),
+      isMandatory: newSkillMandatory,
+    });
+    showNotification({
+      type: "success",
+      message: "Requisito agregado exitosamente",
+    });
+    addSkillModal.close();
+    setNewSkillId("");
+    setNewSkillLevel("3");
+    setNewSkillMandatory(true);
+    // Saved already: a failed reload is not a failed save.
+    const reqsRes = await projectsService.getRequirements(id).catch(() => null);
+    if (reqsRes?.success && reqsRes.data) {
+      setRequirements(reqsRes.data);
     }
   };
 
@@ -450,25 +431,15 @@ export const EditProjectPage: React.FC = () => {
           </Card>
         </form>
 
-      <Modal
+      <FormPanel
         isOpen={addSkillModal.isOpen}
         onClose={addSkillModal.close}
         onSubmit={handleAddSkill}
         title="Agregar Requisito de Habilidad"
-        size="md"
-        footer={
-          <>
-            <Button type="submit" icon={CheckCircle2} isLoading={isAddingSkill}>
-              Agregar Requisito
-            </Button>
-            <Button variant="outline" onClick={addSkillModal.close} disabled={isAddingSkill}>
-              Cancelar
-            </Button>
-          </>
-        }
+        submitText="Agregar Requisito"
       >
-        <div className="flex flex-col gap-6">
-          <Select label="Habilidad *" required value={newSkillId} onChange={(e) => setNewSkillId(e.target.value)}>
+        <FormSection>
+          <Select label="Habilidad *" required name="skillId" value={newSkillId} onChange={(e) => setNewSkillId(e.target.value)}>
             <option value="">Seleccionar habilidad...</option>
             {filteredSkills.map((skill) => (
               <option key={skill.id} value={skill.id}>
@@ -477,7 +448,7 @@ export const EditProjectPage: React.FC = () => {
             ))}
           </Select>
 
-          <Select label="Nivel Requerido" value={newSkillLevel} onChange={(e) => setNewSkillLevel(e.target.value)}>
+          <Select label="Nivel Requerido" name="requiredLevel" value={newSkillLevel} onChange={(e) => setNewSkillLevel(e.target.value)}>
             {catalogs?.skillLevels.map((level) => (
               <option key={level.id} value={level.id}>
                 {level.id} - {level.name}
@@ -485,10 +456,10 @@ export const EditProjectPage: React.FC = () => {
             ))}
           </Select>
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex items-center gap-3 cursor-pointer sm:col-span-2">
             <input
               type="checkbox"
-              checked={newSkillMandatory}
+              name="isMandatory" checked={newSkillMandatory}
               onChange={(e) => setNewSkillMandatory(e.target.checked)}
               className="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary-600 dark:text-primary focus:ring-primary"
             />
@@ -496,8 +467,8 @@ export const EditProjectPage: React.FC = () => {
               ¿Es obligatorio?
             </span>
           </label>
-        </div>
-      </Modal>
+        </FormSection>
+      </FormPanel>
     </PageContainer>
   );
 };

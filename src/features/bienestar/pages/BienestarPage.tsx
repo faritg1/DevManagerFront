@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Calculator, Wallet, HandCoins, CheckCircle2, XCircle, PackageCheck } from 'lucide-react';
-import { Card, Badge, Button, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
+import { Card, Badge, Button, FormPanel, FormSection, Input, Select, Textarea, Modal, Pager, SearchInput, StatCard, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, EmptyState, LoadingBlock, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { bienestarService, associatesService } from '../../../shared/api';
@@ -161,50 +161,38 @@ export const BienestarPage: React.FC = () => {
         if (lookupUserId) loadUser(lookupUserId);
     };
 
-    const handleCreateProgram = submitting(async () => {
+    const handleCreateProgram = async () => {
         const f = programForm;
-        try {
-            const res = await bienestarService.createProgram({
-                name: f.name.trim(),
-                budget: f.budget,
-                startDate: f.startDate,
-                ...(f.description?.trim() ? { description: f.description.trim() } : {}),
-                ...(f.endDate ? { endDate: f.endDate } : {}),
-                ...(f.maxBeneficiaries ? { maxBeneficiaries: f.maxBeneficiaries } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Programa de bienestar creado' });
-                setProgramOpen(false);
-                setProgramForm(emptyProgram());
-                loadPrograms();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await bienestarService.createProgram({
+            name: f.name.trim(),
+            budget: f.budget,
+            startDate: f.startDate,
+            ...(f.description?.trim() ? { description: f.description.trim() } : {}),
+            ...(f.endDate ? { endDate: f.endDate } : {}),
+            ...(f.maxBeneficiaries ? { maxBeneficiaries: f.maxBeneficiaries } : {}),
+        });
+        showNotification({ type: 'success', message: 'Programa de bienestar creado' });
+        setProgramOpen(false);
+        setProgramForm(emptyProgram());
+        loadPrograms();
+    };
 
 
-    const handleCreateRequest = submitting(async () => {
+    const handleCreateRequest = async () => {
         const f = requestForm;
-        try {
-            const res = await bienestarService.createRequest({
-                aidType: f.aidType,
-                requestedAmount: f.requestedAmount,
-                reason: f.reason.trim(),
-                requiredDate: f.requiredDate,
-                ...(f.programId ? { programId: f.programId } : {}),
-                ...(isAdmin && f.userId ? { userId: f.userId } : {}),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Solicitud de bienestar registrada' });
-                setRequestOpen(false);
-                setRequestForm(emptyRequest());
-                refreshAfterChange();
-            }
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await bienestarService.createRequest({
+            aidType: f.aidType,
+            requestedAmount: f.requestedAmount,
+            reason: f.reason.trim(),
+            requiredDate: f.requiredDate,
+            ...(f.programId ? { programId: f.programId } : {}),
+            ...(isAdmin && f.userId ? { userId: f.userId } : {}),
+        });
+        showNotification({ type: 'success', message: 'Solicitud de bienestar registrada' });
+        setRequestOpen(false);
+        setRequestForm(emptyRequest());
+        refreshAfterChange();
+    };
 
 
     const openResolve = (request: WelfareRequestDto, action: Resolve['action']) => {
@@ -453,74 +441,60 @@ export const BienestarPage: React.FC = () => {
                 </Card>
             </div>
 
-            <Modal
+            <FormPanel
                 isOpen={programOpen}
                 onClose={() => setProgramOpen(false)}
                 onSubmit={handleCreateProgram}
                 title="Nuevo Programa de Bienestar"
                 icon={<Heart className="text-rose-600 dark:text-rose-400" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setProgramOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     <div className="sm:col-span-2">
-                        <Input label="Nombre *" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
+                        <Input label="Nombre *" name="name" required value={programForm.name} onChange={(e) => setProgramForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Fondo de auxilios funerarios" />
                     </div>
                     <div className="sm:col-span-2">
                         <Textarea
-                            label="Descripción"
+                            label="Descripción" name="description"
                             value={programForm.description || ''}
                             onChange={(e) => setProgramForm(f => ({ ...f, description: e.target.value }))}
                             rows={3}
                         />
                     </div>
-                    <Input type="number" label="Presupuesto *" required min={0.01} step="any" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha inicio *" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
-                    <Input type="date" label="Fecha fin" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
-                    <Input type="number" label="Máx. beneficiarios" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
-                </div>
-            </Modal>
+                    <Input type="number" label="Presupuesto *" name="budget" required min={0.01} step="any" value={programForm.budget} onChange={(e) => setProgramForm(f => ({ ...f, budget: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha inicio *" name="startDate" required value={programForm.startDate} onChange={(e) => setProgramForm(f => ({ ...f, startDate: e.target.value }))} />
+                    <Input type="date" label="Fecha fin" name="endDate" value={programForm.endDate || ''} onChange={(e) => setProgramForm(f => ({ ...f, endDate: e.target.value || undefined }))} />
+                    <Input type="number" label="Máx. beneficiarios" name="maxBeneficiaries" value={programForm.maxBeneficiaries ?? ''} onChange={(e) => setProgramForm(f => ({ ...f, maxBeneficiaries: e.target.value ? Number(e.target.value) : undefined }))} />
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={requestOpen}
                 onClose={() => setRequestOpen(false)}
                 onSubmit={handleCreateRequest}
                 title="Nueva Solicitud de Bienestar"
                 icon={<HandCoins className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setRequestOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSection>
                     {isAdmin && (
-                        <Select label="Asociado" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
+                        <Select label="Asociado" name="userId" value={requestForm.userId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, userId: e.target.value || undefined }))}>
                             <option value="">Yo mismo</option>
                             {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                         </Select>
                     )}
-                    <Select label="Tipo de auxilio *" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
+                    <Select label="Tipo de auxilio *" name="aidType" required value={requestForm.aidType} onChange={(e) => setRequestForm(f => ({ ...f, aidType: Number(e.target.value) as AidType }))}>
                         {Object.entries(AID_TYPE_LABEL).filter(([k]) => k !== '3').map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Select label="Programa" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
+                    <Select label="Programa" name="programId" value={requestForm.programId ?? ''} onChange={(e) => setRequestForm(f => ({ ...f, programId: e.target.value || undefined }))}>
                         <option value="">Sin programa</option>
                         {programs.filter(p => p.isActive).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </Select>
-                    <Input type="number" label="Monto solicitado *" required min={0.01} step="any" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
-                    <Input type="date" label="Fecha requerida *" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
+                    <Input type="number" label="Monto solicitado *" name="requestedAmount" required min={0.01} step="any" value={requestForm.requestedAmount} onChange={(e) => setRequestForm(f => ({ ...f, requestedAmount: Number(e.target.value) }))} />
+                    <Input type="date" label="Fecha requerida *" name="requiredDate" required value={requestForm.requiredDate} onChange={(e) => setRequestForm(f => ({ ...f, requiredDate: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Input label="Motivo *" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
+                        <Input label="Motivo *" name="reason" required value={requestForm.reason} onChange={(e) => setRequestForm(f => ({ ...f, reason: e.target.value }))} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!resolving}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, UserPlus } from 'lucide-react';
-import { Button, Card, Badge, Modal, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState, ExportButton } from '../../../shared/ui';
+import { Button, Card, Badge, FormPanel, FormSection, Input, Select, Pager, SearchInput, PageContainer, PageHeader, LoadingBlock, TABLE_CLASS, THEAD_CLASS, TBODY_CLASS, TH_CLASS as TH, TD_CLASS as TD, TR_CLASS, TD_TRUNCATE_CLASS, SELECT_SM_CLASS, EmptyState, ExportButton } from '../../../shared/ui';
 import { useModal, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { useNotification } from '../../../shared/context';
 import { associatesService, usersService } from '../../../shared/api';
@@ -34,7 +34,6 @@ export const AssociatesPage: React.FC = () => {
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [userId, setUserId] = useState('');
     const [applicationDate, setApplicationDate] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
     const pager = usePagedFilter(items, { searchFields: a => [a.fullName, a.documentNumber] });
 
     const load = useCallback(async () => {
@@ -64,20 +63,10 @@ export const AssociatesPage: React.FC = () => {
     };
 
     const create = async () => {
-        if (isSaving) return;
-        setIsSaving(true);
-        try {
-            const res = await associatesService.create({ userId, applicationDate: applicationDate || undefined });
-            if (res.success) {
-                showNotification({ type: 'success', message: 'Asociado creado' });
-                createModal.close();
-                navigate(associateDetailPath(userId));
-            }
-        } catch (e) {
-            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
-        } finally {
-            setIsSaving(false);
-        }
+        await associatesService.create({ userId, applicationDate: applicationDate || undefined });
+        showNotification({ type: 'success', message: 'Asociado creado' });
+        createModal.close();
+        navigate(associateDetailPath(userId));
     };
 
     const associateIds = new Set(items.map((i) => i.userId));
@@ -143,22 +132,17 @@ export const AssociatesPage: React.FC = () => {
                 </>)}
             </Card>
 
-            <Modal
+            <FormPanel
                 isOpen={createModal.isOpen}
                 onClose={createModal.close}
                 onSubmit={create}
                 title="Nuevo asociado"
                 icon={<UserPlus className="text-primary" size={20} />}
-                footer={
-                    <>
-                        <Button type="submit" isLoading={isSaving}>Crear</Button>
-                        <Button variant="outline" onClick={createModal.close}>Cancelar</Button>
-                    </>
-                }
+                submitText="Crear"
             >
-                <div className="space-y-4">
+                <FormSection>
                     <Select
-                        label="Usuario existente *"
+                        label="Usuario existente *" name="userId"
                         required
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
@@ -169,13 +153,13 @@ export const AssociatesPage: React.FC = () => {
                         ))}
                     </Select>
                     <Input
-                        label="Fecha de solicitud (opcional, por defecto hoy)"
+                        label="Fecha de solicitud (opcional, por defecto hoy)" name="applicationDate"
                         type="date"
                         value={applicationDate}
                         onChange={(e) => setApplicationDate(e.target.value)}
                     />
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
             {importModal.isOpen && <ImportAssociatesDialog onClose={importModal.close} onImported={load} />}
         </PageContainer>
     );

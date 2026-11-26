@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Plus, Users, FileText, Building2, ChevronLeft, Trash2, Vote, Lock, ExternalLink } from 'lucide-react';
-import { Card, Badge, Button, IconButton, Input, Select, Textarea, Modal, ProgressBar, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
+import { Card, Badge, Button, IconButton, Input, Select, Textarea, Modal, FormPanel, FormSection, ProgressBar, PageContainer, PageHeader, LoadingBlock } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
 import { useIsAdmin, useConfirm, usePermission } from '../../../shared/hooks';
 import { organosService, associatesService } from '../../../shared/api';
@@ -65,14 +65,6 @@ export const OrganosPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [createOpen, setCreateOpen] = useState(false);
-    const [saving, setSaving] = useState(false);
-
-    /** Runs a modal submit with the button in loading state, ignoring repeat submits. */
-    const submitting = (fn: () => Promise<void>) => async () => {
-        if (saving) return;
-        setSaving(true);
-        try { await fn(); } finally { setSaving(false); }
-    };
     const [createForm, setCreateForm] = useState<CreateGoverningBodyRequest>({ type: 2, name: '', constitutionDate: today() });
 
     const [selected, setSelected] = useState<GoverningBodyDto | null>(null);
@@ -121,21 +113,19 @@ export const OrganosPage: React.FC = () => {
         }
     }, [isAdmin, canMembers]);
 
-    const handleCreate = submitting(async () => {
+    // The four form submits let an API error reject: the panel shows it and stays open.
+    // Once saved, a failed reload is not a failed save, so it is not handed to the (already closed) panel.
+    const handleCreate = async () => {
         if (!createForm.name.trim()) return;
-        try {
-            const res = await organosService.create({ ...createForm, name: createForm.name.trim() });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Órgano creado' });
-                setCreateOpen(false);
-                setCreateForm(f => ({ ...f, name: '' }));
-                await loadBodies();
-                openDetail(res.data);
-            }
-        } catch {
-            // el listener global muestra el error
+        const res = await organosService.create({ ...createForm, name: createForm.name.trim() });
+        if (res.success && res.data) {
+            showNotification({ type: 'success', message: 'Órgano creado' });
+            setCreateOpen(false);
+            setCreateForm(f => ({ ...f, name: '' }));
+            await loadBodies();
+            openDetail(res.data);
         }
-    });
+    };
 
 
     const loadMembers = async (bodyId: string) => {
@@ -170,24 +160,19 @@ export const OrganosPage: React.FC = () => {
         if (res.success && res.data) setSelected(res.data);
     };
 
-    const handleAddMember = submitting(async () => {
+    const handleAddMember = async () => {
         if (!selected || !memberForm.userId || !memberForm.position.trim()) return;
-        try {
-            await organosService.assignMember({
-                governingBodyId: selected.id,
-                userId: memberForm.userId,
-                position: memberForm.position.trim(),
-                startDate: memberForm.startDate,
-            });
-            showNotification({ type: 'success', message: 'Miembro asignado' });
-            setMemberOpen(false);
-            setMemberForm({ userId: '', position: '', startDate: today() });
-            await loadMembers(selected.id);
-            await refreshSelected(selected.id);
-        } catch {
-            // el listener global muestra el error
-        }
-    });
+        await organosService.assignMember({
+            governingBodyId: selected.id,
+            userId: memberForm.userId,
+            position: memberForm.position.trim(),
+            startDate: memberForm.startDate,
+        });
+        showNotification({ type: 'success', message: 'Miembro asignado' });
+        setMemberOpen(false);
+        setMemberForm({ userId: '', position: '', startDate: today() });
+        await Promise.all([loadMembers(selected.id), refreshSelected(selected.id)]).catch(() => {});
+    };
 
 
     const handleRemoveMember = async (member: GoverningBodyMemberDto) => {
@@ -213,30 +198,25 @@ export const OrganosPage: React.FC = () => {
         }
     };
 
-    const handleCreateMinutes = submitting(async () => {
+    const handleCreateMinutes = async () => {
         if (!selected || !minutesForm.decisions.trim()) return;
-        try {
-            const res = await organosService.createMinutes({
-                governingBodyId: selected.id,
-                assemblyId: minutesForm.assemblyId || undefined,
-                sessionDate: minutesForm.sessionDate,
-                sessionType: minutesForm.sessionType,
-                quorum: minutesForm.quorum,
-                decisions: minutesForm.decisions.trim(),
-                noticeUrl: optional(minutesForm.noticeUrl),
-                minutesUrl: optional(minutesForm.minutesUrl),
-                notes: optional(minutesForm.notes),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Acta registrada' });
-                setMinutesOpen(false);
-                await loadMinutes(selected.id);
-                await refreshSelected(selected.id);
-            }
-        } catch {
-            // el listener global muestra el error
+        const res = await organosService.createMinutes({
+            governingBodyId: selected.id,
+            assemblyId: minutesForm.assemblyId || undefined,
+            sessionDate: minutesForm.sessionDate,
+            sessionType: minutesForm.sessionType,
+            quorum: minutesForm.quorum,
+            decisions: minutesForm.decisions.trim(),
+            noticeUrl: optional(minutesForm.noticeUrl),
+            minutesUrl: optional(minutesForm.minutesUrl),
+            notes: optional(minutesForm.notes),
+        });
+        if (res.success && res.data) {
+            showNotification({ type: 'success', message: 'Acta registrada' });
+            setMinutesOpen(false);
+            await Promise.all([loadMinutes(selected.id), refreshSelected(selected.id)]).catch(() => {});
         }
-    });
+    };
 
 
     const voterOf = (id: string) => id || user?.id || '';
@@ -274,23 +254,19 @@ export const OrganosPage: React.FC = () => {
         if (selected) await loadAssemblies(selected.id);
     };
 
-    const handleConvene = submitting(async () => {
+    const handleConvene = async () => {
         if (!conveneForm.notice.trim()) return;
-        try {
-            const res = await organosService.conveneAssembly({
-                ...conveneForm,
-                scheduledAt: new Date(conveneForm.scheduledAt).toISOString(),
-                notice: conveneForm.notice.trim(),
-            });
-            if (res.success && res.data) {
-                showNotification({ type: 'success', message: 'Asamblea convocada' });
-                setConveneOpen(false);
-                if (selected) await loadAssemblies(selected.id);
-            }
-        } catch {
-            // el listener global muestra el error
+        const res = await organosService.conveneAssembly({
+            ...conveneForm,
+            scheduledAt: new Date(conveneForm.scheduledAt).toISOString(),
+            notice: conveneForm.notice.trim(),
+        });
+        if (res.success && res.data) {
+            showNotification({ type: 'success', message: 'Asamblea convocada' });
+            setConveneOpen(false);
+            if (selected) await loadAssemblies(selected.id).catch(() => {});
         }
-    });
+    };
 
 
     const handleAttendance = async () => {
@@ -516,100 +492,80 @@ export const OrganosPage: React.FC = () => {
                 </div>
             )}
 
-            <Modal
+            <FormPanel
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
                 onSubmit={handleCreate}
                 title="Crear Órgano"
                 icon={<Plus className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Nombre *" required value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
+                <FormSection>
+                    <Input label="Nombre *" required name="name" value={createForm.name} onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))} />
                     <Select
                         label="Tipo *"
                         required
-                        value={createForm.type}
+                        name="type" value={createForm.type}
                         onChange={(e) => setCreateForm(f => ({ ...f, type: Number(e.target.value) as GoverningBodyType }))}
                     >
                         {Object.entries(BODY_TYPE_LABEL).map(([k, v]) => (
                             <option key={k} value={k}>{v}</option>
                         ))}
                     </Select>
-                    <Input type="date" label="Fecha de constitución" value={createForm.constitutionDate} onChange={(e) => setCreateForm(f => ({ ...f, constitutionDate: e.target.value }))} />
-                    <Input label="Descripción" value={createForm.description ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, description: e.target.value || undefined }))} />
-                </div>
-            </Modal>
+                    <Input type="date" label="Fecha de constitución" name="constitutionDate" value={createForm.constitutionDate} onChange={(e) => setCreateForm(f => ({ ...f, constitutionDate: e.target.value }))} />
+                    <Input label="Descripción" name="description" value={createForm.description ?? ''} onChange={(e) => setCreateForm(f => ({ ...f, description: e.target.value || undefined }))} />
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={memberOpen}
                 onClose={() => setMemberOpen(false)}
                 onSubmit={handleAddMember}
                 title="Asignar Miembro"
                 icon={<Users className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Asignar</Button>
-                        <Button variant="outline" onClick={() => setMemberOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Asignar"
             >
-                <div className="space-y-4">
+                <FormSection>
                     <Select
                         label="Asociado *"
                         required
-                        value={memberForm.userId}
+                        name="userId" value={memberForm.userId}
                         onChange={(e) => setMemberForm(f => ({ ...f, userId: e.target.value }))}
                     >
                         <option value="">Seleccionar asociado</option>
                         {associates.map(a => <option key={a.userId} value={a.userId}>{a.fullName}</option>)}
                     </Select>
-                    <Input label="Cargo *" required value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
-                    <Input type="date" label="Fecha de inicio" value={memberForm.startDate} onChange={(e) => setMemberForm(f => ({ ...f, startDate: e.target.value }))} />
-                </div>
-            </Modal>
+                    <Input label="Cargo *" required name="position" value={memberForm.position} onChange={(e) => setMemberForm(f => ({ ...f, position: e.target.value }))} />
+                    <Input type="date" label="Fecha de inicio" name="startDate" value={memberForm.startDate} onChange={(e) => setMemberForm(f => ({ ...f, startDate: e.target.value }))} />
+                </FormSection>
+            </FormPanel>
 
-            <Modal
+            <FormPanel
                 isOpen={minutesOpen}
                 onClose={() => setMinutesOpen(false)}
                 onSubmit={handleCreateMinutes}
                 title="Registrar Acta"
                 icon={<FileText className="text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="outline" onClick={() => setMinutesOpen(false)}>Cancelar</Button>
-                    </>
-                }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input type="date" label="Fecha de sesión *" required value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
-                    <Select label="Tipo de sesión *" required value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))}>
+                <FormSection>
+                    <Input type="date" label="Fecha de sesión *" required name="sessionDate" value={minutesForm.sessionDate} onChange={(e) => setMinutesForm(f => ({ ...f, sessionDate: e.target.value }))} />
+                    <Select label="Tipo de sesión *" required name="sessionType" value={minutesForm.sessionType} onChange={(e) => setMinutesForm(f => ({ ...f, sessionType: Number(e.target.value) as SessionType }))}>
                         {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input type="number" min={0} required label="Quórum *" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
-                    <Select label="Asamblea relacionada" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))}>
+                    <Input type="number" min={0} required label="Quórum *" name="quorum" value={minutesForm.quorum} onChange={(e) => setMinutesForm(f => ({ ...f, quorum: Number(e.target.value) }))} />
+                    <Select label="Asamblea relacionada" name="assemblyId" value={minutesForm.assemblyId ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, assemblyId: e.target.value || undefined }))}>
                         <option value="">Ninguna</option>
                         {assemblies.map(as => <option key={as.id} value={as.id}>{SESSION_TYPE_LABEL[as.type]} · {formatDate(as.scheduledAt)}</option>)}
                     </Select>
                     <div className="sm:col-span-2">
-                        <Textarea label="Decisiones *" required value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} rows={4} />
+                        <Textarea label="Decisiones *" required name="decisions" value={minutesForm.decisions} onChange={(e) => setMinutesForm(f => ({ ...f, decisions: e.target.value }))} rows={4} />
                     </div>
-                    <Input label="URL de la convocatoria" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
-                    <Input label="URL del acta" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
+                    <Input label="URL de la convocatoria" name="noticeUrl" value={minutesForm.noticeUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, noticeUrl: e.target.value }))} />
+                    <Input label="URL del acta" name="minutesUrl" value={minutesForm.minutesUrl ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, minutesUrl: e.target.value }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Notas" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
+                        <Textarea label="Notas" name="notes" value={minutesForm.notes ?? ''} onChange={(e) => setMinutesForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!minutesDetail}
@@ -644,31 +600,25 @@ export const OrganosPage: React.FC = () => {
                 )}
             </Modal>
 
-            <Modal
+            <FormPanel
                 isOpen={conveneOpen}
                 onClose={() => setConveneOpen(false)}
                 onSubmit={handleConvene}
                 title="Convocar Asamblea"
                 icon={<Building2 className="text-primary-600 dark:text-primary" size={20} />}
-                size="lg"
-                footer={
-                    <>
-                        <Button type="submit" isLoading={saving}>Convocar</Button>
-                        <Button variant="outline" onClick={() => setConveneOpen(false)}>Cancelar</Button>
-                    </>
-                }
+                submitText="Convocar"
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input type="datetime-local" label="Fecha y hora *" required value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
-                    <Select label="Tipo *" required value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))}>
+                <FormSection>
+                    <Input type="datetime-local" label="Fecha y hora *" required name="scheduledAt" value={conveneForm.scheduledAt} onChange={(e) => setConveneForm(f => ({ ...f, scheduledAt: e.target.value }))} />
+                    <Select label="Tipo *" required name="type" value={conveneForm.type} onChange={(e) => setConveneForm(f => ({ ...f, type: Number(e.target.value) as SessionType }))}>
                         {Object.entries(SESSION_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </Select>
-                    <Input type="number" min={1} required label="Quórum mínimo *" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
+                    <Input type="number" min={1} required label="Quórum mínimo *" name="minimumQuorum" value={conveneForm.minimumQuorum} onChange={(e) => setConveneForm(f => ({ ...f, minimumQuorum: Number(e.target.value) }))} />
                     <div className="sm:col-span-2">
-                        <Textarea label="Convocatoria *" required value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} rows={4} />
+                        <Textarea label="Convocatoria *" required name="notice" value={conveneForm.notice} onChange={(e) => setConveneForm(f => ({ ...f, notice: e.target.value }))} rows={4} />
                     </div>
-                </div>
-            </Modal>
+                </FormSection>
+            </FormPanel>
 
             <Modal
                 isOpen={!!assembly}

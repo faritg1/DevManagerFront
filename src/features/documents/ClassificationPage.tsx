@@ -4,7 +4,7 @@ import { documentsService, type ClassificationNode, type DocumentaryType } from 
 import { useNotification } from '../../shared/context';
 import { type CsvColumn } from '../../shared/export';
 import { useConfirm, usePermission } from '../../shared/hooks';
-import { Badge, Button, Card, EmptyState, ExportButton, IconButton, Input, Modal, PageContainer, PageHeader, SkeletonRows } from '../../shared/ui';
+import { Badge, Button, Card, EmptyState, ExportButton, FormPanel, FormSection, IconButton, Input, PageContainer, PageHeader, SkeletonRows } from '../../shared/ui';
 import { errorText, needsLocalToast } from '../associates/labels';
 import { ClassificationNodeDialog, type NodeTarget } from './components/ClassificationNodeDialog';
 import { DISPOSITION, PERMISSIONS, retentionText } from './labels';
@@ -111,29 +111,31 @@ export const ClassificationPage: React.FC = () => {
     const [target, setTarget] = useState<NodeTarget | null>(null);
     const [typeFor, setTypeFor] = useState<ClassificationNode | null>(null);
     const [typeName, setTypeName] = useState('');
-    const [saving, setSaving] = useState(false);
+    const [removing, setRemoving] = useState(false);
 
     const refresh = () => setReload((n) => n + 1);
 
-    /** Runs a change on the document types and reloads; false when the API refused it. */
-    const changeTypes = async (call: () => Promise<unknown>, message: string): Promise<boolean> => {
-        if (saving) return false;
-        setSaving(true);
-        try {
-            await call();
-            showNotification({ type: 'success', message });
-            refresh();
-            return true;
-        } catch (e) {
-            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
-            return false;
-        } finally {
-            setSaving(false);
-        }
+    /** An API error rejects: the panel shows it and stays open. */
+    const addType = async () => {
+        if (!typeFor) return;
+        await documentsService.addType(typeFor.id, typeName.trim());
+        showNotification({ type: 'success', message: 'Tipo documental agregado' });
+        setTypeFor(null);
+        refresh();
     };
 
-    const addType = async () => {
-        if (typeFor && await changeTypes(() => documentsService.addType(typeFor.id, typeName.trim()), 'Tipo documental agregado')) setTypeFor(null);
+    const removeType = async (node: ClassificationNode, type: DocumentaryType) => {
+        if (removing) return;
+        setRemoving(true);
+        try {
+            await documentsService.removeType(node.id, type.id);
+            showNotification({ type: 'success', message: 'Tipo documental quitado' });
+            refresh();
+        } catch (e) {
+            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
+        } finally {
+            setRemoving(false);
+        }
     };
 
     const actions: Actions | undefined = canManage ? {
@@ -146,7 +148,7 @@ export const ClassificationPage: React.FC = () => {
                 confirmText: 'Quitar tipo',
                 cancelText: 'Cancelar',
             });
-            if (yes) void changeTypes(() => documentsService.removeType(node.id, type.id), 'Tipo documental quitado');
+            if (yes) void removeType(node, type);
         },
     } : undefined;
 
@@ -198,18 +200,13 @@ export const ClassificationPage: React.FC = () => {
             )}
 
             {typeFor && (
-                <Modal
-                    isOpen
-                    onClose={() => setTypeFor(null)}
-                    onSubmit={addType}
-                    title={`Nuevo tipo documental en ${typeFor.code}`}
-                    footer={<>
-                        <Button type="submit" isLoading={saving}>Guardar</Button>
-                        <Button variant="ghost" onClick={() => setTypeFor(null)}>Cancelar</Button>
-                    </>}
-                >
-                    <Input label="Nombre" value={typeName} onChange={(e) => setTypeName(e.target.value)} maxLength={100} required placeholder="Ej. Acta de asamblea" />
-                </Modal>
+                <FormPanel isOpen onClose={() => setTypeFor(null)} onSubmit={addType} title={`Nuevo tipo documental en ${typeFor.code}`}>
+                    <FormSection>
+                        <div className="sm:col-span-2">
+                            <Input label="Nombre" name="name" value={typeName} onChange={(e) => setTypeName(e.target.value)} maxLength={100} required placeholder="Ej. Acta de asamblea" />
+                        </div>
+                    </FormSection>
+                </FormPanel>
             )}
         </PageContainer>
     );

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { documentsService, type ClassificationNode, type FinalDisposition, type UpdateClassificationNodeRequest } from '../../../shared/api';
 import { useNotification } from '../../../shared/context';
-import { Button, Input, Modal, Select, Textarea } from '../../../shared/ui';
-import { errorText, needsLocalToast } from '../../associates/labels';
+import { FormPanel, FormSection, Input, Select, Textarea } from '../../../shared/ui';
 import { DISPOSITION } from '../labels';
 
 /** A node to edit, or the parent of a new one; neither creates a section. */
@@ -36,7 +35,6 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
         procedure: node?.procedure ?? '',
         legalBasis: node?.legalBasis ?? '',
     });
-    const [saving, setSaving] = useState(false);
 
     const set = (key: Exclude<keyof typeof form, 'isActive'>) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { value } = e.target;
@@ -44,8 +42,6 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
     };
 
     const save = async () => {
-        if (saving) return;
-        setSaving(true);
         // Always the whole node: the PUT clears whatever is left out. A section carries no retention.
         const data: UpdateClassificationNodeRequest = {
             code: form.code.trim(),
@@ -59,38 +55,28 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
                 legalBasis: text(form.legalBasis),
             }),
         };
-        try {
-            await (node ? documentsService.updateNode(node.id, data) : documentsService.createNode({ level, parentId: parent?.id ?? null, ...data }));
-            showNotification({ type: 'success', message: node ? 'Elemento actualizado' : 'Elemento creado' });
-            onSaved();
-        } catch (e) {
-            if (needsLocalToast(e)) showNotification({ type: 'error', message: errorText(e) });
-        } finally {
-            setSaving(false);
-        }
+        await (node ? documentsService.updateNode(node.id, data) : documentsService.createNode({ level, parentId: parent?.id ?? null, ...data }));
+        showNotification({ type: 'success', message: node ? 'Elemento actualizado' : 'Elemento creado' });
+        onSaved();
     };
 
     return (
-        <Modal
+        <FormPanel
             isOpen
             onClose={onClose}
             onSubmit={save}
             title={node ? `Editar ${node.code}` : parent ? `${NEW_TITLE[level]} en ${parent.code}` : NEW_TITLE[level]}
-            size="lg"
-            footer={<>
-                <Button type="submit" isLoading={saving}>Guardar</Button>
-                <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-            </>}
         >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input label="Código" value={form.code} onChange={set('code')} maxLength={20} required />
-                <Input label="Nombre" value={form.name} onChange={set('name')} maxLength={200} required />
+            <FormSection>
+                <Input label="Código" name="code" value={form.code} onChange={set('code')} maxLength={20} required />
+                <Input label="Nombre" name="name" value={form.name} onChange={set('name')} maxLength={200} required />
                 {level > 1 && <>
-                    <Input label="Tiempo en gestión (años)" type="number" inputMode="numeric" value={form.managementYears} onChange={set('managementYears')} />
-                    <Input label="Tiempo en central (años)" type="number" inputMode="numeric" value={form.centralYears} onChange={set('centralYears')} />
+                    <Input label="Tiempo en gestión (años)" type="number" inputMode="numeric" name="managementYears" value={form.managementYears} onChange={set('managementYears')} />
+                    <Input label="Tiempo en central (años)" type="number" inputMode="numeric" name="centralYears" value={form.centralYears} onChange={set('centralYears')} />
                     <div className="sm:col-span-2">
                         <Select
                             label="Disposición final"
+                            name="finalDisposition"
                             value={form.finalDisposition}
                             onChange={set('finalDisposition')}
                             hint={level === 3 ? 'Si no indicas retención, hereda la de su serie.' : 'Los dos tiempos y la disposición van juntos.'}
@@ -100,19 +86,19 @@ export const ClassificationNodeDialog: React.FC<Props> = ({ node, parent, onClos
                         </Select>
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Procedimiento" value={form.procedure} onChange={set('procedure')} maxLength={500} rows={2} />
+                        <Textarea label="Procedimiento" name="procedure" value={form.procedure} onChange={set('procedure')} maxLength={500} rows={2} />
                     </div>
                     <div className="sm:col-span-2">
-                        <Textarea label="Soporte legal" value={form.legalBasis} onChange={set('legalBasis')} maxLength={500} rows={2} hint="La norma o el acuerdo interno que cita la entidad." />
+                        <Textarea label="Soporte legal" name="legalBasis" value={form.legalBasis} onChange={set('legalBasis')} maxLength={500} rows={2} hint="La norma o el acuerdo interno que cita la entidad." />
                     </div>
                 </>}
                 {node && (
                     <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700 sm:col-span-2 dark:text-slate-200">
-                        <input type="checkbox" className="size-4 shrink-0 accent-primary" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
+                        <input type="checkbox" name="isActive" className="size-4 shrink-0 accent-primary" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
                         Activo
                     </label>
                 )}
-            </div>
-        </Modal>
+            </FormSection>
+        </FormPanel>
     );
 };

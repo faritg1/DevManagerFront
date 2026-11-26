@@ -168,7 +168,9 @@ test.describe('classification chart', () => {
         await dialog.getByRole('button', { name: 'Guardar' }).click();
         await expect(page.getByText('Ya existe un elemento con ese código en este nivel')).toBeVisible();
         await expect(dialog).toBeVisible();
+        // The form has unsaved changes, so leaving it asks first.
         await dialog.getByRole('button', { name: 'Cancelar' }).click();
+        await page.getByRole('button', { name: 'Descartar' }).click();
 
         await page.getByRole('button', { name: 'Editar ACT', exact: true }).click();
         await dialog.getByLabel('Activo').uncheck();
@@ -201,6 +203,8 @@ test.describe('classification chart', () => {
         await expect(page.getByText('Ese tipo documental ya existe en la serie')).toBeVisible();
         await expect(dialog).toBeVisible();
         await dialog.getByRole('button', { name: 'Cancelar' }).click();
+        await page.getByRole('button', { name: 'Descartar' }).click();
+        await expect(dialog).toHaveCount(0);
 
         // Quitting asks first: cancelling removes nothing.
         await page.getByRole('button', { name: 'Quitar tipo Citación de ACT' }).click();

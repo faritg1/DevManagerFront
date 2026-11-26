@@ -11,7 +11,7 @@ interface UseSkillsResult {
     availableSkills: SkillDto[];
     loadingAvailable: boolean;
     fetchAvailableSkills: () => Promise<void>;
-    saveSkill: (payload: UpsertEmployeeSkillRequest) => Promise<boolean>;
+    saveSkill: (payload: UpsertEmployeeSkillRequest) => Promise<void>;
     deleteSkill: (skill: EmployeeSkillResponse) => Promise<boolean>;
 }
 
@@ -50,20 +50,11 @@ export function useSkills(): UseSkillsResult {
         }
     };
 
+    /** Called from the form panel: an API error rejects, and the panel shows it. */
     const saveSkill = async (payload: UpsertEmployeeSkillRequest) => {
-        setOpLoading(true);
-        try {
-            const resp = await skillsService.upsertEmployeeSkill(payload);
-            if (resp.success) {
-                await loadSkills();
-                return true;
-            }
-        } catch (err) {
-            console.error('[Skills] Error saving skill', err);
-        } finally {
-            setOpLoading(false);
-        }
-        return false;
+        await skillsService.upsertEmployeeSkill(payload);
+        // Not awaited: a failed reload is not a failed save.
+        void loadSkills();
     };
 
     const deleteSkill = async (skill: EmployeeSkillResponse) => {

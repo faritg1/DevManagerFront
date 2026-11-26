@@ -37,6 +37,30 @@ test('activities list shows the items of a project and creates a new one', async
     expect(created[0]).toMatchObject({ title: 'Nueva', type: 1, parentId: null });
 });
 
+test('the new activity form shows an API error under its field', async ({ page }) => {
+    await mockApi(page, USER, {
+        'GET /projects': ok([project]),
+        'GET /projects/p1/work-items': ok([item]),
+        'POST /projects/p1/work-items': (route: { fulfill: (r: object) => Promise<void> }) => route.fulfill({
+            status: 400,
+            json: { success: false, message: 'Revisa los campos marcados', errorCode: 'VALIDATION_ERROR', errors: { estimateHours: ['Debe estar entre 0 y 9999,99'], dueDate: ['La fecha límite ya pasó'] } },
+        }),
+    });
+    await signIn(page);
+    await page.goto('/#/activities');
+    await page.getByLabel('Proyecto').selectOption('p1');
+
+    await page.getByRole('button', { name: 'Nueva actividad' }).click();
+    const panel = page.getByRole('dialog', { name: 'Nueva actividad' });
+    await panel.getByLabel('Título').fill('Nueva');
+    await panel.getByRole('button', { name: 'Crear actividad' }).click();
+
+    await expect(panel.getByLabel('Estimación (horas)')).toHaveAccessibleDescription('Debe estar entre 0 y 9999,99');
+    await expect(panel.getByLabel('Fecha límite')).toHaveAccessibleDescription('La fecha límite ya pasó');
+    await expect(panel.getByRole('alert').getByRole('listitem')).toHaveCount(0);
+    await expect(panel).toBeVisible();
+});
+
 test('board moves a card with the "Mover a" menu and rolls back when the API refuses', async ({ page }) => {
     const moves: unknown[] = [];
     let refuse = false;

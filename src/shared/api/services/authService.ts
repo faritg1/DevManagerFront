@@ -25,19 +25,9 @@ export const authService = {
     return response;
   },
 
-  async registerOrganization(
-    data: RegisterOrganizationRequest,
-  ): Promise<ApiResponse<RegisterOrganizationResponse>> {
-    const response = await apiClient.post<RegisterOrganizationResponse>(
-      API_ENDPOINTS.AUTH.REGISTER_ORGANIZATION,
-      data,
-    );
-
-    if (response.success && response.data?.token) {
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.data.token);
-    }
-
-    return response;
+  /** Leaves the organization pending of approval: no token comes back and nobody is signed in. */
+  registerOrganization(data: RegisterOrganizationRequest): Promise<ApiResponse<RegisterOrganizationResponse>> {
+    return apiClient.post<RegisterOrganizationResponse>(API_ENDPOINTS.AUTH.REGISTER_ORGANIZATION, data);
   },
 
   /** Closes every other session; the JWT it stores keeps this one alive. */

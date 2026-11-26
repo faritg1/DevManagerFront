@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { BrandMark } from "../../../shared/components/BrandMark";
-import { useDemoEnabled } from "../../../shared/api";
+import { useDemoEnabled, type ApiError } from "../../../shared/api";
 import { useAuth } from "../../../shared/context";
 import { Button, Input } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
@@ -13,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const demo = useDemoEnabled();
 
   useEffect(() => {
@@ -24,15 +25,20 @@ export const LoginPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsSending(true);
 
     try {
       await login(email, password);
     } catch (err: unknown) {
+      // A 403 carries the reason (the organization is still pending of approval).
+      const refusal = (err as ApiError).status === 403 ? (err as ApiError).message : "";
       const message =
         err instanceof Error
           ? err.message
-          : "Credenciales inválidas. Intenta de nuevo.";
+          : refusal || "Credenciales inválidas. Intenta de nuevo.";
       setError(message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -90,7 +96,7 @@ export const LoginPage: React.FC = () => {
               type="submit"
               fullWidth
               size="lg"
-              isLoading={isLoading}
+              isLoading={isSending}
               className="mt-1"
             >
               Iniciar Sesión

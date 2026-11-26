@@ -125,6 +125,127 @@ test.describe('phone width', () => {
     });
 });
 
+test.describe('creating, approving and rejecting organizations', () => {
+    const IMPERSONATING = {
+        impersonator_token: 'root-token',
+        impersonator_user: '{}',
+        impersonation: JSON.stringify({ targetName: 'Ana López', organizationName: 'Cooperativa Demo', expiresAt: '2030-01-01T00:00:00Z' }),
+    };
+    const refuse = (status: number, message: string) => (route: Route) => route.fulfill({ status, json: { success: false, message } });
+
+    /** Opens the platform screen with an active and a pending organization; the POSTs really change the list. */
+    async function openOrganizations(page: Page, overrides: Record<string, unknown> = {}, storage: Record<string, string> = {}) {
+        let list = [
+            { id: 'o9', name: 'Coop Uno', nit: '900', isActive: true, userCount: 4 },
+            { id: 'o10', name: 'Fondo Nuevo', nit: null, isActive: false, userCount: 1 },
+        ];
+        const sent: unknown[] = [];
+        const calls: string[] = [];
+        const answer = (key: string, status: number, message: string, change: () => void, data: unknown = null) => (route: Route) => {
+            calls.push(key);
+            change();
+            return route.fulfill({ status, json: { success: true, message, data } });
+        };
+        await mockApi(page, SUPER_ADMIN, {
+            'GET /platform/organizations': (route: Route) => route.fulfill({ json: ok(list) }),
+            'POST /platform/organizations': (route: Route) => {
+                sent.push(route.request().postDataJSON());
+                list = [...list, { id: 'o11', name: route.request().postDataJSON().organizationName, nit: null, isActive: true, userCount: 1 }];
+                return route.fulfill({ status: 201, json: { success: true, message: 'Entidad creada', data: { organizationId: 'o11', adminUserId: 'u11' } } });
+            },
+            'POST /platform/organizations/o10/approve': answer('approve', 200, 'Entidad aprobada', () => { list = list.map((o) => ({ ...o, isActive: true })); }),
+            'POST /platform/organizations/o10/reject': answer('reject', 200, 'Solicitud rechazada', () => { list = list.filter((o) => o.id !== 'o10'); }),
+            ...overrides,
+        });
+        await signIn(page, storage);
+        await page.goto('/#/superadmin');
+        await expect(page.getByText('Fondo Nuevo')).toBeVisible();
+        return { sent, calls };
+    }
+
+    test('creating an organization sends the fields of the dialog, shows the message and reloads the list', async ({ page }) => {
+        const { sent } = await openOrganizations(page);
+        await page.getByRole('button', { name: 'Crear entidad' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Crear entidad' });
+        await dialog.getByLabel('Nombre de la Organización', { exact: true }).fill('Mutual Tres');
+        await dialog.getByLabel('Razón social (opcional)', { exact: true }).fill('Mutual Tres Ltda');
+        await dialog.getByLabel('NIT (opcional)', { exact: true }).fill('901555');
+        await dialog.getByLabel('Tipo de entidad (opcional)', { exact: true }).selectOption({ label: 'Mutual' });
+        await dialog.getByLabel('Nombre', { exact: true }).fill('Luz');
+        await dialog.getByLabel('Apellido', { exact: true }).fill('Mora');
+        await dialog.getByLabel('Email Corporativo', { exact: true }).fill('luz@mutual.co');
+        await dialog.getByLabel('Teléfono (opcional)', { exact: true }).fill('3009876543');
+        await dialog.getByLabel('Contraseña', { exact: true }).fill('Clave-2026');
+        await dialog.getByRole('button', { name: 'Guardar' }).click();
+
+        await expect(page.getByText('Entidad creada')).toBeVisible();
+        await expect(dialog).toBeHidden();
+        expect(sent).toEqual([{
+            organizationName: 'Mutual Tres', legalName: 'Mutual Tres Ltda', nit: '901555', entityType: 4,
+            firstName: 'Luz', lastName: 'Mora', email: 'luz@mutual.co', phone: '3009876543', password: 'Clave-2026',
+        }]);
+        await expect(page.getByText('Mutual Tres')).toBeVisible();
+    });
+
+    test('only a pending organization shows the label and its two actions; approving shows the message and reloads', async ({ page }) => {
+        const { calls } = await openOrganizations(page);
+        await expect(page.getByText('Pendiente', { exact: true })).toHaveCount(1);
+        await expect(page.getByRole('button', { name: /^(Aprobar|Rechazar) Coop Uno$/ })).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Rechazar Fondo Nuevo' })).toBeVisible();
+
+        await page.getByRole('button', { name: 'Aprobar Fondo Nuevo' }).click();
+        await expect(page.getByText('Entidad aprobada')).toBeVisible();
+        expect(calls).toEqual(['approve']);
+        await expect(page.getByText('Pendiente', { exact: true })).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Aprobar Fondo Nuevo' })).toHaveCount(0);
+    });
+
+    test('rejecting asks for confirmation first, then shows the message and reloads', async ({ page }) => {
+        const { calls } = await openOrganizations(page);
+        await page.getByRole('button', { name: 'Rechazar Fondo Nuevo' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Rechazar solicitud' });
+        await dialog.getByRole('button', { name: 'Cancelar' }).click();
+        await expect(dialog).toBeHidden();
+        expect(calls).toEqual([]);
+
+        await page.getByRole('button', { name: 'Rechazar Fondo Nuevo' }).click();
+        await dialog.getByRole('button', { name: 'Rechazar', exact: true }).click();
+        await expect(page.getByText('Solicitud rechazada')).toBeVisible();
+        expect(calls).toEqual(['reject']);
+        await expect(page.getByText('Fondo Nuevo')).toHaveCount(0);
+        await expect(page.getByText('Coop Uno')).toBeVisible();
+    });
+
+    test('the message of the API is shown when it answers 409', async ({ page }) => {
+        const refusal = 'La entidad ya está activa';
+        await openOrganizations(page, { 'POST /platform/organizations/o10/approve': refuse(409, refusal) });
+        await page.getByRole('button', { name: 'Aprobar Fondo Nuevo' }).click();
+        await expect(page.getByRole('alert').filter({ hasText: refusal })).toBeVisible();
+        await expect(page.getByText('Entidad aprobada')).toHaveCount(0);
+    });
+
+    test('the message of the API is shown when it refuses the new organization, and the dialog stays open', async ({ page }) => {
+        const refusal = 'Ya existe una entidad con ese NIT';
+        await openOrganizations(page, { 'POST /platform/organizations': refuse(409, refusal) });
+        await page.getByRole('button', { name: 'Crear entidad' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Crear entidad' });
+        await dialog.getByLabel('Nombre de la Organización', { exact: true }).fill('Mutual Tres');
+        await dialog.getByLabel('Nombre', { exact: true }).fill('Luz');
+        await dialog.getByLabel('Apellido', { exact: true }).fill('Mora');
+        await dialog.getByLabel('Email Corporativo', { exact: true }).fill('luz@mutual.co');
+        await dialog.getByLabel('Contraseña', { exact: true }).fill('Clave-2026');
+        await dialog.getByRole('button', { name: 'Guardar' }).click();
+        await expect(page.getByRole('alert').filter({ hasText: refusal })).toBeVisible();
+        await expect(dialog).toBeVisible();
+    });
+
+    test('during an impersonation none of it is offered', async ({ page }) => {
+        await openOrganizations(page, {}, IMPERSONATING);
+        await expect(page.getByText('Pendiente', { exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: /Crear entidad|Aprobar|Rechazar/ })).toHaveCount(0);
+    });
+});
+
 test.describe('plan and modules of an organization', () => {
     const GB = 1024 ** 3;
     const PLAN = 'GET /platform/organizations/o9/plan';

@@ -329,6 +329,8 @@ export const API_ENDPOINTS = {
       IMPERSONATIONS: "/platform/impersonations",
       DEMO: "/platform/demo",
       PLAN: (organizationId: string) => `/platform/organizations/${organizationId}/plan`,
+      APPROVE: (organizationId: string) => `/platform/organizations/${organizationId}/approve`,
+      REJECT: (organizationId: string) => `/platform/organizations/${organizationId}/reject`,
     },
 
     // Asistente Cooperativo

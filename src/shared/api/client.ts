@@ -93,7 +93,10 @@ class ApiClient {
       };
     }
 
-    return (await response.json()) as ApiResponse<T>;
+    const body = (await response.json()) as ApiResponse<T>;
+    // The API refuses with a status; a 2xx that still says no must not pass as saved
+    if (body?.success === false) throw { status: response.status, message: body.message || "No se pudo completar la operación" } satisfies ApiError;
+    return body;
   }
 
   private async request<T>(method: string, url: string, body?: unknown, timeoutMs = TIMEOUT_MS): Promise<ApiResponse<T>> {

@@ -50,7 +50,8 @@ const placeFieldErrors = (form: HTMLFormElement | null | undefined, errors: Reco
         const messages = [value].flat();
         // ASP.NET's own model errors prefix body paths with "$.".
         const path = key.replace(/^\$\./, '');
-        const el = byName(path) ?? byName(path.split('.').pop() ?? '');
+        // The last segment is tried only for a plain nested path: an item of a list has no control of its own
+        const el = byName(path) ?? (path.includes('[') ? undefined : byName(path.split('.').pop() ?? ''));
         // A disabled or read-only control takes no validity; a control that is not one of ours has nowhere to show it.
         if (el?.willValidate && messages.length > 0) {
             el.setCustomValidity(messages.join(' '));

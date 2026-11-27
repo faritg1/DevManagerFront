@@ -50,6 +50,7 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     useEffect(() => {
         fetchCatalogs();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
     }, []);
 
     return (

@@ -7,7 +7,6 @@ import {
   Calendar,
   Target,
   Plus,
-  Trash2,
 } from "lucide-react";
 import {
   Button,
@@ -70,10 +69,6 @@ export const EditProjectPage: React.FC = () => {
   const [newSkillId, setNewSkillId] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState("3");
   const [newSkillMandatory, setNewSkillMandatory] = useState(true);
-
-  const getStatusLabel = (statusId: number) => {
-    return catalogs?.projectStatuses.find(s => s.id === statusId)?.name || "Desconocido";
-  };
 
   const getLevelLabel = (levelId: number) => {
     return catalogs?.skillLevels.find(l => l.id === levelId)?.name || `Nivel ${levelId}`;

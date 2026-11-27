@@ -45,6 +45,7 @@ export const RolesPage: React.FC = () => {
 
   useEffect(() => {
     loadRoles();
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   const handleCreate = () => {

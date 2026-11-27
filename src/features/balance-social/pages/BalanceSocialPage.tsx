@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scale, AlertCircle, Search, TrendingUp, TrendingDown, Users, FileBarChart2, CheckCircle2 } from 'lucide-react';
 import { Card, Badge, Button, Input, StatCard, PageContainer, PageHeader, LoadingBlock, EmptyState, ProgressBar, SELECT_CLASS, ExportButton } from '../../../shared/ui';
 import { useAuth } from '../../../shared/context';
-import { useIsAdmin } from '../../../shared/hooks';
+import { useIsAdmin, useLatest } from '../../../shared/hooks';
 import { balanceSocialService, associatesService } from '../../../shared/api';
 import type { AssociateDto, SocialBalanceIndicatorDto, SocialBalanceReportDto } from '../../../shared/api/types';
 import { currency } from '../../../shared/format';
@@ -37,12 +37,14 @@ export const BalanceSocialPage: React.FC = () => {
     const [lookupUserId, setLookupUserId] = useState('');
     const [indicator, setIndicator] = useState<SocialBalanceIndicatorDto | null>(null);
     const [lookupLoading, setLookupLoading] = useState(false);
+    const latestIndicator = useLatest();
+    const latestData = useLatest();
 
     const loadIndicator = async (userId: string) => {
         if (!userId) return;
         setLookupLoading(true);
         try {
-            const res = await balanceSocialService.getIndicator(userId, year);
+            const res = await latestIndicator(balanceSocialService.getIndicator(userId, year));
             setIndicator(res.success ? res.data : null);
         } catch {
             setIndicator(null);
@@ -55,11 +57,11 @@ export const BalanceSocialPage: React.FC = () => {
         setIsLoading(true);
         try {
             if (isAdmin) {
-                const [indRes, ncRes, repRes] = await Promise.all([
+                const [indRes, ncRes, repRes] = await latestData(Promise.all([
                     balanceSocialService.getOrganizationIndicators(year),
                     balanceSocialService.getNonCompliant(year),
                     balanceSocialService.getReport(year).catch(() => null),
-                ]);
+                ]));
                 setIndicators(indRes.success && indRes.data ? indRes.data : []);
                 setNonCompliant(ncRes.success && ncRes.data ? ncRes.data : []);
                 setReport(repRes?.success ? repRes.data : null);

@@ -5,28 +5,18 @@ import {
   Mail,
   Phone,
   Calendar,
-  MapPin,
-  Globe,
-  Github,
-  Linkedin,
   Award,
-  Briefcase,
   CheckCircle2,
   Clock,
-  ExternalLink,
-  User,
   ShieldCheck,
   Star,
 } from "lucide-react";
-import { usersService, skillsService, profileService, certificationService, rbacService } from "../../../shared/api";
+import { usersService, skillsService, rbacService } from "../../../shared/api";
 import type {
   UserResponse,
-  ProfileResponse,
   EmployeeSkillResponse,
-  CertificationResponse,
   EffectivePermissionsResponse,
 } from "../../../shared/api/types";
-import { useConfig } from "../../../shared/context";
 import { Card, Badge, Avatar, PageContainer, PageHeader, BackButton, LoadingBlock } from "../../../shared/ui";
 import { ROUTES } from "../../../shared/config/constants";
 import { formatDate, formatNumber, skillLevelLabel } from "../../../shared/format";
@@ -41,15 +31,12 @@ const getLevelColor = (level: number) => {
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { catalogs } = useConfig();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [user, setUser] = useState<UserResponse | null>(null);
-  const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [skills, setSkills] = useState<EmployeeSkillResponse[]>([]);
-  const [certifications, setCertifications] = useState<CertificationResponse[]>([]);
   const [perms, setPerms] = useState<EffectivePermissionsResponse | null>(null);
 
   const loadData = useCallback(async () => {
@@ -72,23 +59,12 @@ export const UserDetailPage: React.FC = () => {
       setUser(userRes.data);
       setSkills(skillsRes.success && skillsRes.data ? skillsRes.data : []);
       if (permsRes && permsRes.success && permsRes.data) setPerms(permsRes.data);
-
-      // Profile & certs — these may 404 if the user hasn't created them
-      // We load them individually as they're optional
-      try {
-        // Profile endpoint uses /profile/me which is for current user only
-        // We can't fetch another user's profile via API, so we skip it
-        // Unless there's a specific endpoint — for now we leave profile null
-      } catch {
-        // no-op
-      }
     } catch (err) {
       console.error("Error loading user detail:", err);
       setError("Error de conexión al cargar datos del usuario");
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {

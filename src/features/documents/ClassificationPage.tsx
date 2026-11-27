@@ -85,7 +85,7 @@ const NodeItem: React.FC<{ node: ClassificationNode; actions?: Actions }> = ({ n
                 {actions && (
                     <div className="flex shrink-0 flex-wrap justify-end gap-1">
                         {classifies && <IconButton icon={Tag} label={`Agregar tipo a ${node.code}`} onClick={() => actions.addType(node)} />}
-                        {node.level < 3 && <IconButton icon={FolderPlus} label={`${CHILD_LABEL[node.level]} en ${node.code}`} onClick={() => actions.open({ parent: node })} />}
+                        {node.level !== 3 && <IconButton icon={FolderPlus} label={`${CHILD_LABEL[node.level]} en ${node.code}`} onClick={() => actions.open({ parent: node })} />}
                         <IconButton icon={Pencil} label={`Editar ${node.code}`} onClick={() => actions.open({ node })} />
                     </div>
                 )}
@@ -106,6 +106,7 @@ export const ClassificationPage: React.FC = () => {
     const { confirm } = useConfirm();
     const [reload, setReload] = useState(0);
     // A new function after each change makes `useRows` ask for the tree again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `reload` is the trigger, not an input
     const load = useCallback(() => documentsService.classification(), [reload]);
     const tree = useRows(load);
     const [target, setTarget] = useState<NodeTarget | null>(null);

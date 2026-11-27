@@ -81,6 +81,7 @@ export function useSkills(): UseSkillsResult {
 
     useEffect(() => {
         loadSkills();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only when the user changes
     }, [user?.id]);
 
     return {

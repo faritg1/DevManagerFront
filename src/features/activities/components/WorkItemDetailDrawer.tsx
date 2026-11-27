@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { workItemsService, type WorkItemCommentResponse, type WorkItemHistoryEntry, type WorkItemResponse } from '../../../shared/api';
 import { useToast } from '../../../shared/context';
 import { asUtc, formatDate, formatDateTime } from '../../../shared/format';
-import { useConfirm } from '../../../shared/hooks';
+import { useConfirm, useLatest } from '../../../shared/hooks';
 import { Badge, Button, LoadingBlock, Markdown, Modal } from '../../../shared/ui';
 import { isOverdue, PRIORITY_LABELS, PRIORITY_VARIANTS, STATUS_LABELS, STATUS_VARIANTS, TYPE_LABELS, TYPE_VARIANTS } from '../workItemMeta';
 import { MentionInput } from './MentionInput';
@@ -66,15 +66,17 @@ export const WorkItemDetailDrawer: React.FC<Props> = ({ item, onClose, members, 
     const [busy, setBusy] = useState(false);
     const highlighted = useRef<HTMLElement | null>(null);
     const id = item?.id;
+    const latestComments = useLatest();
+    const latestHistory = useLatest();
 
     useEffect(() => {
         setTab('comments'); setComments(null); setHistory(null); setDraft(''); setEditingId(null);
-        if (id) workItemsService.comments(id).then((r) => setComments(r.data ?? []), () => setComments([]));
-    }, [id]);
+        if (id) latestComments(workItemsService.comments(id)).then((r) => setComments(r.data ?? []), () => setComments([]));
+    }, [id, latestComments]);
 
     const loadHistory = useCallback(() => {
-        if (id) workItemsService.history(id).then((r) => setHistory(r.data ?? []), () => setHistory([]));
-    }, [id]);
+        if (id) latestHistory(workItemsService.history(id)).then((r) => setHistory(r.data ?? []), () => setHistory([]));
+    }, [id, latestHistory]);
     useEffect(() => { if (tab === 'history' && !history) loadHistory(); }, [tab, history, loadHistory]);
 
     useEffect(() => { highlighted.current?.scrollIntoView?.({ block: 'center' }); }, [comments, highlightCommentId]);

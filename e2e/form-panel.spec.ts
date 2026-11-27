@@ -55,6 +55,17 @@ test.describe('form panel', () => {
         expect(posts).toBe(0);
     });
 
+    test('a 2xx that answers success:false is shown as an error and the panel stays open', async ({ page }) => {
+        const panel = await open(page, {
+            'POST /documents': (route: Route) => route.fulfill({ status: 200, json: { success: false, message: 'No se guardó el documento' } }),
+        });
+        await fillRequired(panel);
+        await panel.getByRole('button', { name: 'Guardar' }).click();
+
+        await expect(panel.getByRole('alert')).toContainText('No se guardó el documento');
+        await expect(panel).toBeVisible();
+    });
+
     test('a 400 from the API shows in the panel alert only, with its field errors, and the panel stays open', async ({ page }) => {
         let fail = true;
         const panel = await open(page, {

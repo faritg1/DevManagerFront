@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, Input } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle } from '../../../shared/ui';
 import { User } from 'lucide-react';
 
 interface Props {

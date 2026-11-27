@@ -12,10 +12,10 @@ import {
   Layers,
 } from "lucide-react";
 import { skillsService } from "../../../shared/api";
-import type { SkillDto, CreateSkillRequest, SkillType } from "../../../shared/api/types";
+import type { SkillDto } from "../../../shared/api/types";
 import { useToast, useConfig } from "../../../shared/context";
 import { useConfirm, usePagedFilter, usePermission } from "../../../shared/hooks";
-import { Card, Badge, Button, Input, Modal, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState, Pager } from "../../../shared/ui";
+import { Card, Badge, Button, Input, PageContainer, PageHeader, SELECT_SM_CLASS, TABLE_CLASS, TH_CLASS, TH_ACTIONS_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, TD_TRUNCATE_CLASS, THEAD_CLASS, IconButton, TableActions, EmptyState, Pager } from "../../../shared/ui";
 import { SkillFormModal } from "../components/SkillFormModal";
 import { AskAiButton } from "../../ai/AskAiButton";
 

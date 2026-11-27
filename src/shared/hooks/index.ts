@@ -6,3 +6,4 @@ export { useIsAdmin, isAdminRoleName } from './useIsAdmin';
 export { usePagedFilter, normalizeSearch, type PagedFilter } from './usePagedFilter';
 export { useTableCellLabels, RESPONSIVE_TABLE } from './useTableCellLabels';
 export { useActivitiesSettings, setActivitiesSettings, DEFAULT_ACTIVITIES_SETTINGS } from './useActivitiesSettings';
+export { useLatest } from './useLatest';

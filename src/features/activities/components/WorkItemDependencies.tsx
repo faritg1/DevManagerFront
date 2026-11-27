@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { workItemsService, type LinkedWorkItem, type WorkItemLinksResponse, type WorkItemResponse } from '../../../shared/api';
 import { useToast } from '../../../shared/context';
+import { useLatest } from '../../../shared/hooks';
 import { Badge, Button, Select } from '../../../shared/ui';
 import { STATUS_LABELS, STATUS_VARIANTS } from '../workItemMeta';
 
@@ -22,12 +23,13 @@ export const WorkItemDependencies: React.FC<Props> = ({ itemId, items, canEdit, 
     const [relation, setRelation] = useState<'blocks' | 'blockedBy'>('blocks');
     const [other, setOther] = useState('');
     const [busy, setBusy] = useState(false);
+    const latest = useLatest();
 
     useEffect(() => {
         setLinks(null);
         setOther('');
-        workItemsService.links(itemId).then((r) => setLinks(r.data ?? { blocks: [], blockedBy: [] }), () => setLinks({ blocks: [], blockedBy: [] }));
-    }, [itemId]);
+        latest(workItemsService.links(itemId)).then((r) => setLinks(r.data ?? { blocks: [], blockedBy: [] }), () => setLinks({ blocks: [], blockedBy: [] }));
+    }, [itemId, latest]);
 
     const linked = new Set([...(links?.blocks ?? []), ...(links?.blockedBy ?? [])].map((l) => l.itemId));
     const candidates = items.filter((i) => i.id !== itemId && !linked.has(i.id));

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Calculator, FileSpreadsheet } from 'lucide-react';
 import { Card, Button, FormPanel, FormSection, Input, Select, Pager, SearchInput, EmptyState, PageContainer, PageHeader, SELECT_CLASS, TABLE_CLASS, THEAD_CLASS, TH_CLASS, TBODY_CLASS, TD_CLASS, TR_CLASS, ExportButton } from '../../../shared/ui';
 import { useNotification, useAuth } from '../../../shared/context';
-import { useIsAdmin, usePagedFilter, usePermission } from '../../../shared/hooks';
+import { useIsAdmin, useLatest, usePagedFilter, usePermission } from '../../../shared/hooks';
 import { nominaService, associatesService } from '../../../shared/api';
 import type {
     AssociateDto,
@@ -44,6 +44,7 @@ export const NominaPage: React.FC = () => {
     const [pilaMonth, setPilaMonth] = useState(new Date().getMonth() + 1);
     const [sheet, setSheet] = useState<PilaContributionDto[]>([]);
     const [pilaLoading, setPilaLoading] = useState(false);
+    const latestCompensations = useLatest();
     const [pilaUserId, setPilaUserId] = useState('');
     const [pilaIncome, setPilaIncome] = useState<number>(0);
     const [pilaRisk, setPilaRisk] = useState(1);
@@ -80,7 +81,7 @@ export const NominaPage: React.FC = () => {
         if (!compUserId) return;
         setCompLoading(true);
         try {
-            const res = await nominaService.getCompensations(compUserId, compYear);
+            const res = await latestCompensations(nominaService.getCompensations(compUserId, compYear));
             setCompensations(res.success && res.data ? res.data : []);
         } catch {
             setCompensations([]);

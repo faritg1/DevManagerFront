@@ -5,7 +5,7 @@ import { rbacService } from "../../../shared/api";
 import type { PermissionTreeNode } from "../../../shared/api/types";
 import { ROUTES } from "../../../shared/config/constants";
 import { useToast } from "../../../shared/context";
-import { isAdminRoleName, usePermission } from "../../../shared/hooks";
+import { isAdminRoleName, useLatest, usePermission } from "../../../shared/hooks";
 import { Badge, Button, EmptyState, Input, LoadingBlock, PageContainer, PageHeader } from "../../../shared/ui";
 import { routeForPermission } from "../../../widgets/Sidebar/navConfig";
 
@@ -42,10 +42,11 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const latest = useLatest();
 
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([rbacService.getPermissionTree(roleId), rbacService.getRolePermissions(roleId)])
+    latest(Promise.all([rbacService.getPermissionTree(roleId), rbacService.getRolePermissions(roleId)]))
       .then(([treeRes, roleRes]) => {
         setTree(treeRes.data);
         setRoleName(roleRes.data.name);
@@ -56,7 +57,7 @@ export const RoleEditor: React.FC<{ roleId: string }> = ({ roleId }) => {
       })
       .catch(() => setTree(null))
       .finally(() => setIsLoading(false));
-  }, [roleId]);
+  }, [roleId, latest]);
 
   const adminRole = isAdminRoleName(roleName);
   // Global roles are shared by every organization: only the platform super admin changes them
